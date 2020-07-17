@@ -6,9 +6,11 @@ collect:
 
 migrations: 
 	python manage.py makemigrations
-	python manage.py makemigrations base
-	python manage.py makemigrations main
-	python manage.py makemigrations users
+	python manage.py makemigrations common
+	python manage.py makemigrations conditions
+	python manage.py makemigrations datasets
+	python manage.py makemigrations papers
+	python manage.py makemigrations phenotypes
 
 migrate: 
 	python manage.py migrate

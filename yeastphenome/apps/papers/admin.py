@@ -5,10 +5,10 @@ from django.http import HttpResponse
 from django import forms
 from django.utils.http import urlencode
 
-from papers.models import Paper, Status, Statusdata, Statustested
-from papers.forms import PaperModelForm
-from datasets.models import Dataset, Collection, Source, Tag
-from common.admin_util import ImprovedTabularInline, ImprovedModelAdmin, LimitedInlineFormSet
+from yeastphenome.apps.papers.models import Paper, Status, Statusdata, Statustested
+from yeastphenome.apps.papers.forms import PaperModelForm
+from yeastphenome.apps.datasets.models import Dataset, Collection, Source, Tag
+from yeastphenome.apps.common.admin_util import ImprovedTabularInline, ImprovedModelAdmin, LimitedInlineFormSet
 
 
 class DatasetAdminForm(forms.ModelForm):

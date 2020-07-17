@@ -2,8 +2,8 @@ from django.contrib import admin
 from mptt.admin import MPTTModelAdmin
 from django.http import HttpResponse
 
-from phenotypes.models import MutantType, Observable, Observable2, Phenotype, Measurement, Tag
-from common.admin_util import ImprovedModelAdmin
+from yeastphenome.apps.phenotypes.models import MutantType, Observable, Observable2, Phenotype, Measurement, Tag
+from yeastphenome.apps.common.admin_util import ImprovedModelAdmin
 
 
 class ObservableAdmin(ImprovedModelAdmin):

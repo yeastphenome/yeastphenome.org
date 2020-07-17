@@ -4,16 +4,18 @@ from django.db import models
 
 import numpy as np
 
-from yeastphenome.forms import SearchForm
+from yeastphenome.apps.common.forms import SearchForm
 
-from papers.models import Paper
-from conditions.models import ConditionSet, ConditionType
-from phenotypes.models import Observable2, Phenotype
-from datasets.models import Dataset
+from yeastphenome.apps.papers.models import Paper
+from yeastphenome.apps.conditions.models import ConditionSet, ConditionType
+from yeastphenome.apps.phenotypes.models import Observable2, Phenotype
+from yeastphenome.apps.datasets.models import Dataset
 
 
 def get_latest_stats():
-
+    """Return number of papers, phenotypes, and datasets to display in the index
+       view. If no entries are found, display counts of zero.
+    """
     papers_queryset = Paper.objects.all()
     phenotypes_queryset = Phenotype.objects.all()
     conditions_queryset = ConditionSet.objects.all()
@@ -24,7 +26,7 @@ def get_latest_stats():
     papers_nr = papers_queryset.filter(f).count()
 
     # Latest modified paper
-    updated_on = papers_queryset.latest().modified_on
+    updated_on = papers_queryset.latest().modified_on if papers_queryset else None
 
     # Number of hopeless papers
     f = Q(latest_data_status__status__name__in=['request abandoned', 'not available'])
@@ -82,24 +84,24 @@ def get_latest_stats():
 
     c = Q(collection__shortname__in=['hap a'])
     datasets_nr_hap_a = datasets_queryset.filter(f & c).distinct().count()
-    datasets_prc_hap_a = int(np.rint(100 * datasets_nr_hap_a / datasets_nr))
+    datasets_prc_hap_a = int(np.rint(100 * datasets_nr_hap_a / datasets_nr)) if datasets_nr != 0 else 0
 
     c = Q(collection__shortname__in=['hap alpha'])
     datasets_nr_hap_alpha = datasets_queryset.filter(f & c).distinct().count()
-    datasets_prc_hap_alpha = int(np.rint(100 * datasets_nr_hap_alpha / datasets_nr))
+    datasets_prc_hap_alpha = int(np.rint(100 * datasets_nr_hap_alpha / datasets_nr)) if datasets_nr != 0 else 0
 
     c = Q(collection__shortname__in=['hom'])
     datasets_nr_hom = datasets_queryset.filter(f & c).distinct().count()
-    datasets_prc_hom = int(np.rint(100 * datasets_nr_hom / datasets_nr))
+    datasets_prc_hom = int(np.rint(100 * datasets_nr_hom / datasets_nr)) if datasets_nr != 0 else 0
 
     c = Q(collection__shortname__in=['het'])
     datasets_nr_het = datasets_queryset.filter(f & c).distinct().count()
-    datasets_prc_het = int(np.rint(100 * datasets_nr_het / datasets_nr))
+    datasets_prc_het = int(np.rint(100 * datasets_nr_het / datasets_nr)) if datasets_nr != 0 else 0
 
     c = Q(collection__shortname__in=['hap ?', 'hap a/hap alpha/hom', 'hap a/hap alpha', 'hap a/hom', 'hom/het?',
                                      'hom/het', 'hap a/het', 'hap ?/hom/het'])
     datasets_nr_mix = datasets_queryset.filter(f & c).distinct().count()
-    datasets_prc_mix = int(np.rint(100 * datasets_nr_mix / datasets_nr))
+    datasets_prc_mix = int(np.rint(100 * datasets_nr_mix / datasets_nr)) if datasets_nr != 0 else 0
 
     datasets_nr_collections_total = datasets_nr_hap_a + datasets_nr_hap_alpha + \
                                     datasets_nr_hom + datasets_nr_het + datasets_nr_mix
@@ -114,17 +116,17 @@ def get_latest_stats():
     f = Q(paper__in=papers_queryset) & \
         Q(data_available__shortname='q')
     datasets_nr_q = datasets_queryset.filter(f).distinct().count()
-    datasets_prc_q = int(np.rint(100 * datasets_nr_q / datasets_nr))
+    datasets_prc_q = int(np.rint(100 * datasets_nr_q / datasets_nr)) if datasets_nr != 0 else 0
 
     f = Q(paper__in=papers_queryset) & \
         Q(data_available__shortname='qofh')
     datasets_nr_qofh = datasets_queryset.filter(f).distinct().count()
-    datasets_prc_qofh = int(np.rint(100 * datasets_nr_qofh / datasets_nr))
+    datasets_prc_qofh = int(np.rint(100 * datasets_nr_qofh / datasets_nr)) if datasets_nr != 0 else 0
 
     f = Q(paper__in=papers_queryset) & \
         Q(data_available__shortname='d')
     datasets_nr_d = datasets_queryset.filter(f).distinct().count()
-    datasets_prc_d = int(np.rint(100 * datasets_nr_d / datasets_nr))
+    datasets_prc_d = int(np.rint(100 * datasets_nr_d / datasets_nr)) if datasets_nr != 0 else 0
 
     datasets_nr_data_available_total = datasets_nr_q + datasets_nr_qofh + datasets_nr_d
 

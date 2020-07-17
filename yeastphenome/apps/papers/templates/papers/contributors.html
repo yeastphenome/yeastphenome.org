@@ -1,15 +1,15 @@
 {% load staticfiles %}<!DOCTYPE html>
 <html lang="en"><head>
-{% include "head.html" with JavaScript='tablesorter' %}
+{% include "base/head.html" with JavaScript='tablesorter' %}
 <title>Contributors / {{ SITE_NAME }}</title>
 </head>
 
 <body>
-{% include "navbar.html" with active='contributors' %}
+{% include "base/navbar.html" with active='contributors' %}
 
 <div class="container-fluid"><h1>Contributors</h1>
 
-<p>A special thanks goes to the authors of these <strong>{{ papers_list.count }} publications</strong> who have provided unpublished versions of their datasets, including raw quantitative data and/or lists of tested genes.</p>
+{% if papers_list.count != 0 %}<p>A special thanks goes to the authors of these <strong>{{ papers_list.count }} publications</strong> who have provided unpublished versions of their datasets, including raw quantitative data and/or lists of tested genes.</p>{% endif %}
 
 {% if papers_list %}
 <table id="papersTable" class="tablesorter table table-condensed" width="100%">
@@ -32,7 +32,7 @@
   </tbody>
 </table>
 {% else %}
-<p>No papers are available.</p>
+<p class="alert alert-info">No papers are available, so there are no contributors.</p>
 {% endif %}
 
 </div>
@@ -43,7 +43,7 @@ $(document).ready(function(){
 });
 </script>
 
-{% include "ga.html" %}
+{% include "base/ga.html" %}
 
 </body>
 

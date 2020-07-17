@@ -5,11 +5,10 @@ from django.conf import settings
 from django.contrib.auth.models import User
 
 from itertools import chain
-from operator import attrgetter
 
-from phenotypes.models import Observable
-from conditions.models import ConditionType
-from datasets.models import Collection, Source
+from yeastphenome.apps.phenotypes.models import Observable
+from yeastphenome.apps.conditions.models import ConditionType
+from yeastphenome.apps.datasets.models import Collection, Source
 
 import os
 

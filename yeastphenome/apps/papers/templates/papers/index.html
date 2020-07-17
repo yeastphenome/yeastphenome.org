@@ -2,13 +2,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    {% include "head.html" with JavaScript='tablesorter' %}
+    {% include "base/head.html" with JavaScript='tablesorter' %}
     <title>Papers / {{ SITE_NAME }}</title>
 </head>
 
 <body>
 
-{% include "navbar.html" with active='papers' %}
+{% include "base/navbar.html" with active='papers' %}
 
 <div class="container-fluid">
 
@@ -45,7 +45,7 @@
 
     {% endif %}
 
-    {% include "footer.html" %}
+    {% include "base/footer.html" %}
 
 </div>
 
@@ -55,7 +55,7 @@
     });
 </script>
 
-{% include "ga.html" %}
+{% include "base/ga.html" %}
 
 
 </body>

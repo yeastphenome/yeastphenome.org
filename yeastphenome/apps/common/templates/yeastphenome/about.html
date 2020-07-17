@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    {% include "head.html" %}
+    {% include "base/head.html" %}
     <title>About / {{ SITE_NAME }}</title>
 </head>
 
 <body>
 
-{% include "navbar.html" with active='about' %}
+{% include "base/navbar.html" with active='about' %}
 {% load humanize %}
 
 <div class="container-fluid">
@@ -82,13 +82,13 @@
 
     <div class="row">
         <div class="col-xs-12">
-            {% include "footer.html" %}
+            {% include "base/footer.html" %}
         </div>
     </div>
 
 </div>
 
-{% include "ga.html" %}
+{% include "base/ga.html" %}
 
 </body>
 

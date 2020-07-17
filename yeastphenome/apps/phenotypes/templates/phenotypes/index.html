@@ -1,19 +1,19 @@
 {% load my_filters %}
 <!DOCTYPE html>
 <html lang="en"><head>
-    {% include "head.html" with JavaScript='tablesorter' %}
+    {% include "base/head.html" with JavaScript='tablesorter' %}
     <title>Phenotypes / {{ SITE_NAME }}</title>
 </head>
 
 <body>
 
-{% include "navbar.html" with active='phenotypes' %}
+{% include "base/navbar.html" with active='phenotypes' %}
 
 <div class="container-fluid">
 
     <h1>Phenotypes</h1>
 
-    <table id="papersTable" class="tablesorter table table-condensed" width="100%">
+    {% if observables %}<table id="papersTable" class="tablesorter table table-condensed" width="100%">
 
         <thead>
         <tr>
@@ -30,9 +30,11 @@
     </tr>
     {% endfor %}
     </tbody>
-    </table>
+    </table>{% else %}
+    <p class="alert alert-info">There are no phenotypes in the database.</p>
+    {% endif %}
 
-    {% include "footer.html" %}
+    {% include "base/footer.html" %}
 
 </div>
 
@@ -40,6 +42,6 @@
  $("#papersTable").tablesorter();
 });</script>
 
-{% include "ga.html" %}
+{% include "base/ga.html" %}
 
 </body></html>

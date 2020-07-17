@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    {% include "head.html" %}
+    {% include "base/head.html" %}
     <title>{{ SITE_NAME }}</title>
 </head>
 
 <body>
 
-{% include "navbar.html" with active="" %}
+{% include "base/navbar.html" with active="" %}
 {% load humanize %}
 
 <div class="container-fluid">
@@ -40,16 +40,16 @@
                 <li>{{ conditions_nr|intcomma }} <a href="{% url 'conditions:index' %}">experimental conditions</a></li>
             </ul>
 
-            <p>Updated on: {{ updated_on }}.</p>
+            {% if updated_on %}<p>Updated on: {{ updated_on }}.</p>{% endif %}
         </div>
 
     </div>
 
-    {% include "footer.html" %}
+    {% include "base/footer.html" %}
 
 </div>
 
-{% include "ga.html" %}
+{% include "base/ga.html" %}
 
 </body>
 
