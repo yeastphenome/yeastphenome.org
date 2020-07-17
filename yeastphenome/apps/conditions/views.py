@@ -11,10 +11,10 @@ from django.conf import settings
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Q
 
-from conditions.models import ConditionType, ConditionSet, Medium
-from datasets.models import Dataset, Data
+from yeastphenome.apps.conditions.models import ConditionType, ConditionSet, Medium
+from yeastphenome.apps.datasets.models import Dataset, Data
 
-from conditions.forms import SearchForm
+from yeastphenome.apps.common.forms import SearchForm
 
 from libchebipy import ChebiEntity
 

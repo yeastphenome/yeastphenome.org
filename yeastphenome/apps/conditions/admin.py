@@ -9,8 +9,8 @@ import re
 from pubchempy import Compound
 from libchebipy import ChebiEntity
 
-from conditions.models import ConditionSet, Condition, ConditionType, Medium, Tag
-from common.admin_util import ImprovedTabularInline, ImprovedModelAdmin
+from yeastphenome.apps.conditions.models import ConditionSet, Condition, ConditionType, Medium, Tag
+from yeastphenome.apps.common.admin_util import ImprovedTabularInline, ImprovedModelAdmin
 
 
 class TagAdmin(ImprovedModelAdmin):

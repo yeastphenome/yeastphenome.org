@@ -5,7 +5,7 @@ from django.db.models import Q
 
 import re
 
-from phenotypes.models import Phenotype
+from yeastpheome.apps.phenotypes.models import Phenotype
 from libchebipy import ChebiEntity
 
 

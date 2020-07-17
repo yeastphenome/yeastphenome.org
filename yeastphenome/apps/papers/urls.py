@@ -1,6 +1,6 @@
 from django.conf.urls import url
 
-from papers import views
+from . import views
 
 urlpatterns = [
     url(r'^$', views.paper_list_view, name='all'),

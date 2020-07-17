@@ -1,7 +1,7 @@
 from django.views import generic
 from django.conf import settings
 
-from phenotypes.models import Observable
+from yeastphenome.apps.phenotypes.models import Observable
 
 
 class ObservableIndexView(generic.ListView):

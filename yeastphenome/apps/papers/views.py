@@ -3,7 +3,7 @@ from django.views import generic
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
-from papers.models import Paper
+from .models import Paper
 
 from Bio import Entrez
 

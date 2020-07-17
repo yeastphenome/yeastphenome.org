@@ -4,10 +4,10 @@ from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.views import generic
 
-from papers.models import Paper
-from datasets.models import Dataset, Data, Tag
-from conditions.models import ConditionType
-from phenotypes.models import Observable2
+from yeastphenome.apps.papers.models import Paper
+from yeastphenome.apps.datasets.models import Dataset, Data, Tag
+from yeastphenome.apps.conditions.models import ConditionType
+from yeastphenome.apps.phenotypes.models import Observable2
 
 from libchebipy import ChebiEntity
 

@@ -3,3 +3,4 @@ yeastphenome/settings.py
 *~
 .idea/*
 .DS_Store
+.env

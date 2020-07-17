@@ -15,7 +15,7 @@ from django.forms.models import BaseInlineFormSet
 class VerboseForeignKeyRawIdWidget(ForeignKeyRawIdWidget):
 
     # Django 1.11
-    template_name = 'foreign_key_raw_id.html'
+    template_name = 'admin/foreign_key_raw_id.html'
 
     # Django 1.10.5
     def label_for_value(self, value):
@@ -34,7 +34,7 @@ class VerboseForeignKeyRawIdWidget(ForeignKeyRawIdWidget):
 class VerboseManyToManyRawIdWidget(ManyToManyRawIdWidget):
 
     # Django 1.11
-    template_name = 'many_to_many_raw_id.html'
+    template_name = 'admin/many_to_many_raw_id.html'
 
     # Django 1.10.5
     def label_for_value(self, value):
