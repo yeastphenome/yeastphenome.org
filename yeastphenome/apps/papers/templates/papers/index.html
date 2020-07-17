@@ -1,0 +1,62 @@
+{% load my_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include "base/head.html" with JavaScript='tablesorter' %}
+    <title>Papers / {{ SITE_NAME }}</title>
+</head>
+
+<body>
+
+{% include "base/navbar.html" with active='papers' %}
+
+<div class="container-fluid">
+
+    <h1>Papers</h1>
+
+    {% if papers_list %}
+
+    <table id="papersTable" class="tablesorter table table-striped" width="100%">
+
+        <thead>
+        <tr>
+            <th class="text-nowrap" width="30%">FirstAuthor~LastAuthor, Year</th>
+            <th width="35%">Phenotypes</th>
+            <th width="35%">Conditions</th>
+        </tr>
+        </thead>
+
+        <tbody>
+
+        {% for paper in papers_list %}
+        <tr>
+            <td class="text-nowrap"><a href="{% url 'papers:detail' paper.pk  %}">{{ paper }}</a></td>
+            <td>{{ paper.phenotypes|join_and_more:7 }}</td>
+            <td>{{ paper.conditiontypes|join_and_more:7|safe }}</td>
+        </tr>
+        {% endfor %}
+
+        </tbody>
+    </table>
+
+    {% else %}
+
+    <aside class="bg-warning">No papers are available.</aside>
+
+    {% endif %}
+
+    {% include "base/footer.html" %}
+
+</div>
+
+<script>
+    $(document).ready(function(){
+        $("#papersTable").tablesorter();
+    });
+</script>
+
+{% include "base/ga.html" %}
+
+
+</body>
+</html>
