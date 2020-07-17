@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from django.db import models
 from django.apps import apps
 from django.contrib.humanize.templatetags.humanize import intcomma
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 
 class Collection(models.Model):
@@ -26,7 +26,7 @@ class Sourcetype(models.Model):
 
 
 class Source(models.Model):
-    sourcetype = models.ForeignKey(Sourcetype, null=True, blank=True, related_name='sourcetype')
+    sourcetype = models.ForeignKey(Sourcetype, null=True, blank=True, related_name='sourcetype', on_delete=models.DO_NOTHING)
     link = models.TextField(max_length=200, null=True, blank=True)
     person = models.CharField(max_length=200, null=True, blank=True)
     date = models.DateField(null=True)
@@ -106,30 +106,30 @@ class Tag(models.Model):
 class Dataset(models.Model):
 
     name = models.CharField(max_length=500, null=True, blank=True, unique=True)
-    paper = models.ForeignKey('papers.Paper')
+    paper = models.ForeignKey('papers.Paper', on_delete=models.DO_NOTHING)
 
-    conditionset = models.ForeignKey('conditions.ConditionSet', null=True, blank=True)
-    medium = models.ForeignKey('conditions.Medium', null=True, blank=True)
+    conditionset = models.ForeignKey('conditions.ConditionSet', null=True, blank=True, on_delete=models.DO_NOTHING)
+    medium = models.ForeignKey('conditions.Medium', null=True, blank=True, on_delete=models.DO_NOTHING)
 
     control_conditionset = models.ForeignKey('conditions.ConditionSet', related_name='control_conditionset',
-                                             null=True, blank=True)
+                                             null=True, blank=True, on_delete=models.DO_NOTHING)
     control_medium = models.ForeignKey('conditions.Medium', related_name='control_medium',
-                                       null=True, blank=True)
+                                       null=True, blank=True, on_delete=models.DO_NOTHING)
 
-    phenotype = models.ForeignKey('phenotypes.Phenotype', null=True, blank=True)
-    collection = models.ForeignKey(Collection, null=True, blank=True)
+    phenotype = models.ForeignKey('phenotypes.Phenotype', null=True, blank=True, on_delete=models.DO_NOTHING)
+    collection = models.ForeignKey(Collection, null=True, blank=True, on_delete=models.DO_NOTHING)
 
     notes = models.TextField(null=True, blank=True)
 
     tested_num = models.IntegerField(default=0, null=True)
     tested_list_published = models.NullBooleanField()
-    tested_source = models.ForeignKey(Source, null=True, blank=True, related_name='tested_source')
+    tested_source = models.ForeignKey(Source, null=True, blank=True, related_name='tested_source', on_delete=models.DO_NOTHING)
 
-    data_source = models.ForeignKey(Source, null=True, blank=True, related_name='data_source')
+    data_source = models.ForeignKey(Source, null=True, blank=True, related_name='data_source', on_delete=models.DO_NOTHING)
 
-    data_measured = models.ForeignKey(Datatype, null=True, blank=True, related_name='data_measured')
-    data_published = models.ForeignKey(Datatype, null=True, blank=True, related_name='data_published')
-    data_available = models.ForeignKey(Datatype, null=True, blank=True, related_name='data_available')
+    data_measured = models.ForeignKey(Datatype, null=True, blank=True, related_name='data_measured', on_delete=models.DO_NOTHING)
+    data_published = models.ForeignKey(Datatype, null=True, blank=True, related_name='data_published', on_delete=models.DO_NOTHING)
+    data_available = models.ForeignKey(Datatype, null=True, blank=True, related_name='data_available', on_delete=models.DO_NOTHING)
 
     tags = models.ManyToManyField(Tag, blank=True)
 
@@ -198,7 +198,7 @@ class Dataset(models.Model):
 
 
 class Data(models.Model):
-    dataset = models.ForeignKey(Dataset)
+    dataset = models.ForeignKey(Dataset, on_delete=models.DO_NOTHING)
     value = models.DecimalField(max_digits=10, decimal_places=3)
     orf = models.CharField(max_length=50)
 
