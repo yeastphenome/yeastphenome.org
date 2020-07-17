@@ -32,7 +32,7 @@ class ConditionType(models.Model):
     tags = models.ManyToManyField(Tag, blank=True)
 
     class Meta:
-        ordering = ['chebi_name', 'pubchem_name', 'name', 'other_names']
+        ordering = ["chebi_name", "pubchem_name", "name", "other_names"]
 
     def __str__(self):
         if self.chebi_name:
@@ -43,63 +43,84 @@ class ConditionType(models.Model):
             type_name = self.name
         else:
             type_name = self.other_names
-        return u'%s' % type_name
+        return u"%s" % type_name
 
     def definition(self):
         if self.chebi_id:
-            entity = ChebiEntity('CHEBI:' + str(self.chebi_id))
+            entity = ChebiEntity("CHEBI:" + str(self.chebi_id))
             return entity.get_definition()
         else:
-            return ''
+            return ""
 
     def has_roles(self):
         if self.chebi_id:
-            entity = ChebiEntity('CHEBI:' + str(self.chebi_id))
+            entity = ChebiEntity("CHEBI:" + str(self.chebi_id))
             outdict = dict()
             for relation in entity.get_outgoings():
-                if relation.get_type() == 'has_role':
+                if relation.get_type() == "has_role":
                     tid = relation.get_target_chebi_id()
                     t = ChebiEntity(tid)
-                    s = re.findall(r'\d+', tid)
+                    s = re.findall(r"\d+", tid)
                     outdict[t.get_name()] = int(s[0])
             return outdict
         else:
-            return ''
+            return ""
 
     def conditions(self):
-        return Condition.objects.filter(type=self).order_by('dose')
+        return Condition.objects.filter(type=self).order_by("dose")
 
     def conditions_str_list(self):
-        return ', '.join([p.dose for p in self.conditions()])
+        return ", ".join([p.dose for p in self.conditions()])
 
     def conditions_edit_list(self):
-        return ', '.join([p.link_edit() for p in self.conditions()])
+        return ", ".join([p.link_edit() for p in self.conditions()])
+
     conditions_edit_list.allow_tags = True
 
     def phenotypes(self):
-        return Phenotype.objects.filter(Q(dataset__conditionset__conditions__type=self) |
-                                        Q(dataset__medium__conditions__type=self)).distinct()
+        return Phenotype.objects.filter(
+            Q(dataset__conditionset__conditions__type=self)
+            | Q(dataset__medium__conditions__type=self)
+        ).distinct()
 
     def phenotypes_link_list(self):
-        return ', '.join([p.link_detail() for p in self.phenotypes()])
+        return ", ".join([p.link_detail() for p in self.phenotypes()])
+
     phenotypes_link_list.allow_tags = True
 
     def papers(self):
-        return apps.get_model('papers', 'Paper').objects\
-            .filter(Q(dataset__conditionset__conditions__type=self) | Q(dataset__medium__conditions__type=self))\
-            .exclude(latest_data_status__status__name='not relevant').distinct()
+        return (
+            apps.get_model("papers", "Paper")
+            .objects.filter(
+                Q(dataset__conditionset__conditions__type=self)
+                | Q(dataset__medium__conditions__type=self)
+            )
+            .exclude(latest_data_status__status__name="not relevant")
+            .distinct()
+        )
 
     def papers_link_list(self):
-        return ', '.join([(u'%s' % p.link_detail()) for p in self.papers()])
+        return ", ".join([(u"%s" % p.link_detail()) for p in self.papers()])
+
     papers_link_list.allow_tags = True
 
     def datasets(self):
-        return apps.get_model('papers', 'Dataset').objects.\
-            filter(Q(conditionset__conditions__type=self) | Q(medium__conditions__type=self))\
-            .exclude(paper__latest_data_status__status__name='not relevant').distinct()
+        return (
+            apps.get_model("papers", "Dataset")
+            .objects.filter(
+                Q(conditionset__conditions__type=self)
+                | Q(medium__conditions__type=self)
+            )
+            .exclude(paper__latest_data_status__status__name="not relevant")
+            .distinct()
+        )
 
     def link_detail(self):
-        return '<a href="%s">%s</a>' % (reverse("conditions:detail", args=(self.id,)), self)
+        return '<a href="%s">%s</a>' % (
+            reverse("conditions:detail", args=(self.id,)),
+            self,
+        )
+
     link_detail.allow_tags = True
 
 
@@ -110,13 +131,13 @@ class Condition(models.Model):
     modified_on = models.DateField(auto_now=True, null=True)
 
     class Meta:
-        get_latest_by = 'modified_on'
+        get_latest_by = "modified_on"
 
     def __str__(self):
-        if self.dose in ['standard', 'unknown']:
-            txt = u'%s' % self.type
+        if self.dose in ["standard", "unknown"]:
+            txt = u"%s" % self.type
         else:
-            txt = u'%s [%s]' % (self.type, self.dose)
+            txt = u"%s [%s]" % (self.type, self.dose)
         return txt
 
     def conditionsets(self):
@@ -127,18 +148,28 @@ class Condition(models.Model):
 
     def conditionsets_str_list(self):
         return ", ".join([p.link_edit() for p in self.conditionsets()])
+
     conditionsets_str_list.allow_tags = True
 
     def media_str_list(self):
         return ", ".join([p.link_edit() for p in self.media()])
+
     media_str_list.allow_tags = True
 
     def link_detail(self):
-        return '<a href="%s">%s</a>' % (reverse("conditions:detail", args=(self.type.id,)), self)
+        return '<a href="%s">%s</a>' % (
+            reverse("conditions:detail", args=(self.type.id,)),
+            self,
+        )
+
     link_detail.allow_tags = True
 
     def link_edit(self):
-        return '<a href="%s">%s</a>' % (reverse("admin:conditions_condition_change", args=(self.id,)), self.dose)
+        return '<a href="%s">%s</a>' % (
+            reverse("admin:conditions_condition_change", args=(self.id,)),
+            self.dose,
+        )
+
     link_edit.allow_tags = True
 
 
@@ -155,7 +186,7 @@ class ConditionSet(models.Model):
         if self.display_name:
             return self.display_name
         else:
-            return ''
+            return ""
 
     # # Necessary to run database-wide updates of conditionset names
     # def save(self, *args, **kwargs):
@@ -171,38 +202,58 @@ class ConditionSet(models.Model):
     #     super(ConditionSet, self).save(*args, **kwargs)
 
     def papers(self):
-        return apps.get_model('papers', 'Paper').objects\
-            .filter(Q(dataset__conditionset=self) | Q(dataset__control_conditionset=self))\
-            .exclude(latest_data_status__status__name='not relevant').distinct()
+        return (
+            apps.get_model("papers", "Paper")
+            .objects.filter(
+                Q(dataset__conditionset=self) | Q(dataset__control_conditionset=self)
+            )
+            .exclude(latest_data_status__status__name="not relevant")
+            .distinct()
+        )
 
     def papers_link_list(self):
-        return ', '.join([p.link_detail() for p in self.papers()])
+        return ", ".join([p.link_detail() for p in self.papers()])
+
     papers_link_list.allow_tags = True
 
     def papers_edit_link_list(self):
-        return ', '.join([p.link_edit() for p in self.papers()])
+        return ", ".join([p.link_edit() for p in self.papers()])
+
     papers_edit_link_list.allow_tags = True
 
     def datasets(self):
-        return apps.get_model('datasets', 'Dataset').objects.filter(conditionset=self)\
-            .exclude(paper__latest_data_status__status__name='not relevant').distinct()
+        return (
+            apps.get_model("datasets", "Dataset")
+            .objects.filter(conditionset=self)
+            .exclude(paper__latest_data_status__status__name="not relevant")
+            .distinct()
+        )
 
     def datasets_edit_link_list(self):
-        str = '<ul>'
-        str = str + '<li>'.join([d.link_edit() for d in self.datasets()])
-        str = str + '</ul>'
+        str = "<ul>"
+        str = str + "<li>".join([d.link_edit() for d in self.datasets()])
+        str = str + "</ul>"
         return str
+
     datasets_edit_link_list.allow_tags = True
 
     def phenotypes(self):
         return Phenotype.objects.filter(dataset__conditionset=self).distinct()
 
     def link_detail(self):
-        return '<a href="%s">%s</a>' % (reverse("conditions:conditionset_detail", args=(self.id,)), self)
+        return '<a href="%s">%s</a>' % (
+            reverse("conditions:conditionset_detail", args=(self.id,)),
+            self,
+        )
+
     link_detail.allow_tags = True
 
     def link_edit(self):
-        return '{<a href="%s">%s</a>}' % (reverse("admin:conditions_conditionset_change", args=(self.id,)), self)
+        return '{<a href="%s">%s</a>}' % (
+            reverse("admin:conditions_conditionset_change", args=(self.id,)),
+            self,
+        )
+
     link_edit.allow_tags = True
 
 
@@ -219,53 +270,72 @@ class Medium(models.Model):
         if self.display_name:
             return self.display_name
         else:
-            return ''
+            return ""
 
     def conditions_str_list(self):
         return ", ".join([str(c) for c in self.conditions.all()])
 
     def papers(self):
-        return apps.get_model('papers', 'Paper').objects.filter(Q(dataset__medium=self) |
-                                                                Q(dataset__control_medium=self))\
-            .exclude(latest_data_status__status__name='not relevant').distinct()
+        return (
+            apps.get_model("papers", "Paper")
+            .objects.filter(Q(dataset__medium=self) | Q(dataset__control_medium=self))
+            .exclude(latest_data_status__status__name="not relevant")
+            .distinct()
+        )
 
     def paper_str_list(self):
-        return ', '.join([str(p) for p in self.papers()])
+        return ", ".join([str(p) for p in self.papers()])
 
     def papers_link_list(self):
-        return ', '.join([p.link_detail() for p in self.papers()])
+        return ", ".join([p.link_detail() for p in self.papers()])
+
     papers_link_list.allow_tags = True
 
     def papers_edit_link_list(self):
-        return ', '.join([p.link_edit() for p in self.papers()])
+        return ", ".join([p.link_edit() for p in self.papers()])
+
     papers_edit_link_list.allow_tags = True
 
     def datasets(self, num=None):
-        qs = apps.get_model('datasets', 'Dataset').objects.filter(medium=self)\
-            .exclude(paper__latest_data_status__status__name='not relevant').distinct()
+        qs = (
+            apps.get_model("datasets", "Dataset")
+            .objects.filter(medium=self)
+            .exclude(paper__latest_data_status__status__name="not relevant")
+            .distinct()
+        )
         if num:
             qs = qs[:num]
         return qs
 
     def datasets_edit_link_list(self, num=None):
         qs = self.datasets(num=num)
-        str = '<ul>'
-        str = str + '<li>'.join([d.link_edit() for d in qs])
-        str = str + '</ul>'
+        str = "<ul>"
+        str = str + "<li>".join([d.link_edit() for d in qs])
+        str = str + "</ul>"
         return str
+
     datasets_edit_link_list.allow_tags = True
 
     def datasets_edit_link_list_top50(self):
         return self.datasets_edit_link_list(num=50)
+
     datasets_edit_link_list_top50.allow_tags = True
 
     def phenotypes(self):
         return Phenotype.objects.filter(dataset__medium=self).distinct()
 
     def link_detail(self):
-        return '<a href="%s">%s</a>' % (reverse("conditions:medium_detail", args=(self.id,)), self)
+        return '<a href="%s">%s</a>' % (
+            reverse("conditions:medium_detail", args=(self.id,)),
+            self,
+        )
+
     link_detail.allow_tags = True
 
     def link_edit(self):
-        return '{<a href="%s">%s</a>}' % (reverse("admin:conditions_medium_change", args=(self.id,)), self)
+        return '{<a href="%s">%s</a>}' % (
+            reverse("admin:conditions_medium_change", args=(self.id,)),
+            self,
+        )
+
     link_edit.allow_tags = True

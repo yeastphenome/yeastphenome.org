@@ -5,7 +5,6 @@ from conditions.models import Medium
 
 
 class Command(BaseCommand):
-
     def handle(self, *args, **options):
 
         all_media = Medium.objects.all()
@@ -13,10 +12,16 @@ class Command(BaseCommand):
         for medium in tqdm(all_media):
 
             # Re-generate the systematic name
-            conditions_list = [(u'%s' % condition) for condition in
-                               medium.conditions.order_by('type__group__order', 'type__chebi_name',
-                                                          'type__pubchem_name', 'type__name').all()]
-            medium.systematic_name = u'%s' % ", ".join(conditions_list)
+            conditions_list = [
+                (u"%s" % condition)
+                for condition in medium.conditions.order_by(
+                    "type__group__order",
+                    "type__chebi_name",
+                    "type__pubchem_name",
+                    "type__name",
+                ).all()
+            ]
+            medium.systematic_name = u"%s" % ", ".join(conditions_list)
 
             medium.display_name = medium.systematic_name
             if medium.common_name:
@@ -24,4 +29,4 @@ class Command(BaseCommand):
 
             medium.save()
 
-        self.stdout.write('Successfully updated %d media.' % all_media.count())
+        self.stdout.write("Successfully updated %d media." % all_media.count())

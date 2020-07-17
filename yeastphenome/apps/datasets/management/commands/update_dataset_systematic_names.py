@@ -6,7 +6,6 @@ from tqdm import tqdm
 
 
 class Command(BaseCommand):
-
     def handle(self, *args, **options):
 
         # super(Command, self).handle(*args, **options)
@@ -17,8 +16,10 @@ class Command(BaseCommand):
 
             try:
                 dataset.save()
-            except IntegrityError as e:
-                self.stdout.write('Dataset %d does not have a unique name.' % dataset.id)
+            except IntegrityError:
+                self.stdout.write(
+                    "Dataset %d does not have a unique name." % dataset.id
+                )
                 pass
 
-        self.stdout.write('Finished.')
+        self.stdout.write("Finished.")
