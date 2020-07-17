@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches_ignore: []
+
+jobs:
+  formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup black environment
+        run: conda create --quiet --name black black pyflakes
+
+      - name: Check formatting with black
+        run: |
+          export PATH="/usr/share/miniconda/bin:$PATH"
+          source activate black
+          black --check yeastphenome
+
+      - name: Check imports with pyflakes
+        run: |
+          export PATH="/usr/share/miniconda/bin:$PATH"
+          source activate black
+          pyflakes yeastphenome
+
+
+  testing:
+    needs: formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup testing environment
+        run: conda create --quiet --name testing pytest
+
+      - name: Test yeastgenome
+        run: |
+          export PATH="/usr/share/miniconda/bin:$PATH"
+          source activate testing
+          pip install -r requirements.txt
+          printf "Testing will be done here!\n"

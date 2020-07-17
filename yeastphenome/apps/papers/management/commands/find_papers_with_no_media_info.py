@@ -1,12 +1,10 @@
 from django.core.management.base import BaseCommand
-from django.db import IntegrityError
-from django.db.models import Count, Q
+from django.db.models import Q
 
 from papers.models import Paper
 
 
 class Command(BaseCommand):
-
     def handle(self, *args, **options):
 
         # super(Command, self).handle(*args, **options)
@@ -17,4 +15,4 @@ class Command(BaseCommand):
         papers_queryset = papers_queryset.filter(f).filter(g).distinct()
 
         for paper in papers_queryset:
-            self.stdout.write('%s' % paper)
+            self.stdout.write("%s" % paper)
