@@ -3,7 +3,7 @@ PyMySQL==0.9.3
 numpy==1.19.0
 PubChemPy==1.0.4
 tqdm==4.11.2
-Django==1.10.5
+Django==1.11.29
 # Django==3.0.8
 Bio==0.1.0
 django_mptt==0.10.0
