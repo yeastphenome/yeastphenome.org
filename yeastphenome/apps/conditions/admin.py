@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django import forms
 from django.http import HttpResponse
 from django.db.models import Min

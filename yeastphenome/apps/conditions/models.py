@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.apps import apps
 from django.db.models import Q
 
@@ -104,7 +104,7 @@ class ConditionType(models.Model):
 
 
 class Condition(models.Model):
-    type = models.ForeignKey(ConditionType)
+    type = models.ForeignKey(ConditionType, on_delete=models.DO_NOTHING)
     dose = models.CharField(max_length=200, null=False, blank=False)
     description = models.TextField(blank=True, null=True)
     modified_on = models.DateField(auto_now=True, null=True)

@@ -8,3 +8,5 @@ urlpatterns = [
     url(r'^media/(?P<pk>\d+)/$', views.MediumDetailView.as_view(), name='medium_detail'),
     url(r'^conditionset/(?P<pk>\d+)/$', views.ConditionSetDetailView.as_view(), name='conditionset_detail'),
 ]
+
+app_name = 'conditions'

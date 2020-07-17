@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db.models import Q, Value, CharField
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -34,7 +34,7 @@ class Paper(models.Model):
     private_notes = models.TextField(blank=True)
     data_abstract = models.TextField(blank=True, null=True)
     modified_on = models.DateField(auto_now=True)
-    user = models.ForeignKey(User, blank=True, null=True)
+    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.DO_NOTHING)
 
     data_statuses = models.ManyToManyField(Status, through='Statusdata', related_name='data_statuses')
     tested_statuses = models.ManyToManyField(Status, through='Statustested', related_name='tested_statuses')
@@ -168,8 +168,8 @@ class Paper(models.Model):
 
 
 class Statusdata(models.Model):
-    paper = models.ForeignKey(Paper)
-    status = models.ForeignKey(Status)
+    paper = models.ForeignKey(Paper, on_delete=models.DO_NOTHING)
+    status = models.ForeignKey(Status, on_delete=models.DO_NOTHING)
     status_date = models.DateField()
 
     class Meta:
@@ -180,8 +180,8 @@ class Statusdata(models.Model):
 
 
 class Statustested(models.Model):
-    paper = models.ForeignKey(Paper)
-    status = models.ForeignKey(Status)
+    paper = models.ForeignKey(Paper, on_delete=models.DO_NOTHING)
+    status = models.ForeignKey(Status, on_delete=models.DO_NOTHING)
     status_date = models.DateField()
 
     class Meta:
@@ -189,5 +189,3 @@ class Statustested(models.Model):
 
     def __str__(self):
         return u'%s' % self.status
-
-

@@ -15,3 +15,5 @@ urlpatterns = [
     url(r'^download/', views.download, name='download'),
     url(r'^tag/(?P<id>\d+)/', views.tag, name='tag'),
 ]
+
+app_name = 'datasets'

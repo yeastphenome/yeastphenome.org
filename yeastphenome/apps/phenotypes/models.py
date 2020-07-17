@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.apps import apps
 from mptt.models import MPTTModel, TreeForeignKey
 from django.db.models import Q
@@ -114,7 +114,7 @@ class Observable2(MPTTModel):
     """Generally the way to fetch phenotypes."""
 
     name = models.CharField(max_length=200)
-    parent = TreeForeignKey('self', null=True, blank=True, related_name='children')
+    parent = TreeForeignKey('self', null=True, blank=True, related_name='children', on_delete=models.CASCADE)
     description = models.TextField(blank=True, null=True)
     definition = models.TextField(blank=True, null=True)
     modified_on = models.DateField(auto_now=True, null=True)
@@ -234,10 +234,10 @@ class Measurement(models.Model):
 class Phenotype(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
-    observable2 = TreeForeignKey(Observable2, blank=True, null=True)
-    observable = models.ForeignKey(Observable, blank=False, null=False)
+    observable2 = TreeForeignKey(Observable2, blank=True, null=True, on_delete=models.DO_NOTHING)
+    observable = models.ForeignKey(Observable, blank=False, null=False, on_delete=models.CASCADE)
     reporter = models.CharField(max_length=200, blank=True, null=True)
-    measurement = models.ForeignKey(Measurement, blank=True, null=True)
+    measurement = models.ForeignKey(Measurement, blank=True, null=True, on_delete=models.DO_NOTHING)
     modified_on = models.DateField(auto_now=True, null=True)
 
     def __str__(self):
