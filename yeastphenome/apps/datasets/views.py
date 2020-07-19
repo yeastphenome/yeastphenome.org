@@ -11,19 +11,31 @@ from yeastphenome.apps.phenotypes.models import Observable2
 
 from libchebipy import ChebiEntity
 
+from ratelimit.mixins import RatelimitMixin
+from ratelimit.decorators import ratelimit
+from yeastphenome.settings import (
+    VIEW_RATE_LIMIT as rl_rate,
+    VIEW_RATE_LIMIT_BLOCK as rl_block,
+)
 
-class DatasetDetailView(generic.DetailView):
+
+class DatasetDetailView(generic.DetailView, RatelimitMixin):
     model = Dataset
     template_name = "datasets/detail.html"
     context_object_name = "dataset"
+    ratelimit_key = "ip"
+    ratelimit_rate = rl_rate
+    ratelimit_block = rl_block
 
 
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def index(request):
 
     context = {}
     return render(request, "datasets/index.html", context)
 
 
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def tag(request, id):
 
     t = get_object_or_404(Tag, pk=id)
@@ -46,6 +58,7 @@ def tag(request, id):
     )
 
 
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def datasets_growth(request):
 
     class_description = (
@@ -75,6 +88,7 @@ def datasets_growth(request):
     )
 
 
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def datasets_human(request):
 
     class_description = (
@@ -101,6 +115,7 @@ def datasets_human(request):
     )
 
 
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download_all(request):
 
     datasets = (
@@ -126,6 +141,7 @@ def download_all(request):
     return response
 
 
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download(request):
 
     file_header = ""
@@ -181,6 +197,7 @@ def download(request):
     return response
 
 
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def data(request, domain, id):
 
     file_header = ""

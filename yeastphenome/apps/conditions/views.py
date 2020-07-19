@@ -15,7 +15,15 @@ from yeastphenome.apps.common.forms import SearchForm
 
 from libchebipy import ChebiEntity
 
+from ratelimit.mixins import RatelimitMixin
+from ratelimit.decorators import ratelimit
+from yeastphenome.settings import (
+    VIEW_RATE_LIMIT as rl_rate,
+    VIEW_RATE_LIMIT_BLOCK as rl_block,
+)
 
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def index(request):
 
     if "q" in request.GET:
@@ -66,9 +74,12 @@ def index(request):
         return render(request, "conditions/index.html", {"form": form,})
 
 
-class ConditiontypeDetailView(generic.DetailView):
+class ConditiontypeDetailView(generic.DetailView, RatelimitMixin):
     model = ConditionType
     template_name = "conditions/detail.html"
+    ratelimit_key = "ip"
+    ratelimit_rate = rl_rate
+    ratelimit_block = rl_block
 
     def get_context_data(self, **kwargs):
         context = super(ConditiontypeDetailView, self).get_context_data(**kwargs)
@@ -79,6 +90,7 @@ class ConditiontypeDetailView(generic.DetailView):
         return context
 
 
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def conditionclass(request, class_id):
     class_entity = ChebiEntity("CHEBI:" + str(class_id))
     class_name = class_entity.get_name()
@@ -110,9 +122,12 @@ def conditionclass(request, class_id):
     )
 
 
-class MediumDetailView(generic.DetailView):
+class MediumDetailView(generic.DetailView, RatelimitMixin):
     model = Medium
     template_name = "conditions/conditionset_medium_detail.html"
+    ratelimit_key = "ip"
+    ratelimit_rate = rl_rate
+    ratelimit_block = rl_block
 
     def get_context_data(self, **kwargs):
         context = super(MediumDetailView, self).get_context_data(**kwargs)
@@ -123,9 +138,12 @@ class MediumDetailView(generic.DetailView):
         return context
 
 
-class ConditionSetDetailView(generic.DetailView):
+class ConditionSetDetailView(generic.DetailView, RatelimitMixin):
     model = ConditionSet
     template_name = "conditions/conditionset_medium_detail.html"
+    ratelimit_key = "ip"
+    ratelimit_rate = rl_rate
+    ratelimit_block = rl_block
 
     def get_context_data(self, **kwargs):
         context = super(ConditionSetDetailView, self).get_context_data(**kwargs)

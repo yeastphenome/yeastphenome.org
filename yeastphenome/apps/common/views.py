@@ -11,6 +11,12 @@ from yeastphenome.apps.conditions.models import ConditionSet, ConditionType
 from yeastphenome.apps.phenotypes.models import Phenotype
 from yeastphenome.apps.datasets.models import Dataset
 
+from ratelimit.decorators import ratelimit
+from yeastphenome.settings import (
+    VIEW_RATE_LIMIT as rl_rate,
+    VIEW_RATE_LIMIT_BLOCK as rl_block,
+)
+
 
 def get_latest_stats():
     """Return number of papers, phenotypes, and datasets to display in the index
@@ -262,6 +268,7 @@ def get_latest_stats():
     return context
 
 
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def index(request):
 
     form = SearchForm()
@@ -272,6 +279,7 @@ def index(request):
     return render(request, "yeastphenome/index.html", context)
 
 
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def about(request):
 
     context = get_latest_stats()
