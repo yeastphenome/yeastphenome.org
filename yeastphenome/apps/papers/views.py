@@ -12,7 +12,15 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 
+from ratelimit.mixins import RatelimitMixin
+from ratelimit.decorators import ratelimit
+from yeastphenome.settings import (
+    VIEW_RATE_LIMIT as rl_rate,
+    VIEW_RATE_LIMIT_BLOCK as rl_block,
+)
 
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def paper_list_view(request):
 
     queryset = Paper.objects.all()
@@ -54,9 +62,12 @@ def paper_list_view(request):
     return render(request, "papers/index.html", {"papers_list": queryset, "q": q,})
 
 
-class PaperDetailView(generic.DetailView):
+class PaperDetailView(generic.DetailView, RatelimitMixin):
     model = Paper
     template_name = "papers/detail.html"
+    ratelimit_key = "ip"
+    ratelimit_rate = rl_rate
+    ratelimit_block = rl_block
 
     def get_context_data(self, **kwargs):
         context = super(PaperDetailView, self).get_context_data(**kwargs)
@@ -144,10 +155,13 @@ class PaperDetailView(generic.DetailView):
         return context
 
 
-class ContributorsListView(generic.ListView):
+class ContributorsListView(generic.ListView, RatelimitMixin):
     model = Paper
     template_name = "papers/contributors.html"
     context_object_name = "papers_list"
+    ratelimit_key = "ip"
+    ratelimit_rate = rl_rate
+    ratelimit_block = rl_block
 
     def get_queryset(self):
         return Paper.objects.filter(
@@ -156,6 +170,7 @@ class ContributorsListView(generic.ListView):
         ).distinct()
 
 
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download_zip(request, paper_id, paper_pmid):
 
     p = get_object_or_404(Paper, pk=paper_id)
@@ -183,6 +198,7 @@ def download_zip(request, paper_id, paper_pmid):
     return response
 
 
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def paper_datasets(request, paper_id):
     p = get_object_or_404(Paper, pk=paper_id)
 
