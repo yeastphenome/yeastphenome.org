@@ -53,7 +53,7 @@ def tag(request, id):
             "tag": t,
             "datasets": datasets,
             "DOWNLOAD_PREFIX": settings.DOWNLOAD_PREFIX,
-            "USER_AUTH": request.user.is_authenticated(),
+            "USER_AUTH": request.user.is_authenticated,
         },
     )
 
@@ -83,7 +83,7 @@ def datasets_growth(request):
             "class_description": class_description,
             "class_name": "Growth in rich or minimal media",
             "DOWNLOAD_PREFIX": settings.DOWNLOAD_PREFIX,
-            "USER_AUTH": request.user.is_authenticated(),
+            "USER_AUTH": request.user.is_authenticated,
         },
     )
 
@@ -110,7 +110,7 @@ def datasets_human(request):
             "class_description": class_description,
             "class_name": "Expression of a human protein",
             "DOWNLOAD_PREFIX": settings.DOWNLOAD_PREFIX,
-            "USER_AUTH": request.user.is_authenticated(),
+            "USER_AUTH": request.user.is_authenticated,
         },
     )
 

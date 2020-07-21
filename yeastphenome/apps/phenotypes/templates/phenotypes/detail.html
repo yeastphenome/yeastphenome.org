@@ -2,13 +2,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    {% include "head.html" with JavaScript='tablesorter' script_popup=1 %}
+    {% include "base/head.html" with JavaScript='tablesorter' script_popup=1 %}
     <title>{{ object|capfirst }} / Phenotypes / {{ SITE_NAME }}</title>
 </head>
 
 <body>
 
-{% include "navbar.html" with active='phenotypes' %}
+{% include "base/navbar.html" with active='phenotypes' %}
 
 <div class="container-fluid">
 
@@ -24,7 +24,7 @@
 
     {% include "datasets/datasets_table.html" with template='phenotype' %}
 
-    {% include "footer.html" %}
+    {% include "base/footer.html" %}
 
 </div>
 
@@ -32,6 +32,6 @@
  $("#papersTable").tablesorter();
 });</script>
 
-{% include "ga.html" %}
+{% include "base/ga.html" %}
 
 </body></html>

@@ -2,12 +2,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    {% include "head.html" with JavaScript='tablesorter' script_popup=1 %}
+    {% include "base/head.html" with JavaScript='tablesorter' script_popup=1 %}
     <title>{{ object }} / Papers / {{ SITE_NAME }}</title>
 </head>
 
 <body>
-{% include "navbar.html" with active='papers' %}
+{% include "base/navbar.html" with active='papers' %}
 <div class="container-fluid">
 
     <div class="row">
@@ -53,7 +53,7 @@
             </table>
             {% endif %}
 
-            <div class="pull-right">{% include "zip.html" %}</div>
+            <div class="pull-right">{% include "papers/zip.html" %}</div>
 
             {% include "datasets/datasets_table.html" with template='paper' %}
 
@@ -74,7 +74,7 @@
                 {% endfor %}
             </div>
 
-            {% include "footer.html" %}
+            {% include "base/footer.html" %}
 
         </div>
     </div>
@@ -84,7 +84,7 @@
     $("#papersTable").tablesorter();
 });</script>
 
-{% include "ga.html" %}
+{% include "base/ga.html" %}
 
 </body>
 </html>

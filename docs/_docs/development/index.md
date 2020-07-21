@@ -116,46 +116,6 @@ You should export your `HELP_CONTACT_EMAIL` in the .env file as follows:
 export HELP_CONTACT_EMAIL=myemail@domain.com
 ```
 
-
-### SendGrid Secrets
-
-We will use SendGrid to possibly send updates or notifications (not developed yet). 
-This is not currently required to add.
-
-#### SendGrid Sender Email
-
-You'll need a `SENDGRID_SENDER_EMAIL` exported in your .env file in order to use
-SendGrid:
-
-```
-export SENDGRID_SENDER_EMAIL=myemail@domain.com
-```
-
-If this is the same as your `HELP_CONTACT_EMAIL` you can leave it blank, and the help
-contact email will be used. **Important** before using the API this email needs to be added as a known [Sender](https://app.sendgrid.com/settings/sender_auth/senders). If it is not, you will get a permission denied error. You
-also likely want to go to Settings -> Tracking and disable link tracking in email.
-
-#### SendGrid Setup
-
-To send emails from the server, we will use SendGrid. This means
-that you need to [sign up](https://app.sendgrid.com/) for an account (the basic account with 100 emails
-per day is free) and then add the `SENDGRID_API_KEY` to your .env file:
-
-```python
-export SENDGRID_API_KEY=xxxxxxxxxxxxxxx
-```
-
-Then to create your key:
-
- 1. Go to [SendGrid](https://app.sendgrid.com/) and click on Settings -> Api keys in the left bar
- 2. Click the blue button to "Create API key"
- 3. Give your key a meaningful name (e.g., freegenes_dev_test)
- 4. Choose "Restricted Access" and give "Full Access" to mail send by clicking the bar on the far right circle.
- 5. Copy it to a safe place, likely your settings/config.py (it is only shown once!)
-
-If the value is found to be None, emails will not be sent.
-
-
 ### Rate Limits
 
 It's hard to believe that anyone would want to maliciously issue requests to your server,
@@ -233,15 +193,7 @@ make migrations
 make migrate
 ```
 
-You might also want to import dummy data for the models, although this is not required.
-
-
-```bash
-# not yet developed
-$ python manage.py import_models
-```
-
-We would typically use the `manage.py` to run the server.
+Then we would typically use the `manage.py` to run the server.
 
 ```bash
 python manage.py runserver
@@ -252,8 +204,159 @@ But there is also a make command that is easier to type:
 ```bash
 make run
 ```
-
 And then you can open up your browser to [http://localhost:8000](http://localhost:8000).
+
+
+### Database Import
+
+#### Legacy Import
+
+The original application used a postgres database, and if you have access to this
+dump you might want to import it into a postgres container and then connect to your
+application. Here is how to do this. First, make sure that you have the dump,
+which should be an .sql file.
+
+```bash
+yeastphenome_db.P.sql 
+```
+
+Note that you might need to decompress this if there is an additional extension like bz2 or .gz.
+The repository has a docker folder where you can use Docker compose to start a postgres container.
+Note that you'll need to create an .env file alongside the docker-compose.yml to have the correct credentials for the import. For example:
+
+```bash
+POSTGRES_USER=pancakes
+POSTGRES_PASSWORD=topsecretstuff
+```
+
+Then bring up the container:
+
+```bash
+$ docker-compose up -d
+Creating docker_postgres_1 ... done
+```
+
+and then shell into the container:
+
+```bash
+$ docker exec -it docker_postgres_1 bash
+```
+
+You can navigate to where you placed the file:
+
+```bash
+cd /docker-entrypoint-initdb.d/
+```
+
+And first create any additional roles that your database has (if you try the import
+and get an error because a role doesn't exist, you'll need to start over and create the roles first).
+
+```bash
+psql -U ${POSTGRES_USER} 
+psql (12.3 (Debian 12.3-1.pgdg100+1))
+Type "help" for help.
+
+pancakes=# CREATE ROLE username1;
+CREATE ROLE
+pancakes=# CREATE ROLE username2;
+CREATE ROLE
+```
+And then issue this command to import:
+
+```bash
+psql -U ${POSTGRES_USER} -f yeastphenome_db.P.sql
+```
+
+Make sure to scroll up to the beginning to ensure that there are no error messages!
+You can then interact with the database to make sure the tables exist.
+
+```bash
+psql -U ${POSTGRES_USER} 
+/dt
+
+                     List of relations
+ Schema |                Name                | Type  | Owner 
+--------+------------------------------------+-------+-------
+ public | auth_group                         | table | pancakes
+ public | auth_group_permissions             | table | pancakes
+ public | auth_permission                    | table | pancakes
+ public | auth_user                          | table | pancakes
+ public | auth_user_groups                   | table | pancakes
+ public | auth_user_user_permissions         | table | pancakes
+ public | conditions_condition               | table | pancakes
+ public | conditions_conditionset            | table | pancakes
+ public | conditions_conditionset_conditions | table | pancakes
+ public | conditions_conditiontype           | table | pancakes
+ public | conditions_conditiontype_tags      | table | pancakes
+ public | conditions_conditiontypegroup      | table | pancakes
+...
+```
+
+Great! Now you can add the database credentials to your settings.py file, which
+is done by way of the environment. Note that for this development database,
+since we are exporting postgres, we need to also change the default engine to that.
+
+```bash
+export DATABASE_HOST=localhost
+export DATABASE_USER=pancakes
+export DATABASE_PASSWORD=topsecretstuff
+export DATABASE_NAME=nameofthedatabase
+export DATABASE_ENGINE=django.db.backends.postgresql
+```
+
+Make sure this is sourced before starting the server. You'll likely get a message about 
+migrations not done yet, in the case that you are importing an older database:
+
+```bash
+$ make run
+python manage.py runserver
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+
+You have 15 unapplied migration(s). Your project may not work properly until you apply the migrations for app(s): admin, auth, conditions, datasets, papers, phenotypes.
+Run 'python manage.py migrate' to apply them.
+
+July 21, 2020 - 18:05:29
+Django version 3.0.8, using settings 'yeastphenome.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+```
+If you get an error that the connection is refused, make sure that the container is running
+and exposing port 5432, and that the same credentials that you used for your
+postgres container are exported via the main .env file.
+
+Note that you might need to use `--fake` for an original set of migrations
+if they haven't been made before after the import:
+
+```bash
+python manage.py makemigrations
+python manage.py migrate --fake
+```
+
+#### Legacy Export
+
+If we want to export just tables, we can do that with django `dumpdata.` This is useful to preserve the models
+for different versions of the database that can more easily be imported into different
+database types (e.g., postgres to mysql). From the root of the application run:
+
+```bash
+mkdir -p backup/legacy/postgres/original
+python manage.py dumpdata conditions --output backup/legacy/postgres/original/conditions.json
+python manage.py dumpdata phenotypes --output backup/legacy/postgres/original/phenotypes.json
+python manage.py dumpdata datasets --output backup/legacy/postgres/original/datasets.json
+python manage.py dumpdata papers --output backup/legacy/postgres/original/papers.json
+```
+
+For example, you might do the above, put somewhere for safekeeping, and then make changes to the
+original database with makemigrations.  You can also dump sql from the database directly:
+
+
+```bash
+$ docker exec -it docker_postgres_1 bash
+pg_dump -U ${POSTGRES_USER} ${POSTGRES_DATABASE} > exportname.pgsql
+```
 
 ### Deployment
 

@@ -1,12 +1,14 @@
 libChEBIpy==1.0.8
-PyMySQL==0.9.3
+pymysql==0.10.0
 numpy==1.19.0
+django-mptt==0.11.0
 PubChemPy==1.0.4
 tqdm==4.11.2
 Django==3.0.8
 Bio==0.1.0
-django_mptt==0.10.0
 django-ratelimit==3.0.0
 django-extensions==3.0.2
 sendgrid==6.4.3
 biopython==1.77
+# just for postgres
+psycopg2-binary==2.8.5
