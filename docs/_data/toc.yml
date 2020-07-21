@@ -12,11 +12,11 @@
       url: "docs/development"
       children:
         - title: Setup
-          url: "docs/getting-started#setup"
+          url: "docs/development#setup"
         - title: Database
-          url: "docs/getting-started#database"
+          url: "docs/development#database"
         - title: Development
-          url: "docs/getting-started#development"
+          url: "docs/development#development"
     - title: "About"
       url: "about"
     - title: "News"
