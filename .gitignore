@@ -1,4 +1,6 @@
 yeastphenome/settings.py
+docker/yeastphenome_db.P.sql
+docker/create_roles.sh
 *.pyc
 *~
 .idea/*

@@ -74,7 +74,7 @@ class PaperDetailView(generic.DetailView, RatelimitMixin):
         obj = context["object"]
 
         context["DOWNLOAD_PREFIX"] = settings.DOWNLOAD_PREFIX
-        context["USER_AUTH"] = self.request.user.is_authenticated()
+        context["USER_AUTH"] = self.request.user.is_authenticated
 
         # Define dataset_set
         dataset_list = (

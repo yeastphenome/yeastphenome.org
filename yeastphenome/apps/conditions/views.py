@@ -41,8 +41,10 @@ def index(request):
             | Q(conditions__type__pubchem_name__icontains=q)
         )
 
+        # We should talk through what this query is trying to do - the original paper_latest.. did not work
         g = Count(
-            "dataset", filter=~Q(paper__latest_data_status__status__name="not relevant")
+            "dataset",
+            filter=~Q(dataset__paper__latest_data_status__status__name="not relevant"),
         )
 
         queryset1 = ConditionSet.objects.all()
@@ -84,7 +86,7 @@ class ConditiontypeDetailView(generic.DetailView, RatelimitMixin):
     def get_context_data(self, **kwargs):
         context = super(ConditiontypeDetailView, self).get_context_data(**kwargs)
         context["DOWNLOAD_PREFIX"] = settings.DOWNLOAD_PREFIX
-        context["USER_AUTH"] = self.request.user.is_authenticated()
+        context["USER_AUTH"] = self.request.user.is_authenticated
         context["papers"] = context["object"].datasets
         context["id"] = context["object"].id
         return context
@@ -117,7 +119,7 @@ def conditionclass(request, class_id):
             "conditiontypes": conditiontypes,
             "papers": datasets,
             "DOWNLOAD_PREFIX": settings.DOWNLOAD_PREFIX,
-            "USER_AUTH": request.user.is_authenticated(),
+            "USER_AUTH": request.user.is_authenticated,
         },
     )
 
@@ -132,7 +134,7 @@ class MediumDetailView(generic.DetailView, RatelimitMixin):
     def get_context_data(self, **kwargs):
         context = super(MediumDetailView, self).get_context_data(**kwargs)
         context["DOWNLOAD_PREFIX"] = settings.DOWNLOAD_PREFIX
-        context["USER_AUTH"] = self.request.user.is_authenticated()
+        context["USER_AUTH"] = self.request.user.is_authenticated
         context["papers"] = context["object"].datasets
         context["id"] = context["object"].id
         return context
@@ -148,7 +150,7 @@ class ConditionSetDetailView(generic.DetailView, RatelimitMixin):
     def get_context_data(self, **kwargs):
         context = super(ConditionSetDetailView, self).get_context_data(**kwargs)
         context["DOWNLOAD_PREFIX"] = settings.DOWNLOAD_PREFIX
-        context["USER_AUTH"] = self.request.user.is_authenticated()
+        context["USER_AUTH"] = self.request.user.is_authenticated
         context["papers"] = context["object"].datasets
         context["id"] = context["object"].id
         return context

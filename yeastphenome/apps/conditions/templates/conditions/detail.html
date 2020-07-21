@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    {% include "head.html" with JavaScript='tablesorter' script_popup=1 %}
+    {% include "base/head.html" with JavaScript='tablesorter' script_popup=1 %}
     <title>{{ object|capfirst }} / Experimental conditions / {{ SITE_NAME }}</title>
 </head>
 
 <body>
 
-{% include "navbar.html" with active='conditions' %}
+{% include "base/navbar.html" with active='conditions' %}
 
 <div class="container-fluid">
 
@@ -59,7 +59,7 @@
 
             {% include "datasets/datasets_table.html" with template='condition' %}
 
-            {% include "footer.html" %}
+            {% include "base/footer.html" %}
 
         </div>
     </div>
@@ -71,7 +71,7 @@
     });
 </script>
 
-{% include "ga.html" %}
+{% include "base/ga.html" %}
 
 </body>
 </html>
