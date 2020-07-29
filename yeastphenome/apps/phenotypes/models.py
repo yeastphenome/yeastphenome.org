@@ -310,6 +310,7 @@ class Phenotype(models.Model):
     observable = models.ForeignKey(
         Observable, blank=False, null=False, on_delete=models.CASCADE
     )
+    # an entity that gives us evidence for an observable
     reporter = models.CharField(max_length=200, blank=True, null=True)
     measurement = models.ForeignKey(
         Measurement, blank=True, null=True, on_delete=models.DO_NOTHING

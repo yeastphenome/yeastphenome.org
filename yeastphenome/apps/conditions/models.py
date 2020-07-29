@@ -19,6 +19,9 @@ class Tag(models.Model):
 
 
 class ConditionType(models.Model):
+    """A ConditionType can be temperature, treatment, etc.
+    """
+
     name = models.CharField(max_length=200)
     other_names = models.TextField(blank=True, null=True)
 

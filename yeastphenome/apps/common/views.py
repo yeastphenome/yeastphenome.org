@@ -1,14 +1,8 @@
-from django.shortcuts import render
-from django.db.models import Q, F, Count, Sum, Case, When
-from django.db import models
-
-import numpy as np
+from django.shortcuts import render, redirect
+from django.contrib import messages
 
 from yeastphenome.apps.common.forms import SearchForm
-
-from yeastphenome.apps.papers.models import Paper
-from yeastphenome.apps.conditions.models import ConditionSet, ConditionType
-from yeastphenome.apps.phenotypes.models import Phenotype
+from yeastphenome.apps.common.utils import get_latest_stats
 from yeastphenome.apps.datasets.models import Dataset
 
 from ratelimit.decorators import ratelimit
@@ -18,254 +12,72 @@ from yeastphenome.settings import (
 )
 
 
-def get_latest_stats():
-    """Return number of papers, phenotypes, and datasets to display in the index
-       view. If no entries are found, display counts of zero.
+# Cart Operations
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def add_to_cart(request, dataset_id, next=None):
+    """Add a dataset to the cart, if it exists.
     """
-    papers_queryset = Paper.objects.all()
-    phenotypes_queryset = Phenotype.objects.all()
-    conditions_queryset = ConditionSet.objects.all()
-    datasets_queryset = Dataset.objects.all()
-
-    # Total number of papers to process
-    f = Q(latest_data_status__status__is_valid=True)
-    papers_nr = papers_queryset.filter(f).count()
-
-    # Latest modified paper
-    updated_on = papers_queryset.latest().modified_on if papers_queryset else None
-
-    # Number of hopeless papers
-    f = Q(latest_data_status__status__name__in=["request abandoned", "not available"])
-    papers_hopeless_nr = papers_queryset.filter(f).count()
-
-    # Number of labs
-    f = Q(latest_data_status__status__name__in=["not relevant"])
-    labs_nr = papers_queryset.exclude(f).values("last_author").distinct().count()
-
-    # Number of papers processed and loaded
-    f = Q(latest_data_status__status__name__exact="loaded") & Q(
-        latest_tested_status__status__name__in=[
-            "loaded",
-            "request abandoned",
-            "not available",
-        ]
-    )
-    papers_queryset = papers_queryset.filter(f)
-    papers_processed_nr = papers_queryset.count()
-
-    # Number of phenotypes
-    f = Q(dataset__paper__in=papers_queryset)
-    phenotypes_nr = phenotypes_queryset.filter(f).distinct().count()
-
-    # Number of conditions
-    f = Q(dataset__paper__in=papers_queryset)
-    conditions_nr = conditions_queryset.filter(f).distinct().count()
-
-    # Number of datasets (total)
-    f = Q(paper__in=papers_queryset)
-    datasets_nr = datasets_queryset.filter(f).distinct().count()
-
-    # --- Conditions ---
-    conditiontypes_qs = ConditionType.objects.all()
-    top_conditiontypes = (
-        conditiontypes_qs.annotate(
-            nr_papers=Count("condition__conditionset__dataset__paper", distinct=True)
+    try:
+        dataset = Dataset.objects.get(id=dataset_id)
+        if "cart" not in request.session:
+            request.session["cart"] = []
+        if dataset.id not in request.session["cart"]:
+            request.session["cart"].append(dataset.id)
+        request.session.modified = True
+        messages.success(
+            request, "Dataset with id %s was added to your download cart." % dataset_id
         )
-        .annotate(
-            nr_datasets=Sum(
-                Case(
-                    When(
-                        condition__conditionset__dataset__data_available__shortname__in=[
-                            "q",
-                            "qofh",
-                            "d",
-                        ],
-                        then=1,
-                    ),
-                    default=0,
-                    output_field=models.IntegerField(),
-                )
-            ),
-            nr_datasets_q=Sum(
-                Case(
-                    When(
-                        condition__conditionset__dataset__data_available__shortname="q",
-                        then=1,
-                    ),
-                    default=0,
-                    output_field=models.IntegerField(),
-                )
-            ),
-            nr_datasets_d=Sum(
-                Case(
-                    When(
-                        condition__conditionset__dataset__data_available__shortname="d",
-                        then=1,
-                    ),
-                    default=0,
-                    output_field=models.IntegerField(),
-                )
-            ),
-            nr_datasets_qofh=Sum(
-                Case(
-                    When(
-                        condition__conditionset__dataset__data_available__shortname="qofh",
-                        then=1,
-                    ),
-                    default=0,
-                    output_field=models.IntegerField(),
-                )
-            ),
+    except:
+        messages.info(request, "Dataset with id %s does not exist" % dataset_id)
+
+    # Return to the same page the user was browsing
+    if next is not None:
+        return redirect(next)
+    return redirect("common:view_cart")
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def remove_from_cart(request, dataset_id, next=None):
+    """Remove a dataset from the cart, if it exists.
+    """
+    dataset_id = int(dataset_id)
+    if "cart" in request.session and dataset_id in request.session["cart"]:
+        request.session["cart"].pop(request.session["cart"].index(dataset_id))
+        request.session.modified = True
+        messages.success(
+            request,
+            "Dataset with id %s was removed from your download cart." % dataset_id,
         )
-        .exclude(name__in=["standard", "time"])
-        .order_by("-nr_papers")
-    )
+    else:
+        messages.info(request, "Dataset with id %s is not in your cart." % dataset_id)
 
-    # top_conditiontypes_q = top_conditiontypes. \
-    #     annotate(nr_datasets_q=Count(condition__conditionset__dataset__paper__data_available__shortname='q'))
+    # Return to the same page the user was browsing
+    if next is not None:
+        return redirect(next)
+    return redirect("common:view_cart")
 
-    # --- Collections ----
-    f = Q(paper__in=papers_queryset)
 
-    c = Q(collection__shortname__in=["hap a"])
-    datasets_nr_hap_a = datasets_queryset.filter(f & c).distinct().count()
-    datasets_prc_hap_a = (
-        int(np.rint(100 * datasets_nr_hap_a / datasets_nr)) if datasets_nr != 0 else 0
-    )
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def clear_cart(request):
+    """remove all datasets from the session cart. We don't add a message because
+       this view is only accessible from the View Cart page, and when it's cleared
+       the user is shown a message that there are no items in the cart.
+    """
+    if "cart" in request.session:
+        del request.session["cart"]
+    return redirect("common:view_cart")
 
-    c = Q(collection__shortname__in=["hap alpha"])
-    datasets_nr_hap_alpha = datasets_queryset.filter(f & c).distinct().count()
-    datasets_prc_hap_alpha = (
-        int(np.rint(100 * datasets_nr_hap_alpha / datasets_nr))
-        if datasets_nr != 0
-        else 0
-    )
 
-    c = Q(collection__shortname__in=["hom"])
-    datasets_nr_hom = datasets_queryset.filter(f & c).distinct().count()
-    datasets_prc_hom = (
-        int(np.rint(100 * datasets_nr_hom / datasets_nr)) if datasets_nr != 0 else 0
-    )
-
-    c = Q(collection__shortname__in=["het"])
-    datasets_nr_het = datasets_queryset.filter(f & c).distinct().count()
-    datasets_prc_het = (
-        int(np.rint(100 * datasets_nr_het / datasets_nr)) if datasets_nr != 0 else 0
-    )
-
-    c = Q(
-        collection__shortname__in=[
-            "hap ?",
-            "hap a/hap alpha/hom",
-            "hap a/hap alpha",
-            "hap a/hom",
-            "hom/het?",
-            "hom/het",
-            "hap a/het",
-            "hap ?/hom/het",
-        ]
-    )
-    datasets_nr_mix = datasets_queryset.filter(f & c).distinct().count()
-    datasets_prc_mix = (
-        int(np.rint(100 * datasets_nr_mix / datasets_nr)) if datasets_nr != 0 else 0
-    )
-
-    datasets_nr_collections_total = (
-        datasets_nr_hap_a
-        + datasets_nr_hap_alpha
-        + datasets_nr_hom
-        + datasets_nr_het
-        + datasets_nr_mix
-    )
-
-    # c = Q(collection__shortname__in=['hap a', 'hap alpha', 'hom', 'het', 'hap ?', 'hap a/hap alpha/hom',
-    #                                  'hap a/hap alpha', 'hap a/hom', 'hom/het?',
-    #                                  'hom/het', 'hap a/het', 'hap ?/hom/het'])
-    # missing = datasets_queryset.filter(f).exclude(c)
-
-    # --- Data types ---
-    f = Q(paper__in=papers_queryset) & Q(data_available__shortname="q")
-    datasets_nr_q = datasets_queryset.filter(f).distinct().count()
-    datasets_prc_q = (
-        int(np.rint(100 * datasets_nr_q / datasets_nr)) if datasets_nr != 0 else 0
-    )
-
-    f = Q(paper__in=papers_queryset) & Q(data_available__shortname="qofh")
-    datasets_nr_qofh = datasets_queryset.filter(f).distinct().count()
-    datasets_prc_qofh = (
-        int(np.rint(100 * datasets_nr_qofh / datasets_nr)) if datasets_nr != 0 else 0
-    )
-
-    f = Q(paper__in=papers_queryset) & Q(data_available__shortname="d")
-    datasets_nr_d = datasets_queryset.filter(f).distinct().count()
-    datasets_prc_d = (
-        int(np.rint(100 * datasets_nr_d / datasets_nr)) if datasets_nr != 0 else 0
-    )
-
-    datasets_nr_data_available_total = datasets_nr_q + datasets_nr_qofh + datasets_nr_d
-
-    # Data recovery for haploid/homozygous diploid
-    f = Q(paper__in=papers_queryset)
-
-    g1 = Q(
-        data_measured__rank__lt=F("data_published__rank")
-    )  # datasets in need of data recovery
-    g2 = Q(
-        data_available__rank__lt=F("data_published__rank")
-    )  # datasets with recovered data
-
-    h1 = Q(tested_list_published=False)  # datasets in need of tested list recovery
-    h2 = Q(tested_list_published=False) & Q(
-        tested_source_id__isnull=False
-    )  # datasets with recovered tested list
-
-    fgh = f & (g2 | h2)  # all datasets with something recovered
-
-    datasets_nr_need_data = datasets_queryset.filter(f & g1).distinct().count()
-    datasets_nr_need_tested = datasets_queryset.filter(f & h1).distinct().count()
-
-    datasets_nr_recovered_all = datasets_queryset.filter(fgh).distinct().count()
-    datasets_nr_recovered_data = datasets_queryset.filter(f & g2).distinct().count()
-    datasets_nr_recovered_tested = datasets_queryset.filter(f & h2).distinct().count()
-
-    # Heterozygous
-
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def view_cart(request):
+    """View all datasets in the cart, and provide a button to download.
+    """
     context = {
-        "papers_nr": papers_nr,
-        "papers_hopeless_nr": papers_hopeless_nr,
-        "labs_nr": labs_nr,
-        "papers_processed_nr": papers_processed_nr,
-        "phenotypes_nr": phenotypes_nr,
-        "conditions_nr": conditions_nr,
-        "datasets_nr": datasets_nr,
-        "datasets_nr_hap_a": datasets_nr_hap_a,
-        "datasets_prc_hap_a": datasets_prc_hap_a,
-        "datasets_nr_hap_alpha": datasets_nr_hap_alpha,
-        "datasets_prc_hap_alpha": datasets_prc_hap_alpha,
-        "datasets_nr_hom": datasets_nr_hom,
-        "datasets_prc_hom": datasets_prc_hom,
-        "datasets_nr_het": datasets_nr_het,
-        "datasets_prc_het": datasets_prc_het,
-        "datasets_nr_mix": datasets_nr_mix,
-        "datasets_prc_mix": datasets_prc_mix,
-        "datasets_nr_collections_total": datasets_nr_collections_total,
-        "datasets_nr_q": datasets_nr_q,
-        "datasets_prc_q": datasets_prc_q,
-        "datasets_nr_qofh": datasets_nr_qofh,
-        "datasets_prc_qofh": datasets_prc_qofh,
-        "datasets_nr_d": datasets_nr_d,
-        "datasets_prc_d": datasets_prc_d,
-        "datasets_nr_data_available_total": datasets_nr_data_available_total,
-        "datasets_nr_need_data": datasets_nr_need_data,
-        "datasets_nr_need_tested": datasets_nr_need_tested,
-        "datasets_nr_recovered_all": datasets_nr_recovered_all,
-        "datasets_nr_recovered_data": datasets_nr_recovered_data,
-        "datasets_nr_recovered_tested": datasets_nr_recovered_tested,
-        "top_conditiontypes": top_conditiontypes[:10],
-        "updated_on": updated_on,
+        "datasets": Dataset.objects.filter(id__in=request.session.get("cart", []))
     }
-
-    return context
+    return render(request, "cart/view_cart.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
