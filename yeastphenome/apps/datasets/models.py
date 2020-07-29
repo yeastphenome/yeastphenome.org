@@ -205,6 +205,9 @@ class Dataset(models.Model):
     def __str__(self):
         return "%s" % self.name
 
+    def get_absolute_url(self):
+        return reverse("datasets:detail", args=[self.id])
+
     # Necessary to run database-wide updates of dataset names
     def save(self, *args, **kwargs):
         self.name = "%s | %s | %s | %s | %s" % (

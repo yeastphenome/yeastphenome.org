@@ -9,7 +9,6 @@ this punny bread:
 
 ## TODO
 
- - move everything over to GitHub org for yeastphenome.
  - add social media links (e.g., Twitter) for site metadata
  - remove observable2 and link in phenotype, mptt import
  - create "Add to cart" functionality for datasets

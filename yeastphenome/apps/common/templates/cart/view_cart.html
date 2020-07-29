@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include "base/head.html" %}
+    <title>{{ SITE_NAME }}</title>
+</head>
+
+<body>
+
+{% include "base/navbar.html" with active="" %}
+{% load humanize %}
+
+<div class="container-fluid">
+
+  {% include "messages/message.html" %}
+
+  <div class="row">
+    <h1>Datasets Download Cart</h1>
+    <div class="col-md-8 mb-4">
+        {% if datasets %}
+	<form action="{% url 'datasets:download' %}" method="GET" class="card-body">
+        <table id="papersTable" class="tablesorter table table-condensed table-hover" width="100%">
+        <thead>
+        <th>Paper</th>
+        <th>Phenotype</th>
+        <th>Condition</th>
+        <th>Medium</th>
+        <th>Collection</th>
+        <th>Tested mutants</th>
+        <th>Data</th>
+        <th>Details</th>
+        </thead>
+
+        <tbody>
+        {% for dataset in datasets %}<tr>
+            <input id="{{ dataset.id }}" type="hidden" name="{{ dataset.id }}">
+            <td class="col-md-2"><a href="{% url 'papers:detail' dataset.paper.id %}">{{ dataset.paper }}</a></td>
+            <td class="col-md-2">{{ dataset.phenotype.observable2.name }} {% if dataset.phenotype.reporter %} ({{ dataset.phenotype.reporter }}) {% endif %}</td>
+            <td class="col-md-1">{{ dataset.conditionset.display_name }}</td>
+            <td class="col-md-2">{{ dataset.medium.display_name }}</td>
+            <td class="col-md-1">{{ dataset.collection.shortname }}</td>
+
+            <td class="col-md-1">
+                {{ dataset.tested_space|safe }}
+            </td>
+
+            <td class="col-md-1">
+                {% if dataset.has_data_in_db %}
+                <span class="text-success available">{{ dataset.data_available|capfirst }}</span>
+                {% else %}
+                <span class="text-muted">{{ dataset.data_available|capfirst }}</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{% url 'common:remove_from_cart' dataset.id "common:view_cart" %}"><button type="button" class="btn btn-danger btn-sm" style="width:100px">Remove</button></a>
+            </td>
+        </tr>{% endfor %}
+        </tbody>
+    </table>
+
+        <hr class="mb-4">
+        <button class="btn btn-primary btn-lg btn-block" type="submit">Download</button>
+        </form>
+        {% else %}
+          <p class="alert alert-info">You have no datasets in your cart. Why don't you <a href="{% url 'datasets:index' %}">browse to add some?</a></p>
+        {% endif %}
+    </div>
+     <div class="col-md-4 mb-4">
+
+    <div class="col-md-12 mb-4">
+    <h4 class="d-flex justify-content-between align-items-center mb-3">
+      <span class="text-muted">Download Metrics</span>
+      <span class="badge badge-secondary badge-pill">{{ datasets | length }}</span>
+    </h4>
+
+    <ul class="list-group mb-3 z-depth-1">
+    <li class="list-group-item d-flex justify-content-between lh-condensed">
+        <div>
+        <h6 class="my-0">1 x Metric 1</h6>
+        <small class="text-muted">This metric is this cool thing.</small>
+        </div>
+    </li>
+    <li class="list-group-item d-flex justify-content-between">
+        <span>Total Datasets</span>
+        <strong>{{ datasets | length }}</strong>
+    </li>
+    </ul>
+    <a href="{% url 'common:clear_cart' %}"><button class="btn btn-danger btn-lg">Clear Cart</button></a>
+
+    </div>
+   </div>
+
+    </div>
+  </main>
+
+    {% include "base/footer.html" %}
+
+<script>
+
+$("form").submit(function( event ) {
+
+  console.log("Form submit for dataset download")
+  var url = "#";
+
+  fetch(url).then(res => res.json())
+  .then(function(response) {
+    var response = JSON.stringify(response) 
+    console.log('Success:', response)
+
+    // On an error (order already submit, wrong user) don't send form
+    if (response['message'] == "error"){
+       event.preventDefault();
+    }
+  })
+  .catch(function(response) {
+     var response = JSON.stringify(response);
+     console.log("Error", response)
+     event.preventDefault();
+  })
+});
+
+
+</script>
+
+</div>
+
+{% include "base/ga.html" %}
+
+</body>
+
+</html>
