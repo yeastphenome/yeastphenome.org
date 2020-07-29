@@ -9,8 +9,9 @@ this punny bread:
 
 ## TODO
 
- - consider non-punny, actual logo for the site (likely will come with branding descisions)
- - django ratelimit to download views that might be malicious
- - add black formatting, and test for it, possibly pyflakes
+ - move everything over to GitHub org for yeastphenome.
  - add social media links (e.g., Twitter) for site metadata
+ - remove observable2 and link in phenotype, mptt import
+ - create "Add to cart" functionality for datasets
+ - start working on tutorials
 

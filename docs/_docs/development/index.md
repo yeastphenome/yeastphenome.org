@@ -32,7 +32,7 @@ $ gcloud config set project <myproject>
 Then to work locally (if you are developing) you'll want to clone the project:
 
 ```bash
-git clone https://github.com/vsoch/yeastgenome.org
+git clone https://github.com/yeastgenome/yeastgenome.org
 cd yeastgenome.org
 ```
 
