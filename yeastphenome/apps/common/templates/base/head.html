@@ -12,7 +12,6 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 
 {% if JavaScript %}
-
 {% if 'tablesorter' in JavaScript %}
     <script src="{% static 'jquery.tablesorter.min.js' %}"></script>
     <link rel="stylesheet" href="{% static 'tablesorter.css' %}">
@@ -28,15 +27,12 @@
     <link rel="stylesheet" href="{% static 'd3/'|add:d3|add:'.css' %}">
     <script src="{% static 'd3/'|add:d3|add:'.js' %}"></script>
 {% endif %}
-
 {% endif %}
 
 {% if script_popup %}
-
 <script>
     function popup(url){
         window.open(url,'_blank','width=500,height=500,toolbar=0,menubar=0,location=1,status=1,scrollbars=1,resizable=1,left=0,top=0')
     }
 </script>
-
 {% endif %}

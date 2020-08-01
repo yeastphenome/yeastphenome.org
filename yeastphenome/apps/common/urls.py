@@ -13,6 +13,8 @@ urlpatterns = [
         name="remove_from_cart",
     ),
     path("cart/clear/", views.clear_cart, name="clear_cart"),
+    # Development templates
+    path("dev/depmap/", views.depmap_inspired, name="depmap_inspired"),
 ]
 
 app_name = "common"

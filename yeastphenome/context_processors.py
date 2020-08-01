@@ -6,6 +6,10 @@ def globals(request):
     """Returns a dict of defaults to be used by templates, if configured
     correcty in the settings.py file."""
     return {
+        "DOMAIN": settings.DOMAIN_NAME,
+        "TWITTER_USERNAME": settings.TWITTER_USERNAME,
+        "GITHUB_REPOSITORY": settings.GITHUB_REPOSITORY,
+        "GITHUB_DOCUMENTATION": settings.GITHUB_DOCUMENTATION,
         "HELP_CONTACT_EMAIL": settings.HELP_CONTACT_EMAIL,
         "SITE_NAME": get_current_site(request).name,
         "GOOGLE_ANALYTICS_ID": settings.GOOGLE_ANALYTICS_ID,
