@@ -28,7 +28,7 @@
   <div class="container">
     <!-- Brand and toggle get grouped for better mobile display -->
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#depmap-portal-global-navbar" aria-expanded="false">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#global-navbar" aria-expanded="false">
         <span class="sr-only">Toggle navigation</span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -36,10 +36,10 @@
       </button>
       <a class="navbar-brand" href="{% url 'common:index' %}">
     <picture>
-        <source srcset="{% static 'dev/img/logo-temporary.png' %}" media="(max-width: 360px)">
+        <source srcset="{% static 'images/logo-temporary.png' %}" media="(max-width: 360px)">
         <img id="navbar_logo"
-                alt="DepMap"
-                src="{% static 'dev/img/logo-temporary.png' %}"
+                alt="YeastPhenome.org"
+                src="{% static 'images/logo-temporary.png' %}"
         />
     </picture><span style="color:white; font-weight:600">yeastphenome.org</span>
       </a>
@@ -47,7 +47,7 @@
     </div>
 
     <!-- Navigation -->
-    <div class="collapse navbar-collapse" id="depmap-portal-global-navbar">
+    <div class="collapse navbar-collapse" id="global-navbar">
       <ul class="nav navbar-nav navbar-right">
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Getting Started <i class="fas fa-caret-down" aria-hidden="true"></i></a>
@@ -63,7 +63,7 @@
           <ul class="dropdown-menu dropdown-menu-left">
             <li><a href="#">Browse</a></li>
               <li><a href="#">Download</a></li>            
-              <li><a href="/portal/funders/">Search</a></li>
+              <li><a href="#">Search</a></li>
           </ul>
         {% if HELP_CONTACT_EMAIL %}<li class="visible-xs-block"><a href="mailto:{{ HELP_CONTACT_EMAIL }}"><i class="fas fa-envelope-open"></i> {{ HELP_CONTACT_EMAIL }}</a></li>{% endif %}
         {% if TWITTER_USERNAME %}<li class="visible-xs-block"><a href="https://twitter.com/{{ TWITTER_USERNAME }}" target="_blank" rel="noopener"><i class="fab fa-twitter"></i> @{{ TWITTER_USERNAME }}</a></li>{% endif %}
@@ -82,13 +82,9 @@
                </a>
             </li>        
       </ul>
-    </div><!-- /.navbar-collapse -->
-  </div><!-- /.container-fluid -->
+    </div>
+  </div>
 </nav>
-<div class="alert-banner" id="alert-banner">
-    
-</div>
-<div class="alert-banner" id="read-more"></div>
 
 <script>
 // show dropdown on hover
@@ -102,41 +98,5 @@ $(document).ready(function(){
         }
 
     });
-
-});     
-
-    $(function () { // document ready for middle-of-html js
-        let banner = document.getElementById("alert-banner");
-        let readMore = document.getElementById("read-more");
-        readMore.addEventListener('click', toggleBanner);
-
-        let collapsedText = "(<u>Read More</u>)";
-        let expandedText = "(<u>Show Less</u>)";
-
-        let collapsedHeight = banner.clientHeight;
-        let contentHeight = banner.scrollHeight;
-        let divHeight = banner.clientHeight;
-
-        let collapsed = true;
-        if (contentHeight > divHeight) {
-            console.log("Truncation has happened");
-            readMore.innerHTML = collapsedText;
-        }
-
-        function toggleBanner() {
-            if (collapsed) {
-                banner.style.maxHeight = contentHeight + "px";
-                readMore.innerHTML = expandedText;
-                collapsed = false;
-            }
-            else {
-                banner.style.maxHeight = collapsedHeight + "px";
-                readMore.innerHTML = collapsedText;
-                collapsed = true;
-            }
-
-        }
-    });
+});
 </script>
-
-

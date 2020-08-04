@@ -1,23 +1,12 @@
+{% extends "base/wide.html" %}
 {% load my_filters %}
 {% load humanize %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    {% include "base/head.html" with JavaScript='tablesorter' script_popup=1 %}
-    <title>{{ object }} / Datasets / Papers / {{ SITE_NAME }}</title>
-</head>
-
-<body>
-{% include "base/navbar.html" with active='papers' %}
-<div class="container-fluid">
-
-    <div class="row">
-
-        <div class="col-xs-12">
-
-            <h1>Dataset #{{ dataset.id }}</h1>
-
-            <table class="table">
+{% block title %}{{ object }} / Datasets / Papers / {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-xs-12">
+        <h1>Dataset #{{ dataset.id }}</h1>
+            <table class="table" id="datasetTable">
                 <tr>
                     <th width="20%" scope="row" class="first">Name</th>
                     <td class="first">{{ dataset }}</td>
@@ -69,20 +58,14 @@
                     <td>{{ dataset.tags_link_list|safe }}</td>
                 </tr>
             </table>
-
             <a class="btn btn-success" role="button" href="/datasets/download/?{{ dataset.id }}=on">Download</a>
-
-            {% include "base/footer.html" %}
-
-        </div>
     </div>
 </div>
-
+{% endblock %}
+{% block scripts %}
+{% include "scripts/tablesorter.html" %}
+{% include "scripts/script_popup.html" %}
 <script>$(document).ready(function(){
-    $("#papersTable").tablesorter();
+    $("#datasetTable").tablesorter();
 });</script>
-
-{% include "base/ga.html" %}
-
-</body>
-</html>
+{% endblock %}

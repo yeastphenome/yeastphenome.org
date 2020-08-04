@@ -1,25 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    {% include "base/head.html" with JavaScript='tablesorter' script_popup=1 %}
-    <title>{{ object|capfirst }} / Experimental conditions / {{ SITE_NAME }}</title>
-</head>
-
-<body>
-
-{% include "base/navbar.html" with active='conditions' %}
-
-<div class="container-fluid">
-
-    <div class="row">
-
-        <div class="col-xs-12">
-
-            <h1>{{ object }}</h1>
-
-
+{% extends "base/wide.html" %}
+{% block title %}{{ object|capfirst }} / Experimental conditions / {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1>{{ object }}</h1>
             <table class="table">
-
                 <tr>
                     <th width="20%" scope="row" class="first">ChEBI name</th>
                     <td class="first">{{ object.chebi_name }}
@@ -47,31 +32,21 @@
                         {{ object.name }}{% if object.other_names %}, {{ object.other_names }}{% endif %}
                     </td>
                 </tr>
-
-                {% if object.definition %}
-                <tr>
+                {% if object.definition %}<tr>
                     <th width="20%" scope="row">Description</th>
                     <td>{{ object.definition }}</td>
-                </tr>
-                {% endif %}
-
+                </tr>{% endif %}
             </table>
-
             {% include "datasets/datasets_table.html" with template='condition' %}
-
-            {% include "base/footer.html" %}
-
-        </div>
     </div>
 </div>
-
+{% endblock %}
+{% block scripts %}
+{% include "scripts/tablesorter.html" %}
+{% include "scripts/script_popup.html" %}
 <script>
     $(document).ready(function(){
         $("#papersTable").tablesorter();
     });
 </script>
-
-{% include "base/ga.html" %}
-
-</body>
-</html>
+{% endblock %}

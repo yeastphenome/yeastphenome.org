@@ -1,23 +1,12 @@
+{% extends "base/wide.html" %}
 {% load my_filters %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    {% include "base/head.html" with JavaScript='tablesorter' %}
-    <title>Papers / {{ SITE_NAME }}</title>
-</head>
-
-<body>
-
-{% include "base/navbar.html" with active='papers' %}
-
-<div class="container-fluid">
-
+{% block title %}Papers / {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
     <h1>Papers</h1>
-
     {% if papers_list %}
-
     <table id="papersTable" class="tablesorter table table-striped" width="100%">
-
         <thead>
         <tr>
             <th class="text-nowrap" width="30%">FirstAuthor~LastAuthor, Year</th>
@@ -38,25 +27,14 @@
 
         </tbody>
     </table>
-
-    {% else %}
-
-    <aside class="bg-warning">No papers are available.</aside>
-
-    {% endif %}
-
-    {% include "base/footer.html" %}
-
+    {% else %}<aside class="bg-warning">No papers are available.</aside>{% endif %}
+    </div>
 </div>
-
-<script>
-    $(document).ready(function(){
-        $("#papersTable").tablesorter();
-    });
+{% endblock %}
+{% block scripts %}
+{% include "scripts/tablesorter.html" %}
+<script>$(document).ready(function(){
+    $("#papersTable").tablesorter();
+});
 </script>
-
-{% include "base/ga.html" %}
-
-
-</body>
-</html>
+{% endblock %}

@@ -18,3 +18,13 @@ def join_and_more(qs, number_obj_to_show):
             + str(number_obj_remaining)
             + " more)"
         )
+
+
+@register.filter()
+def range(min=5):
+    return range(min)
+
+
+@register.filter
+def index(indexable, i):
+    return indexable[i]

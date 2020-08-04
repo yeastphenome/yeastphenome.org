@@ -1,18 +1,10 @@
+{% extends "base/wide.html" %}
 {% load my_filters %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    {% include "base/head.html" with JavaScript='tablesorter' %}
-    <title>Experimental conditions / {{ SITE_NAME }}</title>
-</head>
-
-<body>
-{% include "base/navbar.html" with active='conditions' %}
-
-<div class="container-fluid">
-
+{% block title %}Experimental Conditions / {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
     <h1>Experimental conditions</h1>
-
     <div class="well">
     <form class="form-horizontal" action="/conditions/" method="GET">
         <div class="form-group">
@@ -26,9 +18,7 @@
         </div>
     </form>
     </div>
-
-    {% if q and queryset %}
-    <table id="papersTable" class="tablesorter table table-striped" width="100%">
+    {% if q and queryset %}<table id="papersTable" class="tablesorter table table-striped" width="100%">
         <thead>
         <tr>
             <th width="25%">Name</th>
@@ -37,27 +27,20 @@
         </tr>
         </thead>
         <tbody>
-        {% for qs in queryset %}
-        <tr>
+        {% for qs in queryset %}<tr>
             <td>{{ qs.link_detail|safe }}</td>
             <td>{{ qs.phenotypes|join_and_more:7 }}</td>
             <td>{{ qs.papers|join_and_more:7 }}</td>
-        </tr>
-        {% endfor %}
+        </tr>{% endfor %}
         </tbody>
     </table>
-    {% elif q %}
-    <aside class="bg-warning">No conditions match these search criteria.</aside>
-    {% endif %}
-
-    {% include "base/footer.html" %}
-
+    {% elif q %}<aside class="bg-warning">No conditions match these search criteria.</aside>{% endif %}
+    </div>
 </div>
-
+{% endblock %}
+{% block scripts %}
+{% include "scripts/tablesorter.html" %}
 <script>$(document).ready(function(){
  $("#papersTable").tablesorter();
 });</script>
-
-{% include "base/ga.html" %}
-
-</body></html>
+{% endblock %}

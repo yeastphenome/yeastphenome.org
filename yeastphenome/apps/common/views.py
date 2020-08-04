@@ -12,17 +12,6 @@ from yeastphenome.settings import (
 )
 
 
-# Templates testing
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def depmap_inspired(request):
-    """Depmap inspired template
-    """
-    context = get_latest_stats()
-    return render(request, "dev/index.html", context)
-
-
 # Cart Operations
 
 
@@ -97,8 +86,7 @@ def index(request):
     form = SearchForm()
     context = get_latest_stats()
     context["form"] = form
-
-    return render(request, "yeastphenome/index.html", context)
+    return render(request, "base/index.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
@@ -106,4 +94,4 @@ def about(request):
 
     context = get_latest_stats()
 
-    return render(request, "yeastphenome/about.html", context)
+    return render(request, "main/about.html", context)

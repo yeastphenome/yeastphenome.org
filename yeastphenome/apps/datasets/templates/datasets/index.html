@@ -1,32 +1,15 @@
+{% extends "base/base.html" %}
 {% load my_filters %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    {% include "base/head.html" with JavaScript='tablesorter' %}
-    <title>Datasets / {{ SITE_NAME }}</title>
-</head>
-
-<body>
-{% include "base/navbar.html" with active='datasets' %}
-
-<div class="container-fluid">
-
-    <h1>Datasets</h1>
-
-    <h3>List of datasets of particular interest</h3>
-    <ul>
-        <li><a href="/datasets/class/growth/">Growth in rich or minimal media</a></li>
-        <li><a href="/datasets/class/human/">Expression of a human protein</a></li>
-    </ul>
-
-    {% include "base/footer.html" %}
-
+{% block title %}Datasets / {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1>Datasets</h1>
+        <h3>List of datasets of particular interest</h3>
+        <ul>
+            <li><a href="{% url 'datasets:growth' %}">Growth in rich or minimal media</a></li>
+            <li><a href="{% url 'datasets:human' %}">Expression of a human protein</a></li>
+        </ul>
+    </div>
 </div>
-
-<script>$(document).ready(function(){
- $("#papersTable").tablesorter();
-});</script>
-
-{% include "base/ga.html" %}
-
-</body></html>
+{% endblock %}

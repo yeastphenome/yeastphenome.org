@@ -59,7 +59,11 @@ def paper_list_view(request):
 
     queryset = queryset.distinct().order_by("pmid")
 
-    return render(request, "papers/index.html", {"papers_list": queryset, "q": q,})
+    context = {
+        "papers_list": queryset,
+        "q": q,
+    }
+    return render(request, "papers/index.html", context)
 
 
 class PaperDetailView(generic.DetailView, RatelimitMixin):

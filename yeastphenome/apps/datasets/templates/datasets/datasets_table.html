@@ -10,8 +10,6 @@
     </p>
 </div>
 
-{% include "messages/message.html" %}
-
 {% if datasets %}{% if template == 'paper' %}
 <a href="/{{ template }}s/{{ object.id }}/{{ DOWNLOAD_PREFIX }}_{{ object.pmid }}_datasets_list.txt">Download the list of datasets</a>
 {% endif %}

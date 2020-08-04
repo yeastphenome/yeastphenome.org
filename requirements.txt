@@ -5,7 +5,7 @@ django-mptt==0.11.0
 PubChemPy==1.0.4
 tqdm==4.11.2
 Django==3.0.8
-Bio==0.1.0
+Bio
 django-ratelimit==3.0.0
 django-extensions==3.0.2
 sendgrid==6.4.3

@@ -18,19 +18,18 @@
 
         <!-- Facebook and Twitter integration -->
         <meta property="og:title" content="YeastPhenome.org"/>
-        <meta property="og:image" content="{% static 'img/logo/logo.png' %}"/>
+        <meta property="og:image" content="{% static 'images/logo-temporary.png' %}"/>
         <meta property="og:url" content="{{ DOMAIN }}"/>
         <meta property="og:site_name" content="YeastPhenome.org"/>
 
         <meta property="og:description" content="YeastPhenome.org"/>
         <meta name="twitter:title" content="YeastPhenome.org" />
-        <meta name="twitter:image" content="{% static 'dev/img/logo-temporary.png' %}" />
+        <meta name="twitter:image" content="{% static 'images/logo-temporary.png' %}" />
         {% if TWITTER_USERNAME %}<meta name="twitter:url" content="https://www.twitter.com/{{ TWITTER_USERNAME }}" />{% endif %}
         <meta name="twitter:card" content="summary" />
 
         {% include "base/ga.html" %}
 
-        <!--todo add these templates-->
         <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:100,300,400,700,900" type="text/css">    
         <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Barlow+Condensed" type="text/css">
         <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.0.13/css/all.css" type="text/css">    
@@ -38,15 +37,13 @@
         <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/dataTables.bootstrap.min.css" type="text/css">
         <link rel="stylesheet" href="//cdn.datatables.net/select/1.2.5/css/select.bootstrap.min.css" type="text/css">
         <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.4/css/selectize.bootstrap3.min.css" type="text/css">
-        <link rel="stylesheet" href="{% static 'dev/depmap.css' %}">
-        <link rel="stylesheet" href="{% static 'dev/depmap-public.css' %}">
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <link rel="stylesheet" href="{% static 'css/public.css' %}">
         <script src="//code.jquery.com/jquery-3.3.1.min.js" type="text/javascript"></script>    
         <script src="//cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.4/js/standalone/selectize.min.js" type="text/javascript"></script>
 
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
         {% block fonts %}{% endblock %}
-
-        <link rel="stylesheet" href="{% static 'dev/depmap.css' %}" type="text/css">
         {% block css %}{% endblock %}
         {% block head %}{% endblock %}
     </head>
@@ -54,15 +51,17 @@
     {% block body %}
     <body>
     <div id="wrap">        
-        <link rel="stylesheet" href="{% static 'dev/depmap-nav.css' %}">
-        <link rel="stylesheet" href="{% static 'dev/depmap-cell-line-selector.css' %}">
-        
-    {% include "dev/navigation.html" %}
-    <div class="container">
+    <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
+    
+    {% include "base/navigation.html" %}
+    {% block container %}<div {% if wide %}class="container-wide" style="padding:80px 200px 200px 200px;" {% else %}class="container" style="padding-top:80px; padding-bottom:200px"{% endif %}>{% endblock %}
+    {% include "messages/message.html" %}
     {% block content %}{% endblock %}
     </div>
-    {% include "dev/footer.html" %}
+    {% include "base/footer.html" %}
 
     </body>
     {% endblock %}
+    {% block scripts %}{% endblock %}
+
 </html>
