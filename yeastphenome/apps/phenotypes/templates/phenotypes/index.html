@@ -1,47 +1,31 @@
+{% extends "base/base.html" %}
 {% load my_filters %}
-<!DOCTYPE html>
-<html lang="en"><head>
-    {% include "base/head.html" with JavaScript='tablesorter' %}
-    <title>Phenotypes / {{ SITE_NAME }}</title>
-</head>
-
-<body>
-
-{% include "base/navbar.html" with active='phenotypes' %}
-
-<div class="container-fluid">
-
-    <h1>Phenotypes</h1>
-
-    {% if observables %}<table id="papersTable" class="tablesorter table table-condensed" width="100%">
-
-        <thead>
-        <tr>
-            <th>Name</th>
-            <th>Conditions</th>
-            <th>Papers</th>
-        </tr>
-        </thead><tbody>
-    {% for observable in observables %}
-    <tr>
-        <td class="col-md-4">{{ observable.link_detail|safe }}</td>
-        <td class="col-md-4">{{ observable.conditiontypes|join_and_more:7|safe }}</td>
-        <td class="col-md-4">{{ observable.papers|join_and_more:7|safe }}</td>
-    </tr>
-    {% endfor %}
-    </tbody>
-    </table>{% else %}
-    <p class="alert alert-info">There are no phenotypes in the database.</p>
-    {% endif %}
-
-    {% include "base/footer.html" %}
-
+{% block title %}Phenotypes / {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1>Phenotypes</h1>
+        {% if observables %}<table id="papersTable" class="tablesorter table table-condensed" width="100%">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Conditions</th>
+                <th>Papers</th>
+            </tr>
+            </thead><tbody>
+        {% for observable in observables %}<tr>
+            <td class="col-md-4">{{ observable.link_detail|safe }}</td>
+            <td class="col-md-4">{{ observable.conditiontypes|join_and_more:7|safe }}</td>
+            <td class="col-md-4">{{ observable.papers|join_and_more:7|safe }}</td>
+        </tr>{% endfor %}
+        </tbody>
+        </table>{% else %}<p class="alert alert-info">There are no phenotypes in the database.</p>{% endif %}
+    </div>
 </div>
-
+{% endblock %}
+{% block scripts %}
+{% include "scripts/tablesorter.html" %}
 <script>$(document).ready(function(){
  $("#papersTable").tablesorter();
 });</script>
-
-{% include "base/ga.html" %}
-
-</body></html>
+{% endblock %}

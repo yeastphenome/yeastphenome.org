@@ -12,9 +12,9 @@ The documentation here will get you started to use the YeastPhenome interface, d
 with Python and Django.  We will likely populate these pages when there is work done on the user
 interface.
 
+ - [Why Yeast?](background/)
  - [User Interface](interface/)
  - [Admin Interface](admin/)
-
-**under development**
+ - [Tutorials]({{ site.baseurl }}/docs/tutorials)
 
 

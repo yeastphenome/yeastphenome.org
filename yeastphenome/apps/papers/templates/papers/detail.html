@@ -1,90 +1,68 @@
+{% extends "base/wide.html" %}
 {% load my_filters %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    {% include "base/head.html" with JavaScript='tablesorter' script_popup=1 %}
-    <title>{{ object }} / Papers / {{ SITE_NAME }}</title>
-</head>
+{% block title %}{{ object }} / Papers / {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-xs-12">
 
-<body>
-{% include "base/navbar.html" with active='papers' %}
-<div class="container-fluid">
+        <h1>{{ object }}</h1>
 
-    <div class="row">
-
-        <div class="col-xs-12">
-
-            <h1>{{ object }}</h1>
-
-            {% if object.pmid != 0 %}
-            <table class="table">
-                <tr>
-                    <th width="20%" scope="row" class="first">Pubmed ID</th>
-                    <td class="first"><a class="external" href="https://www.ncbi.nlm.nih.gov/pubmed/{{ object.pmid }}/">{{ object.pmid }}</a></td>
-                </tr>
-                <tr>
-                    <th scope="row">Title</th>
-                    <td>{{ title }}</td>
-                </tr>
-                <tr>
-                    <th scope="row">Authors</th>
-                    <td>{{ authors|join_and_more:1000 }}</td>
-                </tr>
-                <tr>
-                    <th scope="row">Abstract</th>
-                    <td>{{ abstract }}</td>
-                </tr>
-                <tr>
-                    <th scope="row">Citation</th>
-                    <td>{{ citation }}</td>
-                </tr>
-                {% if object.data_abstract %}
-                <tr>
-                    <th scope="row">Data abstract</th>
-                    <td>{{ object.data_abstract }}</td>
-                </tr>
-                {% endif %}
-                {% if object.notes %}
-                <tr>
-                    <th scope="row">Notes</th>
-                    <td>{{ object.notes }}</td>
-                </tr>
-                {% endif %}
-            </table>
+        {% if object.pmid != 0 %}
+        <table class="table" id="papersTable">
+            <tr>
+                <th width="20%" scope="row" class="first">Pubmed ID</th>
+                <td class="first"><a class="external" href="https://www.ncbi.nlm.nih.gov/pubmed/{{ object.pmid }}/">{{ object.pmid }}</a></td>
+            </tr>
+            <tr>
+                <th scope="row">Title</th>
+                <td>{{ title }}</td>
+            </tr>
+            <tr>
+                <th scope="row">Authors</th>
+                <td>{{ authors|join_and_more:1000 }}</td>
+            </tr>
+            <tr>
+                <th scope="row">Abstract</th>
+                <td>{{ abstract }}</td>
+            </tr>
+            <tr>
+                <th scope="row">Citation</th>
+                <td>{{ citation }}</td>
+            </tr>
+            {% if object.data_abstract %}
+            <tr>
+                <th scope="row">Data abstract</th>
+                <td>{{ object.data_abstract }}</td>
+            </tr>
             {% endif %}
+            {% if object.notes %}<tr>
+                <th scope="row">Notes</th>
+                <td>{{ object.notes }}</td>
+            </tr>{% endif %}
+        </table>{% endif %}
 
-            <div class="pull-right">{% include "papers/zip.html" %}</div>
-
-            {% include "datasets/datasets_table.html" with template='paper' %}
-
-            <h3>Curation history</h3>
-            <div class="row">
-                {% for k, v in paper.history.items %}
-                <div class="col-xs-4">
-                    <table class="table table-condensed table-no-border">
-                        <caption><h4>{{ k|capfirst }}</h4></caption>
-                        {% for x in v %}
-                        <tr>
-                            <td>{{ x.status_date }}</td>
-                            <td>{{ x.status.name|capfirst }}.</td>
-                        </tr>
-                        {% endfor %}
-                    </table>
-                </div>
-                {% endfor %}
-            </div>
-
-            {% include "base/footer.html" %}
-
+        <div class="pull-right">{% include "papers/zip.html" %}</div>
+        {% include "datasets/datasets_table.html" with template='paper' %}
+        <h3>Curation history</h3>
+        <div class="row">
+            {% for k, v in paper.history.items %}
+            <div class="col-xs-4">
+                <table class="table table-condensed table-no-border">
+                    <caption><h4>{{ k|capfirst }}</h4></caption>
+                    {% for x in v %}<tr>
+                        <td>{{ x.status_date }}</td>
+                        <td>{{ x.status.name|capfirst }}.</td>
+                    </tr>{% endfor %}
+                </table>
+            </div>{% endfor %}
         </div>
     </div>
 </div>
-
+{% endblock %}
+{% block scripts %}
+{% include "scripts/tablesorter.html" %}
+{% include "scripts/script_popup.html" %}
 <script>$(document).ready(function(){
     $("#papersTable").tablesorter();
 });</script>
-
-{% include "base/ga.html" %}
-
-</body>
-</html>
+{% endblock %}

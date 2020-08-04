@@ -1,17 +1,9 @@
+{% extends "base/wide.html" %}
 {% load static %}{% load string_multiply %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    {% include "base/head.html" with JavaScript='tablesorter' script_popup=1 %}
-    <title>{{ object|capfirst }} / Phenotypes / {{ SITE_NAME }}</title>
-</head>
-
-<body>
-
-{% include "base/navbar.html" with active='phenotypes' %}
-
-<div class="container-fluid">
-
+{% block title %}{{ object|capfirst }} / Phenotypes / {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
     <hgroup>
         <h1>{{ object|capfirst }}</h1>
         <p>
@@ -20,18 +12,14 @@
             {% endfor %}
         </p>
     </hgroup>
-
-
     {% include "datasets/datasets_table.html" with template='phenotype' %}
-
-    {% include "base/footer.html" %}
-
+    </div>
 </div>
-
+{% endblock %}
+{% block scripts %}
+{% include "scripts/tablesorter.html" %}
+{% include "scripts/script_popup.html" %}
 <script>$(document).ready(function(){
  $("#papersTable").tablesorter();
 });</script>
-
-{% include "base/ga.html" %}
-
-</body></html>
+{% endblock %}

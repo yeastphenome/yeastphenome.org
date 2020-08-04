@@ -1,22 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    {% include "base/head.html" %}
-    <title>{{ SITE_NAME }}</title>
-</head>
-
-<body>
-
-{% include "base/navbar.html" with active="" %}
+{% extends "base/base.html" %}
 {% load humanize %}
-
-<div class="container-fluid">
-
-  {% include "messages/message.html" %}
-
-  <div class="row">
-    <h1>Datasets Download Cart</h1>
+{% block content %}
+<div class="row">
     <div class="col-md-8 mb-4">
+        <h1>Datasets Download Cart</h1>
         {% if datasets %}
 	<form action="{% url 'datasets:download' %}" method="GET" class="card-body">
         <table id="papersTable" class="tablesorter table table-condensed table-hover" width="100%">
@@ -62,7 +49,7 @@
         <button class="btn btn-primary btn-lg btn-block" type="submit">Download</button>
         </form>
         {% else %}
-          <p class="alert alert-info">You have no datasets in your cart. Why don't you <a href="{% url 'datasets:index' %}">browse to add some?</a></p>
+          <p class="alert alert-warning">You have no datasets in your cart. Why don't you <a href="{% url 'datasets:index' %}">browse to add some?</a></p>
         {% endif %}
     </div>
      <div class="col-md-4 mb-4">
@@ -89,12 +76,9 @@
 
     </div>
    </div>
-
-    </div>
-  </main>
-
-    {% include "base/footer.html" %}
-
+</div>
+{% endblock %}
+{% block scripts %}
 <script>
 
 $("form").submit(function( event ) {
@@ -118,14 +102,5 @@ $("form").submit(function( event ) {
      event.preventDefault();
   })
 });
-
-
 </script>
-
-</div>
-
-{% include "base/ga.html" %}
-
-</body>
-
-</html>
+{% endblock %}

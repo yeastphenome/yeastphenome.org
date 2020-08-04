@@ -1,0 +1,102 @@
+{% load static %}
+<style>
+@media screen and (min-width: 768px){
+  .dropdown:hover .dropdown-menu, .btn-group:hover .dropdown-menu{
+        display: block;
+    }
+    .dropdown-menu{
+        margin-top: 0;
+    }
+    .dropdown-toggle{
+        margin-bottom: 2px;
+    }
+    .navbar .dropdown-toggle, .nav-tabs .dropdown-toggle{
+        margin-bottom: 0;
+    }
+}
+.dropdown-toggle {
+    font-weight: 600;
+}
+/*.selectize-input {
+  border: none !important;
+  color: white !important;
+  font-weight: 600 !important;
+  background-color: rgb(177, 103, 24) !important;
+}*/
+</style>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+  <div class="container">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#global-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="{% url 'common:index' %}">
+    <picture>
+        <source srcset="{% static 'images/logo-temporary.png' %}" media="(max-width: 360px)">
+        <img id="navbar_logo"
+                alt="YeastPhenome.org"
+                src="{% static 'images/logo-temporary.png' %}"
+        />
+    </picture><span style="color:white; font-weight:600">yeastphenome.org</span>
+      </a>
+      
+    </div>
+
+    <!-- Navigation -->
+    <div class="collapse navbar-collapse" id="global-navbar">
+      <ul class="nav navbar-nav navbar-right">
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Getting Started <i class="fas fa-caret-down" aria-hidden="true"></i></a>
+          <ul class="dropdown-menu dropdown-menu-left">
+            <li><a href="#">Introduction</a></li>
+            <li><a href="#">Tutorials</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">Software</a></li>
+          </ul>
+        </li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Explore Data <i class="fas fa-caret-down" aria-hidden="true"></i></a>
+          <ul class="dropdown-menu dropdown-menu-left">
+            <li><a href="#">Browse</a></li>
+              <li><a href="#">Download</a></li>            
+              <li><a href="#">Search</a></li>
+          </ul>
+        {% if HELP_CONTACT_EMAIL %}<li class="visible-xs-block"><a href="mailto:{{ HELP_CONTACT_EMAIL }}"><i class="fas fa-envelope-open"></i> {{ HELP_CONTACT_EMAIL }}</a></li>{% endif %}
+        {% if TWITTER_USERNAME %}<li class="visible-xs-block"><a href="https://twitter.com/{{ TWITTER_USERNAME }}" target="_blank" rel="noopener"><i class="fab fa-twitter"></i> @{{ TWITTER_USERNAME }}</a></li>{% endif %}
+        </li>
+        <li><a href="{% url 'common:about' %}">About</a></li>        
+       {% if GITHUB_REPOSITORY %}<li><a href="{{ GITHUB_REPOSITORY }}/issues" target="_blank" rel="noopener"><i class="fas fa-comments visible-xs-inline"></i> Support</a></li>{% endif %}
+        <!-- Search for genes -->
+        <li id="global_search_navbar">
+          <div><input type="text" placeholder="Enter a gene, cell line, lineage or compound" class="toolbar-search selectized" id="global-search-dropdown-toolbar" tabindex="-1" style="display: none;" value=""><div class="selectize-control toolbar-search single"><div class="selectize-input items not-full"><input type="text" autocomplete="off" tabindex="" id="global-search-dropdown-toolbar-selectized" placeholder="Enter a gene, cell line, lineage or compound" style="width: 265px; opacity: 1; position: relative; left: 0px;"></div><div class="selectize-dropdown single toolbar-search" style="display: none; width: 320px; top: 41.5px; left: 5px;"><div class="selectize-dropdown-content"></div></div></div>
+          </div>
+        </li>
+            <li>
+               <a href="{% url 'common:view_cart' %}" class="nav-link waves-effect">
+               <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+                    <span class="clearfix d-none d-sm-inline-block"></span>
+               </a>
+            </li>        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<script>
+// show dropdown on hover
+$(document).ready(function(){
+
+    $(".dropdown, .btn-group").hover(function(){
+        var dropdownMenu = $(this).children(".dropdown-menu");
+        console.log(dropdownMenu.parent())
+        if(dropdownMenu.is(":visible")){
+            dropdownMenu.parent().toggleClass("open");
+        }
+
+    });
+});
+</script>
