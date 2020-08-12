@@ -7,7 +7,7 @@ from django.views import generic
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.datasets.models import Dataset, Data, Tag
 from yeastphenome.apps.conditions.models import ConditionType
-from yeastphenome.apps.phenotypes.models import Observable2
+from yeastphenome.apps.phenotypes.models import Observable
 
 from libchebipy import ChebiEntity
 
@@ -69,7 +69,7 @@ def datasets_growth(request):
 
     datasets = (
         Dataset.objects.filter(conditionset__systematic_name="standard")
-        .filter(phenotype__observable2__name__startswith="growth")
+        .filter(phenotype__observable__name__startswith="growth")
         .filter(control_conditionset__isnull=True)
         .filter(control_medium__isnull=True)
         .exclude(paper__latest_data_status__status__name="not relevant")
@@ -239,7 +239,7 @@ def data(request, domain, id):
         )
 
     if domain == "phenotypes":
-        phenotype = get_object_or_404(Observable2, pk=id)
+        phenotype = get_object_or_404(Observable, pk=id)
         datasets = phenotype.datasets()
         file_header = u"# Phenotype: %s (ID %s)\n" % (phenotype, phenotype.id)
 

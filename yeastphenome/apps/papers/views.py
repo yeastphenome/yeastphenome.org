@@ -82,7 +82,7 @@ class PaperDetailView(generic.DetailView, RatelimitMixin):
 
         # Define dataset_set
         dataset_list = (
-            obj.dataset_set.select_related("phenotype__observable2")
+            obj.dataset_set.select_related("phenotype__observable")
             .select_related("collection")
             .select_related("conditionset")
             .all()
