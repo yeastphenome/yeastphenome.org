@@ -33,12 +33,12 @@ def about(request):
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def getting_started(request):
-    return render(request, "main/getting-started.html", context)
+    return render(request, "main/getting-started.html")
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def data_explorer(request):
-    return render(request, "main/data-explorer.html", context)
+    return render(request, "main/data-explorer.html")
 
 
 # Cart Operations
