@@ -50,7 +50,7 @@
     <div class="collapse navbar-collapse" id="global-navbar">
       <ul class="nav navbar-nav navbar-right">
         <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Getting Started <i class="fas fa-caret-down" aria-hidden="true"></i></a>
+          <a href="{% url 'common:getting-started' %}" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Getting Started <i class="fas fa-caret-down" aria-hidden="true"></i></a>
           <ul class="dropdown-menu dropdown-menu-left">
             <li><a href="#">Introduction</a></li>
             <li><a href="#">Tutorials</a></li>
@@ -59,7 +59,7 @@
           </ul>
         </li>
         <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Explore Data <i class="fas fa-caret-down" aria-hidden="true"></i></a>
+          <a href="{% url 'common:explorer' %}" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Explore Data <i class="fas fa-caret-down" aria-hidden="true"></i></a>
           <ul class="dropdown-menu dropdown-menu-left">
             <li><a href="#">Browse</a></li>
               <li><a href="#">Download</a></li>            

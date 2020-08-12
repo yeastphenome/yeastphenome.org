@@ -11,6 +11,35 @@ from yeastphenome.settings import (
     VIEW_RATE_LIMIT_BLOCK as rl_block,
 )
 
+# Core Pages
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def index(request):
+
+    form = SearchForm()
+    context = get_latest_stats()
+    context["form"] = form
+    return render(request, "base/index.html", context)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def about(request):
+
+    context = get_latest_stats()
+
+    return render(request, "main/about.html", context)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def getting_started(request):
+    return render(request, "main/getting-started.html", context)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def data_explorer(request):
+    return render(request, "main/data-explorer.html", context)
+
 
 # Cart Operations
 
@@ -78,20 +107,3 @@ def view_cart(request):
         "datasets": Dataset.objects.filter(id__in=request.session.get("cart", []))
     }
     return render(request, "cart/view_cart.html", context)
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def index(request):
-
-    form = SearchForm()
-    context = get_latest_stats()
-    context["form"] = form
-    return render(request, "base/index.html", context)
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def about(request):
-
-    context = get_latest_stats()
-
-    return render(request, "main/about.html", context)

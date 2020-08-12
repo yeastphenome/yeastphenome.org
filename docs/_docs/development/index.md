@@ -11,6 +11,7 @@ description: Getting started with YeastGenome.org Development
 The documentation here will get you started to develop YeastGenome.org.
 This documentation is intended for developers. If you are looking to use the interface,
 please see the [user getting started]({{ site.baseurl }}/docs/getting-started/).
+If you want to see migration notes from the previous deployment, read [migration](migration)
 
 ### Setup
 
