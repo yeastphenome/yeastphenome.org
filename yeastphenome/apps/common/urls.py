@@ -1,6 +1,7 @@
 from django.urls import path
 
 from . import views
+from . import graphs
 
 urlpatterns = [
     path("", views.index, name="index"),
@@ -15,6 +16,8 @@ urlpatterns = [
         name="remove_from_cart",
     ),
     path("cart/clear/", views.clear_cart, name="clear_cart"),
+    # Graphs
+    path("graph/papers/yearly/", graphs.papers_by_year, name="papers-by-year"),
 ]
 
 app_name = "common"

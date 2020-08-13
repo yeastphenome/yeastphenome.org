@@ -7,53 +7,65 @@
         <div class="row">
             <h1 style="color: black; text-align:center">Explore Phenotypic Screens in Yeast</h1><br>
             <div style="max-width: 600px; margin:auto">
-                <input type="text" placeholder="Enter a gene, cell line, lineage or compound" class="homepage-search selectized" id="global-search-dropdown-homepage" tabindex="-1" style="display: none;" value=""><div class="selectize-control homepage-search single"><div class="selectize-input items not-full"><input type="text" autocomplete="off" tabindex="" id="global-search-dropdown-homepage-selectized" placeholder="Enter a gene, cell line, lineage or compound" style="width: 265px; opacity: 1; position: relative; left: 0px;"></div><div class="selectize-dropdown single homepage-search" style="display: none; width: 600px; top: 34px; left: 0px;"><div class="selectize-dropdown-content"></div></div></div>
+                <input type="text" placeholder="Enter a gene, phenotype, or condition." class="homepage-search selectized" id="global-search-dropdown-homepage" tabindex="-1" style="display: none;" value=""><div class="selectize-control homepage-search single"><div class="selectize-input items not-full"><input type="text" autocomplete="off" tabindex="" id="global-search-dropdown-homepage-selectized" placeholder="Enter a gene, cell line, lineage or compound" style="width: 265px; opacity: 1; position: relative; left: 0px;"></div><div class="selectize-dropdown single homepage-search" style="display: none; width: 600px; top: 34px; left: 0px;"><div class="selectize-dropdown-content"></div></div></div>
             </div>
-            <div style="padding-top: 20px; margin:auto; text-align:center">
-                <div class="inline-block" style="padding: 20px 20px 0px 0px">
-                    <div class="inline-block"><img style="width: 44px; border-radius: 12px;" src="#" alt=""></div>
-                    <div class="inline-block"><a class="hotlink" href="#">Data Explorer</a></div>
-                </div>
-                <div class="inline-block" style="padding: 20px 20px 0px 0px">
-                    <div class="inline-block"><img style="width: 44px; border-radius: 12px;" src="#" alt=""></div>
-                    <div class="inline-block"><a class="cursor-pointer hotlink" onclick="#">Cell Line Selector</a></div>
-                </div>
-                <div class="inline-block" style="padding: 20px 0px 0px 0px">
-                    <div class="inline-block"><img style="width: 44px; border-radius: 12px;" src="#" alt=""></div>
-                    <div class="inline-block"><a class="hotlink" href="#">Data Downloads</a></div>
-                </div>
-            </div>
-         </div>
-      </div>
+        </div>
+    </div>
     <div class="col-md-8">
-        <div class="box">
-                <p><a class="box-title" href="{% url 'common:about' %}">About</a></p>
-                <p>Our goal is to collect, organize and share in a standardized format all phenotypic screens of the <em>Saccharomyces cerevisiae</em> deletion collection. <a class="hotlink" href="{% url 'common:about' %}">Learn more</a></p>
-        </div>
-        <div class="box">
-        </div>
-    </div>
-
-    <!--Statistics Panel-->
-    <div class="col-md-4 public-homepage-side-panel">
-        <div class="box">
-            <h3>What is in the database?</h3>
-            <p>General stats on data collection (<a class="hotlink" href="{% url 'common:about' %}">more details</a>):</p>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="box" style="height:200px">
+                    <p><a class="box-title" href="{% url 'common:about' %}">About</a></p>
+                    <p>Our goal is to collect, organize and share in a standardized format all phenotypic screens of the <em>Saccharomyces cerevisiae</em> deletion collection. <a class="hotlink" href="{% url 'common:about' %}">Learn more</a> in the about pages or learn how to <a class="hotlink" href="{% url 'common:getting-started' %}">Get Started</a> </p>
+                </div>
+                <hr>
+                <div class="box" style="height:200px">
+                    <h3>Explore Data</h3>             
+                    <p><ul>
+                    <li><a class="hotlink" href="{% url 'papers:all' %}">Papers</a></li>
+                    <li><a class="hotlink" href="{% url 'phenotypes:index' %}">Phenotypes</a></li>
+                    <li><a class="hotlink" href="{% url 'conditions:index' %}">Conditions</a></li>
+                    <li><a class="hotlink" href="">Special Collections</a></li>
+                    </ul></p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="box" style="height:200px">
+                    <h3>What is in the database?</h3>
+                    <p>General stats on data collection (<a class="hotlink" href="{% url 'common:about' %}">more details</a>):</p>
             <p><ul>
-                <li>{{ papers_nr }} <a class="hotlink" href="{% url 'papers:all' %}">papers</a></li>
-                <li>{{ phenotypes_nr|intcomma }} <a class="hotlink" href="{% url 'phenotypes:index' %}">phenotypes</a></li>
-                <li>{{ conditions_nr|intcomma }} <a class="hotlink" href="{% url 'conditions:index' %}">experimental conditions</a></li>
-            </ul></p>
-            {% if updated_on %}<p><small>Updated on: {{ updated_on }}.</small></p>{% endif %}
+                    <li>{{ papers_nr }} <a class="hotlink" href="{% url 'papers:all' %}">papers</a></li>
+                    <li>{{ phenotypes_nr|intcomma }} <a class="hotlink" href="{% url 'phenotypes:index' %}">phenotypes</a></li>
+                    <li>{{ conditions_nr|intcomma }} <a class="hotlink" href="{% url 'conditions:index' %}">experimental conditions</a></li>
+                    </ul></p>
+                    {% if updated_on %}<p><small>Updated on: {{ updated_on }}.</small></p>{% endif %}
+                </div>
+                <hr>
+                <div class="box" style="height:200px">
+                    <p><a class="box-title" href="">Downloads</a></p>
+                </div>
+            </div>
         </div>
-        <hr>
-        <div class="box">
-            <h3>Featured Papers</h3>
-            <p>Here we can put a recent, or randomly chosen paper?</p>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box">
+                {% include "graphs/papers-by-year.html" %} 
+                 <small style="float:right"><a href="{% url 'common:papers-by-year' %}">View Full Width</small>                  
+                </div>
+            </div>
         </div>
     </div>
-</div>
-</div>
+    <div class="col-md-4">
+        <div class="row">
+            <div class="col-md-12 public-homepage-side-panel">
+                <div class="box">
+                  {% if TWITTER_USERNAME %}<div style="max-height:1560px; overflow:scroll">
+                  <br>{% include "social/twitter.html" %}
+                </div>{% endif %}
+            </div>
+        </div>
+    </div>
+</div></div></div>
 <div style="background-color:#f0caa04a;">
    <div style="padding-top: 20px; padding-bottom: 140px" class="container footer-box">
         <div class="row">

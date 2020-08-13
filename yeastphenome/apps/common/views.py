@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 
 from yeastphenome.apps.common.forms import SearchForm
-from yeastphenome.apps.common.utils import get_latest_stats
+from yeastphenome.apps.common.utils import get_latest_stats, get_papers_by_year
 from yeastphenome.apps.datasets.models import Dataset
 
 from ratelimit.decorators import ratelimit
@@ -20,6 +20,7 @@ def index(request):
     form = SearchForm()
     context = get_latest_stats()
     context["form"] = form
+    context["paper_counts"] = get_papers_by_year()
     return render(request, "base/index.html", context)
 
 
