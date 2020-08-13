@@ -1,5 +1,4 @@
-from django.shortcuts import render, redirect
-from django.contrib import messages
+from django.shortcuts import render
 
 from ratelimit.decorators import ratelimit
 from yeastphenome.apps.common.utils import get_papers_by_year
