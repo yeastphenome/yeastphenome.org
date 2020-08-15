@@ -4,8 +4,11 @@ from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from .models import Paper
-
-from Bio import Entrez
+from .utils import (
+    get_pubmed_paper_context,
+    get_pubmed_paper,
+    get_paper_references_context,
+)
 
 import os
 from django.http import HttpResponse
@@ -75,14 +78,14 @@ class PaperDetailView(generic.DetailView, RatelimitMixin):
 
     def get_context_data(self, **kwargs):
         context = super(PaperDetailView, self).get_context_data(**kwargs)
-        obj = context["object"]
+        paper = context["object"]
 
         context["DOWNLOAD_PREFIX"] = settings.DOWNLOAD_PREFIX
         context["USER_AUTH"] = self.request.user.is_authenticated
 
         # Define dataset_set
         dataset_list = (
-            obj.dataset_set.select_related("phenotype__observable")
+            paper.dataset_set.select_related("phenotype__observable")
             .select_related("collection")
             .select_related("conditionset")
             .all()
@@ -97,15 +100,14 @@ class PaperDetailView(generic.DetailView, RatelimitMixin):
             datasets = paginator.page(paginator.num_pages)
 
         context["datasets"] = datasets
-
-        context["id"] = obj.id
+        context["id"] = paper.id
 
         # Give credit if credit is due.
-        names = obj.acknowledgements_str_list()
+        names = paper.acknowledgements_str_list()
         to_acknowledge = []
-        if obj.acknowledge_data():
+        if paper.acknowledge_data():
             to_acknowledge.append("the data")
-        if obj.acknowledge_tested():
+        if paper.acknowledge_tested():
             to_acknowledge.append("the list of tested strains")
 
         if names:
@@ -117,45 +119,11 @@ class PaperDetailView(generic.DetailView, RatelimitMixin):
             )
             context["thanks"] = thanks
 
-        # Fetch article info from Pubmed
-        if obj.pmid != 0:
-            Entrez.email = "abarysh@princeton.edu"
-            handle = Entrez.efetch(db="pubmed", id=[str(obj.pmid)], retmode="xml")
-            xml_data = Entrez.read(handle)
-            article = (
-                xml_data.get("PubmedArticle")[0].get("MedlineCitation").get("Article")
-            )
-            authors_list = [
-                (u"%s %s" % (author["ForeName"], author["LastName"]))
-                for author in article["AuthorList"]
-            ]
-            if "Year" in article["Journal"]["JournalIssue"]["PubDate"]:
-                pubdate = article["Journal"]["JournalIssue"]["PubDate"]["Year"]
-            elif "MedlineDate" in article["Journal"]["JournalIssue"]["PubDate"]:
-                pubdate = article["Journal"]["JournalIssue"]["PubDate"]["MedlineDate"]
-            else:
-                pubdate = ""
-
-            if "Pagination" in article.keys():
-                pgn = article["Pagination"]["MedlinePgn"]
-            else:
-                pgn = "."
-
-            if "Volume" in article["Journal"]["JournalIssue"].keys():
-                vol = article["Journal"]["JournalIssue"]["Volume"]
-            else:
-                vol = ""
-
-            context["title"] = article["ArticleTitle"]
-            context["authors"] = authors_list
-            context["abstract"] = article["Abstract"]["AbstractText"][0]
-            context["citation"] = u"%s %s; %s:%s" % (
-                article["Journal"]["ISOAbbreviation"],
-                pubdate,
-                vol,
-                pgn,
-            )
-
+        # Fetch article info from Pubmed, share data from one call
+        if paper.pmid != 0:
+            xml_data = get_pubmed_paper(paper.pmid)
+            context.update(get_pubmed_paper_context(paper.pmid, xml_data))
+            context.update(get_paper_references_context(paper, xml_data))
         return context
 
 

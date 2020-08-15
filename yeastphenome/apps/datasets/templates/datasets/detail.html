@@ -61,6 +61,11 @@
             <a class="btn btn-success" role="button" href="/datasets/download/?{{ dataset.id }}=on">Download</a>
     </div>
 </div>
+<div class="row">
+    <div class="col-xs-12">
+       {% include "graphs/collection-by-year.html" %}
+    </div>
+</div>
 {% endblock %}
 {% block scripts %}
 {% include "scripts/tablesorter.html" %}

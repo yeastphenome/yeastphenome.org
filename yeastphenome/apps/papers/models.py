@@ -211,7 +211,10 @@ class Paper(models.Model):
         return {"data": queryset_data, "tested strains": queryset_tested}
 
     def link_detail(self):
-        return '<a href="%s">%s</a>' % (reverse("papers:detail", args=(self.id,)), self)
+        return '<a href="%s">%s</a>' % (self.get_absolute_url(), self)
+
+    def get_absolute_url(self):
+        return reverse("papers:detail", args=(self.id,))
 
     link_detail.allow_tags = True
 

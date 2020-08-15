@@ -109,12 +109,18 @@ These last two are undefined by default and won't show on the site.
 Authentication is only available to site admins, so we don't have a user login flow.
 An administrator is responsible for adding new users. 
 
-#### Help Contact Email
+#### Emails
 
 You should export your `HELP_CONTACT_EMAIL` in the .env file as follows:
 
 ```
 export HELP_CONTACT_EMAIL=myemail@domain.com
+```
+
+And an email to provide for Entrez queries (interacting with Pubmed).
+
+```bash
+export ENTREZ_EMAIL=me@email.com
 ```
 
 ### Rate Limits

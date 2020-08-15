@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.views import generic
 
+from yeastphenome.apps.common.utils import get_collections_by_year
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.datasets.models import Dataset, Data, Tag
 from yeastphenome.apps.conditions.models import ConditionType
@@ -26,6 +27,13 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
     ratelimit_key = "ip"
     ratelimit_rate = rl_rate
     ratelimit_block = rl_block
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["collection_yearly_counts"] = get_collections_by_year(
+            context["dataset"].collection
+        )
+        return context
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
