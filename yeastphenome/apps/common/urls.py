@@ -18,6 +18,16 @@ urlpatterns = [
     path("cart/clear/", views.clear_cart, name="clear_cart"),
     # Graphs
     path("graph/papers/yearly/", graphs.papers_by_year, name="papers-by-year"),
+    path(
+        "graph/dataset/<int:dataset_id>/collection/yearly/",
+        graphs.collection_by_year,
+        name="collection-by-year",
+    ),
+    path(
+        "graph/papers/<int:paper_id>/citations/",
+        graphs.paper_citation_graph,
+        name="paper-citation-graph",
+    ),
 ]
 
 app_name = "common"

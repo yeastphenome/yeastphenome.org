@@ -2,12 +2,13 @@
 {% load my_filters %}
 {% block title %}{{ object }} / Papers / {{ SITE_NAME }}{% endblock %}
 {% block content %}
-<div class="row">
-    <div class="col-xs-12">
-
+<div class="row" style="padding-bottom:25px">
+    <div class="col-sm-12">
         <h1>{{ object }}</h1>
-
-        {% if object.pmid != 0 %}
+    </div>
+</div>
+{% if object.pmid != 0 %}<div class="row">
+    <div class="col-md-12">
         <table class="table" id="papersTable">
             <tr>
                 <th width="20%" scope="row" class="first">Pubmed ID</th>
@@ -39,11 +40,37 @@
                 <th scope="row">Notes</th>
                 <td>{{ object.notes }}</td>
             </tr>{% endif %}
-        </table>{% endif %}
-
+        </table>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+    {% include "graphs/citation-graph.html" %}
+    <a style="padding-left:600px" href="{% url 'common:paper-citation-graph' paper.id %}">View Full Page</a>
+    </div>
+</div>
+{% endif %}
+<div class="row" style="padding-top:30px">
+    <div class="col-xs-12">
+      <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="pills-download-tab" data-toggle="pill" href="#pills-download" role="tab" aria-controls="pills-download" aria-selected="true">Downloads</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="pills-datasets-tab" data-toggle="pill" href="#pills-datasets" role="tab" aria-controls="pills-datasets" aria-selected="false">Datasets</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="pills-curation-tab" data-toggle="pill" href="#pills-curation" role="tab" aria-controls="pills-curation" aria-selected="false">Curation History</a>
+        </li>
+      </ul>
+      <div class="tab-content" id="pills-tabContent">
+      <div class="tab-pane show active" id="pills-download" role="tabpanel" aria-labelledby="pills-download-tab">        
         <div class="pull-right">{% include "papers/zip.html" %}</div>
-        {% include "datasets/datasets_table.html" with template='paper' %}
-        <h3>Curation history</h3>
+      </div>
+      <div class="tab-pane fade" id="pills-datasets" role="tabpanel" aria-labelledby="pills-datasets-tab" style="padding-top:20px">
+        {% include "datasets/datasets_table.html" with template='paper' notitle='true' %}
+     </div>
+     <div class="tab-pane fade" id="pills-curation" role="tabpanel" aria-labelledby="pills-curation-tab">
         <div class="row">
             {% for k, v in paper.history.items %}
             <div class="col-xs-4">
@@ -56,7 +83,9 @@
                 </table>
             </div>{% endfor %}
         </div>
-    </div>
+       </div>
+    </div><!--end tab content-->
+  </div>
 </div>
 {% endblock %}
 {% block scripts %}

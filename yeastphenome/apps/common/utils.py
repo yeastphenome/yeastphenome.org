@@ -1,5 +1,6 @@
 from django.db.models import Q, F, Count, Sum, Case, When
 from django.db import models
+from django.urls import reverse
 
 import numpy as np
 
@@ -10,6 +11,36 @@ from yeastphenome.apps.phenotypes.models import Phenotype
 from yeastphenome.apps.datasets.models import Dataset
 
 import collections
+import random
+
+# Graphs
+
+
+def select_random_graph():
+    """Select a random graph and template to show on the home page. We don't
+       include the citation graph because many papers don't have this metadata
+       and it would appear empty. When we have a global citation network we
+       can choose a reliable starting point and render that instead.
+    """
+    # Randomly select graph to render
+    graph_choice = random.choice(range(2))
+    print(graph_choice)
+    if graph_choice == 0:
+        return {
+            "paper_counts": get_papers_by_year(),
+            "graph_template": "graphs/papers-by-year.html",
+            "graph_url": reverse("common:papers-by-year"),
+        }
+    else:
+        # Select a random dataset
+        dataset = Dataset.objects.order_by("?").first()
+        return {
+            "collection_yearly_counts": get_collections_by_year(dataset.collection),
+            "collection": dataset.collection,
+            "graph_template": "graphs/collection-by-year.html",
+            "graph_url": reverse("common:collection-by-year", args=(dataset.id,)),
+        }
+
 
 # Papers
 
@@ -32,6 +63,34 @@ def get_papers_by_year(add_padding=True):
         counts[min_year - 1] = 0
         counts[max_year + 1] = 0
     return collections.OrderedDict(sorted(counts.items()))
+
+
+# Collections change over time
+
+
+def get_collections_by_year(collection):
+    """Show the change over time of a collection tyoe. This function returns 
+       a lookup with single values, and also accumulated values. 
+       This graph displays on a page for a single dataset. There is only one 
+       dataset without a collection, and it was published in 2015 (and this 
+       will return that one number).
+    """
+    counts = {}
+    for dataset in Dataset.objects.filter(collection=collection):
+        if dataset.paper.pub_date not in counts:
+            counts[dataset.paper.pub_date] = 0
+        counts[dataset.paper.pub_date] += 1
+
+    # Order by year before summing
+    counts = collections.OrderedDict(sorted(counts.items()))
+
+    # Generate accumulated counts
+    total = 0
+    summed = {}
+    for year, count in counts.items():
+        total += count
+        summed[year] = total
+    return {"summed": summed, "counts": counts}
 
 
 # Stats helper function

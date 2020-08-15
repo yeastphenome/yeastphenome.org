@@ -43,14 +43,19 @@
                 <hr>
                 <div class="box" style="height:200px">
                     <p><a class="box-title" href="">Downloads</a></p>
+                    <p><a class="box-title" href="">Papers</a>
+                    <ul>
+                    <li><a href="{{ paper.get_absolute_url }}" class="hotlink">Most Recent Paper</a></li>
+                    <li><a href="{{ paper_latest.get_absolute_url }}" class="hotlink">Recently Updated</a></li>
+                    </ul></p>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col-md-12">
                 <div class="box">
-                {% include "graphs/papers-by-year.html" %} 
-                 <small style="float:right"><a href="{% url 'common:papers-by-year' %}">View Full Width</small>                  
+                {% include graph_template %} 
+                 <small style="float:right"><a href="{{ graph_url }}">View Full Width</small>                  
                 </div>
             </div>
         </div>

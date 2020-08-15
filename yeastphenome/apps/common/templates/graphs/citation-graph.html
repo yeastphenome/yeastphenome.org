@@ -1,0 +1,124 @@
+<script src="//d3js.org/d3.v3.min.js"></script>
+<div class="row">
+   <div class="col-md-8">
+     <div id="citation-graph">
+     </div>
+   </div>
+   <div class="col-md-4">
+     <div id="legend">
+     </div>
+   </div>
+</div>
+<style>
+.node {
+  cursor: pointer;
+  stroke-width: 1.5px;
+}
+
+.node text {
+  pointer-events: none;
+  font: 10px sans-serif;
+}
+
+.link {
+  fill: none;
+  stroke: #9ecae1;
+  stroke-width: 1.5px;
+}
+</style>
+
+<style>
+
+.link {
+  stroke: #ccc;
+}
+</style>
+<script>
+var width = {% if graph_width %}{{ graph_width }}{% else %}960{% endif %},
+    height = 600
+
+var svg = d3.select("#citation-graph").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var force = d3.layout.force()
+    .gravity(0.08)
+    .distance(200)
+    .charge(-200)
+    .size([width, height]);
+
+json = {"nodes": {{ citation_nodes | safe }},
+         "links": {{ citation_links | safe }}}
+  force
+      .nodes(json.nodes)
+      .links(json.links)
+      .start();
+
+  var link = svg.selectAll(".link")
+      .data(json.links)
+    .enter().append("line")
+      .attr("class", "link");
+
+  var node = svg.selectAll(".node")
+      .data(json.nodes)
+    .enter().append("g")
+      .attr("class", "node")
+      .call(force.drag);
+
+  node.append("circle")
+    .attr("r", function(d) { return 10; })
+    .attr("fill", function(d) { 
+         if (d.status == "present"){return "rgb(201, 145, 84)"} 
+         else if (d.status == "root"){return "darkorange"}
+         else{ return "blueviolet"} 
+     })
+    .on("click", function(d) { 
+        if (d.status == "present"){ url = "/papers/" + d.paper_id; status = "present in" }
+        else if (d.status == "root") { url = "https://pubmed.ncbi.nlm.nih.gov/" + d.pmid + "/"; status = "present in"; }
+        else { url = "https://pubmed.ncbi.nlm.nih.gov/" + d.pmid + "/"; status="missing from"}
+        $("#legend").empty();
+        $("#legend").html("<h3>Paper Metadata</h3><p>Paper: " + d.name + "<br><a href='" + url +"' target='_blank'>Visit on Pubmed</a><br>This paper is " + status + "YeastPhenome.org")
+     });
+
+  node.append("text")
+      .attr("dx", 20)
+      .attr("dy", ".35em")
+      .text(function(d) { return d.name });
+
+  force.on("tick", function() {
+    link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+   // Handmade legend
+   svg.append("circle")
+     .attr("cx", 700)
+     .attr("cy", 530)
+     .attr("r", 6)
+     .style("fill", "rgb(201, 145, 84)");
+
+   svg.append("circle")
+     .attr("cx", 700)
+     .attr("cy", 560)
+     .attr("r", 6)
+     .style("fill", "blueviolet");
+ 
+   svg.append("text")
+     .attr("x", 720)
+     .attr("y", 530)
+     .text("Papers in YeastPhenome.org")
+     .attr("alignment-baseline","middle")
+     .style("font-weight", "200");
+
+   svg.append("text")
+     .attr("x", 720)
+     .attr("y", 560)
+     .text("Missing")
+     .style("font-weight", "200")
+     .attr("alignment-baseline","middle");
+});
+
+</script>

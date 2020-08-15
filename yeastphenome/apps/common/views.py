@@ -2,8 +2,9 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 
 from yeastphenome.apps.common.forms import SearchForm
-from yeastphenome.apps.common.utils import get_latest_stats, get_papers_by_year
+from yeastphenome.apps.common.utils import get_latest_stats, select_random_graph
 from yeastphenome.apps.datasets.models import Dataset
+from yeastphenome.apps.papers.models import Paper
 
 from ratelimit.decorators import ratelimit
 from yeastphenome.settings import (
@@ -19,8 +20,14 @@ def index(request):
 
     form = SearchForm()
     context = get_latest_stats()
+
+    # Most Recently added, most recently updated
+    context["paper"] = Paper.objects.latest("pub_date")
+    context["paper_latest"] = Paper.objects.latest()
     context["form"] = form
-    context["paper_counts"] = get_papers_by_year()
+
+    # Select a random graph to add to the context
+    context.update(select_random_graph())
     return render(request, "base/index.html", context)
 
 
