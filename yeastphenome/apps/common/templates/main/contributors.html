@@ -1,0 +1,62 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+{% block content %}
+<div class="col-xs-8 left-content">
+<div class="row">
+    <div class="col-md-12 box">
+        <h3 id="maintainers">Maintainers</h3>
+        <p>Yeastphenome.org was created and is being maintained by:</p>
+        <ul>
+            <li>Anastasia Baryshnikova (principal investigator, <a class="external" href="http://www.baryshnikova-lab.org">www.baryshnikova-lab.org</a>)</li>
+        </ul>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12 box">
+        <h3 id="curators">Curators</h3>
+        <p>The following individuals have helped with literature curation and general curation for YeastPhenome.org:</p>
+        <ul>
+            <li>Rose Oughtred</li>
+            <li>Christie Chang</li>
+            <li>Jennifer Rust</li>
+            <li>Brianna Richardson</li>
+        </ul>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12 box">
+        <h3 id="programmers">Database and Website</h3>
+        <p>Programming contributions include server, website, and other scripting or infrastructure support.</p>
+        <ul>
+            <li>Brianna Richardson</li>
+            <li>Sven Heinicke</li>
+            <li>Fan Kang</li>
+            <li>Mark Schroeder</li>
+            <li>Vanessa Sochat</li>
+        </ul>
+    </div>
+</div>
+</div>
+<!-- Right sidebar, goes away for small screens -->
+<div class="col-xs-3 right-sidebar sidebar-fixed" style="padding:0px; padding-top:20px">
+    <div class="mini-submenu">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+    </div>
+    <div class="list-group">
+        <span href="#" class="list-group-item active">
+            Let's celebrate our contributors!
+        </span>
+        <a href="#maintainers" class="list-group-item">
+            Maintainers
+        </a>
+        <a href="#curators" class="list-group-item">
+            Curators
+        </a>
+        <a href="#programmers" class="list-group-item">
+            Programmers
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -15,6 +15,30 @@ from yeastphenome.settings import (
 
 # Visuals
 
+# under development ------------------------------------------------------------
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def paper_citation_graph_neo4j(request):
+    """A larger citation graph that shows all nodes and links.
+       NOT CURRENTLY IN USE - needs to be refactored
+    """
+    return render(request, "graphs/citation-graph-neo4j-wrapper.html")
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def paper_citation_graph_explorable(request):
+    """An explorable citation graph that starts with one of a set of known
+       papers, and goes from there.
+       NOT CURRENTLY IN USE - needs to be refactored
+    """
+    paper = Paper.objects.get(id=2)
+    context = get_paper_references_context(paper)
+    return render(request, "graphs/citation-graph-explorable-wrapper.html", context)
+
+
+# ------------------------------------------------------------------------------
+
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def paper_citation_graph(request, paper_id):

@@ -13,6 +13,8 @@ this punny bread:
  - "add to cart" of course will be sprinkled around the site
  - we should decide on download metrics for the view cart page
  - add social media links (e.g., Twitter) for site metadata
- - remove observable2 and link in phenotype, mptt import
- - create "Add to cart" functionality for datasets
  - start working on tutorials
+
+## Thanks
+
+ - [twemoji](https://twemoji.twitter.com/): for a few of our lovely graphics!

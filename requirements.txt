@@ -12,3 +12,7 @@ sendgrid==6.4.3
 biopython==1.77
 # just for postgres
 psycopg2-binary==2.8.5
+djangorestframework==3.11.1
+markdown==3.2.2
+django-filter==2.3.0
+drf-yasg==1.17.1

@@ -33,10 +33,13 @@ def index(request):
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def about(request):
-
     context = get_latest_stats()
-
     return render(request, "main/about.html", context)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def contributors(request):
+    return render(request, "main/contributors.html")
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
