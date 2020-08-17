@@ -6,6 +6,7 @@ from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.common.utils import (
     get_papers_by_year,
     get_collections_by_year,
+    get_phenotype_measurements,
 )
 from yeastphenome.apps.papers.utils import get_paper_references_context
 from yeastphenome.settings import (
@@ -39,6 +40,8 @@ def paper_citation_graph_explorable(request):
 
 # ------------------------------------------------------------------------------
 
+# Papers
+
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def paper_citation_graph(request, paper_id):
@@ -61,6 +64,9 @@ def papers_by_year(request):
     return render(request, "graphs/papers-by-year-wrapper.html", context)
 
 
+# Collections
+
+
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def collection_by_year(request, dataset_id):
     """Show change in time of collection associated with a dataset"""
@@ -74,3 +80,16 @@ def collection_by_year(request, dataset_id):
         "collection": dataset.collection,
     }
     return render(request, "graphs/collection-by-year-wrapper.html", context)
+
+
+# Phenotypes
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def phenotype_measurements(request):
+    """Render a chart.js visualization for phenotypes broken down by measurement type"""
+    return render(
+        request,
+        "graphs/phenotype-measurements-wrapper.html",
+        get_phenotype_measurements(),
+    )

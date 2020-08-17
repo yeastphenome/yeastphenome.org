@@ -1,0 +1,31 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>Frequently Asked Questions</h2>
+        <div class="accordion" id="accordionExample">
+            <div class="card">
+                <div class="card-header" id="headingOne">
+                  <h2>
+                  <button style="padding-left:0px" class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">Why is the drug name on this dataset different from the drug name in the paper?</button>
+                  </h2>
+                </div>
+                <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
+                    <div class="card-body">
+            What you see on this website is the ChEBI or the PubChem name of the drugs.
+            Whenever possible, we associate chemical compounds with a ChEBI ID (preferentially) or a PubChem ID (if ChEBI ID was not available) and display, by default, their ChEBI or PubChem names, respectively.
+            This sometimes results in an unusual name (e.g., the ChEBI name of rapamycin is <a href="http://www.yeastphenome.org/conditions/3/">sirolimus</a>), but it greatly facilitates the consistency of the data.
+            The original drug names (those used in the paper) are still available through search and will soon be displayed on the condition page.
+                    </div>
+                </div>
+            </div>
+       </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+$('.collapse').collapse()
+</script>
+{% endblock %}

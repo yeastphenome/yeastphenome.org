@@ -6,6 +6,8 @@ from . import graphs
 urlpatterns = [
     path("", views.index, name="index"),
     path("about/", views.about, name="about"),
+    path("stats/", views.stats, name="stats"),
+    path("faq/", views.faq, name="faq"),
     path("contributors/", views.contributors, name="contributors"),
     path("getting-started/", views.getting_started, name="getting-started"),
     path("explorer/", views.data_explorer, name="explorer"),
@@ -42,6 +44,11 @@ graphs = [
         "graph/papers/<int:paper_id>/citations/",
         graphs.paper_citation_graph,
         name="paper-citation-graph",
+    ),
+    path(
+        "graph/phenotypes/measurements/",
+        graphs.phenotype_measurements,
+        name="phenotype-measurements-graph",
     ),
 ]
 

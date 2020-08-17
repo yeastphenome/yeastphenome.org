@@ -1,11 +1,28 @@
 {% extends "base/base.html" %}
+{% load static %}
 {% load humanize %}
 {% block content %}
+<style>
+</style>
 <div class="col-xs-8 left-content">
 <div class="row">
-        <div class="col-md-12 box">
+    <div class="col-md-12 box">
         <h3 id="criteria">About</h3>
         <p>YeastPhenome.org is a collaborative project that aims at constructing a comprehensive compendium of systematic phenotypic data for budding yeast <em>Saccharomyces cerevisiae</em>. Our goal is to collect, process and share in a standardized format the results of all genome-scale experiments that have examined the yeast deletion collection for any given <a href="{% url 'phenotypes:index' %}">phenotype</a> under any given <a href="{% url 'conditions:index' %}">experimental condition</a>.</p>
+        <div class="row">
+          <div class="col-md-4">
+            <a href="{% url 'common:contributors' %}"><img class="box" src="{% static 'images/icons/users-gray.svg' %}">
+            <p>Contributors</li></a>
+          </div>
+          <div class="col-md-4">
+            <a href="{% url 'common:stats' %}"><img class="box" src="{% static 'images/icons/bar-chart-gray.svg' %}">
+            <p>Stats</li></a>
+          </div>
+          <div class="col-md-4">
+              <a href="{% url 'common:faq' %}"><img width="164px" height="164px" class="box" src="{% static 'images/icons/question-gray.svg' %}">
+             <p>Frequently Asked Questions</p></a>
+          </div>
+        </div>
     </div>
 </div>
 <div class="row">
@@ -24,53 +41,9 @@
 </div>
 <div class="row">
     <div class="col-md-12 box">
-        <h3 id="citation">Contributors</h3>
-        <p>Yeastphenome.org was created and is being maintained by:</p>
-        <ul>
-            <li>Anastasia Baryshnikova (principal investigator, <a class="external" href="http://www.baryshnikova-lab.org">www.baryshnikova-lab.org</a>)</li>
-            <li>Rose Oughtred (literature curator)</li>
-            <li>Christie Chang (literature curator)</li>
-            <li>Jennifer Rust (literature curator)</li>
-            <li>Brianna Richardson (curator, programmer)</li>
-            <li>Sven Heinicke (database and website support)</li>
-            <li>Fan Kang (database support)</li>
-            <li>Mark Schroeder (server support)</li>
-        </ul>
-    </div>
-</div>
-<div class="row">
-    <div class="col-md-12 box">
         <h3 id="statistics">Data usage and citation policy</h3>
         If you use yeast phenome data in a talk or a manuscript, please acknowledge the data source by citing the original publication from which the data is derived, as well as the yeast phenome database. The database should be cited as follows:</p>
         <p>&mdash; The Yeast Phenome Database, www.yeastphenome.org, accessed on XXXX-XX-XX.</p>
-    </div>
-</div>
-<div class="row">
-    <div class="col-md-12 box">
-        <h3 id="faq">Current stats ({{ updated_on }})</h3>
-        <ul>
-            <li>Total publications: {{ papers_nr|intcomma }} (+ {{ papers_hopeless_nr|intcomma }} for which data could not be recovered)</li>
-            <li>Total labs who published papers: {{ labs_nr|intcomma }}</li>
-            <li>Data loaded for:</li>
-                <ul>
-                    <li>Publications: {{ papers_processed_nr|intcomma }} ({% widthratio papers_processed_nr papers_nr 100 %}%)</li>
-                    <li>Phenotypes: {{ phenotypes_nr|intcomma }}</li>
-                    <li>Environments: {{ conditions_nr|intcomma }}</li>
-                    <li>Datasets: {{ datasets_nr|intcomma }} ({{ datasets_nr_hap_hom|intcomma }} haploid/homozygous diploid + {{ datasets_nr_het|intcomma }} heterozygous diploid)</li>
-                </ul>
-        </ul>
-    </div>
-</div>
-<div class="row">
-    <div class="col-md-12 box">
-        <h3>Frequenty Asked Questions (FAQ)</h3>
-        <h4>Why is the drug name on this dataset different from the drug name in the paper?</h4>
-        <p>
-            What you see on this website is the ChEBI or the PubChem name of the drugs.
-            Whenever possible, we associate chemical compounds with a ChEBI ID (preferentially) or a PubChem ID (if ChEBI ID was not available) and display, by default, their ChEBI or PubChem names, respectively.
-            This sometimes results in an unusual name (e.g., the ChEBI name of rapamycin is <a href="http://www.yeastphenome.org/conditions/3/">sirolimus</a>), but it greatly facilitates the consistency of the data.
-            The original drug names (those used in the paper) are still available through search and will soon be displayed on the condition page.
-        </p>
     </div>
 </div>
 </div>
@@ -97,12 +70,6 @@
         </a>
         <a href="#citation" class="list-group-item">
             Data Usage and Citation Policy
-        </a>
-        <a href="#statistics" class="list-group-item">
-            Statistics
-        </a>
-        <a href="#faq" class="list-group-item">
-            Frequently Asked Questions
         </a>
     </div>
 </div>

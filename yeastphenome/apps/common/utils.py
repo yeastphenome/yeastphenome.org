@@ -7,7 +7,7 @@ import numpy as np
 
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.conditions.models import ConditionSet, ConditionType
-from yeastphenome.apps.phenotypes.models import Phenotype
+from yeastphenome.apps.phenotypes.models import Phenotype, Measurement
 from yeastphenome.apps.datasets.models import Dataset
 
 import collections
@@ -23,14 +23,22 @@ def select_random_graph():
        can choose a reliable starting point and render that instead.
     """
     # Randomly select graph to render
-    graph_choice = random.choice(range(2))
-    print(graph_choice)
+    graph_choice = random.choice(range(3))
     if graph_choice == 0:
         return {
             "paper_counts": get_papers_by_year(),
             "graph_template": "graphs/papers-by-year.html",
             "graph_url": reverse("common:papers-by-year"),
         }
+    elif graph_choice == 1:
+        context = get_phenotype_measurements(hide_legend=True)
+        context.update(
+            {
+                "graph_template": "graphs/phenotype-measurements.html",
+                "graph_url": reverse("common:phenotype-measurements-graph"),
+            }
+        )
+        return context
     else:
         # Select a random dataset
         dataset = Dataset.objects.order_by("?").first()
@@ -40,6 +48,32 @@ def select_random_graph():
             "graph_template": "graphs/collection-by-year.html",
             "graph_url": reverse("common:collection-by-year", args=(dataset.id,)),
         }
+
+
+# Phenotypes
+
+
+def get_phenotype_measurements(hide_legend=False):
+    """Return a breakdown of phenotypes according to what they measure.
+       Most of these are undefined, but it might be useful to see those
+       that are.
+    """
+    undefined = 0
+    counts = {}
+    for phenotype in Phenotype.objects.all():
+        if phenotype.measurement is None:
+            undefined += 1
+        else:
+            if phenotype.measurement.name not in counts:
+                counts[phenotype.measurement.name] = 0
+            counts[phenotype.measurement.name] += 1
+
+    return {
+        "hide_legend": hide_legend,
+        "phenotype_measurements": counts,
+        "phenotype_measurements_undefined": undefined,
+        "measurements": Measurement.objects.all(),
+    }
 
 
 # Papers

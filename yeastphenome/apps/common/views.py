@@ -2,7 +2,12 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 
 from yeastphenome.apps.common.forms import SearchForm
-from yeastphenome.apps.common.utils import get_latest_stats, select_random_graph
+from yeastphenome.apps.common.utils import (
+    get_latest_stats,
+    select_random_graph,
+    get_papers_by_year,
+    get_phenotype_measurements,
+)
 from yeastphenome.apps.datasets.models import Dataset
 from yeastphenome.apps.papers.models import Paper
 
@@ -33,8 +38,20 @@ def index(request):
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def about(request):
+    return render(request, "main/about.html")
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def faq(request):
+    return render(request, "main/faq.html")
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def stats(request):
     context = get_latest_stats()
-    return render(request, "main/about.html", context)
+    context["paper_counts"] = get_papers_by_year()
+    context.update(get_phenotype_measurements(hide_legend=True))
+    return render(request, "main/stats.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
