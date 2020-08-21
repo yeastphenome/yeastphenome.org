@@ -50,6 +50,7 @@
 
     {% block body %}
     <body>
+    {% include "base/loader.html" %}
     <div id="wrap">        
     <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
     {% if request.path == "/" %}{% include "base/navigation-simple.html" %}{% else %}{% include "base/navigation.html" %}{% endif %}

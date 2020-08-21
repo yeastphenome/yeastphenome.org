@@ -1,4 +1,6 @@
 from django.conf.urls import include, url
+from django.contrib import admin
+from django.views.generic.base import TemplateView
 
 from yeastphenome.apps import papers
 from yeastphenome.apps.papers import urls as papers_urls
@@ -7,8 +9,6 @@ from yeastphenome.apps.phenotypes import urls as phenotypes_urls
 from yeastphenome.apps.conditions import urls as conditions_urls
 from yeastphenome.apps.datasets import urls as datasets_urls
 from yeastphenome.apps.api import urls as api_urls
-
-from django.contrib import admin
 
 admin.autodiscover()
 
@@ -25,5 +25,11 @@ urlpatterns = [
         r"^contributors/",
         papers.views.ContributorsListView.as_view(),
         name="contributors",
+    ),
+    url(
+        r"^robots\.txt?/$",
+        TemplateView.as_view(
+            template_name="base/robots.txt", content_type="text/plain"
+        ),
     ),
 ]

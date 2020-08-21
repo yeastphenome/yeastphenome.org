@@ -1,0 +1,233 @@
+{% extends "base/wide.html" %}
+{% load humanize %}
+{% block content %}
+<link rel='stylesheet' href='https://unpkg.com/@yaireo/tagify/dist/tagify.css'>
+
+<style>
+.customSuggestionsList > div{
+  max-height: 300px;
+  border: 2px solid pink;
+  overflow: auto;
+}
+.tagify {
+  width: 100%;
+  max-width: 700px;
+}
+
+.pen-intro{
+}
+
+input{
+  order: 5;
+}
+
+label[for='checkbox-tagify-show-input']{
+  position: absolute;
+  top: .85em;
+  left: 2.5em;
+
+}
+
+label[for='checkbox-tagify-show-input'] + input{
+  position: absolute;
+  top: 1em;
+  left: 1em;
+  transform: scale(1.4);
+}
+
+label[for='checkbox-tagify-show-input'] + input:checked ~ input,
+label[for='checkbox-tagify-show-input'] + input:checked ~ textarea{
+  display: block !important;
+  width: 100%;
+  max-width: 700px;
+  margin-top: 1.5em;
+}
+
+label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
+    min-height: 11ch;
+}
+</style>
+    <div class="col-md-3">
+        <div class="row">
+            <div class="col-md-12 public-homepage-side-panel">
+                <div class="box">
+                  <h3>Dataset Attributes</h3>
+                  <input name='tags' value="">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+               <h4>Legend</h4>
+                <ul class="list-group"><!--https://emojipedia.org/-->
+                  <li class="list-group-item">🏺 collection</li>
+                  <li class="list-group-item">🌨️ condition</li>
+                  <li class="list-group-item">💽 datatype</li>
+                  <li class="list-group-item">🧫 medium</li>
+                  <li class="list-group-item">🐶 phenotype</li>
+                  <li class="list-group-item">🏷️ tag</li>
+                  </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <div class="row">
+            <div class="col-md-12" style="padding-top:20px">
+                <form id="searchform">
+                {% csrf_token %}
+               <input type="text" name="q" class="form-control" placeholder="Search (press enter to search for only attributes)" required="" id="id_q">
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12" id="results" style="padding-bottom:30px">
+            </div>
+        </div>
+    </div>
+</div></div></div>
+{% endblock %}
+{% block scripts %}
+
+<script src='https://unpkg.com/@yaireo/tagify@3.17.7/dist/tagify.min.js'></script>
+<script>
+
+var tags = {{ tags | safe }}
+console.log(tags)
+
+var input = document.querySelector('input[name=tags]'),
+    tagify = new Tagify(input, {
+        pattern: /^.{0,200}$/,  // Validate typed tag(s) by Regex. Here maximum chars length is defined as "20"
+        delimiters: ",|;",      // add new tags when these characters are used
+        keepInvalidTags: false, // dont keep invalid tags
+        editTags: 1,            // single click to edit a tag
+        maxTags: 6,
+        blacklist: [],          // words to blacklist?
+        whitelist: tags,
+        transformTag: transformTag,
+        // backspace: "edit",
+        placeholder: "Add attributes",
+        dropdown : {
+            enabled: 1,            // show suggestion after 1 typed character
+            fuzzySearch: false,    // match only suggestions that starts with the typed characters
+            position: 'text',      // position suggestions list next to typed text
+            caseSensitive: true,   // allow adding duplicate items if their case is different
+        },
+        templates: {
+            dropdownItemNoMatch: function(data) {
+                return `<div class='${this.settings.classNames.dropdownItem}' tabindex="0" role="option">
+                    No suggestion found for: <strong>${data.value}</strong>
+                </div>`
+            },
+            tag : function(tagData){
+               try {
+                    return `<tag title='${tagData.value}' contenteditable='false' spellcheck="false" class='tagify__tag ${tagData.class ? tagData.class : ""}' ${this.getAttributes(tagData)}>
+                        <x title='remove tag' class='tagify__tag__removeBtn'></x>
+                        <div>${tagData.icon}
+                            <span class='tagify__tag-text'>${tagData.value}</span>
+                        </div>
+                    </tag>`
+               }
+               catch(err){}
+            },
+            dropdownItem : function(tagData){
+                try {
+                    return `<div class='tagify__dropdown__item ${tagData.class ? tagData.class : ""}' tagifySuggestionIdx="${tagData.tagifySuggestionIdx}">${tagData.icon}
+                            <span>${tagData.value}</span>
+                        </div>`
+                }
+                catch(err){}
+              }
+            }
+        })
+
+// generate a random color (in HSL format)
+function getRandomColor(){
+    function rand(min, max) {
+        return min + Math.random() * (max - min);
+    }
+
+    var h = rand(1, 360)|0,
+        s = rand(40, 70)|0,
+        l = rand(65, 72)|0;
+
+    return 'hsl(' + h + ',' + s + '%,' + l + '%)';
+}
+
+function transformTag( tagData ){
+    tagData.style = "--tag-bg:" + getRandomColor();
+
+    if( tagData.value.toLowerCase() == 'shit' )
+       tagData.value = 's✲✲t'
+}
+
+tagify.on('invalid', function(e){
+    console.log(e, e.detail);
+})
+
+tagify.on('add', function(e){
+    console.log(e.detail)
+    console.log( "original Input:", tagify.DOM.originalInput);
+    console.log( "original Input's value:", tagify.DOM.originalInput.value);
+    console.log( "event detail:", e.detail);
+});
+
+// add the first 2 tags and makes them readonly
+//var tagsToAdd = tagify.settings.whitelist.slice(0, 2)
+//tagify.addTags(tagsToAdd)
+
+$("#id_q").bind("keypress", {}, keypressSearch);
+
+function keypressSearch(e) {
+    var code = (e.keyCode ? e.keyCode : e.which);
+    if (code == 13) { //Enter keycode                        
+        e.preventDefault();
+        doTagsSearch();
+    }
+};
+
+
+// Function to retrieve attributes and do search
+function doTagsSearch() {
+
+   $("#fade").show();
+   var promise = new Promise(function(resolve, reject) {
+        var tags = $('[name=tags]').val();
+        var query = $("#id_q").val();
+        console.log(tags)
+        return resolve({"tags": tags, "query": query});
+            
+   }).then(function(query){
+       $.ajax({
+           url : "{% url 'api:tags_search' %}",
+           type : "POST",
+           data : { query: query }, // data sent with the post request
+
+           // handle a successful response
+           success : function(json) {
+              console.log(json); // log the returned json to the console
+              $("#results").empty()             
+              if (json['count'] == 0){
+                  $('#results').html("<div class='alert alert-info'>There we no results for your search.");
+              } else {
+                  $("#results").append("<div class='alert alert-info'>Found " + json['count'] + " results.");
+                  $.each(json['results'], function(e, i) {
+                     // 'dataset id', 'dataset name', 'collection name', 'datatype of data published', 'paperid', 'tags'
+                    $("#results").append("<div class='box'><p>Dataset: <a href='/datasets/" + i[0] + "'>" + i[1] + "</a></p><p>Collection: " + i[2]+ "</p><p>Datatype of Published Data: '"+ i[3] +"'</p><p><a href='/papers/"+ i[4]+"'>Link to Paper</a></p><p>Tags: " + i[5]+ "</p></div>")
+                  })
+                  console.log("success"); // another sanity check
+                  $("#fade").hide();
+              }
+           },
+
+           // handle a non-successful response
+           error : function(xhr, errmsg, err) {
+              $('#results').html("<div class='alert alert-warning' data-alert>Oops! We have encountered an error: "+errmsg+
+                        " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
+                        console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+           }
+     })
+   })
+}
+</script>
+
+{% endblock %}

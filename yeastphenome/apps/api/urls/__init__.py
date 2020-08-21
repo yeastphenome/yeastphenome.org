@@ -37,3 +37,4 @@ urlpatterns = [
 ]
 
 urlpatterns += router_urls
+app_name = "api"

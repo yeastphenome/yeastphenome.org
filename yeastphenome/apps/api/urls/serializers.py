@@ -1,7 +1,10 @@
 from django.conf import settings
 
 from yeastphenome.apps.papers.models import Paper
+
+# from yeastphenome.apps.datasets.models import DataType
 from yeastphenome.apps.papers.utils import get_paper_references_context
+from yeastphenome.apps.common.search import run_search_tag_query
 
 # from yeastphenome.apps.conditions.models import ConditionSet, ConditionType
 # from yeastphenome.apps.phenotypes.models import Phenotype
@@ -15,7 +18,7 @@ from ratelimit.mixins import RatelimitMixin
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+import json
 
 # Papers
 
@@ -49,6 +52,37 @@ class PaperViewSet(viewsets.ModelViewSet):
     permission_classes = (IsStaffOrSuperUser,)
 
 
+class TagsSearch(RatelimitMixin, APIView):
+    """A search to take a query, and filter by specific tags
+    """
+
+    ratelimit_key = "ip"
+    ratelimit_rate = settings.VIEW_RATE_LIMIT
+    ratelimit_block = settings.VIEW_RATE_LIMIT_BLOCK
+    ratelimit_method = "POST"
+    renderer_classes = (JSONRenderer,)
+
+    def post(self, request):
+        print("POST tags search")
+        query = request.POST.get("query[query]", "")
+        tags = request.POST.get("query[tags]", "[]") or "[]"
+
+        # Start of results
+        results = {}
+
+        # Load the tags as json
+        try:
+            tags = json.loads(tags)
+            results.update(run_search_tag_query(query, tags))
+        except:
+            results[
+                "message"
+            ] = "There was an issue parsing your query! Please <a href='https://github.com/yeastphenome/yeastphenome.org/issues'>submit a ticket</a>"
+            tags = {}
+
+        return Response(status=200, data=results)
+
+
 class GetPaperReferences(RatelimitMixin, APIView):
     """Given a paper id, get all references for it to populate a graph.
     """
@@ -56,7 +90,7 @@ class GetPaperReferences(RatelimitMixin, APIView):
     ratelimit_key = "ip"
     ratelimit_rate = settings.VIEW_RATE_LIMIT
     ratelimit_block = settings.VIEW_RATE_LIMIT_BLOCK
-    ratelimit_method = "POST"
+    ratelimit_method = "GET"
     renderer_classes = (JSONRenderer,)
 
     def get(self, request, paper_id):
