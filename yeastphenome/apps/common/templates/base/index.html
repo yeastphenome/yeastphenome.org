@@ -7,7 +7,12 @@
         <div class="row">
             <h1 style="color: black; text-align:center">Explore Phenotypic Screens in Yeast</h1><br>
             <div style="max-width: 600px; margin:auto">
-                <input type="text" placeholder="Enter a gene, phenotype, or condition." class="homepage-search selectized" id="global-search-dropdown-homepage" tabindex="-1" style="display: none;" value=""><div class="selectize-control homepage-search single"><div class="selectize-input items not-full"><input type="text" autocomplete="off" tabindex="" id="global-search-dropdown-homepage-selectized" placeholder="Enter a gene, cell line, lineage or compound" style="width: 265px; opacity: 1; position: relative; left: 0px;"></div><div class="selectize-dropdown single homepage-search" style="display: none; width: 600px; top: 34px; left: 0px;"><div class="selectize-dropdown-content"></div></div></div>
+
+    <form method="GET" action="{% url 'common:explorer' %}">
+      <input style="width: 600px; opacity: 1; position: relative; left: 0px;" class="form-control mr-sm-2" type="search" placeholder="Search" name="q" aria-label="Search">
+      <button class="btn btn-outline-success my-2 my-sm-0" style="display:none" type="submit">Search</button>
+    </form>
+
             </div>
         </div>
     </div>

@@ -9,7 +9,6 @@ urlpatterns = [
     path("stats/", views.stats, name="stats"),
     path("faq/", views.faq, name="faq"),
     path("contributors/", views.contributors, name="contributors"),
-    path("getting-started/", views.getting_started, name="getting-started"),
     path("explorer/", views.data_explorer, name="explorer"),
     path("cart/", views.view_cart, name="view_cart"),
     path("cart/add/<str:dataset_id>/<str:next>", views.add_to_cart, name="add_to_cart"),
@@ -19,6 +18,12 @@ urlpatterns = [
         name="remove_from_cart",
     ),
     path("cart/clear/", views.clear_cart, name="clear_cart"),
+    # Getting Started
+    path("getting-started/", views.getting_started, name="getting-started"),
+    path("getting-started/introduction/", views.introduction, name="introduction"),
+    path("getting-started/background/", views.background, name="background"),
+    path("getting-started/advanced/", views.advanced, name="advanced"),
+    path("getting-started/tutorials/", views.tutorials, name="tutorials"),
 ]
 
 # Graphs
@@ -49,6 +54,9 @@ graphs = [
         "graph/phenotypes/measurements/",
         graphs.phenotype_measurements,
         name="phenotype-measurements-graph",
+    ),
+    path(
+        "graph/dataset/sources/", graphs.dataset_sources, name="dataset-sources-graph",
     ),
 ]
 

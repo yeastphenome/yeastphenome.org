@@ -3,12 +3,13 @@ from django.contrib import messages
 
 from yeastphenome.apps.common.forms import SearchForm
 from yeastphenome.apps.common.utils import (
+    get_dataset_sources,
     get_latest_stats,
     select_random_graph,
     get_papers_by_year,
     get_phenotype_measurements,
 )
-from yeastphenome.apps.common.search import get_search_tags
+from yeastphenome.apps.common.search import get_search_tags, run_search_tag_query
 from yeastphenome.apps.datasets.models import Dataset
 from yeastphenome.apps.papers.models import Paper
 
@@ -52,6 +53,7 @@ def stats(request):
     context = get_latest_stats()
     context["paper_counts"] = get_papers_by_year()
     context.update(get_phenotype_measurements(hide_legend=True))
+    context.update(get_dataset_sources())
     return render(request, "main/stats.html", context)
 
 
@@ -60,9 +62,35 @@ def contributors(request):
     return render(request, "main/contributors.html")
 
 
+# Getting Started Pages
+
+
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def getting_started(request):
-    return render(request, "main/getting-started.html")
+    return render(request, "getting-started/getting-started.html")
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def background(request):
+    return render(request, "getting-started/background.html")
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def advanced(request):
+    return render(request, "getting-started/advanced.html")
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def tutorials(request):
+    return render(request, "getting-started/tutorials.html")
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def introduction(request):
+    return render(request, "getting-started/introduction.html")
+
+
+# Data Explorer
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
@@ -71,7 +99,7 @@ def data_explorer(request):
     context = {"tags": get_search_tags()}
     if "q" in request.GET:
         query = request.GET["q"].strip()
-        print(query)
+        context["results"] = run_search_tag_query(query)
 
     return render(request, "main/data-explorer.html", context)
 

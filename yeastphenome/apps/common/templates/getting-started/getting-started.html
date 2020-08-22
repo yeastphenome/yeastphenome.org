@@ -1,0 +1,41 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+{% block content %}
+    <div class="col-md-12">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="box" style="height:400px">
+                    <p><a class="box-title" href="{% url 'common:introduction' %}">Introduction to YeastPhenome.org</a></p>
+                    <p>Do you need more information before getting started? Are you interested in:
+                      <ul>
+                       <li>What is this data?</li>
+                       <li>Where is it coming from?</li>
+                       <li>What data formats are available?</li>
+                       <li>What do the numbers mean?</li>
+                       <li>How do I read headers?</li>
+                      </ul></p>
+                     <p>Then you might want to start with our <a class="box-title" href="{% url 'common:introduction' %}">introduction page</a>.</p>
+                </div>
+                <hr>
+                <div class="box" style="height:400px">
+                    <p><a class="box-title" href="{% url 'common:background' %}">Why Yeast?</a></p>
+                    <p>Why do we want to study yeast? Are you interested in the biological perspective behind YeastPhenome.org? If yes,
+                       then you might be interested to read the <a class="box-title" href="{% url 'common:background' %}">background page</a></p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="box" style="height:400px">
+                    <p><a class="box-title" href="{% url 'common:tutorials' %}">Tutorials</a></p>
+                    <p>Are you ready to jump into interacting with data?  Check out our <a class="box-title" href="{% url 'common:tutorials' %}">tutorials</a> page for interactive notebooks and guides.</p>
+                </div>
+                <hr>
+                <div class="box" style="height:400px">
+                    <p><a class="box-title" href="{% url 'common:advanced' %}">Advanced</a></p>
+                    <p>Read more about <a class="box-title" href="{% url 'common:advanced' %}">advanced</a> interaction and functionality
+                       of the site, including Application Programming interfaces, supporting tools, and data formats.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div></div></div>
+{% endblock %}

@@ -1,5 +1,6 @@
-from django.views import generic
+from django.core.paginator import Paginator
 from django.conf import settings
+from django.views import generic
 
 from yeastphenome.apps.phenotypes.models import Observable
 
@@ -8,7 +9,16 @@ class ObservableIndexView(generic.ListView):
     model = Observable
     template_name = "phenotypes/index.html"
     context_object_name = "observables"
-    queryset = Observable.objects.order_by("name").all()
+
+    def get_context_data(self, **kwargs):
+        context = super(ObservableIndexView, self).get_context_data(**kwargs)
+        queryset = Observable.objects.order_by("name").all()
+
+        # 50 results per page
+        paginator = Paginator(queryset, 50)
+        page = self.request.GET.get("page")
+        context["observables"] = paginator.get_page(page)
+        return context
 
 
 class ObservableDetailView(generic.DetailView):

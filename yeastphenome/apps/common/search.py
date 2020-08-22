@@ -53,7 +53,7 @@ def get_search_tags():
     return datatypes + tags + collections + mediums + phenotypes + conditions
 
 
-def run_search_tag_query(query, taglist):
+def run_search_tag_query(query, taglist=None):
     """this function is called from the common/views.py for the explorer function
        It takes in a list of tags (and associated models) to build a query. E.g.:
        [{'value': 'human protein', 'icon': '🏷️', 'code': 'tag', 'style': '--tag-bg:hsl(108,45%,65%)'}, {'value': 'hap a/hap alpha/hom', 'icon': '🏺', 'code': 'collection', 'style': '--tag-bg:hsl(267,63%,69%)'}, {'value': 'haploid MatA', 'icon': '🏺', 'code': 'collection', 'style': '--tag-bg:hsl(24,51%,69%)'}]
@@ -61,7 +61,7 @@ def run_search_tag_query(query, taglist):
     """
     # First do a search based on the tags, assemble those of liked kind
     tags = {}
-    for tag in taglist:
+    for tag in taglist or []:
         if tag["code"] not in tags:
             tags[tag["code"]] = []
         tags[tag["code"]].append(tag["value"])

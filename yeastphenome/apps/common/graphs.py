@@ -4,6 +4,7 @@ from ratelimit.decorators import ratelimit
 from yeastphenome.apps.datasets.models import Dataset
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.common.utils import (
+    get_dataset_sources,
     get_papers_by_year,
     get_collections_by_year,
     get_phenotype_measurements,
@@ -92,4 +93,15 @@ def phenotype_measurements(request):
         request,
         "graphs/phenotype-measurements-wrapper.html",
         get_phenotype_measurements(),
+    )
+
+
+# Datasets
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def dataset_sources(request):
+    """Render a chart.js visualization for datastes broken down by sources"""
+    return render(
+        request, "graphs/dataset-sources-wrapper.html", get_dataset_sources(),
     )

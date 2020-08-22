@@ -69,6 +69,21 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
                   </ul>
             </div>
         </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="btn-group">
+               <h4>Browse</h4>
+		<div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+		  <div class="btn-group mr-2" role="group" aria-label="First group">
+		    <button type="button" class="btn btn-default"><a href="{% url 'datasets:index' %}">Datasets</a></button>
+		    <button type="button" class="btn btn-default"><a class="dropdown-item" href="{% url 'papers:all' %}">Papers</a></button>
+		    <button type="button" class="btn btn-default"><a href="{% url 'conditions:index' %}">Conditions</a></button>
+		    <button type="button" class="btn btn-default"><a href="{% url 'phenotypes:index' %}">Phenotypes</a></button>
+		  </div>
+		</div>
+            </div>
+        </div>
+      </div>
     </div>
     <div class="col-md-9">
         <div class="row">
@@ -80,8 +95,14 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
             </div>
         </div>
         <div class="row">
-            <div class="col-md-12" id="results" style="padding-bottom:30px">
-            </div>
+            <div class="col-md-12" id="results" style="padding-bottom:30px">{% if results %}
+               {% if results.count == 0 %}
+                  <div class="alert alert-info">There we no results for your search.</div>
+               {% else %}
+                  <div class="alert alert-info">We found {{ results.count }} results for your search.</div>
+               {% for result in results.results %}<div class="box"><p>Dataset: <a href="/datasets/{{ result.0 }}">{{ result.1 }}</a></p><p>Collection: {{ result.2 }}</p><p>Datatype of Published Data: {{ result.3 }}</p><p><a href="/papers/{{ result.4 }}">Link to Paper</a></p><p>{% if result.5 %}Tags: {{ result.5 }}{% endif %}</p></div>{% endfor %}
+               {% endif %}
+            </div>{% endif %}
         </div>
     </div>
 </div></div></div>
@@ -207,12 +228,12 @@ function doTagsSearch() {
               console.log(json); // log the returned json to the console
               $("#results").empty()             
               if (json['count'] == 0){
-                  $('#results').html("<div class='alert alert-info'>There we no results for your search.");
+                  $('#results').html("<div class='alert alert-info'>There we no results for your search.</div>");
               } else {
-                  $("#results").append("<div class='alert alert-info'>Found " + json['count'] + " results.");
+                  $("#results").append("<div class='alert alert-info'>Found " + json['count'] + " results.</div>");
                   $.each(json['results'], function(e, i) {
                      // 'dataset id', 'dataset name', 'collection name', 'datatype of data published', 'paperid', 'tags'
-                    $("#results").append("<div class='box'><p>Dataset: <a href='/datasets/" + i[0] + "'>" + i[1] + "</a></p><p>Collection: " + i[2]+ "</p><p>Datatype of Published Data: '"+ i[3] +"'</p><p><a href='/papers/"+ i[4]+"'>Link to Paper</a></p><p>Tags: " + i[5]+ "</p></div>")
+                    $("#results").append("<div class='box'><p>Dataset: <a href='/datasets/" + i[0] + "'>" + i[1] + "</a></p><p>Collection: " + i[2]+ "</p><p>Datatype of Published Data: '"+ i[3] +"'</p><p><a href='/papers/"+ i[4]+"'>Link to Paper</a></p></div>")
                   })
                   console.log("success"); // another sanity check
                   $("#fade").hide();

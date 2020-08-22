@@ -11,6 +11,8 @@ from .utils import (
 )
 
 import os
+
+from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.conf import settings
@@ -26,7 +28,8 @@ from yeastphenome.settings import (
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def paper_list_view(request):
-
+    """Return a paginated list of papers
+    """
     queryset = Paper.objects.all()
 
     # Exclude the papers marked as "not relevant"
@@ -61,10 +64,13 @@ def paper_list_view(request):
     else:
         q = ""
 
-    queryset = queryset.distinct().order_by("pmid")
+    # 50 results per page
+    paginator = Paginator(queryset, 50)
+    page = request.GET.get("page")
+
     context = {
         "paper_counts": get_papers_by_year(),
-        "papers_list": queryset,
+        "papers_list": paginator.get_page(page),
         "q": q,
     }
     return render(request, "papers/index.html", context)

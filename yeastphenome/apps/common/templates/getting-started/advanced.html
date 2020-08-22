@@ -1,0 +1,42 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>Advanced</h2>
+        <div class="accordion" id="accordionFAQ">
+
+            <div class="card">
+                <div class="card-header" id="headingOne">
+                  <h2>
+                  <button style="padding-left:0px" class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">Application Programming Interfaces</button>
+                  </h2>
+                </div>
+                <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionFAQ">
+                    <div class="card-body">
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="card">
+                <div class="card-header" id="headingTwo">
+                  <h2>
+                  <button style="padding-left:0px" class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">Headers and Data Formats</button>
+                  </h2>
+                </div>
+                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionFAQ">
+                    <div class="card-body">
+                    </div>
+                </div>
+            </div>
+
+       </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+$('.collapse').collapse()
+</script>
+{% endblock %}

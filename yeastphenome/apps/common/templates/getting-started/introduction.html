@@ -1,0 +1,80 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>Introduction to YeastPhenome.org</h2>
+        <div class="accordion" id="accordionFAQ">
+
+            <div class="card">
+                <div class="card-header" id="headingOne">
+                  <h2>
+                  <button style="padding-left:0px" class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">What is this data?</button>
+                  </h2>
+                </div>
+                <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionFAQ">
+                    <div class="card-body">
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="card">
+                <div class="card-header" id="headingTwo">
+                  <h2>
+                  <button style="padding-left:0px" class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">Where is it coming from?</button>
+                  </h2>
+                </div>
+                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionFAQ">
+                    <div class="card-body">
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="card">
+                <div class="card-header" id="headingThree">
+                  <h2>
+                  <button style="padding-left:0px" class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">What data formats are available?</button>
+                  </h2>
+                </div>
+                <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionFAQ">
+                    <div class="card-body">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header" id="headingFour">
+                  <h2>
+                  <button style="padding-left:0px" class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">What do the numbers mean?</button>
+                  </h2>
+                </div>
+                <div id="collapseFour" class="collapse" aria-labelledby="headingFour" data-parent="#accordionFAQ">
+                    <div class="card-body">
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="card">
+                <div class="card-header" id="headingFive">
+                  <h2>
+                  <button style="padding-left:0px" class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">How do I read data file headers?</button>
+                  </h2>
+                </div>
+                <div id="collapseFive" class="collapse" aria-labelledby="headingFive" data-parent="#accordionFAQ">
+                    <div class="card-body">
+                    </div>
+                </div>
+            </div>
+
+       </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+$('.collapse').collapse()
+</script>
+{% endblock %}
