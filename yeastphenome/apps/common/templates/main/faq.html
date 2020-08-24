@@ -5,6 +5,7 @@
     <div class="col-md-12">
         <h2>Frequently Asked Questions</h2>
         <div class="accordion" id="accordionExample">
+
             <div class="card">
                 <div class="card-header" id="headingOne">
                   <h2>
@@ -20,6 +21,34 @@
                     </div>
                 </div>
             </div>
+
+
+            <div class="card">
+                <div class="card-header" id="headingTwo">
+                  <h2>
+                  <button style="padding-left:0px" class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">How do I cite data downloaded from YeastPhenome.org?</button>
+                  </h2>
+                </div>
+                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+                    <div class="card-body">
+                     See Data usage and citation policy <a href="{% url 'common:about' %}#citation">on the About page</a>.
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="card">
+                <div class="card-header" id="headingThree">
+                  <h2>
+                  <button style="padding-left:0px" class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">Are you planning to include data for other yeast libraries (e.g., ts mutants)?</button>
+                  </h2>
+                </div>
+                <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionExample">
+                    <div class="card-body">At the moment, we are entirely focused on the yeast knock-out library and are not systematically collecting data for any other strain collection. This approach helps us limit the scope of our search and maximize completeness. However, as we encounter publications that systematically examine other libraries, we add them to a running list that one day may act as a starting point for a new project. We are open for collaborations with anyone who is interested in taking on the curation and systematic analysis of these data.
+                    </div>
+                </div>
+            </div>
+
        </div>
     </div>
 </div>
