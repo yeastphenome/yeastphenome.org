@@ -16,11 +16,11 @@
             </div>
         </div>
     </div>
-    <div class="col-md-8">
+    <div class="col-md-8" id="main-column">
         <div class="row">
             <div class="col-md-6">
                 <div class="box" style="height:200px">
-                    <p><a class="box-title" href="{% url 'common:about' %}">About</a></p>
+                    <p><h3>About</h3></p>
                     <p>Our goal is to collect, organize and share in a standardized format all phenotypic screens of the <em>Saccharomyces cerevisiae</em> deletion collection. <a class="hotlink" href="{% url 'common:about' %}">Learn more</a> in the about pages or learn how to <a class="hotlink" href="{% url 'common:getting-started' %}">Get Started</a> or <a class="hotlink" href="{% url 'common:explorer' %}">Explore Data</a></p>
                 </div>
                 <hr>
@@ -47,8 +47,9 @@
                 </div>
                 <hr>
                 <div class="box" style="height:200px">
-                    <p><a class="box-title" href="">Downloads</a></p>
-                    <p><a class="box-title" href="">Papers</a>
+                    {% if request.session.cart %}<p><h3>Downloads</h3></p>
+                    <li><a href="{{ paper.get_absolute_url }}" class="hotlink">Download Cart</a></li>{% endif %}
+                    <p><h3>Papers</h3>
                     <ul>
                     <li><a href="{{ paper.get_absolute_url }}" class="hotlink">Most Recent Paper</a></li>
                     <li><a href="{{ paper_latest.get_absolute_url }}" class="hotlink">Recently Updated</a></li>
@@ -65,7 +66,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-4" id="twitter-column">
         <div class="row">
             <div class="col-md-12 public-homepage-side-panel">
                 <div class="box">
@@ -96,4 +97,16 @@
         </div>
     </div>
 </div>
+{% endblock %}
+{% block scripts %}
+{% include "scripts/check-private-mode.html" %}
+<script>
+// The Twitter feed won't render in private mode
+isPrivateMode().then(function (isPrivate) {
+  console.log('Browsing in private mode? ', isPrivate);
+  $("#twitter-column").hide();
+  $("#main-column").addClass("col-md-12");
+  $("#main-column").removeClass("col-md-8"); 
+});
+</script>
 {% endblock %}

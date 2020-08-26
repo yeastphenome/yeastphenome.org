@@ -18,7 +18,6 @@ from django.conf import settings
 
 from ratelimit.mixins import RatelimitMixin
 from ratelimit.decorators import ratelimit
-from yeastphenome.apps.common.utils import get_papers_by_year
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
     VIEW_RATE_LIMIT_BLOCK as rl_block,
@@ -68,7 +67,6 @@ def paper_list_view(request):
     page = request.GET.get("page")
 
     context = {
-        "paper_counts": get_papers_by_year(),
         "papers_list": paginator.get_page(page),
         "q": q,
     }

@@ -51,7 +51,7 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
         <div class="row">
             <div class="col-md-12 public-homepage-side-panel">
                 <div class="box">
-                  <h3>Dataset Attributes</h3>
+                  <h3>Dataset Filters</h3>
                   <input name='tags' value="">
                 </div>
             </div>
@@ -236,8 +236,8 @@ function doTagsSearch() {
                     $("#results").append("<div class='box'><p>Dataset: <a href='/datasets/" + i[0] + "'>" + i[1] + "</a></p><p>Collection: " + i[2]+ "</p><p>Datatype of Published Data: '"+ i[3] +"'</p><p><a href='/papers/"+ i[4]+"'>Link to Paper</a></p></div>")
                   })
                   console.log("success"); // another sanity check
-                  $("#fade").hide();
               }
+              $("#fade").hide();
            },
 
            // handle a non-successful response

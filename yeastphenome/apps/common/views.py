@@ -35,7 +35,7 @@ def index(request):
 
     # Select a random graph to add to the context
     context.update(select_random_graph())
-    return render(request, "base/index.html", context)
+    return render(request, "main/index.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)

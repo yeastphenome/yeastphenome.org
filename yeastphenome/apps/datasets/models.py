@@ -284,10 +284,16 @@ class Dataset(models.Model):
     link_edit.allow_tags = True
 
 
+# class Gene()
+#    systematic_name (orf)
+#    common_name
+#    aliases
+
+
 class Data(models.Model):
     dataset = models.ForeignKey(Dataset, on_delete=models.DO_NOTHING)
     value = models.DecimalField(max_digits=10, decimal_places=3)
     orf = models.CharField(max_length=50)
-
+    # gene =
     def __str__(self):
         return "%s - %s" % (self.orf, self.value)

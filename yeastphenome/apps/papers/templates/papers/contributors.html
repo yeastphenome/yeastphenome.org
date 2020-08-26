@@ -1,10 +1,10 @@
-{% extends "base/wide.html" %}
+{% extends "base/base.html" %}
 {% load static %}
 {% block title %}Contributors / {{ SITE_NAME }}{% endblock %}
 {% block content %}
 <div class="row">
     <div class="col-md-12">
-        <h1>Contributors</h1>
+        <h1>Contributors <span style='float:right'>🗒️</span></h1>
         {% if papers_list.count != 0 %}<p>A special thanks goes to the authors of these <strong>{{ papers_list.count }} publications</strong> who have provided unpublished versions of their datasets, including raw quantitative data and/or lists of tested genes.</p>{% endif %}
         {% if papers_list %}
         <table id="papersTable" class="tablesorter table table-condensed" width="100%">

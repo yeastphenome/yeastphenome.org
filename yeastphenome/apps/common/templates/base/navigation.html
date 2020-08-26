@@ -56,19 +56,22 @@
     <div class="collapse navbar-collapse" id="global-navbar">
       <ul class="nav navbar-nav navbar-right">
         <li class="dropdown">
-          <a href="{% url 'common:getting-started' %}" role="button" aria-haspopup="true" aria-expanded="false">Getting Started <i class="fas fa-caret-down" aria-hidden="true"></i></a>
+          <a href="{% url 'common:getting-started' %}" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Getting Started <i class="fas fa-caret-down" aria-hidden="true"></i></a>
           <ul class="dropdown-menu dropdown-menu-left">
+            <li><a href="{% url 'common:getting-started' %}">Getting Started Home</a></li>
+            <li style="margin: 8px 0" role="separator" class="divider"></li>
             <li><a href="{% url 'common:introduction' %}">Introduction</a></li>
             <li><a href="{% url 'common:background' %}">Background</a></li>
             <li><a href="{% url 'common:tutorials' %}">Tutorials</a></li>
-            <li role="separator" class="divider"></li>
             <li><a href="{% url 'common:advanced' %}">Advanced</a></li>
           </ul>
         </li>
         <li class="dropdown">
-          <a href="{% url 'common:explorer' %}" role="button" aria-haspopup="true" aria-expanded="false">Explore Data <i class="fas fa-caret-down" aria-hidden="true"></i></a>
+          <a role="button" aria-haspopup="true" data-toggle="dropdown" aria-expanded="false">Explore Data <i class="fas fa-caret-down" aria-hidden="true"></i></a>
           <ul class="dropdown-menu dropdown-menu-left">
-            <li><a href="{% url 'datasets:index' %}">Datasets</a></li>
+              <li><a href="{% url 'common:explorer' %}">Explore Data Home</a></li>
+              <li style="margin: 8px 0" role="separator" class="divider"></li>
+              <li><a href="{% url 'datasets:index' %}">Datasets</a></li>
               <li><a href="{% url 'papers:all' %}">Papers</a></li>            
               <li><a href="{% url 'phenotypes:index' %}">Phenotypes</a></li>
               <li><a href="{% url 'conditions:index' %}">Conditions</a></li>
@@ -77,8 +80,11 @@
         {% if TWITTER_USERNAME %}<li class="visible-xs-block"><a href="https://twitter.com/{{ TWITTER_USERNAME }}" target="_blank" rel="noopener"><i class="fab fa-twitter"></i> @{{ TWITTER_USERNAME }}</a></li>{% endif %}
         </li>
         <li class="dropdown">
-          <a href="{% url 'common:about' %}" role="button" aria-haspopup="true" aria-expanded="false">About <i class="fas fa-caret-down" aria-hidden="true"></i></a>
+          <a role="button" aria-haspopup="true" data-toggle="dropdown" aria-expanded="false">About <i class="fas fa-caret-down" aria-hidden="true"></i></a>
           <ul class="dropdown-menu dropdown-menu-left">
+            <li><a href="{% url 'common:about' %}">About Home</a></li>
+            <li style="margin: 8px 0" role="separator" class="divider"></li>
+            <li><a href="{% url 'papers:contributors' %}">Paper Contributors</a></li>
             <li><a href="{% url 'common:contributors' %}">Contributors</a></li>
             <li><a href="{% url 'common:faq' %}">Frequently Asked Questions</a></li>
             <li><a href="{% url 'common:stats' %}">Stats</a></li>
