@@ -8,7 +8,7 @@
             <h1 style="color: black; text-align:center">Explore Phenotypic Screens in Yeast</h1><br>
             <div style="max-width: 600px; margin:auto">
 
-    <form method="GET" action="{% url 'common:explorer' %}">
+    <form method="GET" action="{% url 'datasets:index' %}">
       <input style="width: 600px; opacity: 1; position: relative; left: 0px;" class="form-control mr-sm-2" type="search" placeholder="Search" name="q" aria-label="Search">
       <button class="btn btn-outline-success my-2 my-sm-0" style="display:none" type="submit">Search</button>
     </form>
@@ -21,7 +21,7 @@
             <div class="col-md-6">
                 <div class="box" style="height:200px">
                     <p><h3>About</h3></p>
-                    <p>Our goal is to collect, organize and share in a standardized format all phenotypic screens of the <em>Saccharomyces cerevisiae</em> deletion collection. <a class="hotlink" href="{% url 'common:about' %}">Learn more</a> in the about pages or learn how to <a class="hotlink" href="{% url 'common:getting-started' %}">Get Started</a> or <a class="hotlink" href="{% url 'common:explorer' %}">Explore Data</a></p>
+                    <p>Our goal is to collect, organize and share in a standardized format all phenotypic screens of the <em>Saccharomyces cerevisiae</em> deletion collection. <a class="hotlink" href="{% url 'common:about' %}">Learn more</a> in the about pages or learn how to <a class="hotlink" href="{% url 'common:getting-started' %}">Get Started</a> or <a class="hotlink" href="{% url 'datasets:index' %}">Explore Data</a></p>
                 </div>
                 <hr>
                 <div class="box" style="height:200px">

@@ -4,7 +4,7 @@ from yeastphenome.apps.papers.models import Paper
 
 # from yeastphenome.apps.datasets.models import DataType
 from yeastphenome.apps.papers.utils import get_paper_references_context
-from yeastphenome.apps.common.search import run_search_tag_query
+from yeastphenome.apps.datasets.search import run_search_tag_query
 
 # from yeastphenome.apps.conditions.models import ConditionSet, ConditionType
 # from yeastphenome.apps.phenotypes.models import Phenotype
@@ -52,7 +52,7 @@ class PaperViewSet(viewsets.ModelViewSet):
     permission_classes = (IsStaffOrSuperUser,)
 
 
-class TagsSearch(RatelimitMixin, APIView):
+class DatasetsSearch(RatelimitMixin, APIView):
     """A search to take a query, and filter by specific tags
     """
 

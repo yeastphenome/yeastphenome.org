@@ -9,7 +9,6 @@ from yeastphenome.apps.common.utils import (
     get_papers_by_year,
     get_phenotype_measurements,
 )
-from yeastphenome.apps.common.search import get_search_tags, run_search_tag_query
 from yeastphenome.apps.datasets.models import Dataset
 from yeastphenome.apps.papers.models import Paper
 
@@ -88,20 +87,6 @@ def tutorials(request):
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def introduction(request):
     return render(request, "getting-started/introduction.html")
-
-
-# Data Explorer
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def data_explorer(request):
-
-    context = {"tags": get_search_tags()}
-    if "q" in request.GET:
-        query = request.GET["q"].strip()
-        context["results"] = run_search_tag_query(query)
-
-    return render(request, "main/data-explorer.html", context)
 
 
 # Cart Operations

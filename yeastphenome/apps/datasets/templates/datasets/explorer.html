@@ -102,7 +102,9 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
                   <div class="alert alert-info">We found {{ results.count }} results for your search.</div>
                {% for result in results.results %}<div class="box"><p>Dataset: <a href="/datasets/{{ result.0 }}">{{ result.1 }}</a></p><p>Collection: {{ result.2 }}</p><p>Datatype of Published Data: {{ result.3 }}</p><p><a href="/papers/{{ result.4 }}">Link to Paper</a></p><p>{% if result.5 %}Tags: {{ result.5 }}{% endif %}</p></div>{% endfor %}
                {% endif %}
-            </div>{% endif %}
+            </div>{% endif %}{% if datasets %}
+              {% include "datasets/datasets_table.html" with template='datasets_class' %}
+             {% endif %}
         </div>
     </div>
 </div></div></div>
@@ -112,8 +114,8 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
 <script src='https://unpkg.com/@yaireo/tagify@3.17.7/dist/tagify.min.js'></script>
 <script>
 
+var cart = {{ cart | safe }}
 var tags = {{ tags | safe }}
-console.log(tags)
 
 var input = document.querySelector('input[name=tags]'),
     tagify = new Tagify(input, {
@@ -206,6 +208,9 @@ function keypressSearch(e) {
     }
 };
 
+function AddCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
 
 // Function to retrieve attributes and do search
 function doTagsSearch() {
@@ -219,21 +224,44 @@ function doTagsSearch() {
             
    }).then(function(query){
        $.ajax({
-           url : "{% url 'api:tags_search' %}",
+           url : "{% url 'api:datasets_search' %}",
            type : "POST",
            data : { query: query }, // data sent with the post request
 
            // handle a successful response
            success : function(json) {
               console.log(json); // log the returned json to the console
-              $("#results").empty()             
+
+             // stopped here! need to make sure fields are properly added.
+              $("#papersTableBody").empty()                        
+
               if (json['count'] == 0){
                   $('#results').html("<div class='alert alert-info'>There we no results for your search.</div>");
               } else {
                   $("#results").append("<div class='alert alert-info'>Found " + json['count'] + " results.</div>");
+
+                  // data type lookup, int to correspond to name
+                  var datatypes = json['datatypes']
+
                   $.each(json['results'], function(e, i) {
-                     // 'dataset id', 'dataset name', 'collection name', 'datatype of data published', 'paperid', 'tags'
-                    $("#results").append("<div class='box'><p>Dataset: <a href='/datasets/" + i[0] + "'>" + i[1] + "</a></p><p>Collection: " + i[2]+ "</p><p>Datatype of Published Data: '"+ i[3] +"'</p><p><a href='/papers/"+ i[4]+"'>Link to Paper</a></p></div>")
+
+                   // (dataset_id, data_available, paper id, first author, last author, date published, phenotype_observable_name, reporter, conditionset, medium, collection, data_published_name)
+                   // (1, 3, 2, 'Chan TF', 'Zheng XF', 2000, 'growth', 'streaks on agar', 'sirolimus [25 nM]', 'YPD', 'hap a', 'discrete', 111)
+                   medium = ""
+                   if (i[9] != null) {
+                       medium = i[9]
+                   }
+        
+                   // datatype of data available
+                   var dt = datatypes[i[1]]
+
+                   var content = "<tr><td><input id='" + i[0] + "' type='checkbox' name='" + i[0] + "' class='dataset'></td><td class='col-md-2'><a href='/papers/"+ i[2]+ "'>" + [3] + " " + i[4] + "</a></td><td class='col-md-2'>" + i[6] + "(" + i[7] + ")" + "</td><td class='col-md-1'>" + i[8] +"</td><td class='col-md-2'>" + medium + "</td><td class='col-md-1'>" + i[10] + "</td><td class='col-md-1'>" + AddCommas(i[12]) + "</td><td class='col-md-1'><span class='text-success available'>" + dt +"</span></td><td><a href='/datasets/"+ i[0]+ "/'><button type='button' style='width:100px' class='btn btn-primary btn-sm'>Details</button></a>"
+
+                   if (i[0] in cart) {
+                     content += "<a href='cart/remove/datasets:index" + i[0] + "'><button type='button' class='btn btn-danger btn-sm' style='width:100px'>Remove</button></a></td></tr>"
+                   } else {
+                   content += "<a href='cart/add/datasets:index" + i[0]+ "'><button type='button' class='btn btn-primary btn-sm' style='width:100px'>Add to Cart</button></a></td></tr>"}
+                   $("#papersTableBody").append(content)
                   })
                   console.log("success"); // another sanity check
               }
@@ -250,5 +278,12 @@ function doTagsSearch() {
    })
 }
 </script>
-
+{% if datasets %}
+{% include "scripts/tablesorter.html" %}
+<script>
+    $(document).ready(function(){
+        $("#papersTable").tablesorter();
+    });
+</script>
+{% endif %}
 {% endblock %}

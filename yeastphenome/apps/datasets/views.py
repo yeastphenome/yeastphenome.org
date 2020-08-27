@@ -7,6 +7,7 @@ from django.views import generic
 from yeastphenome.apps.common.utils import get_collections_by_year
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.datasets.models import Dataset, Data, Tag
+from yeastphenome.apps.datasets.search import get_search_tags, run_search_tag_query
 from yeastphenome.apps.conditions.models import ConditionType
 from yeastphenome.apps.phenotypes.models import Observable
 
@@ -36,11 +37,34 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
         return context
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def index(request):
+# Datasets Explorer (also the index)
 
-    context = {}
-    return render(request, "datasets/index.html", context)
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def data_explorer(request):
+
+    context = {"tags": get_search_tags(), "cart": request.session.get("cart", [])}
+    if "q" in request.GET:
+        query = request.GET["q"].strip()
+        context["results"] = run_search_tag_query(query)
+
+    else:
+        # These are the original datasets that were associated with the growth class
+        context.update(
+            {
+                "datasets": Dataset.objects.filter(
+                    conditionset__systematic_name="standard"
+                )
+                .filter(phenotype__observable__name__startswith="growth")
+                .filter(control_conditionset__isnull=True)
+                .filter(control_medium__isnull=True)
+                .exclude(paper__latest_data_status__status__name="not relevant")
+                .distinct(),
+                "DOWNLOAD_PREFIX": settings.DOWNLOAD_PREFIX,
+            }
+        )
+
+    return render(request, "datasets/explorer.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
@@ -60,63 +84,6 @@ def tag(request, id):
         {
             "tag": t,
             "datasets": datasets,
-            "DOWNLOAD_PREFIX": settings.DOWNLOAD_PREFIX,
-            "USER_AUTH": request.user.is_authenticated,
-        },
-    )
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def datasets_growth(request):
-
-    class_description = (
-        "List of datasets that measure growth in rich or minimal media. "
-        "These may be standalone experiments or controls within larger studies of chemical "
-        "and/or physical perturbations."
-    )
-
-    datasets = (
-        Dataset.objects.filter(conditionset__systematic_name="standard")
-        .filter(phenotype__observable__name__startswith="growth")
-        .filter(control_conditionset__isnull=True)
-        .filter(control_medium__isnull=True)
-        .exclude(paper__latest_data_status__status__name="not relevant")
-        .distinct()
-    )
-    return render(
-        request,
-        "datasets/class.html",
-        {
-            "datasets": datasets,
-            "class_description": class_description,
-            "class_name": "Growth in rich or minimal media",
-            "DOWNLOAD_PREFIX": settings.DOWNLOAD_PREFIX,
-            "USER_AUTH": request.user.is_authenticated,
-        },
-    )
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def datasets_human(request):
-
-    class_description = (
-        "List of datasets that involve the expression of a human protein."
-    )
-
-    datasets = (
-        Dataset.objects.filter(
-            conditionset__conditions__type__name="expression of a human protein"
-        )
-        .exclude(paper__latest_data_status__status__name="not relevant")
-        .distinct()
-    )
-    return render(
-        request,
-        "datasets/class.html",
-        {
-            "datasets": datasets,
-            "class_description": class_description,
-            "class_name": "Expression of a human protein",
             "DOWNLOAD_PREFIX": settings.DOWNLOAD_PREFIX,
             "USER_AUTH": request.user.is_authenticated,
         },

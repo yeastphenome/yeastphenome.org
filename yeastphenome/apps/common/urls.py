@@ -9,7 +9,6 @@ urlpatterns = [
     path("stats/", views.stats, name="stats"),
     path("faq/", views.faq, name="faq"),
     path("contributors/", views.contributors, name="contributors"),
-    path("explorer/", views.data_explorer, name="explorer"),
     path("cart/", views.view_cart, name="view_cart"),
     path("cart/add/<str:dataset_id>/<str:next>", views.add_to_cart, name="add_to_cart"),
     path(

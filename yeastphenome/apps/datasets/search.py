@@ -112,18 +112,29 @@ def run_search_tag_query(query, taglist=None):
             | Q(paper__notes__icontains=query)
             | Q(medium__systematic_name__icontains=query)
             | Q(conditionset__systematic_name__icontains=query)
-        )
+        ).distinct()
 
     return {
+        # (dataset_id, data_available, paper id, first author, last author, date published, phenotype_observable_name, reporter, conditionset, medium, collection, data_published_name)
+        # (1, 3, 2, 'Chan TF', 'Zheng XF', 2000, 'growth', 'streaks on agar', 'sirolimus [25 nM]', 'YPD', 'hap a', 'discrete', 2222)
         "results": list(
-            results.values_list(
+            # Exclude results without data available
+            results.exclude(data_available=None).values_list(
                 "id",
-                "name",
-                "collection__name",
-                "data_published__name",
+                "data_available",
                 "paper__id",
-                "tags__name",
+                "paper__first_author",
+                "paper__last_author",
+                "paper__pub_date",
+                "phenotype__observable__name",
+                "phenotype__reporter",
+                "conditionset__display_name",
+                "medium__display_name",
+                "collection__shortname",
+                "data_published__name",
+                "tested_num",
             )
         ),
         "count": results.count(),
+        "datatypes": {x[0]: x[1] for x in Datatype.objects.values_list("id", "name")},
     }

@@ -11,7 +11,7 @@ router.register(r"^papers", views.PaperViewSet, basename="paper")
 urlpatterns = [
     path("", include(router.urls)),
     path("papers/<int:paper_id>/references", views.GetPaperReferences.as_view()),
-    path("search/explorer", views.TagsSearch.as_view(), name="tags_search"),
+    path("search/explorer", views.DatasetsSearch.as_view(), name="datasets_search"),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
     path("api-token-auth/", authviews.obtain_auth_token),
 ]

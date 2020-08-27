@@ -1,5 +1,3 @@
-{% if notitle %}{% else %}<h3>Datasets</h3>{% endif %}
-
 <div class="alert alert-warning" role="alert">
     <strong>Warning:</strong> These data may contain errors.
     <p>
@@ -29,7 +27,7 @@
         <th>Details</th>
         </thead>
 
-        <tbody>
+        <tbody id="papersTableBody">
         {% for dataset in datasets %}<tr>
             <td><input id="{{ dataset.id }}" type="checkbox" name="{{ dataset.id }}" class="dataset" {# {% if not dataset.has_data_in_db %}disabled{% endif %} #}></td>
             <td class="col-md-2"><a href="{% url 'papers:detail' dataset.paper.id %}">{{ dataset.paper }}</a></td>
@@ -37,11 +35,9 @@
             <td class="col-md-1">{{ dataset.conditionset.display_name }}</td>
             <td class="col-md-2">{{ dataset.medium.display_name }}</td>
             <td class="col-md-1">{{ dataset.collection.shortname }}</td>
-
             <td class="col-md-1">
                 {{ dataset.tested_space|safe }}
             </td>
-
             <td class="col-md-1">
                 {% if dataset.has_data_in_db %}
                 <span class="text-success available">{{ dataset.data_available|capfirst }}</span>
@@ -50,8 +46,8 @@
                 {% endif %}
             </td>
             <td>{% if not request.session.cart %}<a href="{% url 'common:add_to_cart' dataset.id "datasets:growth" %}"><button type="button" class="btn btn-primary btn-sm" style="width:100px">Add to Cart</button></a>{% else %}
-                <a href="/datasets/{{ dataset.id }}/"><button type="button" class="btn btn-primary btn-sm">Details</button></a>
-                {% if dataset.id not in request.session.cart %}<a href="{% url 'common:add_to_cart' dataset.id "datasets:growth" %}"><button type="button" class="btn btn-primary btn-sm" style="width:100px">Add to Cart</button></a>{% else %}<a href="{% url 'common:remove_from_cart' dataset.id "datasets:growth" %}"><button type="button" class="btn btn-danger btn-sm" style="width:100px">Remove</button></a>{% endif %}{% endif %}
+                <a href="/datasets/{{ dataset.id }}/"><button type="button" style="width:100px" class="btn btn-primary btn-sm">Details</button></a>
+                {% if dataset.id not in request.session.cart %}<a href="{% url 'common:add_to_cart' dataset.id "datasets:index" %}"><button type="button" class="btn btn-primary btn-sm" style="width:100px">Add to Cart</button></a>{% else %}<a href="{% url 'common:remove_from_cart' dataset.id "datasets:index" %}"><button type="button" class="btn btn-danger btn-sm" style="width:100px">Remove</button></a>{% endif %}{% endif %}
             </td>
         </tr>{% endfor %}
         </tbody>

@@ -69,7 +69,7 @@
         <li class="dropdown">
           <a role="button" aria-haspopup="true" data-toggle="dropdown" aria-expanded="false">Explore Data <i class="fas fa-caret-down" aria-hidden="true"></i></a>
           <ul class="dropdown-menu dropdown-menu-left">
-              <li><a href="{% url 'common:explorer' %}">Explore Data Home</a></li>
+              <li><a href="{% url 'datasets:index' %}">Explore Data Home</a></li>
               <li style="margin: 8px 0" role="separator" class="divider"></li>
               <li><a href="{% url 'datasets:index' %}">Datasets</a></li>
               <li><a href="{% url 'papers:all' %}">Papers</a></li>            
@@ -94,7 +94,7 @@
         <!-- Search for genes -->
         <li id="global_search_navbar">
           <div>
-    <form class="form-inline my-2 my-lg-0" style="margin-top:8px" method="GET" action="{% url 'common:explorer' %}">
+    <form class="form-inline my-2 my-lg-0" style="margin-top:8px" method="GET" action="{% url 'datasets:index' %}">
       <input class="form-control mr-sm-2" type="search" placeholder="Search" name="q" aria-label="Search">
       <button class="btn btn-outline-success my-2 my-sm-0" style="display:none" type="submit">Search</button>
     </form>
