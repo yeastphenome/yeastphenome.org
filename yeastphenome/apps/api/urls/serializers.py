@@ -4,7 +4,8 @@ from yeastphenome.apps.papers.models import Paper
 
 # from yeastphenome.apps.datasets.models import DataType
 from yeastphenome.apps.papers.utils import get_paper_references_context
-from yeastphenome.apps.datasets.search import run_search_tag_query
+from yeastphenome.apps.papers.search import run_search_tag_query as papers_search
+from yeastphenome.apps.datasets.search import run_search_tag_query as dataset_search
 
 # from yeastphenome.apps.conditions.models import ConditionSet, ConditionType
 # from yeastphenome.apps.phenotypes.models import Phenotype
@@ -52,7 +53,10 @@ class PaperViewSet(viewsets.ModelViewSet):
     permission_classes = (IsStaffOrSuperUser,)
 
 
-class DatasetsSearch(RatelimitMixin, APIView):
+# Search
+
+
+class BaseSearch(RatelimitMixin, APIView):
     """A search to take a query, and filter by specific tags
     """
 
@@ -61,9 +65,13 @@ class DatasetsSearch(RatelimitMixin, APIView):
     ratelimit_block = settings.VIEW_RATE_LIMIT_BLOCK
     ratelimit_method = "POST"
     renderer_classes = (JSONRenderer,)
+    endpoint = "base"
+
+    def get_tags(self, query, tags):
+        return {"results": [], "count": 0, "cart": []}
 
     def post(self, request):
-        print("POST tags search")
+        print(f"POST {self} search")
         query = request.POST.get("query[query]", "")
         tags = request.POST.get("query[tags]", "[]") or "[]"
 
@@ -73,7 +81,7 @@ class DatasetsSearch(RatelimitMixin, APIView):
         # Load the tags as json
         try:
             tags = json.loads(tags)
-            results.update(run_search_tag_query(query, tags))
+            results.update(self.get_tags(query, tags))
         except:
             results[
                 "message"
@@ -81,6 +89,22 @@ class DatasetsSearch(RatelimitMixin, APIView):
             tags = {}
 
         return Response(status=200, data=results)
+
+
+class DatasetsSearch(BaseSearch):
+    """A search to take a query, and filter by specific tags
+    """
+
+    def get_tags(self, query, tags):
+        return dataset_search(query, tags)
+
+
+class PapersSearch(BaseSearch):
+    """A search to take a query, and filter by specific tags
+    """
+
+    def get_tags(self, query, tags):
+        return papers_search(query, tags)
 
 
 class GetPaperReferences(RatelimitMixin, APIView):

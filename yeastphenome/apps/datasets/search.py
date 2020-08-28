@@ -53,11 +53,9 @@ def get_search_tags():
     return datatypes + tags + collections + mediums + phenotypes + conditions
 
 
-def run_search_tag_query(query, taglist=None):
-    """this function is called from the common/views.py for the explorer function
-       It takes in a list of tags (and associated models) to build a query. E.g.:
-       [{'value': 'human protein', 'icon': '🏷️', 'code': 'tag', 'style': '--tag-bg:hsl(108,45%,65%)'}, {'value': 'hap a/hap alpha/hom', 'icon': '🏺', 'code': 'collection', 'style': '--tag-bg:hsl(267,63%,69%)'}, {'value': 'haploid MatA', 'icon': '🏺', 'code': 'collection', 'style': '--tag-bg:hsl(24,51%,69%)'}]
-       The function here must know how to map the code (e.g., Collection) to a model to search
+def run_search_tag_query(query, taglist=None, return_instances=False):
+    """this function is called from the papers/views.py for the explorer function
+       It takes in a list of tags (and associated models) to build a query for papers.
     """
     # First do a search based on the tags, assemble those of liked kind
     tags = {}
@@ -65,6 +63,10 @@ def run_search_tag_query(query, taglist=None):
         if tag["code"] not in tags:
             tags[tag["code"]] = []
         tags[tag["code"]].append(tag["value"])
+
+    queryset = Dataset.objects.exclude(
+        paper__latest_data_status__status__name="not relevant"
+    ).distinct()
 
     # Prepare querysets
     tag_query = Q()
@@ -93,7 +95,7 @@ def run_search_tag_query(query, taglist=None):
     if "conditionset" in tags:
         conditionset_query = Q(conditionset__systematic_name__icontains=query)
 
-    results = Dataset.objects.all().filter(
+    results = queryset.filter(
         tag_query,
         collection_query,
         datatype_query,
@@ -113,6 +115,9 @@ def run_search_tag_query(query, taglist=None):
             | Q(medium__systematic_name__icontains=query)
             | Q(conditionset__systematic_name__icontains=query)
         ).distinct()
+
+    if return_instances is True:
+        return results
 
     return {
         # (dataset_id, data_available, paper id, first author, last author, date published, phenotype_observable_name, reporter, conditionset, medium, collection, data_published_name)

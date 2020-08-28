@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.conf import settings
+from django.core.paginator import Paginator
 from django.views import generic
 
 from yeastphenome.apps.common.utils import get_collections_by_year
@@ -37,19 +38,32 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
         return context
 
 
-# Datasets Explorer (also the index)
+# Datasets Explorer (also the datasets index)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def data_explorer(request):
 
-    context = {"tags": get_search_tags(), "cart": request.session.get("cart", [])}
+    context = {
+        "tags": get_search_tags(),
+        "cart": request.session.get("cart", []),
+        "DOWNLOAD_PREFIX": settings.DOWNLOAD_PREFIX,
+    }
     if "q" in request.GET:
         query = request.GET["q"].strip()
-        context["results"] = run_search_tag_query(query)
+        queryset = run_search_tag_query(query, return_instances=True)
+
+        # 50 results per page
+        paginator = Paginator(queryset, 50)
+        page = request.GET.get("page")
+        context["results"] = {
+            "results": paginator.get_page(page),
+            "count": queryset.count(),
+        }
 
     else:
         # These are the original datasets that were associated with the growth class
+        # This result is small enough to not be paginated
         context.update(
             {
                 "datasets": Dataset.objects.filter(
@@ -60,7 +74,6 @@ def data_explorer(request):
                 .filter(control_medium__isnull=True)
                 .exclude(paper__latest_data_status__status__name="not relevant")
                 .distinct(),
-                "DOWNLOAD_PREFIX": settings.DOWNLOAD_PREFIX,
             }
         )
 
