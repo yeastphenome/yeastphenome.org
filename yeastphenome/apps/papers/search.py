@@ -20,12 +20,12 @@ def get_search_tags():
 
     # First and last authors both searched as "authors" - exclude not relevant datasets
     authors = [
-        {"value": x[0], "icon": "👱️", "code": "authors"}
+        {"value": x[0].lower(), "icon": "👱️", "code": "authors"}
         for x in queryset.exclude(first_author=None)
         .values_list("first_author")
         .distinct()
     ] + [
-        {"value": x[0], "icon": "👱️", "code": "authors"}
+        {"value": x[0].lower(), "icon": "👱️", "code": "authors"}
         for x in queryset.exclude(last_author=None)
         .values_list("last_author")
         .distinct()
@@ -117,15 +117,15 @@ def run_search_tag_query(query, taglist=None, return_instances=False):
     conditionset_query = Q()
 
     if "authors" in tags:
-        authors_query = Q(first_author__in=tags["authors"]) | Q(
-            last_author__in=tags["authors"]
-        )
+        authors_query = Q(
+            first_author__iregex="(" + "$|^".join(tags["authors"]) + ")"
+        ) | Q(last_author__iregex="(" + "$|^".join(tags["authors"]) + ")")
 
     if "year" in tags:
         years_query = Q(pub_date__in=tags["year"])
 
     if "tag" in tags:
-        tag_query = Q(dataset__tags__name__in=tags["tag"])
+        tag_query = Q(dataset__tags__name__iregex="(" + "$|^".join(tags["tag"]) + ")")
 
     if "collection" in tags:
         collection_query = Q(dataset__collection__name__in=tags["collection"])
@@ -170,20 +170,30 @@ def run_search_tag_query(query, taglist=None, return_instances=False):
     if return_instances:
         return results
 
+    # paper id, first author, last author, phenotypes, conditionss)
+    # (165, 'Ni L', 'Snyder M', 'axial budding pattern', 'standard')
+    values_list = []
+    seen = []
+    for paper in results:
+        if paper.id in seen:
+            continue
+
+        conditiontypes = [x.name for x in paper.conditiontypes()]
+        phenotypes = [x.name for x in paper.phenotypes()]
+        values_list.append(
+            [
+                paper.id,
+                paper.first_author,
+                paper.last_author,
+                " ".join(phenotypes[:7]),
+                " ".join(conditiontypes[:7]),
+                paper.pub_date,
+            ]
+        )
+        seen.append(paper.id)
+
     return {
-        # paper id, first author, last author, phenotype, conditionset)
-        # (165, 'Ni L', 'Snyder M', 'axial budding pattern', 'standard')
-        "results": list(
-            # Exclude results without data available
-            results.values_list(
-                "id",
-                "first_author",
-                "last_author",
-                "dataset__phenotype__observable__name",
-                "dataset__conditionset__display_name",
-                "pub_date",
-            )
-        ),
-        "count": results.count(),
+        "results": values_list,
+        "count": len(values_list),
         "datatypes": {x[0]: x[1] for x in Datatype.objects.values_list("id", "name")},
     }

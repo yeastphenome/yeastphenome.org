@@ -129,3 +129,62 @@ docker cp docker_postgres_1:/yeastphenome.pgsql backup/legacy/postgres/removed-o
 ```
 
 And upload these to a shared Google Drive (or other place) for safekeeping. 
+
+# Addition of Gene to Datasets App
+
+This migration includes the following:
+
+ - creating a Gene model under datasets
+ - using the Data.orf field to populate it
+ - making a foreign key to the gene from the Data model.
+
+Although the last step should be to delete the orf field, for the time being (while
+the database isn't completely redone in production) we are going to leave the model.
+That way, we can easily add the Gene model:
+
+```
+class Gene(models.Model):
+    systematic_name = models.CharField(max_length=50, null=True, blank=True, unique=True) # previously data.orf field
+    common_name = models.CharField(max_length=50, null=True, blank=True)
+#    aliases
+```
+
+and then make migrations:
+
+```bash
+make migrations
+make migrate
+```
+
+and then add the foreign key to it alongside the Data.orf model:
+
+```bash
+class Data(models.Model):
+    dataset = models.ForeignKey(Dataset, on_delete=models.DO_NOTHING)
+    value = models.DecimalField(max_digits=10, decimal_places=3)
+    orf = models.CharField(max_length=50)
+    # this is added, note that we aren't deleting orf because we need the values!
+    gene = models.ForeignKey(
+        "datasets.Gene", null=True, blank=True, on_delete=models.DO_NOTHING
+    )
+```
+
+and again migrate.
+
+```bash
+make migrations
+make migrate
+```
+
+And now you should be able to run the script to generate the gene foreign keys
+(and genes) to associate with a dataset.
+
+```bash
+$ python manage.py create_genes
+Creating genes...
+Created or found 11287 genes.
+Updating data... this may take some time!
+```
+
+And this does take some time! When the database is in production and the genes
+added, the orf field can be removed with another migrations.

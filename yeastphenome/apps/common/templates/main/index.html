@@ -104,9 +104,11 @@
 // The Twitter feed won't render in private mode
 isPrivateMode().then(function (isPrivate) {
   console.log('Browsing in private mode? ', isPrivate);
-  $("#twitter-column").hide();
-  $("#main-column").addClass("col-md-12");
-  $("#main-column").removeClass("col-md-8"); 
+  if (isPrivate == true) {
+      $("#twitter-column").hide();
+      $("#main-column").addClass("col-md-12");
+      $("#main-column").removeClass("col-md-8"); 
+  }
 });
 </script>
 {% endblock %}

@@ -96,7 +96,7 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
         <div class="row">
             <div class="col-md-12" id="message" style="padding-bottom:30px">{% if results %}
                {% if results.count == 0 %}
-                  <div class="alert alert-info">There we no results for your search.</div>
+                  <div class="alert alert-info">There were no relevant results for your search.</div>
                {% else %}
                   <div class="alert alert-info">We found {{ results.count }} results for your search.</div>
                {% endif %}{% endif %}
@@ -271,6 +271,7 @@ function doTagsSearch() {
                     })
 
                   console.log("success"); // another sanity check
+                  $("#papersTable").tablesorter();
               }
               $("#fade").hide();
            },

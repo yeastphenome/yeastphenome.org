@@ -254,6 +254,7 @@ function doTagsSearch() {
                     }
                     $("#papersTableBody").append("<tr><td class='text-nowrap'><a href='/papers/" + i[0]+ "'>" + paper_name + "</a></td><td>" + i[3]+ "</td><td>" + i[4]+ "</td></tr>")
                   })
+                  $("#papersTable").tablesorter();
               }
               $("#fade").hide();
            },
