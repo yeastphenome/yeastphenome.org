@@ -14,24 +14,13 @@ class Command(BaseCommand):
         genes = Data.objects.values_list("orf", flat=True).distinct()
 
         # Create all genes!
-        for name in genes:
+        total = len(genes)
+
+        # Done in groups with update so we don't need to loop through millions
+        # of datasets! It will still take some time.
+        for i, name in enumerate(genes):
+            print(f"Parsing gene {i} of {total}...")
             gene, created = Gene.objects.get_or_create(systematic_name=name)
 
-        print("Created or found {count} genes.".format(count=Gene.objects.count()))
-        # Created 11287 genes.
-
-        # Now go through data, get gene, add and save
-        print("Updating data... this may take some time!")
-        for data in Data.objects.iterator():
-
-            # Don't add an empty gene
-            if not data.orf:
-                continue
-
-            # If gene already defined, skip
-            if data.gene:
-                continue
-
-            gene = Gene.objects.get(systematic_name=data.orf)
-            data.gene = gene
-            data.save()
+            # Find all associated Data and update with the correct gene
+            Data.objects.filter(orf=gene.systematic_name).update(gene=gene)

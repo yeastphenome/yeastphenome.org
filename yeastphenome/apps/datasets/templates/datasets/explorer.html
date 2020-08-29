@@ -63,6 +63,7 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
                   <li class="list-group-item">🏺 collection</li>
                   <li class="list-group-item">🌨️ condition</li>
                   <li class="list-group-item">💽 datatype</li>
+                  <li class="list-group-item">🧬 gene</li>
                   <li class="list-group-item">🧫 medium</li>
                   <li class="list-group-item">🐶 phenotype</li>
                   <li class="list-group-item">🏷️ tag</li>
@@ -80,8 +81,19 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
 		    <button type="button" class="btn btn-default"><a href="{% url 'phenotypes:index' %}">Phenotypes</a></button>
 		  </div>
 		</div>
+              </div>
             </div>
         </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="alert alert-warning" role="alert"><strong>Warning:</strong> These data may contain errors.
+                  <p>YeastPhenome.org is running in beta version.
+                     The data are available for download, but, as of today, we cannot guarantee lack of errors or code bugs introduced during processing.
+                     This warning will be removed after all cross-checks and validations have been completed.
+                     In the meantime, please, be careful when using the data.</p>
+                </div>
+            </div>
       </div>
     </div>
     <div class="col-md-9">
@@ -91,10 +103,12 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
                 {% csrf_token %}
                <input type="text" name="q" class="form-control" placeholder="Search (press enter to search only using filters)" required="" id="id_q">
                 </form>
+                <button type="button" id="add-to-cart-all" class="btn btn-default"><a href="">Add Selected to Cart</a></button>
+
             </div>
         </div>
         <div class="row">
-            <div class="col-md-12" id="message" style="padding-bottom:30px">{% if results %}
+            <div class="col-md-12" id="message" style="padding-bottom:5px">{% if results %}
                {% if results.count == 0 %}
                   <div class="alert alert-info">There were no relevant results for your search.</div>
                {% else %}
@@ -207,15 +221,11 @@ $("#id_q").bind("keypress", {}, keypressSearch);
 
 function keypressSearch(e) {
     var code = (e.keyCode ? e.keyCode : e.which);
-    if (code == 13) { //Enter keycode                        
+    if (code == 13) { //Enter keycode                
         e.preventDefault();
         doTagsSearch();
     }
 };
-
-function AddCommas(x) {
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
 
 // Function to retrieve attributes and do search
 function doTagsSearch() {
@@ -260,7 +270,7 @@ function doTagsSearch() {
                      // datatype of data available
                      var dt = datatypes[i[1]]
 
-                     var content = "<tr><td><input id='" + i[0] + "' type='checkbox' name='" + i[0] + "' class='dataset'></td><td class='col-md-2'><a href='/papers/"+ i[2]+ "'>" + [3] + " " + i[4] + "</a></td><td class='col-md-2'>" + i[6] + "(" + i[7] + ")" + "</td><td class='col-md-1'>" + i[8] +"</td><td class='col-md-2'>" + medium + "</td><td class='col-md-1'>" + i[10] + "</td><td class='col-md-1'>" + AddCommas(i[12]) + "</td><td class='col-md-1'><span class='text-success available'>" + dt +"</span></td><td><a href='/datasets/"+ i[0]+ "/'><button type='button' style='width:100px' class='btn btn-primary btn-sm'>Details</button></a>"
+                     var content = "<tr><td><input id='" + i[0] + "' type='checkbox' name='" + i[0] + "' class='dataset'></td><td class='col-md-2'><a href='/papers/"+ i[2]+ "'>" + [3] + " " + i[4] + "</a></td><td class='col-md-2'>" + i[6] + "(" + i[7] + ")" + "</td><td class='col-md-2'>" + i[8] +"</td><td class='col-md-2'>" + medium + "</td><td class='col-md-2'>" + i[10] + "</td><td class='col-md-2'><span class='text-success available'>" + dt +"</span></td><td><a href='/datasets/"+ i[0]+ "/'><button type='button' style='width:100px' class='btn btn-primary btn-sm'>Details</button></a>"
 
                      if (i[0] in cart) {
                        content += "<a href='cart/remove/datasets:index" + i[0] + "'><button type='button' class='btn btn-danger btn-sm' style='width:100px'>Remove</button></a></td></tr>"
@@ -292,6 +302,17 @@ function doTagsSearch() {
     $(document).ready(function(){
         $("#papersTable").tablesorter();
     });
+
+$("#add-to-cart-all").click(function(event){
+     $("#fade").show();
+     ids = ""
+     $.each($("[type=checkbox].dataset:checked"), function(i, e){
+        ids = ids + "," + $(e).attr("name")
+     })
+     document.location = "/cart/add/" + ids + "/datasets:index"
+
+})
+
 </script>
 {% endif %}
 {% endblock %}

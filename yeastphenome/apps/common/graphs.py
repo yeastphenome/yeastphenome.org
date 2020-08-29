@@ -29,6 +29,11 @@ def paper_citation_graph_neo4j(request):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def papers_citation_graph(request):
+    return render(request, "graphs/citation-graph-springy-wrapper.html")
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def paper_citation_graph_explorable(request):
     """An explorable citation graph that starts with one of a set of known
        papers, and goes from there.

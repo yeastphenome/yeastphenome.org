@@ -40,9 +40,14 @@ graphs = [
         name="paper-citation-graph-neo4j",
     ),
     path(
-        "graph/papers/citations/",
+        "graph/papers/citations/explorable/",
         graphs.paper_citation_graph_explorable,
         name="paper-citation-graph-explorable",
+    ),
+    path(
+        "graph/papers/citations/",
+        graphs.papers_citation_graph,
+        name="papers-citation-graph",
     ),
     path(
         "graph/papers/<int:paper_id>/citations/",

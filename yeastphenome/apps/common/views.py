@@ -94,20 +94,31 @@ def introduction(request):
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def add_to_cart(request, dataset_id, next=None):
-    """Add a dataset to the cart, if it exists.
+    """Add one or more datasets to the cart, if they exist. A dataset id
+       can be a single string of values, comma separted, or just the value.
     """
-    try:
-        dataset = Dataset.objects.get(id=dataset_id)
-        if "cart" not in request.session:
-            request.session["cart"] = []
-        if dataset.id not in request.session["cart"]:
-            request.session["cart"].append(dataset.id)
-        request.session.modified = True
-        messages.success(
-            request, "Dataset with id %s was added to your download cart." % dataset_id
-        )
-    except:
-        messages.info(request, "Dataset with id %s does not exist" % dataset_id)
+    if "cart" not in request.session:
+        request.session["cart"] = []
+
+    added_count = 0
+
+    for d_id in dataset_id.split(","):
+        if not d_id:
+            continue
+        try:
+            dataset = Dataset.objects.get(id=d_id)
+            if dataset.id not in request.session["cart"]:
+                request.session["cart"].append(dataset.id)
+                request.session.modified = True
+                added_count += 1
+        except:
+            pass
+
+    if added_count == 1:
+        message = "1 dataset was added to your cart."
+    else:
+        message = "%s datasets were added to your cart." % added_count
+    messages.success(request, message)
 
     # Return to the same page the user was browsing
     if next is not None:
