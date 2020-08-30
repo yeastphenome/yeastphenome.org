@@ -1,5 +1,6 @@
-yeastphenome/settings.py
 docker/yeastphenome_db.P.sql
+backup/
+app.yaml
 docker/create_roles.sh
 *.pyc
 *~
