@@ -4,8 +4,9 @@ from yeastphenome import settings
 from . import views
 
 urlpatterns = [
-    path("", views.paper_list_view, name="all"),
+    path("", views.paper_explorer, name="all"),
     path("<int:pk>", views.PaperDetailView.as_view(), name="detail"),
+    path("contributors/", views.ContributorsListView.as_view(), name="contributors"),
     # Data
     path(
         "<int:paper_id>/%s_<int:paper_pmid>.zip" % settings.DOWNLOAD_PREFIX,

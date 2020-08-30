@@ -11,12 +11,14 @@ from .utils import (
 )
 
 import os
+
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 
 from ratelimit.mixins import RatelimitMixin
 from ratelimit.decorators import ratelimit
+from yeastphenome.apps.papers.search import get_search_tags, run_search_tag_query
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
     VIEW_RATE_LIMIT_BLOCK as rl_block,
@@ -24,49 +26,30 @@ from yeastphenome.settings import (
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def paper_list_view(request):
-
-    queryset = Paper.objects.all()
-
-    # Exclude the papers marked as "not relevant"
-    f = Q(data_statuses__name__exact="not relevant") | Q(
-        tested_statuses__name__exact="not relevant"
+def paper_explorer(request):
+    """Return a paginated list of papers with the data explorer.
+    """
+    queryset = Paper.objects.exclude(
+        Q(data_statuses__name__exact="not relevant")
+        | Q(tested_statuses__name__exact="not relevant")
     )
-    queryset = queryset.exclude(f)
 
+    q = ""
     if "q" in request.GET:
         q = request.GET["q"].strip()
-        f = (
-            Q(first_author__icontains=q)
-            | Q(last_author__icontains=q)
-            | Q(pmid__contains=q)
-        )
-        f = f | Q(dataset__phenotype__observable__name__icontains=q)
-        f = (
-            f
-            | Q(dataset__conditionset__conditions__type__name__icontains=q)
-            | Q(dataset__conditionset__conditions__type__other_names__icontains=q)
-        )
-        f = f | Q(dataset__conditionset__conditions__type__chebi_name__icontains=q)
-        f = f | Q(dataset__conditionset__conditions__type__pubchem_name__icontains=q)
-        f = (
-            f
-            | Q(dataset__medium__conditions__type__name__icontains=q)
-            | Q(dataset__medium__conditions__type__other_names__icontains=q)
-        )
-        f = f | Q(dataset__medium__conditions__type__chebi_name__icontains=q)
-        f = f | Q(dataset__medium__conditions__type__pubchem_name__icontains=q)
-        queryset = queryset.filter(f)
-    else:
-        q = ""
+        queryset = run_search_tag_query(q, return_instances=True)
 
-    queryset = queryset.distinct().order_by("pmid")
+    # 50 results per page
+    paginator = Paginator(queryset, 50)
+    page = request.GET.get("page")
 
     context = {
-        "papers_list": queryset,
+        "tags": get_search_tags(),
+        "papers_list": paginator.get_page(page),
         "q": q,
     }
-    return render(request, "papers/index.html", context)
+
+    return render(request, "papers/explorer.html", context)
 
 
 class PaperDetailView(generic.DetailView, RatelimitMixin):

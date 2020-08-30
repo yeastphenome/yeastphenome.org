@@ -17,12 +17,18 @@
 .dropdown-toggle {
     font-weight: 600;
 }
-/*.selectize-input {
+
+.selectize-input {
   border: none !important;
-  color: white !important;
-  font-weight: 600 !important;
-  background-color: rgb(177, 103, 24) !important;
-}*/
+}
+
+.selectize-input::after {
+  display: none !important
+}
+
+.selectize-input, .selectize-control.single .selectize-input input {
+    cursor: auto !important;
+}
 </style>
 <nav class="navbar navbar-inverse navbar-fixed-top">
   <div class="container">
@@ -50,29 +56,46 @@
     <div class="collapse navbar-collapse" id="global-navbar">
       <ul class="nav navbar-nav navbar-right">
         <li class="dropdown">
-          <a href="{% url 'common:getting-started' %}" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Getting Started <i class="fas fa-caret-down" aria-hidden="true"></i></a>
+          <a href="{% url 'common:getting-started' %}" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Getting Started <i class="fas fa-caret-down" aria-hidden="true"></i></a>
           <ul class="dropdown-menu dropdown-menu-left">
-            <li><a href="#">Introduction</a></li>
-            <li><a href="#">Tutorials</a></li>
-            <li role="separator" class="divider"></li>
-            <li><a href="#">Software</a></li>
+            <li><a href="{% url 'common:getting-started' %}">Getting Started</a></li>
+            <li style="margin: 8px 0" role="separator" class="divider"></li>
+            <li><a href="{% url 'common:introduction' %}">Introduction</a></li>
+            <li><a href="{% url 'common:background' %}">Background</a></li>
+            <li><a href="{% url 'common:tutorials' %}">Tutorials</a></li>
+            <li><a href="{% url 'common:advanced' %}">Advanced</a></li>
           </ul>
         </li>
         <li class="dropdown">
-          <a href="{% url 'common:explorer' %}" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Explore Data <i class="fas fa-caret-down" aria-hidden="true"></i></a>
+          <a role="button" aria-haspopup="true" data-toggle="dropdown" aria-expanded="false">Explore Data <i class="fas fa-caret-down" aria-hidden="true"></i></a>
           <ul class="dropdown-menu dropdown-menu-left">
-            <li><a href="#">Browse</a></li>
-              <li><a href="#">Download</a></li>            
-              <li><a href="#">Search</a></li>
+              <li><a href="{% url 'datasets:index' %}">Datasets</a></li>
+              <li><a href="{% url 'papers:all' %}">Papers</a></li>            
+              <li><a href="{% url 'phenotypes:index' %}">Phenotypes</a></li>
+              <li><a href="{% url 'conditions:index' %}">Conditions</a></li>
           </ul>
         {% if HELP_CONTACT_EMAIL %}<li class="visible-xs-block"><a href="mailto:{{ HELP_CONTACT_EMAIL }}"><i class="fas fa-envelope-open"></i> {{ HELP_CONTACT_EMAIL }}</a></li>{% endif %}
         {% if TWITTER_USERNAME %}<li class="visible-xs-block"><a href="https://twitter.com/{{ TWITTER_USERNAME }}" target="_blank" rel="noopener"><i class="fab fa-twitter"></i> @{{ TWITTER_USERNAME }}</a></li>{% endif %}
         </li>
-        <li><a href="{% url 'common:about' %}">About</a></li>        
+        <li class="dropdown">
+          <a role="button" aria-haspopup="true" data-toggle="dropdown" aria-expanded="false">About <i class="fas fa-caret-down" aria-hidden="true"></i></a>
+          <ul class="dropdown-menu dropdown-menu-left">
+            <li><a href="{% url 'common:about' %}">About</a></li>
+            <li style="margin: 8px 0" role="separator" class="divider"></li>
+            <li><a href="{% url 'papers:contributors' %}">Paper Contributors</a></li>
+            <li><a href="{% url 'common:contributors' %}">Contributors</a></li>
+            <li><a href="{% url 'common:faq' %}">Frequently Asked Questions</a></li>
+            <li><a href="{% url 'common:stats' %}">Stats</a></li>
+          </ul>
+        </li>
        {% if GITHUB_REPOSITORY %}<li><a href="{{ GITHUB_REPOSITORY }}/issues" target="_blank" rel="noopener"><i class="fas fa-comments visible-xs-inline"></i> Support</a></li>{% endif %}
         <!-- Search for genes -->
         <li id="global_search_navbar">
-          <div><input type="text" placeholder="Enter a gene, cell line, lineage or compound" class="toolbar-search selectized" id="global-search-dropdown-toolbar" tabindex="-1" style="display: none;" value=""><div class="selectize-control toolbar-search single"><div class="selectize-input items not-full"><input type="text" autocomplete="off" tabindex="" id="global-search-dropdown-toolbar-selectized" placeholder="Enter a gene, cell line, lineage or compound" style="width: 265px; opacity: 1; position: relative; left: 0px;"></div><div class="selectize-dropdown single toolbar-search" style="display: none; width: 320px; top: 41.5px; left: 5px;"><div class="selectize-dropdown-content"></div></div></div>
+          <div>
+    <form class="form-inline my-2 my-lg-0" style="margin-top:8px" method="GET" action="{% url 'datasets:index' %}">
+      <input class="form-control mr-sm-2" type="search" placeholder="Search" name="q" aria-label="Search">
+      <button class="btn btn-outline-success my-2 my-sm-0" style="display:none" type="submit">Search</button>
+    </form>
           </div>
         </li>
             <li>

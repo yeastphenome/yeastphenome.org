@@ -7,8 +7,8 @@ import numpy as np
 
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.conditions.models import ConditionSet, ConditionType
-from yeastphenome.apps.phenotypes.models import Phenotype
-from yeastphenome.apps.datasets.models import Dataset
+from yeastphenome.apps.phenotypes.models import Phenotype, Measurement
+from yeastphenome.apps.datasets.models import Dataset, Sourcetype
 
 import collections
 import random
@@ -23,14 +23,31 @@ def select_random_graph():
        can choose a reliable starting point and render that instead.
     """
     # Randomly select graph to render
-    graph_choice = random.choice(range(2))
-    print(graph_choice)
+    graph_choice = random.choice(range(4))
     if graph_choice == 0:
         return {
             "paper_counts": get_papers_by_year(),
             "graph_template": "graphs/papers-by-year.html",
             "graph_url": reverse("common:papers-by-year"),
         }
+    elif graph_choice == 1:
+        context = get_phenotype_measurements(hide_legend=True)
+        context.update(
+            {
+                "graph_template": "graphs/phenotype-measurements.html",
+                "graph_url": reverse("common:phenotype-measurements-graph"),
+            }
+        )
+        return context
+    elif graph_choice == 2:
+        context = get_dataset_sources()
+        context.update(
+            {
+                "graph_template": "graphs/dataset-sources.html",
+                "graph_url": reverse("common:dataset-sources-graph"),
+            }
+        )
+        return context
     else:
         # Select a random dataset
         dataset = Dataset.objects.order_by("?").first()
@@ -40,6 +57,32 @@ def select_random_graph():
             "graph_template": "graphs/collection-by-year.html",
             "graph_url": reverse("common:collection-by-year", args=(dataset.id,)),
         }
+
+
+# Phenotypes
+
+
+def get_phenotype_measurements(hide_legend=False):
+    """Return a breakdown of phenotypes according to what they measure.
+       Most of these are undefined, but it might be useful to see those
+       that are.
+    """
+    undefined = 0
+    counts = {}
+    for phenotype in Phenotype.objects.all():
+        if phenotype.measurement is None:
+            undefined += 1
+        else:
+            if phenotype.measurement.name not in counts:
+                counts[phenotype.measurement.name] = 0
+            counts[phenotype.measurement.name] += 1
+
+    return {
+        "hide_legend": hide_legend,
+        "phenotype_measurements": counts,
+        "phenotype_measurements_undefined": undefined,
+        "measurements": Measurement.objects.all(),
+    }
 
 
 # Papers
@@ -91,6 +134,21 @@ def get_collections_by_year(collection):
         total += count
         summed[year] = total
     return {"summed": summed, "counts": counts}
+
+
+# Dataset Sources
+
+
+def get_dataset_sources():
+    """generate data to render into a graph for data set sources
+    """
+    sourcetypes = [x["name"] for x in Sourcetype.objects.values("name").distinct()]
+    counts = {}
+    for sourcetype in sourcetypes:
+        counts[sourcetype] = Dataset.objects.filter(
+            data_source__sourcetype__name=sourcetype
+        ).count()
+    return {"dataset_sources_counts": counts}
 
 
 # Stats helper function

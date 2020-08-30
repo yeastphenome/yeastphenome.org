@@ -1,0 +1,11 @@
+{% extends "base/wide.html" %}
+{% load humanize %}
+{% block content %}
+<div class="row">
+    <div class="col-md-9" id="graph">
+      {% include "graphs/citation-graph-springy.html" %}
+    </div>
+    <div class="col-md-3" id="legend">
+    </div>
+</div>
+{% endblock %}

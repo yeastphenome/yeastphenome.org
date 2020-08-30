@@ -1,0 +1,73 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+{% block content %}
+<div class="col-xs-8 left-content">
+<div class="row">
+    <div class="col-md-12 box">
+        <h3>Summary stats ({{ updated_on }})</h3>
+        <ul>
+            <li>Total publications: {{ papers_nr|intcomma }} (+ {{ papers_hopeless_nr|intcomma }} for which data could not be recovered)</li>
+            <li>Total labs who published papers: {{ labs_nr|intcomma }}</li>
+            <li>Data loaded for:</li>
+                <ul>
+                    <li>Publications: {{ papers_processed_nr|intcomma }} ({% widthratio papers_processed_nr papers_nr 100 %}%)</li>
+                    <li>Phenotypes: {{ phenotypes_nr|intcomma }}</li>
+                    <li>Environments: {{ conditions_nr|intcomma }}</li>
+                    <li>Datasets: {{ datasets_nr|intcomma }} ({{ datasets_nr_hap_hom|intcomma }} haploid/homozygous diploid + {{ datasets_nr_het|intcomma }} heterozygous diploid)</li>
+                </ul>
+        </ul>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 box">
+        <h3 id="faq">Publications</h3>
+            {% include "graphs/papers-by-year.html" %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 box">
+        <h3 id="datasets">Datasets</h3>
+           {% include "graphs/dataset-sources.html" %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 box">
+        <h3 id="phenotypes">Phenotypes</h3>
+            {% include "graphs/phenotype-measurements.html" %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 box">
+        <h3 id="environments">Environments</h3>
+    </div>
+</div>
+
+</div>
+
+<!-- Right sidebar, goes away for small screens -->
+<div class="col-xs-3 right-sidebar sidebar-fixed" style="padding:0px; padding-top:20px">
+    <div class="mini-submenu">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+    </div>
+    <div class="list-group">
+        <span href="#" class="list-group-item active">
+            Publications
+        </span>
+        <a href="#maintainers" class="list-group-item">
+            Phenotypes
+        </a>
+        <a href="#curators" class="list-group-item">
+            Environments
+        </a>
+        <a href="#programmers" class="list-group-item">
+            Datasets
+        </a>
+    </div>
+</div>
+{% endblock %}

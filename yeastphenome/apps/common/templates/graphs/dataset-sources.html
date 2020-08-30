@@ -1,0 +1,37 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
+<div class="row">
+   <div class="col-md-12">
+      <canvas id="dataset-sources-counts"></canvas>
+   </div>
+</div>
+<script>
+var ctx = document.getElementById("dataset-sources-counts").getContext('2d');
+var myChart = new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: [{% for name, count in dataset_sources_counts.items %}"{{ name }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %}],
+    datasets: [{
+      label: "Dataset Sources",
+      data: [{% for name, count in dataset_sources_counts.items %}{{ count }}{% if forloop.last %}{% else %},{% endif %}{% endfor %}],
+      backgroundColor: [{% for name, count in dataset_sources_counts.items %}"rgb(177, 103, 24)"{% if forloop.last %}{% else %},{% endif %}{% endfor %}],
+    }]
+  },
+  options: {
+    title: {
+      display: true,
+      text: 'Dataset Sources in YeastPhenome.org'
+    },
+    responsive: true,
+    legend: {
+      display: false
+    },
+    scales: {
+      yAxes: [{
+        ticks: {
+          beginAtZero: true
+        }
+      }]
+    }
+  }
+});
+</script>

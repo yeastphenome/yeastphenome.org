@@ -7,16 +7,21 @@
         <div class="row">
             <h1 style="color: black; text-align:center">Explore Phenotypic Screens in Yeast</h1><br>
             <div style="max-width: 600px; margin:auto">
-                <input type="text" placeholder="Enter a gene, phenotype, or condition." class="homepage-search selectized" id="global-search-dropdown-homepage" tabindex="-1" style="display: none;" value=""><div class="selectize-control homepage-search single"><div class="selectize-input items not-full"><input type="text" autocomplete="off" tabindex="" id="global-search-dropdown-homepage-selectized" placeholder="Enter a gene, cell line, lineage or compound" style="width: 265px; opacity: 1; position: relative; left: 0px;"></div><div class="selectize-dropdown single homepage-search" style="display: none; width: 600px; top: 34px; left: 0px;"><div class="selectize-dropdown-content"></div></div></div>
+
+    <form method="GET" action="{% url 'datasets:index' %}">
+      <input style="width: 600px; opacity: 1; position: relative; left: 0px;" class="form-control mr-sm-2" type="search" placeholder="Search" name="q" aria-label="Search">
+      <button class="btn btn-outline-success my-2 my-sm-0" style="display:none" type="submit">Search</button>
+    </form>
+
             </div>
         </div>
     </div>
-    <div class="col-md-8">
+    <div class="col-md-8" id="main-column">
         <div class="row">
             <div class="col-md-6">
                 <div class="box" style="height:200px">
-                    <p><a class="box-title" href="{% url 'common:about' %}">About</a></p>
-                    <p>Our goal is to collect, organize and share in a standardized format all phenotypic screens of the <em>Saccharomyces cerevisiae</em> deletion collection. <a class="hotlink" href="{% url 'common:about' %}">Learn more</a> in the about pages or learn how to <a class="hotlink" href="{% url 'common:getting-started' %}">Get Started</a> </p>
+                    <p><h3>About</h3></p>
+                    <p>Our goal is to collect, organize and share in a standardized format all phenotypic screens of the <em>Saccharomyces cerevisiae</em> deletion collection. <a class="hotlink" href="{% url 'common:about' %}">Learn more</a> in the about pages or learn how to <a class="hotlink" href="{% url 'common:getting-started' %}">Get Started</a> or <a class="hotlink" href="{% url 'datasets:index' %}">Explore Data</a></p>
                 </div>
                 <hr>
                 <div class="box" style="height:200px">
@@ -42,8 +47,9 @@
                 </div>
                 <hr>
                 <div class="box" style="height:200px">
-                    <p><a class="box-title" href="">Downloads</a></p>
-                    <p><a class="box-title" href="">Papers</a>
+                    {% if request.session.cart %}<p><h3>Downloads</h3></p>
+                    <li><a href="{{ paper.get_absolute_url }}" class="hotlink">Download Cart</a></li>{% endif %}
+                    <p><h3>Papers</h3>
                     <ul>
                     <li><a href="{{ paper.get_absolute_url }}" class="hotlink">Most Recent Paper</a></li>
                     <li><a href="{{ paper_latest.get_absolute_url }}" class="hotlink">Recently Updated</a></li>
@@ -60,7 +66,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-4" id="twitter-column">
         <div class="row">
             <div class="col-md-12 public-homepage-side-panel">
                 <div class="box">
@@ -91,4 +97,18 @@
         </div>
     </div>
 </div>
+{% endblock %}
+{% block scripts %}
+{% include "scripts/check-private-mode.html" %}
+<script>
+// The Twitter feed won't render in private mode
+isPrivateMode().then(function (isPrivate) {
+  console.log('Browsing in private mode? ', isPrivate);
+  if (isPrivate == true) {
+      $("#twitter-column").hide();
+      $("#main-column").addClass("col-md-12");
+      $("#main-column").removeClass("col-md-8"); 
+  }
+});
+</script>
 {% endblock %}

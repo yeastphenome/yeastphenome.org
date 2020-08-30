@@ -15,26 +15,10 @@ var papersChart = new Chart(ctx, {
         }{% if forloop.last %}{% else %},{% endif %}
       {% endfor %}],
       backgroundColor: [{% for year, count in paper_counts.items %}
-         {% if '199' in year|stringformat:"s" %}'rgba(255, 99, 132, 0.2)'
-         {% elif "200" in year|stringformat:"s" %}'rgba(54, 162, 235, 0.2)'
-         {% elif "201" in year|stringformat:"s" %}'rgba(255, 206, 86, 0.2)'
-         {% elif "202" in year|stringformat:"s" %}'rgba(255, 206, 86, 0.2)'
-         {% elif "203" in year|stringformat:"s" %}'rgba(255, 206, 86, 0.2)'
-         {% elif "204" in year|stringformat:"s" %}'rgba(75, 192, 192, 0.2)'
-         {% elif "205" in year|stringformat:"s" %}'rgba(153, 102, 255, 0.2)'
-         {% elif "206" in year|stringformat:"s" %}'rgba(255, 159, 64, 0.2)'{% endif %}
-         {% if forloop.last %}{% else %},{% endif %}{% endfor %}
+         'chocolate'{% if forloop.last %}{% else %},{% endif %}{% endfor %}
       ],
       borderColor: [{% for year, count in paper_counts.items %}
-         {% if '199' in year|stringformat:"s" %}'rgba(255, 99, 132, 1)'
-         {% elif "200" in year|stringformat:"s" %}'rgba(54, 162, 235, 1)'
-         {% elif "201" in year|stringformat:"s" %}'rgba(255, 206, 86, 1)'
-         {% elif "202" in year|stringformat:"s" %}'rgba(255, 206, 86, 1)'
-         {% elif "203" in year|stringformat:"s" %}'rgba(255, 206, 86, 1)'
-         {% elif "204" in year|stringformat:"s" %}'rgba(75, 192, 192, 1)'
-         {% elif "205" in year|stringformat:"s" %}'rgba(153, 102, 255, 1)'
-         {% elif "206" in year|stringformat:"s" %}'rgba(255, 159, 64, 1)'{% endif %}
-         {% if forloop.last %}{% else %},{% endif %}{% endfor %}
+         'chocolate'{% if forloop.last %}{% else %},{% endif %}{% endfor %}
       ],
       borderWidth: 1
     }

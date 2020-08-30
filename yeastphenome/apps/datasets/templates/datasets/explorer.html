@@ -1,0 +1,318 @@
+{% extends "base/wide.html" %}
+{% load humanize %}
+{% block content %}
+<link rel='stylesheet' href='https://unpkg.com/@yaireo/tagify/dist/tagify.css'>
+
+<style>
+.customSuggestionsList > div{
+  max-height: 300px;
+  border: 2px solid pink;
+  overflow: auto;
+}
+.tagify {
+  width: 100%;
+  max-width: 700px;
+}
+
+.pen-intro{
+}
+
+input{
+  order: 5;
+}
+
+label[for='checkbox-tagify-show-input']{
+  position: absolute;
+  top: .85em;
+  left: 2.5em;
+
+}
+
+label[for='checkbox-tagify-show-input'] + input{
+  position: absolute;
+  top: 1em;
+  left: 1em;
+  transform: scale(1.4);
+}
+
+label[for='checkbox-tagify-show-input'] + input:checked ~ input,
+label[for='checkbox-tagify-show-input'] + input:checked ~ textarea{
+  display: block !important;
+  width: 100%;
+  max-width: 700px;
+  margin-top: 1.5em;
+}
+
+label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
+    min-height: 11ch;
+}
+</style>
+    <div class="col-md-3">
+        <div class="row">
+            <div class="col-md-12 public-homepage-side-panel">
+                <div class="box">
+                  <h3>Dataset Filters</h3>
+                  <input name='tags' value="">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+               <h4>Legend</h4>
+                <ul class="list-group"><!--https://emojipedia.org/-->
+                  <li class="list-group-item">🏺 collection</li>
+                  <li class="list-group-item">🌨️ condition</li>
+                  <li class="list-group-item">💽 datatype</li>
+                  <li class="list-group-item">🧬 gene</li>
+                  <li class="list-group-item">🧫 medium</li>
+                  <li class="list-group-item">🐶 phenotype</li>
+                  <li class="list-group-item">🏷️ tag</li>
+                  </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="btn-group">
+               <h4>Browse</h4>
+		<div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+		  <div class="btn-group mr-2" role="group" aria-label="First group">
+		    <button type="button" class="btn btn-default"><a class="dropdown-item" href="{% url 'papers:all' %}">Papers</a></button>
+		    <button type="button" class="btn btn-default"><a href="{% url 'conditions:index' %}">Conditions</a></button>
+		    <button type="button" class="btn btn-default"><a href="{% url 'phenotypes:index' %}">Phenotypes</a></button>
+		  </div>
+		</div>
+              </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="alert alert-warning" role="alert"><strong>Warning:</strong> These data may contain errors.
+                  <p>YeastPhenome.org is running in beta version.
+                     The data are available for download, but, as of today, we cannot guarantee lack of errors or code bugs introduced during processing.
+                     This warning will be removed after all cross-checks and validations have been completed.
+                     In the meantime, please, be careful when using the data.</p>
+                </div>
+            </div>
+      </div>
+    </div>
+    <div class="col-md-9">
+        <div class="row">
+            <div class="col-md-12" style="padding-top:20px">
+                <form id="searchform">
+                {% csrf_token %}
+               <input type="text" name="q" class="form-control" placeholder="Search (press enter to search only using filters)" required="" id="id_q">
+                </form>
+                <button type="button" id="add-to-cart-all" class="btn btn-default"><a href="">Add Selected to Cart</a></button>
+
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12" id="message" style="padding-bottom:5px">{% if results %}
+               {% if results.count == 0 %}
+                  <div class="alert alert-info">There were no relevant results for your search.</div>
+               {% else %}
+                  <div class="alert alert-info">We found {{ results.count }} results for your search.</div>
+               {% endif %}{% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12" id="results" style="padding-bottom:30px">{% if results %}
+               {% if results.count != 0 %}
+                  {% include "datasets/datasets_table.html" with datasets=results.results %}
+               {% endif %}
+            </div>{% endif %}{% if datasets %}
+              {% include "datasets/datasets_table.html" with template='datasets_class' %}
+             {% endif %}
+        </div>
+    </div>
+</div></div></div>
+{% endblock %}
+{% block scripts %}
+
+<script src='https://unpkg.com/@yaireo/tagify@3.17.7/dist/tagify.min.js'></script>
+<script>
+
+var cart = {{ cart | safe }}
+var tags = {{ tags | safe }}
+
+var input = document.querySelector('input[name=tags]'),
+    tagify = new Tagify(input, {
+        pattern: /^.{0,200}$/,  // Validate typed tag(s) by Regex. Here maximum chars length is defined as "20"
+        delimiters: ",|;",      // add new tags when these characters are used
+        keepInvalidTags: false, // dont keep invalid tags
+        editTags: 1,            // single click to edit a tag
+        maxTags: 6,
+        blacklist: [],          // words to blacklist?
+        whitelist: tags,
+        transformTag: transformTag,
+        // backspace: "edit",
+        placeholder: "Add filters",
+        dropdown : {
+            enabled: 1,            // show suggestion after 1 typed character
+            fuzzySearch: false,    // match only suggestions that starts with the typed characters
+            position: 'text',      // position suggestions list next to typed text
+            caseSensitive: true,   // allow adding duplicate items if their case is different
+        },
+        templates: {
+            dropdownItemNoMatch: function(data) {
+                return `<div class='${this.settings.classNames.dropdownItem}' tabindex="0" role="option">
+                    No suggestion found for: <strong>${data.value}</strong>
+                </div>`
+            },
+            tag : function(tagData){
+               try {
+                    return `<tag title='${tagData.value}' contenteditable='false' spellcheck="false" class='tagify__tag ${tagData.class ? tagData.class : ""}' ${this.getAttributes(tagData)}>
+                        <x title='remove tag' class='tagify__tag__removeBtn'></x>
+                        <div>${tagData.icon}
+                            <span class='tagify__tag-text'>${tagData.value}</span>
+                        </div>
+                    </tag>`
+               }
+               catch(err){}
+            },
+            dropdownItem : function(tagData){
+                try {
+                    return `<div class='tagify__dropdown__item ${tagData.class ? tagData.class : ""}' tagifySuggestionIdx="${tagData.tagifySuggestionIdx}">${tagData.icon}
+                            <span>${tagData.value}</span>
+                        </div>`
+                }
+                catch(err){}
+              }
+            }
+        })
+
+// generate a random color (in HSL format)
+function getRandomColor(){
+    function rand(min, max) {
+        return min + Math.random() * (max - min);
+    }
+
+    var h = rand(1, 360)|0,
+        s = rand(40, 70)|0,
+        l = rand(65, 72)|0;
+
+    return 'hsl(' + h + ',' + s + '%,' + l + '%)';
+}
+
+function transformTag( tagData ){
+    tagData.style = "--tag-bg:" + getRandomColor();
+
+    if( tagData.value.toLowerCase() == 'shit' )
+       tagData.value = 's✲✲t'
+}
+
+tagify.on('invalid', function(e){
+    console.log(e, e.detail);
+})
+
+tagify.on('add', function(e){
+    console.log(e.detail)
+    console.log( "original Input:", tagify.DOM.originalInput);
+    console.log( "original Input's value:", tagify.DOM.originalInput.value);
+    console.log( "event detail:", e.detail);
+});
+
+// add the first 2 tags and makes them readonly
+//var tagsToAdd = tagify.settings.whitelist.slice(0, 2)
+//tagify.addTags(tagsToAdd)
+
+$("#id_q").bind("keypress", {}, keypressSearch);
+
+function keypressSearch(e) {
+    var code = (e.keyCode ? e.keyCode : e.which);
+    if (code == 13) { //Enter keycode                
+        e.preventDefault();
+        doTagsSearch();
+    }
+};
+
+// Function to retrieve attributes and do search
+function doTagsSearch() {
+
+   $("#fade").show();
+   var promise = new Promise(function(resolve, reject) {
+        var tags = $('[name=tags]').val();
+        var query = $("#id_q").val();
+        console.log(tags)
+        return resolve({"tags": tags, "query": query});
+            
+   }).then(function(query){
+       $.ajax({
+           url : "{% url 'api:datasets_search' %}",
+           type : "POST",
+           data : { query: query }, // data sent with the post request
+
+           // handle a successful response
+           success : function(json) {
+
+              $(".pagination-element").hide()  
+              $("#papersTableBody").empty()                        
+              $("#message").empty()    
+
+              if (json['count'] == 0){
+                  $('#message').html("<div class='alert alert-info'>There we no results for your search.</div>");
+              } else {
+                  $("#message").html("<div class='alert alert-info'>Found " + json['count'] + " results.</div>");
+
+                  // data type lookup, int to correspond to name
+                  var datatypes = json['datatypes']
+
+                  $.each(json['results'], function(e, i) {
+
+                     // (dataset_id, data_available, paper id, first author, last author, date published, phenotype_observable_name, reporter, conditionset, medium, collection, data_published_name)
+                     // (1, 3, 2, 'Chan TF', 'Zheng XF', 2000, 'growth', 'streaks on agar', 'sirolimus [25 nM]', 'YPD', 'hap a', 'discrete', 111)
+                     medium = ""
+                     if (i[9] != null) {
+                         medium = i[9]
+                     }
+        
+                     // datatype of data available
+                     var dt = datatypes[i[1]]
+
+                     var content = "<tr><td><input id='" + i[0] + "' type='checkbox' name='" + i[0] + "' class='dataset'></td><td class='col-md-2'><a href='/papers/"+ i[2]+ "'>" + [3] + " " + i[4] + "</a></td><td class='col-md-2'>" + i[6] + "(" + i[7] + ")" + "</td><td class='col-md-2'>" + i[8] +"</td><td class='col-md-2'>" + medium + "</td><td class='col-md-2'>" + i[10] + "</td><td class='col-md-2'><span class='text-success available'>" + dt +"</span></td><td><a href='/datasets/"+ i[0]+ "/'><button type='button' style='width:100px' class='btn btn-primary btn-sm'>Details</button></a>"
+
+                     if (i[0] in cart) {
+                       content += "<a href='cart/remove/datasets:index" + i[0] + "'><button type='button' class='btn btn-danger btn-sm' style='width:100px'>Remove</button></a></td></tr>"
+                     } else {
+                     content += "<a href='cart/add/datasets:index" + i[0]+ "'><button type='button' class='btn btn-primary btn-sm' style='width:100px'>Add to Cart</button></a></td></tr>"}
+
+                      $("#papersTableBody").append(content);
+                    })
+
+                  console.log("success"); // another sanity check
+                  $("#papersTable").tablesorter();
+              }
+              $("#fade").hide();
+           },
+
+           // handle a non-successful response
+           error : function(xhr, errmsg, err) {
+              $('#message').html("<div class='alert alert-warning' data-alert>Oops! We have encountered an error: "+errmsg+
+                        " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
+                        console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+           }
+     })
+   })
+}
+</script>
+{% if datasets %}
+{% include "scripts/tablesorter.html" %}
+<script>
+    $(document).ready(function(){
+        $("#papersTable").tablesorter();
+    });
+
+$("#add-to-cart-all").click(function(event){
+     $("#fade").show();
+     ids = ""
+     $.each($("[type=checkbox].dataset:checked"), function(i, e){
+        ids = ids + "," + $(e).attr("name")
+     })
+     document.location = "/cart/add/" + ids + "/datasets:index"
+
+})
+
+</script>
+{% endif %}
+{% endblock %}

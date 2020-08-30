@@ -2,7 +2,13 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 
 from yeastphenome.apps.common.forms import SearchForm
-from yeastphenome.apps.common.utils import get_latest_stats, select_random_graph
+from yeastphenome.apps.common.utils import (
+    get_dataset_sources,
+    get_latest_stats,
+    select_random_graph,
+    get_papers_by_year,
+    get_phenotype_measurements,
+)
 from yeastphenome.apps.datasets.models import Dataset
 from yeastphenome.apps.papers.models import Paper
 
@@ -28,25 +34,59 @@ def index(request):
 
     # Select a random graph to add to the context
     context.update(select_random_graph())
-    return render(request, "base/index.html", context)
+    return render(request, "main/index.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def about(request):
+    return render(request, "main/about.html")
 
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def faq(request):
+    return render(request, "main/faq.html")
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def stats(request):
     context = get_latest_stats()
+    context["paper_counts"] = get_papers_by_year()
+    context.update(get_phenotype_measurements(hide_legend=True))
+    context.update(get_dataset_sources())
+    return render(request, "main/stats.html", context)
 
-    return render(request, "main/about.html", context)
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def contributors(request):
+    return render(request, "main/contributors.html")
+
+
+# Getting Started Pages
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def getting_started(request):
-    return render(request, "main/getting-started.html")
+    return render(request, "getting-started/getting-started.html")
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def data_explorer(request):
-    return render(request, "main/data-explorer.html")
+def background(request):
+    return render(request, "getting-started/background.html")
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def advanced(request):
+    return render(request, "getting-started/advanced.html")
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def tutorials(request):
+    return render(request, "getting-started/tutorials.html")
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def introduction(request):
+    return render(request, "getting-started/introduction.html")
 
 
 # Cart Operations
@@ -54,20 +94,31 @@ def data_explorer(request):
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def add_to_cart(request, dataset_id, next=None):
-    """Add a dataset to the cart, if it exists.
+    """Add one or more datasets to the cart, if they exist. A dataset id
+       can be a single string of values, comma separted, or just the value.
     """
-    try:
-        dataset = Dataset.objects.get(id=dataset_id)
-        if "cart" not in request.session:
-            request.session["cart"] = []
-        if dataset.id not in request.session["cart"]:
-            request.session["cart"].append(dataset.id)
-        request.session.modified = True
-        messages.success(
-            request, "Dataset with id %s was added to your download cart." % dataset_id
-        )
-    except:
-        messages.info(request, "Dataset with id %s does not exist" % dataset_id)
+    if "cart" not in request.session:
+        request.session["cart"] = []
+
+    added_count = 0
+
+    for d_id in dataset_id.split(","):
+        if not d_id:
+            continue
+        try:
+            dataset = Dataset.objects.get(id=d_id)
+            if dataset.id not in request.session["cart"]:
+                request.session["cart"].append(dataset.id)
+                request.session.modified = True
+                added_count += 1
+        except:
+            pass
+
+    if added_count == 1:
+        message = "1 dataset was added to your cart."
+    else:
+        message = "%s datasets were added to your cart." % added_count
+    messages.success(request, message)
 
     # Return to the same page the user was browsing
     if next is not None:

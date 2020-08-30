@@ -1,0 +1,40 @@
+{% load my_filters %}
+{% if papers_list %}<table id="papersTable" class="tablesorter table table-striped" width="100%">
+        <thead>
+        <tr>
+            <th class="text-nowrap" width="30%">FirstAuthor~LastAuthor, Year</th>
+            <th width="35%">Phenotypes</th>
+            <th width="35%">Conditions</th>
+        </tr>
+        </thead>
+
+        <tbody id="papersTableBody">
+
+        {% for paper in papers_list %}<tr>
+            <td class="text-nowrap"><a href="{% url 'papers:detail' paper.pk  %}">{{ paper }}</a></td>
+            <td>{{ paper.phenotypes|join_and_more:7 }}</td>
+            <td>{{ paper.conditiontypes|join_and_more:7|safe }}</td>
+        </tr>{% endfor %}
+        </tbody>
+    </table>
+
+	<div class="pagination">
+	    <div class="step-links">
+		{% if papers_list.has_previous %}
+		    <a href="?page=1">&laquo; first</a>
+		    <a href="?page={{ papers_list.previous_page_number }}">previous</a>
+		{% endif %}
+
+		<span class="current" style="margin-right:30px; margin-left:30px">
+		    Page {{ papers_list.number }} of {{ papers_list.paginator.num_pages }}.
+		</span>
+
+		{% if papers_list.has_next %}<span style="float:right">
+		    <a href="?page={{ papers_list.next_page_number }}">next</a>
+		    <a href="?page={{ papers_list.paginator.num_pages }}">last &raquo;</a>
+		</span>{% endif %}
+	    </div>
+	</div>
+    {% else %}<aside class="bg-warning">No papers are available.</aside>{% endif %}
+    </div>
+</div>

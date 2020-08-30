@@ -367,7 +367,88 @@ pg_dump -U ${POSTGRES_USER} ${POSTGRES_DATABASE} > exportname.pgsql
 
 ### Deployment
 
-We will be testing [this](https://cloud.google.com/python/django/appengine#deploying_the_app_to_the_standard_environment_)
-and we'll need to figure out how to adopt the current need to download files to be supported by app engine.
+Make sure that you have followed the instructions for [migration](migration) of models (to add Genes, etc.)
+before exporting and creating the database in Google Cloud. After we added genes 
+(took about a day to populate, note that this might be tried
+with some kind of multiprocessing approach to be faster, but I read a few un-successful
+reports and decided to be conservative instead) we want to re-create the database
+with cloud sql! Note that first we've set up and tested [Identity Aware Proxy](https://cloud.google.com/iap) 
+(IAP) and are confident that we can deploy a Python 3 app to Google App Egine and have it
+protected based on email addresses. Next we want to export the database dump. I wanted
+to try both a standard dump, and the command  [recommended by Google](https://cloud.google.com/sql/docs/postgres/import-export/exporting#external-server).
+
+```bash
+$ docker exec -it docker_postgres_1 bash
+pg_dump -U ${POSTGRES_USER} ${POSTGRES_DATABASE} > yeastphenome.pgsql
+
+pg_dump -U ${POSTGRES_USER} --format=plain --no-owner --no-acl ${POSTGRES_DATABASE} | sed -E 's/(DROP|CREATE|COMMENT ON) EXTENSION/-- \1 EXTENSION/g' > yeastphenome-gcloud.sql
+exit
+```
+```bash
+docker cp docker_postgres_1:/yeastphenome.pgsql backup/legacy/postgres/removed-observable2/yeastphenome.pgsql
+```
+
+And then [import into cloud SQL](https://cloud.google.com/sql/docs/postgres/import-export/importing)
+via storage. Note that you can do this upload to storage manually. This comes down to:
+
+ 1. Creating the postgres instance in managed SQL
+ 2. Uploading the dumps to storage
+ 3. Giving the instance IAM permission to access storage
+ 4. Importing in the console from storage
+ 5. Testing login credentials on the Google Cloud Shell
+
+We then want to [connect from App Engine](https://cloud.google.com/sql/docs/postgres/connect-app-engine-standard).
+This means that we need to add the Cloud SQL client to the app engine default service account,
+and optionally download the [local sql proxy](https://cloud.google.com/python/django/appengine#installingthecloudsqlproxy) (for local development). It also means that you (finally) need to create and populate the `app.yaml` file with credentials and
+other environment settings:
+
+```bash
+cp app-example.yaml app.yaml
+```
+
+Any files that you don't want uploaded to storage you should add to the `.gcloudignore` file.
+Also make sure you've recently collected static, so all files you need are in the static folder:
+
+```bash
+make collect
+```
+
+Since we are deploying to the [app engine standard environment](https://cloud.google.com/python/django/appengine#deploying_the_app_to_the_standard_environment_) if you've never done this before (and need to set up
+and test the IAP) I would recommend deploying a dummy "hello world" project first. When you are ready, you can
+deploy and then browse! Note that this deployment was adding a file, hence why there is only
+one file to add. At the first go you'll see a few hundreds files.
+
+```bash
+$ gcloud app deploy
+Services to deploy:
+
+descriptor:      [/home/vanessa/Desktop/Code/yeastphenome.org/app.yaml]
+source:          [/home/vanessa/Desktop/Code/yeastphenome.org]
+target project:  [your-app-name-01]
+target service:  [default]
+target version:  [20200830t115100]
+target url:      [https://your-app-name-01.uc.r.appspot.com]
+
+
+Do you want to continue (Y/n)?  y
+
+Beginning deployment of service [default]...
+╔════════════════════════════════════════════════════════════╗
+╠═ Uploading 1 file to Google Cloud Storage                 ═╣
+╚════════════════════════════════════════════════════════════╝
+File upload done.
+Updating service [default]...done.                                                                                               
+Setting traffic split for service [default]...done.                                                                              
+Deployed service [default] to [https://your-app-name-01.uc.r.appspot.com]
+
+You can stream logs from the command line by running:
+  $ gcloud app logs tail -s default
+
+To view your application in the web browser run:
+  $ gcloud app browse
+```
+
+That's it! If you see a 500 (or other error) you can usually go to the
+Google Cloud Logs console and see the debug output.
 
 <hr>

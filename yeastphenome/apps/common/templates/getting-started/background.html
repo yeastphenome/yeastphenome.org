@@ -1,0 +1,36 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>Background</h2>
+        <div class="accordion" id="accordionFAQ">
+
+            <div class="card">
+                <div class="card-header" id="headingOne">
+                  <h2>
+                  <button style="padding-left:0px" class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">A Model Organism</button>
+                  </h2>
+                </div>
+                <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionFAQ">
+                    <div class="card-body">
+                     <p>Yeast is a model organism because it can reproduce (a process called "budding" to produce
+an almost identical offspring) in about 90 minutes <a href="https://www.quora.com/How-long-do-yeast-cells-take-before-dividing" target="_blank">[1]</a>. This means that if a typical
+yeast can go through 30 <a href="https://ai.googleblog.com/2020/04/applying-machine-learning-toyeast.html?m=1" target="_blank">[2]</a> of these events before death, we can study the entire life (and aging)
+cycle of an organism in 2700 minutes, or just under two days. Yeast also has ~6,275 genes, of which 23%
+are homologous to humans <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5525645/" target="_blank">[3]</a>. This makes the organism a good model for studying aging in human, 
+because we can age and perturb the yeast, and then test if discoveries are relevant to humans.
+</p>
+                    </div>
+                </div>
+            </div>
+
+       </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+$('.collapse').collapse()
+</script>
+{% endblock %}

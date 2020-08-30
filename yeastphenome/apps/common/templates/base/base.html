@@ -50,9 +50,10 @@
 
     {% block body %}
     <body>
+    {% include "base/loader.html" %}
     <div id="wrap">        
     <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
-    {% if request.path == "/" %}{% include "base/navigation-simple.html" %}{% else %}{% include "base/navigation.html" %}{% endif %}
+    {% include "base/navigation.html" %}
     {% block container %}<div {% if wide %}class="container-wide" style="padding:80px 200px 200px 200px;" {% else %}class="container" style="padding-top:80px; padding-bottom:200px"{% endif %}>{% endblock %}
     {% include "messages/message.html" %}
     {% block content %}{% endblock %}

@@ -1,15 +1,3 @@
-{% if notitle %}{% else %}<h3>Datasets</h3>{% endif %}
-
-<div class="alert alert-warning" role="alert">
-    <strong>Warning:</strong> These data may contain errors.
-    <p>
-        YeastPhenome.org is running in beta version.
-        The data are available for download, but, as of today, we cannot guarantee lack of errors or code bugs introduced during processing.
-        This warning will be removed after all cross-checks and validations have been completed.
-        In the meantime, please, be careful when using the data.
-    </p>
-</div>
-
 {% if datasets %}{% if template == 'paper' %}
 <a href="/{{ template }}s/{{ object.id }}/{{ DOWNLOAD_PREFIX }}_{{ object.pmid }}_datasets_list.txt">Download the list of datasets</a>
 {% endif %}
@@ -24,59 +12,49 @@
         <th>Condition</th>
         <th>Medium</th>
         <th>Collection</th>
-        <th>Tested mutants</th>
         <th>Data</th>
         <th>Details</th>
         </thead>
 
-        <tbody>
+        <tbody id="papersTableBody">
         {% for dataset in datasets %}<tr>
             <td><input id="{{ dataset.id }}" type="checkbox" name="{{ dataset.id }}" class="dataset" {# {% if not dataset.has_data_in_db %}disabled{% endif %} #}></td>
             <td class="col-md-2"><a href="{% url 'papers:detail' dataset.paper.id %}">{{ dataset.paper }}</a></td>
             <td class="col-md-2">{{ dataset.phenotype.observable.name }} {% if dataset.phenotype.reporter %} ({{ dataset.phenotype.reporter }}) {% endif %}</td>
-            <td class="col-md-1">{{ dataset.conditionset.display_name }}</td>
+            <td class="col-md-2">{{ dataset.conditionset.display_name }}</td>
             <td class="col-md-2">{{ dataset.medium.display_name }}</td>
-            <td class="col-md-1">{{ dataset.collection.shortname }}</td>
-
-            <td class="col-md-1">
-                {{ dataset.tested_space|safe }}
-            </td>
-
-            <td class="col-md-1">
+            <td class="col-md-2">{{ dataset.collection.shortname }}</td>
+            <td class="col-md-2">
                 {% if dataset.has_data_in_db %}
                 <span class="text-success available">{{ dataset.data_available|capfirst }}</span>
                 {% else %}
                 <span class="text-muted">{{ dataset.data_available|capfirst }}</span>
                 {% endif %}
             </td>
-            <td>
-                <a href="/datasets/{{ dataset.id }}/"><button type="button" class="btn btn-primary btn-sm">Details</button></a>
-                {% if dataset.id not in request.session.cart %}<a href="{% url 'common:add_to_cart' dataset.id "datasets:growth" %}"><button type="button" class="btn btn-primary btn-sm" style="width:100px">Add to Cart</button></a>{% else %}<a href="{% url 'common:remove_from_cart' dataset.id "datasets:growth" %}"><button type="button" class="btn btn-danger btn-sm" style="width:100px">Remove</button></a>{% endif %}
+            <td>{% if not request.session.cart %}<a href="{% url 'common:add_to_cart' dataset.id "datasets:growth" %}"><button type="button" class="btn btn-primary btn-sm" style="width:100px">Add to Cart</button></a>{% else %}
+                <a href="/datasets/{{ dataset.id }}/"><button type="button" style="width:100px" class="btn btn-primary btn-sm">Details</button></a>
+                {% if dataset.id not in request.session.cart %}<a href="{% url 'common:add_to_cart' dataset.id "datasets:index" %}"><button type="button" class="btn btn-primary btn-sm" style="width:100px">Add to Cart</button></a>{% else %}<a href="{% url 'common:remove_from_cart' dataset.id "datasets:index" %}"><button type="button" class="btn btn-danger btn-sm" style="width:100px">Remove</button></a>{% endif %}{% endif %}
             </td>
         </tr>{% endfor %}
         </tbody>
     </table>
 
     {% if datasets.has_other_pages %}
-    <ul class="pagination">
+    <ul class="pagination pagination-element">
         {% if datasets.has_previous %}
-        <li><a href="?page={{ datasets.previous_page_number }}">&laquo;</a></li>
+        <li><a href="{{ request.get_full_path }}&page={{ datasets.previous_page_number }}">&laquo;</a></li>
         {% else %}
         <li class="disabled"><span>&laquo;</span></li>
         {% endif %}
-        {% for i in datasets.paginator.page_range %}
-        {% if datasets.number == i %}
-        <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
-        {% else %}
-        <li><a href="?page={{ i }}">{{ i }}</a></li>
-        {% endif %}
-        {% endfor %}
         {% if datasets.has_next %}
-        <li><a href="?page={{ datasets.next_page_number }}">&raquo;</a></li>
+        <li><a href="{{ request.get_full_path }}&page={{ datasets.next_page_number }}">&raquo;</a></li>
         {% else %}
         <li class="disabled"><span>&raquo;</span></li>
         {% endif %}
     </ul>
+    <span class="current pagination-element" style="margin-right:30px; margin-left:30px; position: absolute; margin-top:28px">
+        Page {{ datasets.number }} of {{ datasets.paginator.num_pages }}.
+    </span>
     {% endif %}
 
     <p><button id="dataset_download" type="submit" class="btn btn-default" disabled="true">Download selected datasets</button>
