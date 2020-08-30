@@ -35,11 +35,6 @@ graphs = [
         name="collection-by-year",
     ),
     path(
-        "graph/papers/network/",
-        graphs.paper_citation_graph_neo4j,
-        name="paper-citation-graph-neo4j",
-    ),
-    path(
         "graph/papers/citations/explorable/",
         graphs.paper_citation_graph_explorable,
         name="paper-citation-graph-explorable",

@@ -87,24 +87,16 @@ class Command(BaseCommand):
                 {
                     "id": count,
                     "type": "HAS_CITATION",
-                    "startNode": str(link["source"]),
-                    "endNode": str(link["target"]),
+                    "source": str(link["source"]),
+                    "target": str(link["target"]),
                 }
             )
             count += 1
 
         # Save neo4j d3 formatted data to file (in future we want to put this in Google Storage?)
-        data = {
-            "results": [
-                {
-                    "columns": ["user", "entity"],
-                    "data": [{"graph": {"nodes": newnodes, "relationships": newlinks}}],
-                }
-            ],
-            "errors": [],
-        }
+        data = {"nodes": newnodes, "links": newlinks}
         data_file = os.path.join(
-            root, "apps", "common", "static", "data", "papers-graph-neo4j.json"
+            root, "apps", "common", "static", "data", "papers-graph.json"
         )
         with open(data_file, "w") as fd:
             fd.writelines(json.dumps(data, indent=4))

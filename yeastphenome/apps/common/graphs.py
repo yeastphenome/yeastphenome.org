@@ -17,16 +17,6 @@ from yeastphenome.settings import (
 
 # Visuals
 
-# under development ------------------------------------------------------------
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def paper_citation_graph_neo4j(request):
-    """A larger citation graph that shows all nodes and links.
-       NOT CURRENTLY IN USE - needs to be refactored
-    """
-    return render(request, "graphs/citation-graph-neo4j-wrapper.html")
-
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def papers_citation_graph(request):
