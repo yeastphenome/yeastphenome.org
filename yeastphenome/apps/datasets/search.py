@@ -100,7 +100,7 @@ def run_search_tag_query(query, taglist=None, return_instances=False):
         phenotype_query = Q(phenotype__name__in=tags["phenotype"])
 
     if "conditionset" in tags:
-        conditionset_query = Q(conditionset__systematic_name__icontains=query)
+        conditionset_query = Q(conditionset__systematic_name__in=tags["conditionset"])
 
     results = queryset.filter(
         tag_query,

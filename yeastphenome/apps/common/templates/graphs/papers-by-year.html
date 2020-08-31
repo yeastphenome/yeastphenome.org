@@ -29,9 +29,21 @@ var papersChart = new Chart(ctx, {
     legend: {
       display: false
     },
+    hover: {
+      onHover: function(e) {
+         var point = this.getElementAtEvent(e);
+         if (point.length) e.target.style.cursor = 'pointer';
+         else e.target.style.cursor = 'default';
+      }
+    },
     title: {
       display: true,
       text: 'Papers Added to YeastPhenome.org by Year'
+    },
+    onClick:function(e, items){
+        if (items.length == 0) return; //Clicked outside any bar.
+        var activePointLabel = this.getElementsAtEvent(e)[0]._model.label;
+        document.location = "/papers/year/" + activePointLabel + "/"
     },
     tooltips: {
       callbacks: {

@@ -1,7 +1,7 @@
 from django.db.models import Q
 from django.views import generic
 from django.shortcuts import render
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.paginator import Paginator
 
 from .models import Paper
 from .utils import (
@@ -19,6 +19,7 @@ from django.conf import settings
 from ratelimit.mixins import RatelimitMixin
 from ratelimit.decorators import ratelimit
 from yeastphenome.apps.papers.search import get_search_tags, run_search_tag_query
+
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
     VIEW_RATE_LIMIT_BLOCK as rl_block,
@@ -26,13 +27,17 @@ from yeastphenome.settings import (
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def paper_explorer(request):
+def paper_explorer(request, year=None):
     """Return a paginated list of papers with the data explorer.
     """
     queryset = Paper.objects.exclude(
         Q(data_statuses__name__exact="not relevant")
         | Q(tested_statuses__name__exact="not relevant")
     )
+
+    # Filter to year, if defined
+    if year is not None:
+        queryset = queryset.filter(pub_date=year)
 
     q = ""
     if "q" in request.GET:
@@ -75,14 +80,7 @@ class PaperDetailView(generic.DetailView, RatelimitMixin):
         )
         page = self.request.GET.get("page", 1)
         paginator = Paginator(dataset_list, 50)
-        try:
-            datasets = paginator.page(page)
-        except PageNotAnInteger:
-            datasets = paginator.page(1)
-        except EmptyPage:
-            datasets = paginator.page(paginator.num_pages)
-
-        context["datasets"] = datasets
+        context["datasets"] = paginator.get_page(page)
         context["id"] = paper.id
 
         # Give credit if credit is due.
