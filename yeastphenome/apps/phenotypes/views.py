@@ -3,11 +3,12 @@ from django.conf import settings
 from django.views import generic
 
 from yeastphenome.apps.phenotypes.models import Observable
+from yeastphenome.apps.phenotypes.search import get_search_tags
 
 
 class ObservableIndexView(generic.ListView):
     model = Observable
-    template_name = "phenotypes/index.html"
+    template_name = "phenotypes/explorer.html"
     context_object_name = "observables"
 
     def get_context_data(self, **kwargs):
@@ -18,6 +19,7 @@ class ObservableIndexView(generic.ListView):
         paginator = Paginator(queryset, 50)
         page = self.request.GET.get("page")
         context["observables"] = paginator.get_page(page)
+        context["tags"] = get_search_tags()
         return context
 
 

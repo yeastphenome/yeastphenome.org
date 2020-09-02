@@ -16,7 +16,17 @@ urlpatterns = [
         views.DatasetsSearch.as_view(),
         name="datasets_search",
     ),
+    path(
+        "search/conditions/explorer",
+        views.ConditionsSearch.as_view(),
+        name="conditions_search",
+    ),
     path("search/papers/explorer", views.PapersSearch.as_view(), name="papers_search"),
+    path(
+        "search/phenotypes/explorer",
+        views.PhenotypesSearch.as_view(),
+        name="phenotypes_search",
+    ),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
     path("api-token-auth/", authviews.obtain_auth_token),
 ]

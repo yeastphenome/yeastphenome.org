@@ -5,6 +5,7 @@ from yeastphenome.apps.datasets.models import Dataset
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.common.utils import (
     get_dataset_sources,
+    get_dataset_genes,
     get_papers_by_year,
     get_collections_by_year,
     get_phenotype_measurements,
@@ -99,4 +100,13 @@ def dataset_sources(request):
     """Render a chart.js visualization for datastes broken down by sources"""
     return render(
         request, "graphs/dataset-sources-wrapper.html", get_dataset_sources(),
+    )
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def dataset_genes(request, dataset_id=None):
+    """A scrollable, searchable gene view of a dataset"""
+    # Selects random dataset id if not defined
+    return render(
+        request, "graphs/dataset-genes-wrapper.html", get_dataset_genes(dataset_id)
     )

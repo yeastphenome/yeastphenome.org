@@ -6,6 +6,12 @@ from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.papers.utils import get_paper_references_context
 from yeastphenome.apps.papers.search import run_search_tag_query as papers_search
 from yeastphenome.apps.datasets.search import run_search_tag_query as dataset_search
+from yeastphenome.apps.phenotypes.search import (
+    run_search_tag_query as phenotypes_search,
+)
+from yeastphenome.apps.conditions.search import (
+    run_search_tag_query as conditions_search,
+)
 
 # from yeastphenome.apps.conditions.models import ConditionSet, ConditionType
 # from yeastphenome.apps.phenotypes.models import Phenotype
@@ -91,20 +97,24 @@ class BaseSearch(RatelimitMixin, APIView):
         return Response(status=200, data=results)
 
 
-class DatasetsSearch(BaseSearch):
-    """A search to take a query, and filter by specific tags
-    """
+class ConditionsSearch(BaseSearch):
+    def get_tags(self, query, tags):
+        return conditions_search(query, tags)
 
+
+class DatasetsSearch(BaseSearch):
     def get_tags(self, query, tags):
         return dataset_search(query, tags)
 
 
 class PapersSearch(BaseSearch):
-    """A search to take a query, and filter by specific tags
-    """
-
     def get_tags(self, query, tags):
         return papers_search(query, tags)
+
+
+class PhenotypesSearch(BaseSearch):
+    def get_tags(self, query, tags):
+        return phenotypes_search(query, tags)
 
 
 class GetPaperReferences(RatelimitMixin, APIView):

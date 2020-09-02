@@ -1,7 +1,4 @@
-{% extends "base/base.html" %}
 {% load my_filters %}
-{% block title %}Phenotypes / {{ SITE_NAME }}{% endblock %}
-{% block content %}
 <div class="row">
     <div class="col-md-12">
         <h1>Phenotypes</h1>
@@ -12,7 +9,7 @@
                 <th>Conditions</th>
                 <th>Papers</th>
             </tr>
-            </thead><tbody>
+            </thead><tbody id="papersTableBody">
         {% for observable in observables %}<tr>
             <td class="col-md-4">{{ observable.link_detail|safe }}</td>
             <td class="col-md-4">{{ observable.conditiontypes|join_and_more:7|safe }}</td>
@@ -41,10 +38,3 @@
         {% else %}<p class="alert alert-info">There are no phenotypes in the database.</p>{% endif %}
     </div>
 </div>
-{% endblock %}
-{% block scripts %}
-{% include "scripts/tablesorter.html" %}
-<script>$(document).ready(function(){
- $("#papersTable").tablesorter();
-});</script>
-{% endblock %}

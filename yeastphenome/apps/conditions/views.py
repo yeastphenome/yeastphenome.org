@@ -2,16 +2,19 @@ import re
 
 from itertools import chain
 
-from django.views import generic
-from django.db.models import Count
 from django.conf import settings
+from django.core.paginator import Paginator
 from django.shortcuts import render
-from django.db.models import Q
+from django.views import generic
 
 from yeastphenome.apps.conditions.models import ConditionType, ConditionSet, Medium
 from yeastphenome.apps.datasets.models import Dataset
 
-from yeastphenome.apps.common.forms import SearchForm
+from yeastphenome.apps.conditions.search import (
+    get_search_tags,
+    run_search_tag_query,
+    get_querysets,
+)
 
 from libchebipy import ChebiEntity
 
@@ -26,54 +29,21 @@ from yeastphenome.settings import (
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def index(request):
 
+    queryset1, queryset2 = get_querysets()
+    queryset = list(chain(queryset1, queryset2))
+
     if "q" in request.GET:
-
-        form = SearchForm(request.GET)
         q = request.GET["q"].strip()
+        queryset = run_search_tag_query(q, return_instances=True)
 
-        f = (
-            Q(systematic_name__icontains=q)
-            | Q(common_name__icontains=q)
-            | Q(display_name__icontains=q)
-            | Q(conditions__type__name__icontains=q)
-            | Q(conditions__type__other_names__icontains=q)
-            | Q(conditions__type__chebi_name__icontains=q)
-            | Q(conditions__type__pubchem_name__icontains=q)
-        )
-
-        # We should talk through what this query is trying to do - the original paper_latest.. did not work
-        g = Count(
-            "dataset",
-            filter=~Q(dataset__paper__latest_data_status__status__name="not relevant"),
-        )
-
-        queryset1 = ConditionSet.objects.all()
-        queryset1 = (
-            queryset1.filter(f)
-            .annotate(num_datasets=g)
-            .filter(num_datasets__gte=0)
-            .distinct()
-        )
-
-        queryset2 = Medium.objects.all()
-        queryset2 = (
-            queryset2.filter(f)
-            .annotate(num_datasets=g)
-            .filter(num_datasets__gte=0)
-            .distinct()
-        )
-
-        queryset = list(chain(queryset1, queryset2))
-
-        return render(
-            request,
-            "conditions/index.html",
-            {"queryset": queryset, "form": form, "q": q,},
-        )
-    else:
-        form = SearchForm()
-
-        return render(request, "conditions/index.html", {"form": form,})
+    # 50 results per page
+    paginator = Paginator(queryset, 50)
+    page = request.GET.get("page")
+    return render(
+        request,
+        "conditions/explorer.html",
+        {"queryset": paginator.get_page(page), "tags": get_search_tags()},
+    )
 
 
 class ConditiontypeDetailView(generic.DetailView, RatelimitMixin):

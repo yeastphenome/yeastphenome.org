@@ -5,12 +5,13 @@ from django.conf import settings
 from django.core.paginator import Paginator
 from django.views import generic
 
-from yeastphenome.apps.common.utils import get_collections_by_year
+from yeastphenome.apps.common.utils import get_collections_by_year, get_dataset_genes
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.datasets.models import Dataset, Data, Tag
 from yeastphenome.apps.datasets.search import get_search_tags, run_search_tag_query
 from yeastphenome.apps.conditions.models import ConditionType
 from yeastphenome.apps.phenotypes.models import Observable
+
 
 from libchebipy import ChebiEntity
 
@@ -35,6 +36,7 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
         context["collection_yearly_counts"] = get_collections_by_year(
             context["dataset"].collection
         )
+        context.update(get_dataset_genes())
         return context
 
 

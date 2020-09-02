@@ -3,9 +3,18 @@
 {% load humanize %}
 {% block title %}{{ object }} / Datasets / Papers / {{ SITE_NAME }}{% endblock %}
 {% block content %}
-<div class="row">
+<div class="row" style="padding-bottom:35px">
     <div class="col-xs-12">
         <h1>Dataset #{{ dataset.id }}</h1>
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-12">
+       {% include "graphs/dataset-genes.html" %}
+    </div>
+</div>
+<div class="row">
+    <div class="col-xs-12">
             <table class="table" id="datasetTable">
                 <tr>
                     <th width="20%" scope="row" class="first">Name</th>
@@ -61,6 +70,7 @@
             <a class="btn btn-success" role="button" href="/datasets/download/?{{ dataset.id }}=on">Download</a>
     </div>
 </div>
+
 <div class="row">
     <div class="col-xs-12">
        {% include "graphs/collection-by-year.html" %}
