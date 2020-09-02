@@ -57,6 +57,12 @@ graphs = [
     path(
         "graph/dataset/sources/", graphs.dataset_sources, name="dataset-sources-graph",
     ),
+    path("graph/dataset/genes/", graphs.dataset_genes, name="dataset-genes-graph",),
+    path(
+        "graph/dataset/genes/<int:dataset_id>/",
+        graphs.dataset_genes,
+        name="dataset-genes-graph",
+    ),
 ]
 
 urlpatterns += graphs

@@ -136,7 +136,25 @@ def get_collections_by_year(collection):
     return {"summed": summed, "counts": counts}
 
 
-# Dataset Sources
+# Datasets
+
+
+def get_dataset_genes(dataset_id=None):
+    if dataset_id is None:
+        count = Dataset.objects.count()
+        random_index = random.randint(0, count - 1)
+        dataset_id = Dataset.objects.all()[random_index].id
+
+    try:
+        dataset = Dataset.objects.get(id=dataset_id)
+        genes = [
+            {"label": d.gene.systematic_name, "value": float(d.value)}
+            for d in dataset.data_set.all()
+        ]
+        genes = sorted(genes, key=lambda i: i["value"])
+        return {"dataset_genes": genes, "dataset": dataset}
+    except Dataset.DoesNotExist:
+        pass
 
 
 def get_dataset_sources():
