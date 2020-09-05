@@ -36,8 +36,11 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
         context["collection_yearly_counts"] = get_collections_by_year(
             context["dataset"].collection
         )
-        context.update(get_dataset_genes())
+        context.update(get_dataset_genes(context["dataset"].id))
         return context
+
+
+# Explore by genes
 
 
 # Datasets Explorer (also the datasets index)

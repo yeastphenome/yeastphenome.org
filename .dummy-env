@@ -16,3 +16,10 @@ export DATABASE_NAME=
 export DATABASE_ENGINE=django.db.backends.mysql
 export SENDGRID_API_KEY=
 export SENDGRID_SENDER_EMAIL=
+
+
+# You'll need to export these to connect to a production app engine database
+# export APP_ENGINE_USERNAME=
+# export APP_ENGINE_PASSWORD=
+# export APP_ENGINE_DATABASE=
+# export APP_ENGINE_HOST=

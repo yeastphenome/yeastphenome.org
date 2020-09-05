@@ -94,8 +94,24 @@ WSGI_APPLICATION = "yeastphenome.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
-# If we are running on app engine
-if os.getenv("APP_ENGINE_CONNECTION_NAME") != None:
+# Case 1: we are running locally but want to do migration, etc. (set False to True)
+if False and os.getenv("APP_ENGINE_HOST") != None:
+    print("Warning: connecting to production database.")
+
+    # Running in development, but want to access the Google Cloud SQL instance in production.
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "USER": os.getenv("APP_ENGINE_USERNAME"),
+            "PASSWORD": os.getenv("APP_ENGINE_PASSWORD"),
+            "NAME": os.getenv("APP_ENGINE_DATABASE"),
+            "HOST": os.getenv("APP_ENGINE_HOST"),  # Set to IP address
+            "PORT": "",  # empty string for default.
+        }
+    }
+
+# Case 2: we are running on app engine
+elif os.getenv("APP_ENGINE_CONNECTION_NAME") != None:
 
     # Running on production App Engine, so connect to Google Cloud SQL using
     # the unix socket at /cloudsql/<your-cloudsql-connection string>
@@ -109,7 +125,7 @@ if os.getenv("APP_ENGINE_CONNECTION_NAME") != None:
         }
     }
 
-# Database local development uses DATABASE_* variables
+# Case 3: Database local development uses DATABASE_* variables
 elif os.getenv("DATABASE_HOST") is not None:
     # Make sure to export all of these in your .env file
     DATABASES = {

@@ -270,7 +270,7 @@ function doTagsSearch() {
                      // datatype of data available
                      var dt = datatypes[i[1]]
 
-                     var content = "<tr><td><input id='" + i[0] + "' type='checkbox' name='" + i[0] + "' class='dataset'></td><td class='col-md-2'><a href='/papers/"+ i[2]+ "'>" + [3] + " " + i[4] + "</a></td><td class='col-md-2'>" + i[6] + "(" + i[7] + ")" + "</td><td class='col-md-2'>" + i[8] +"</td><td class='col-md-2'>" + medium + "</td><td class='col-md-2'>" + i[10] + "</td><td class='col-md-2'><span class='text-success available'>" + dt +"</span></td><td><a href='/datasets/"+ i[0]+ "/'><button type='button' style='width:100px' class='btn btn-primary btn-sm'>Details</button></a>"
+                     var content = "<tr><td><input id='" + i[0] + "' type='checkbox' name='" + i[0] + "' class='dataset'></td><td class='col-md-1'><a href='/datasets/"+ i[0]+ "/'>" + i[0]+ "</a></td><td class='col-md-2'><a href='/papers/"+ i[2]+ "'>" + [3] + " " + i[4] + "</a></td><td class='col-md-2'>" + i[6] + "(" + i[7] + ")" + "</td><td class='col-md-2'>" + i[8] +"</td><td class='col-md-2'>" + medium + "</td><td class='col-md-2'>" + i[10] + "</td><td class='col-md-2'><span class='text-success available'>" + dt +"</span></td><td class='col-md-1'>"
 
                      if (i[0] in cart) {
                        content += "<a href='cart/remove/datasets:index" + i[0] + "'><button type='button' class='btn btn-danger btn-sm' style='width:100px'>Remove</button></a></td></tr>"

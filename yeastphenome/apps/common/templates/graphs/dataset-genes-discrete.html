@@ -1,0 +1,126 @@
+<script>
+
+var gene_values = {{ dataset_genes | safe }}
+var values = gene_values.map(function(d){return d.value;})
+
+// Create a lookup by bin id
+var lookup = Object()
+var counts = Object()
+$.each(gene_values, function(i, e){
+    lookup[e.label] = e.value
+    if (!(e.value in counts)) {
+         counts[e.value] = 0
+    }
+    counts[e.value] += 1     
+})
+
+// Create data array
+var data = Array()
+$.each(counts, function(i, e){
+    data.push({"count": e,"value": i})
+})
+console.log(data)
+
+// A formatter for counts.
+var formatCount = d3.format(",.0f");
+
+var margin = {top: 40, right: 30, bottom: 30, left: 30},
+    width = 960 - margin.left - margin.right,
+    height = 300 - margin.top - margin.bottom;
+
+var margin = {top: 20, right: 20, bottom: 70, left: 40},
+    width = 600 - margin.left - margin.right,
+    height = 300 - margin.top - margin.bottom;
+
+var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
+var y = d3.scale.linear().range([height, 0]);
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left")
+    .ticks(10);
+
+var svg = d3.select("#dataset-genes").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", 
+          "translate(" + margin.left + "," + margin.top + ")");
+	
+  x.domain(data.map(function(d) { return d.value; }));
+  y.domain([0, d3.max(data, function(d) { return d.count; })]);
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .selectAll("text")
+      .style("text-anchor", "end")
+      .attr("dx", "-.8em")
+      .attr("dy", "-.55em")
+      .attr("transform", "rotate(-90)" );
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Count");
+
+  svg.selectAll("bar")
+      .data(data)
+    .enter().append("rect")
+      .style("fill", "steelblue")
+      .attr("x", function(d) { return x(d.value); })
+      .attr("width", x.rangeBand())
+      .attr("y", function(d) { return y(d.count); })
+      .attr("height", function(d) { return height - y(d.count); })
+    .on('mouseover', function(d){ 
+       var genes = gene_values.filter(function(record){ return d.value == record.value; })
+       var names = genes.map(function(record){return record.label; });
+       content = "<h2> Value " + d.value + "</h2><select style='width:200px; height:200px' class='custom-select typehead' multiple>"
+       $.each(names, function(i,e){
+           content = content + "<option value=" + e + ">" + e + "</option>"
+       })
+       content = content + "</select>"
+       $("#gene-names").html(content)
+    });
+
+
+// Find the gene when the user selects
+$('#gene-select').on('click', function() {
+
+  // Get the bar for the gene from the lookup
+  var value = lookup[$("#gene-name").val()];
+  $("#gene-detail").html("Gene "+ this.value + " has discrete value: " + value + ".")
+});
+
+$(document).ready(function(){
+    var genes = Object.keys(lookup);
+   
+    // Constructing the suggestion engine
+    var genes = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.whitespace,
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        local: genes
+    });
+    
+    // Initializing the typeahead
+    $('.gene-search').typeahead({
+        hint: true,
+        highlight: true, /* Enable substring highlighting */
+        minLength: 1 /* Specify minimum characters required for showing suggestions */
+    },
+    {
+        name: 'genes',
+        source: genes
+    });
+});
+</script>

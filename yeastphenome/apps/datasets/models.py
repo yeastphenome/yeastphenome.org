@@ -289,14 +289,63 @@ class Gene(models.Model):
         max_length=50, null=True, blank=True, unique=True
     )  # previously data.orf field
     common_name = models.CharField(max_length=50, null=True, blank=True)
+    #    aliases
+
+    def __str__(self):
+        return "<%s>" % self.systematic_name
 
 
-#    aliases
+class DatasetSimilarity(models.Model):
+    """A dataset similarity is a similarity metric calculated to compare datasets
+       based on genes.
+    """
+
+    dataset1 = models.ForeignKey(
+        Dataset, on_delete=models.CASCADE, related_name="dataset_similarity1"
+    )
+    dataset2 = models.ForeignKey(
+        Dataset, on_delete=models.CASCADE, related_name="dataset_similarity2"
+    )
+    metric = models.CharField(max_length=50)
+    score = models.DecimalField(max_digits=10, decimal_places=3)
+    pvalue = models.DecimalField(max_digits=10, decimal_places=6)
+
+    class Meta:
+        unique_together = (
+            "dataset1",
+            "dataset2",
+            "metric",
+        )
+
+
+class GeneSimilarity(models.Model):
+    """A gene similarity is a similarity metric calculated to compare genes
+       based on datasets.
+    """
+
+    gene1 = models.ForeignKey(
+        Gene, on_delete=models.CASCADE, related_name="gene_similarity1"
+    )
+    gene2 = models.ForeignKey(
+        Gene, on_delete=models.CASCADE, related_name="gene_similarity2"
+    )
+    metric = models.CharField(max_length=50)
+    score = models.DecimalField(max_digits=10, decimal_places=3)
+    pvalue = models.DecimalField(max_digits=10, decimal_places=6)
+
+    class Meta:
+        unique_together = (
+            "gene1",
+            "gene2",
+            "metric",
+        )
 
 
 class Data(models.Model):
     dataset = models.ForeignKey(Dataset, on_delete=models.DO_NOTHING)
     value = models.DecimalField(max_digits=10, decimal_places=3)
+
+    # orf can eventually be deleted when the Gene model is migrated in production
     orf = models.CharField(max_length=50)
     gene = models.ForeignKey(
         "datasets.Gene", null=True, blank=True, on_delete=models.DO_NOTHING

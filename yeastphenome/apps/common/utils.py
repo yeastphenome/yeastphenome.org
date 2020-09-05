@@ -150,6 +150,7 @@ def get_dataset_genes(dataset_id=None):
         genes = [
             {"label": d.gene.systematic_name, "value": float(d.value)}
             for d in dataset.data_set.all()
+            if d.value
         ]
         genes = sorted(genes, key=lambda i: i["value"])
         return {"dataset_genes": genes, "dataset": dataset}

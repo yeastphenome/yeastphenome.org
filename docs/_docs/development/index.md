@@ -451,4 +451,39 @@ To view your application in the web browser run:
 That's it! If you see a 500 (or other error) you can usually go to the
 Google Cloud Logs console and see the debug output.
 
+#### Migrations after deployment
+
+If you want to make migrations *after* deployment, this is possible to do with
+the [cloud sql proxy](https://cloud.google.com/sql/docs/mysql/quickstart-proxy-test).
+
+TODO need to test this.
+
+exporting these needed environment variables for your database:
+
+```bash
+export APP_ENGINE_USERNAME=
+export APP_ENGINE_PASSWORD=
+export APP_ENGINE_DATABASE=
+export APP_ENGINE_HOST=
+```
+
+And then in settings.py, navigating to the Database section and changing the False
+to True. Change this:
+
+```python
+# Case 1: we are running locally but want to do migration, etc. (set False to True)
+if False and os.getenv("APP_ENGINE_HOST") != None: 
+    print("Warning: connecting to production database.")
+
+...
+```
+
+to this
+
+```python
+# Case 1: we are running locally but want to do migration, etc. (set False to True)
+if True and os.getenv("APP_ENGINE_HOST") != None: 
+    print("Warning: connecting to production database.")
+
+```
 <hr>
