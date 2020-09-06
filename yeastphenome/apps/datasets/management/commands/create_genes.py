@@ -1,8 +1,10 @@
 from django.core.management.base import BaseCommand
 import sys
 
+from yeastphenome.apps.datasets.utils import get_gene_metadata
+
 try:
-    from yeastphenome.apps.datasets.models import Data, Gene
+    from yeastphenome.apps.datasets.models import Data, Gene, GeneAlias
 except:
     sys.exit("Please create the datasets.Gene model before running this.")
 
@@ -11,7 +13,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         print("Creating genes...")
-        genes = Data.objects.values_list("orf", flat=True).distinct()
+        # genes = Data.objects.values_list("orf", flat=True).distinct()
+        # If genes are already created in database, can obtain with this line (much faster)
+        genes = list(Gene.objects.all().values_list("systematic_name", flat=True))
 
         # Create all genes!
         total = len(genes)
@@ -19,8 +23,41 @@ class Command(BaseCommand):
         # Done in groups with update so we don't need to loop through millions
         # of datasets! It will still take some time.
         for i, name in enumerate(genes):
-            print(f"Parsing gene {i} of {total}...")
-            gene, created = Gene.objects.get_or_create(systematic_name=name)
 
-            # Find all associated Data and update with the correct gene
-            Data.objects.filter(orf=gene.systematic_name).update(gene=gene)
+            # Only create genes that are not integers
+            try:
+                int(name)
+            except:
+                print(f"Parsing gene {name}: {i} of {total}...")
+                try:
+                    meta = get_gene_metadata(name)
+                except:
+                    print(f"Issue with obtaining gene {name} metadata from SGD.")
+                    meta = {}
+
+                # Create gene aliases
+                alias_names = [x["display_name"] for x in meta.get("aliases", [])]
+
+                # Get display name
+                common_name = meta.get("display_name") or meta.get("gene_name")
+                sgdid = meta.get("sgdid")
+
+                # Try to create in bulk, unlikely to have repeats (but not likely)
+                try:
+                    aliases = [GeneAlias(name=x) for x in alias_names]
+                    aliases = GeneAlias.objects.bulk_create(aliases)
+                except:
+                    aliases = []
+                    for alias_name in alias_names:
+                        alias, _ = GeneAlias.objects.get_or_create(name=alias_name)
+                        aliases.append(alias)
+
+                gene, created = Gene.objects.get_or_create(systematic_name=name)
+                gene.common_name = common_name
+                for alias in aliases:
+                    gene.aliases.add(alias)
+                gene.primary_sgdid = sgdid
+                gene.save()
+                # Find all associated Data and update with the correct gene
+                # If genes not yet associated, comment out this line
+                # Data.objects.filter(orf=gene.systematic_name).update(gene=gene)

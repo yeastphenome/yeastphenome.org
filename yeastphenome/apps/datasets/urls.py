@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
     path("", views.data_explorer, name="index"),
+    path("genes", views.gene_explorer, name="genes"),
     url(r"^(?P<domain>papers)/(?P<id>\d+)/", views.data, name="data"),
     url(r"^(?P<domain>datasets)/(?P<id>\d+)/", views.data, name="data"),
     url(r"^(?P<domain>conditions)/(?P<id>\d+)/", views.data, name="data"),

@@ -23,6 +23,7 @@ urlpatterns = [
     path("getting-started/background/", views.background, name="background"),
     path("getting-started/advanced/", views.advanced, name="advanced"),
     path("getting-started/tutorials/", views.tutorials, name="tutorials"),
+    path("_ah/warmup/", views.warmup, name="warmup"),
 ]
 
 # Graphs

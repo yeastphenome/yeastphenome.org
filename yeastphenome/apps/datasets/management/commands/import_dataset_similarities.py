@@ -43,7 +43,7 @@ class Command(BaseCommand):
 
         total = Dataset.objects.count()
         for i, name1 in enumerate(data["cosine"].index.tolist()):
-            if i < 30:
+            if i < 3310:
                 continue
 
             print(f"Parsing dataset {i} of {total}...")

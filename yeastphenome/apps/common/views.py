@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.http import HttpResponse
 
 from yeastphenome.apps.common.forms import SearchForm
 from yeastphenome.apps.common.utils import (
@@ -59,6 +60,13 @@ def stats(request):
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def contributors(request):
     return render(request, "main/contributors.html")
+
+
+# Warmup requests (for app engine)
+
+
+def warmup():
+    return HttpResponse(status=200)
 
 
 # Getting Started Pages

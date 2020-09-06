@@ -15,7 +15,7 @@ from yeastphenome.apps.conditions.search import (
 
 # from yeastphenome.apps.conditions.models import ConditionSet, ConditionType
 # from yeastphenome.apps.phenotypes.models import Phenotype
-# from yeastphenome.apps.datasets.models import Dataset
+from yeastphenome.apps.datasets.models import Gene
 
 from .permissions import IsStaffOrSuperUser
 
@@ -26,6 +26,49 @@ from ratelimit.mixins import RatelimitMixin
 from rest_framework.response import Response
 from rest_framework.views import APIView
 import json
+
+# Genes
+
+
+class GetSimilarGenes(RatelimitMixin, APIView):
+    """Given A gene systematic name, return ordered list of similarity scores
+       (most to least similar), top N for each
+    """
+
+    ratelimit_key = "ip"
+    ratelimit_rate = settings.VIEW_RATE_LIMIT
+    ratelimit_block = settings.VIEW_RATE_LIMIT_BLOCK
+    ratelimit_method = "GET"
+    renderer_classes = (JSONRenderer,)
+
+    def get(self, request, systematic_name, N=10, reverse=0):
+        print("GET GetSimilarGenes")
+        try:
+            gene = Gene.objects.get(systematic_name=systematic_name)
+        except Gene.DoesNotExist:
+            return Response(status=404)
+
+        # Only get top and bottom N
+        sims = list(gene.get_ranked_similar(reverse=(reverse == 1)))
+        first_n = sims[:N]
+        last_n = sims[len(sims) - N :]
+
+        scores = {}
+        for sim in first_n + last_n:
+            if sim.gene1.systematic_name == gene.systematic_name:
+                scores[sim.gene2.systematic_name] = {
+                    "score": sim.score,
+                    "pvalue": sim.pvalue,
+                }
+            else:
+                scores[sim.gene1.systematic_name] = {
+                    "score": sim.score,
+                    "pvalue": sim.pvalue,
+                }
+
+        # Must make model json serializable
+        return Response(status=200, data=scores)
+
 
 # Papers
 

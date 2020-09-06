@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 
+from django.core.exceptions import FieldError
+from django.db.models import Q
 from django.db import models
 from django.apps import apps
 from django.contrib.humanize.templatetags.humanize import intcomma
@@ -284,12 +286,44 @@ class Dataset(models.Model):
     link_edit.allow_tags = True
 
 
+class GeneAlias(models.Model):
+    """A GeneAlias is another name for a gene"""
+
+    name = models.CharField(max_length=250, null=True, blank=True, unique=True)
+
+    def __str__(self):
+        return "<%s>" % self.name
+
+
 class Gene(models.Model):
+
+    # previously data.orf field, corresponds to 4. Feature name, YAL*
     systematic_name = models.CharField(
         max_length=50, null=True, blank=True, unique=True
-    )  # previously data.orf field
-    common_name = models.CharField(max_length=50, null=True, blank=True)
-    #    aliases
+    )
+
+    # corresponds to 1. Primary SGDID, intended to query SGD API if needed
+    primary_sgdid = models.CharField(max_length=50, null=True, blank=True, unique=True)
+
+    # Cooresponds to 5. Standard gene name, if defined
+    common_name = models.CharField(max_length=50, null=True, blank=True, unique=True)
+
+    # Corresponds to 6. Alias (optional, multiples separated by |)
+    aliases = models.ManyToManyField(GeneAlias, blank=True)
+
+    # TODO: additional mutations resulting from perturbing gene
+    # genome_alterations, acquired_secondary_alterations
+
+    def get_ranked_similar(self, reverse=False):
+        """Given a gene, get a sorted listed from the most to least similar
+        """
+        if not reverse:
+            return GeneSimilarity.objects.filter(
+                Q(gene1=self) | Q(gene2=self)
+            ).order_by("-score")
+        return GeneSimilarity.objects.filter(Q(gene1=self) | Q(gene2=self)).order_by(
+            "score"
+        )
 
     def __str__(self):
         return "<%s>" % self.systematic_name
@@ -309,6 +343,27 @@ class DatasetSimilarity(models.Model):
     metric = models.CharField(max_length=50)
     score = models.DecimalField(max_digits=10, decimal_places=3)
     pvalue = models.DecimalField(max_digits=10, decimal_places=6)
+
+    def save(self, *args, **kwargs):
+        """Override the save function to ensure that only one similarity score
+           for any pair of datasets can be created. If a different ordering is 
+           presented, it is fixed and we get an integrity error.
+        """
+        # Only update order if not in databsase yet, ensure ordered by name
+        if not self.pk:
+
+            if self.score in [None, "", "nan"]:
+                raise FieldError(
+                    "score for a gene similarity cannot be a null or empty value."
+                )
+
+            # Ensure similarity ordered by systematic name
+            if self.dataset1.name > self.dataset2.name:
+                holder = self.dataset1
+                self.dataset1 = self.dataset2
+                self.dataset2 = holder
+
+        super(DatasetSimilarity, self).save(*args, **kwargs)
 
     class Meta:
         unique_together = (
@@ -332,6 +387,27 @@ class GeneSimilarity(models.Model):
     metric = models.CharField(max_length=50)
     score = models.DecimalField(max_digits=10, decimal_places=3)
     pvalue = models.DecimalField(max_digits=10, decimal_places=6)
+
+    def save(self, *args, **kwargs):
+        """Override the save function to ensure that only one similarity score
+           for any pair of genes can be created. If a different ordering is 
+           presented, it is fixed and we get an integrity error.
+        """
+        # Only update order if not in databsase yet, ensure genes ordered by name
+        if not self.pk:
+
+            if self.score in [None, "", "nan"]:
+                raise FieldError(
+                    "score for a gene similarity cannot be a null or empty value."
+                )
+
+            # Ensure similarity ordered by systematic name
+            if self.gene1.systematic_name > self.gene2.systematic_name:
+                holder = self.gene1
+                self.gene1 = self.gene2
+                self.gene2 = holder
+
+        super(GeneSimilarity, self).save(*args, **kwargs)
 
     class Meta:
         unique_together = (
