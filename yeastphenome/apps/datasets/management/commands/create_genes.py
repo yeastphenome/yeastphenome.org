@@ -60,4 +60,4 @@ class Command(BaseCommand):
                 gene.save()
                 # Find all associated Data and update with the correct gene
                 # If genes not yet associated, comment out this line
-                # Data.objects.filter(orf=gene.systematic_name).update(gene=gene)
+                Data.objects.filter(orf=gene.systematic_name).update(gene=gene)
