@@ -54,6 +54,58 @@ for file uploads, and use the [django-storages](https://django-storages.readthed
 
 Under billing, it's good practice to also set up billing alerts - unintended charges to a project that you don't know about can have dire consequences. A small server of this size shouldn't cost more than $55 a month (this would be a LOT) so I generally would start with a lower monthly limit (possibly $55) with alerts at 25, 50, 75, and 100 percents, and adjust as needed.
 
+### Caching
+
+By default, we will use a filesystem cache that expires every 24 hours. This should work on Google
+App Engine as it has a /tmp directory stored via RAM. If you want to disable the cache for development:
+
+```bash
+export DISABLE_CACHE=True
+```
+
+or to permanently disable for a particular view:
+
+```python
+from django.views.decorators.cache import never_cache
+
+@never_cache
+def my_view(request):
+   ...
+```
+
+By default it uses /tmp/yeastphenome-cache. You can delete the files in this folder
+to clear it.
+
+### Generating Similarities
+
+We are still developing a Google Cloud equivalent to generate similarity values - ideally
+we will have a scaled/parallel approach to write rows of similiarities to file, each looking
+like this:
+
+```
+10311   10394   cosine  -0.014297323440217254   0.8156175716212475
+10394   10311   cosine  -0.014297323440217254   0.8156175716212475
+10311   2178    cosine  0.029105986454456237    0.033279284801702835
+```
+Where the values correspond to tab separated values `gene1_id gene2_id metric score pvalue`
+and the score itself should be transformed to a Z score. Since you will likely need a lookup
+to find a systematic name associated to a gene in the database, you can generate this via:
+
+```bash
+python manage.py create_gene_lookup
+```
+It will generate `genes-lookup.json` in the root directory.
+
+```bash
+cat genes-lookup.json |less
+{
+    "YBR094W": 41,
+    "YFL058W": 85,
+    "YBR089W": 87,
+...
+```
+
+Where each systematic name (key) is matched to the gene id in the database.
 
 ### Configuration
 

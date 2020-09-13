@@ -3,6 +3,8 @@ from django.views import generic
 from django.shortcuts import render
 from django.core.paginator import Paginator
 
+# from django.views.decorators.cache import never_cache
+
 from .models import Paper
 from .utils import (
     get_pubmed_paper_context,
@@ -111,16 +113,20 @@ class PaperDetailView(generic.DetailView, RatelimitMixin):
 class ContributorsListView(generic.ListView, RatelimitMixin):
     model = Paper
     template_name = "papers/contributors.html"
-    context_object_name = "papers_list"
     ratelimit_key = "ip"
     ratelimit_rate = rl_rate
     ratelimit_block = rl_block
 
-    def get_queryset(self):
-        return Paper.objects.filter(
+    def get_context_data(self, **kwargs):
+        context = super(ContributorsListView, self).get_context_data(**kwargs)
+        papers_list = Paper.objects.filter(
             Q(dataset__data_source__acknowledge=True)
             | Q(dataset__tested_source__acknowledge=True)
         ).distinct()
+
+        # contributors names, lookup with paper id
+        context["papers_list"] = papers_list
+        return context
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)

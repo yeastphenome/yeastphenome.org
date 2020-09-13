@@ -56,7 +56,7 @@ def get_search_tags():
     return datatypes + tags + genes + collections + mediums + phenotypes + conditions
 
 
-def run_search_tag_query(query, taglist=None, return_instances=False):
+def run_search_tag_query(query, taglist=None, return_instances=False, collection=None):
     """this function is called from the papers/views.py for the explorer function
        It takes in a list of tags (and associated models) to build a query for papers.
     """
@@ -70,6 +70,10 @@ def run_search_tag_query(query, taglist=None, return_instances=False):
     queryset = Dataset.objects.exclude(
         paper__latest_data_status__status__name="not relevant"
     ).distinct()
+
+    # Filter to specific collection
+    if collection:
+        queryset = queryset.filter(collection=collection)
 
     # Prepare querysets
     tag_query = Q()
@@ -118,8 +122,6 @@ def run_search_tag_query(query, taglist=None, return_instances=False):
             Q(name__icontains=query)
             | Q(phenotype__name__icontains=query)
             | Q(collection__name__icontains=query)
-            | Q(paper__data_abstract__icontains=query)
-            | Q(paper__notes__icontains=query)
             | Q(medium__systematic_name__icontains=query)
             | Q(conditionset__systematic_name__icontains=query)
         ).distinct()
@@ -146,6 +148,10 @@ def run_search_tag_query(query, taglist=None, return_instances=False):
                 "collection__shortname",
                 "data_published__name",
                 "tested_num",
+                "phenotype__id",  # 13-16
+                "conditionset__id",
+                "medium__id",
+                "collection__id",
             )
         ),
         "count": results.count(),

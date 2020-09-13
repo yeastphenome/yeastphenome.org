@@ -177,12 +177,10 @@ class Paper(models.Model):
 
     def acknowledgements_str_list(self):
         return ", ".join(
-            [
-                (u"%s" % i)
-                for i in Source.objects.filter(acknowledge=True)
-                .filter(Q(data_source__paper=self) | Q(tested_source__paper=self))
-                .distinct()
-            ]
+            Source.objects.filter(acknowledge=True)
+            .filter(Q(data_source__paper=self) | Q(tested_source__paper=self))
+            .values_list("person", flat=True)
+            .distinct()
         )
 
     def acknowledge_data(self):

@@ -1,7 +1,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
 <div class="row">
    <div class="{% if hide_legend %}col-md-12{% else %}col-md-10{% endif %}">
-      <canvas id="phenotype-measurement-counts"></canvas>
+      <canvas id="phenotype-measurement-counts"></canvas> Updated on {% now "M. d, Y" %}
    </div>
    {% if hide_legend %}{% else %}<div class="col-md-2" style="padding-top:80px">
      <ul>{% for measurement in measurements %}{% if measurement.description %}

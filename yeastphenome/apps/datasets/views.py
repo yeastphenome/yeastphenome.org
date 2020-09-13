@@ -6,10 +6,12 @@ from django.core.paginator import Paginator
 from django.views import generic
 from django.contrib import messages
 
+from django.views.decorators.cache import never_cache
 from yeastphenome.apps.common.utils import get_collections_by_year, get_dataset_genes
 from yeastphenome.apps.papers.models import Paper
-from yeastphenome.apps.datasets.models import Dataset, Data, Tag, Gene
+from yeastphenome.apps.datasets.models import Dataset, Data, Tag, Gene, Collection
 from yeastphenome.apps.datasets.search import get_search_tags, run_search_tag_query
+from yeastphenome.apps.datasets.utils import get_gene_metadata
 from yeastphenome.apps.conditions.models import ConditionType
 from yeastphenome.apps.phenotypes.models import Observable
 
@@ -42,6 +44,8 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
 
 
 # Explore by genes
+
+
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def gene_explorer(request):
 
@@ -55,6 +59,20 @@ def gene_explorer(request):
         query = request.GET["q"].strip()
         try:
             context["gene"] = Gene.objects.get(systematic_name=query)
+            context["metadata"] = get_gene_metadata(query)
+
+            # Get top/bottom 25 most similar
+            sims = list(context["gene"].get_ranked_similar())
+            context["sims"] = {"top": sims[:25], "bottom": sims[len(sims) - 25 :]}
+
+            # Datasets must be paginated
+            queryset = Dataset.objects.filter(data__gene=context["gene"]).order_by(
+                "-data__value"
+            )
+            paginator = Paginator(queryset, 25)
+            page = request.GET.get("page")
+            context["datasets"] = paginator.get_page(page)
+
         except Gene.DoesNotExist:
             messages.warning(
                 request,
@@ -67,7 +85,22 @@ def gene_explorer(request):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def data_explorer(request):
+def data_explorer(request, collection_id=None):
+
+    # The user can optionally be searching by a collection
+    collection = None
+    if collection_id:
+        try:
+            collection = Collection.objects.get(id=collection_id)
+            messages.info(
+                request,
+                "Datasets shown are for collection %s (%s)"
+                % (collection.name, collection.shortname),
+            )
+        except Collection.DoesNotExist:
+            messages.warning(
+                request, "We could not find collection with id %s" % collection_id
+            )
 
     context = {
         "tags": get_search_tags(),
@@ -76,7 +109,9 @@ def data_explorer(request):
     }
     if "q" in request.GET:
         query = request.GET["q"].strip()
-        queryset = run_search_tag_query(query, return_instances=True)
+        queryset = run_search_tag_query(
+            query, return_instances=True, collection=collection
+        )
 
         # 50 results per page
         paginator = Paginator(queryset, 50)
@@ -87,14 +122,21 @@ def data_explorer(request):
         }
 
     else:
+
+        if collection:
+            datasets = Dataset.objects.filter(
+                conditionset__systematic_name="standard", collection=collection
+            )
+        else:
+            datasets = Dataset.objects.filter(conditionset__systematic_name="standard")
+
         # These are the original datasets that were associated with the growth class
         # This result is small enough to not be paginated
         context.update(
             {
-                "datasets": Dataset.objects.filter(
-                    conditionset__systematic_name="standard"
+                "datasets": datasets.filter(
+                    phenotype__observable__name__startswith="growth"
                 )
-                .filter(phenotype__observable__name__startswith="growth")
                 .filter(control_conditionset__isnull=True)
                 .filter(control_medium__isnull=True)
                 .exclude(paper__latest_data_status__status__name="not relevant")
@@ -154,6 +196,7 @@ def download_all(request):
     return response
 
 
+@never_cache
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download(request):
 
