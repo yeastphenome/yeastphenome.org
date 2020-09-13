@@ -15,7 +15,11 @@ class Command(BaseCommand):
         print("Creating genes...")
         # genes = Data.objects.values_list("orf", flat=True).distinct()
         # If genes are already created in database, can obtain with this line (much faster)
-        genes = list(Gene.objects.all().values_list("systematic_name", flat=True))
+        genes = list(
+            Gene.objects.filter(primary_sgdid=None)
+            .values_list("systematic_name", flat=True)
+            .distinct()
+        )
 
         # Create all genes!
         total = len(genes)
@@ -53,11 +57,26 @@ class Command(BaseCommand):
                         aliases.append(alias)
 
                 gene, created = Gene.objects.get_or_create(systematic_name=name)
+                print(f"sgdid: {sgdid}, primary_sgdid: {gene.primary_sgdid}")
                 gene.common_name = common_name
+
                 for alias in aliases:
                     gene.aliases.add(alias)
-                gene.primary_sgdid = sgdid
+
+                # Don't add sgdid if not defined
+                if sgdid:
+                    gene.primary_sgdid = sgdid
+                else:
+                    print(f"Warning, sgdid is not defined for {name}")
                 gene.save()
                 # Find all associated Data and update with the correct gene
                 # If genes not yet associated, comment out this line
                 Data.objects.filter(orf=gene.systematic_name).update(gene=gene)
+
+        # print somes stats
+        print(
+            f"Genes without primary_sgdid: {Gene.objects.filter(primary_sgdid=None).count()}"
+        )
+        print(
+            f"Genes without common_name: {Gene.objects.filter(common_name=None).count()}"
+        )

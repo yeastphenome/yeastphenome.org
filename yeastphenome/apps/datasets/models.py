@@ -303,10 +303,11 @@ class Gene(models.Model):
     )
 
     # corresponds to 1. Primary SGDID, intended to query SGD API if needed
-    primary_sgdid = models.CharField(max_length=50, null=True, blank=True, unique=True)
+    # NOTE: unique removed from here and common name in the case of blank
+    primary_sgdid = models.CharField(max_length=50, null=True, blank=True)
 
     # Cooresponds to 5. Standard gene name, if defined
-    common_name = models.CharField(max_length=50, null=True, blank=True, unique=True)
+    common_name = models.CharField(max_length=50, null=True, blank=True)
 
     # Corresponds to 6. Alias (optional, multiples separated by |)
     aliases = models.ManyToManyField(GeneAlias, blank=True)
