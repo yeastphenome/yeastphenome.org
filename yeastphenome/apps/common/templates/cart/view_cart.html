@@ -3,7 +3,7 @@
 {% block content %}
 <div class="row">
     <div class="col-md-8 mb-4">
-        <h1>Datasets Download Cart</h1>
+        <h1>Datasets Downloads</h1>
         {% if datasets %}
 	<form action="{% url 'datasets:download' %}" method="GET" class="card-body">
         <table id="papersTable" class="tablesorter table table-condensed table-hover" width="100%">
@@ -49,7 +49,7 @@
         <button class="btn btn-primary btn-lg btn-block" type="submit">Download</button>
         </form>
         {% else %}
-          <p class="alert alert-warning">You have no datasets in your cart. Why don't you <a href="{% url 'datasets:index' %}">browse to add some?</a></p>
+          <p class="alert alert-warning">You have no datasets to download. Why don't you <a href="{% url 'datasets:index' %}">browse to add some?</a></p>
         {% endif %}
     </div>
      <div class="col-md-4 mb-4">
@@ -72,7 +72,7 @@
         <strong>{{ datasets | length }}</strong>
     </li>
     </ul>
-    <a href="{% url 'common:clear_cart' %}"><button class="btn btn-danger btn-lg">Clear Cart</button></a>
+    <a href="{% url 'common:clear_cart' %}"><button class="btn btn-danger btn-lg">Clear Downloads</button></a>
 
     </div>
    </div>

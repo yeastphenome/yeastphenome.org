@@ -1,0 +1,13 @@
+      <h1>{{ title }}</h1>
+    <table id="{{ table_id }}" class="tablesorter table table-striped" width="100%">
+        <thead>
+        <tr>
+            <th class="text-nowrap" width="25%">Gene</th>
+            <th width="25%">Metric</th>
+            <th width="25%">Score</th>
+            <th width="25%">P-Value</th>
+        </tr>
+        </thead>
+        <tbody>
+{% for sim in scores %}<tr><td><a href="/datasets/genes?q={% if sim.gene1 == gene %}{{ sim.gene2.systematic_name }}{% else %}{{ sim.gene1.systematic_name }}{% endif %}">{% if sim.gene1 == gene %}{{ sim.gene2.systematic_name }}{% else %}{{ sim.gene1.systematic_name }}{% endif %}</a></td><td>{{ sim.metric }}</td><td>{{ sim.score }}</td><td>{{ sim.pvalue }}</td></tr>{% endfor %}
+      </table>

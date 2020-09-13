@@ -20,7 +20,12 @@ def join_and_more(qs, number_obj_to_show):
         )
 
 
-@register.filter()
+@register.filter
+def lookup(d, key):
+    return d[key]
+
+
+@register.filter
 def range(min=5):
     return range(min)
 

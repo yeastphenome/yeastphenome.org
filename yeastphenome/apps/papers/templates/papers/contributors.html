@@ -4,6 +4,7 @@
 {% block content %}
 <div class="row">
     <div class="col-md-12">
+         {{ author_lookup }}
         <h1>Contributors <span style='float:right'>🗒️</span></h1>
         {% if papers_list.count != 0 %}<p>A special thanks goes to the authors of these <strong>{{ papers_list.count }} publications</strong> who have provided unpublished versions of their datasets, including raw quantitative data and/or lists of tested genes.</p>{% endif %}
         {% if papers_list %}
@@ -23,7 +24,8 @@
               <td>{{ paper.acknowledge_tested|yesno:'<span class="yes">yes</span>,<span class="no">no</span>,'|safe }}</td>
             </tr>{% endfor %}
           </tbody>
-        </table>{% else %}<p class="alert alert-info">No papers are available, so there are no contributors.</p>{% endif %}
+        </table>
+{% else %}<p class="alert alert-info">No papers are available, so there are no contributors.</p>{% endif %}
     </div>
 </div>
 {% endblock %}

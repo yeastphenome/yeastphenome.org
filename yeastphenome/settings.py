@@ -1,4 +1,5 @@
 import os
+import tempfile
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -68,6 +69,19 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+# Do we want to enable the cache?
+
+if not os.environ.get("DISABLE_CACHE"):
+    MIDDLEWARE += [
+        "django.middleware.cache.UpdateCacheMiddleware",
+        "django.middleware.common.CommonMiddleware",
+        "django.middleware.cache.FetchFromCacheMiddleware",
+    ]
+
+    CACHE_MIDDLEWARE_ALIAS = "default"
+    CACHE_MIDDLEWARE_SECONDS = 86400  # one day
+
+
 ROOT_URLCONF = "yeastphenome.urls"
 
 TEMPLATES = [
@@ -90,12 +104,23 @@ TEMPLATES = [
 TEMPLATES[0]["OPTIONS"]["debug"] = DEBUG
 WSGI_APPLICATION = "yeastphenome.wsgi.application"
 
+# Cache to tmp
+CACHE_LOCATION = os.path.join(tempfile.gettempdir(), "yeastphenome-cache")
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+        "LOCATION": CACHE_LOCATION,
+    }
+}
+
+if not os.path.exists(CACHE_LOCATION):
+    os.mkdir(CACHE_LOCATION)
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
 # Case 1: we are running locally but want to do migration, etc. (set False to True)
-if False and os.getenv("APP_ENGINE_HOST") != None:
+if True and os.getenv("APP_ENGINE_HOST") != None:
     print("Warning: connecting to production database.")
 
     # Running in development, but want to access the Google Cloud SQL instance in production.

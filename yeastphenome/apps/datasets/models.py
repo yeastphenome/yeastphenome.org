@@ -316,15 +316,12 @@ class Gene(models.Model):
     # genome_alterations, acquired_secondary_alterations
 
     def get_ranked_similar(self, reverse=False):
-        """Given a gene, get a sorted listed from the most to least similar
+        """Given a gene, get a sorted listed from the most to least similar.
+           Assume each gene represented twice.
         """
         if not reverse:
-            return GeneSimilarity.objects.filter(
-                Q(gene1=self) | Q(gene2=self)
-            ).order_by("-score")
-        return GeneSimilarity.objects.filter(Q(gene1=self) | Q(gene2=self)).order_by(
-            "score"
-        )
+            return GeneSimilarity.objects.filter(Q(gene1=self)).order_by("-score")
+        return GeneSimilarity.objects.filter(Q(gene1=self)).order_by("score")
 
     def __str__(self):
         return "<%s>" % self.systematic_name
@@ -386,7 +383,9 @@ class GeneSimilarity(models.Model):
         Gene, on_delete=models.CASCADE, related_name="gene_similarity2"
     )
     metric = models.CharField(max_length=50)
-    score = models.DecimalField(max_digits=10, decimal_places=3)
+    score = models.DecimalField(
+        max_digits=10, decimal_places=3, help_text="z-score of the metric."
+    )
     pvalue = models.DecimalField(max_digits=10, decimal_places=6)
 
     def save(self, *args, **kwargs):

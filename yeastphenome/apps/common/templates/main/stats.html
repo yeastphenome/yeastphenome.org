@@ -4,7 +4,7 @@
 <div class="col-xs-8 left-content">
 <div class="row">
     <div class="col-md-12 box">
-        <h3>Summary stats ({{ updated_on }})</h3>
+        <h3>Summary stats ({% now "M. d, Y" %})</h3>
         <ul>
             <li>Total publications: {{ papers_nr|intcomma }} (+ {{ papers_hopeless_nr|intcomma }} for which data could not be recovered)</li>
             <li>Total labs who published papers: {{ labs_nr|intcomma }}</li>

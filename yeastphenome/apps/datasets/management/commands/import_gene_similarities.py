@@ -1,8 +1,16 @@
 from django.core.management.base import BaseCommand
 import sys
 import os
+import tempfile
+import time
 
-from yeastphenome.apps.datasets.models import GeneSimilarity, Gene
+from yeastphenome.apps.datasets.models import Gene
+
+from contextlib import closing
+import csv
+from io import StringIO
+
+from django.db import connection
 
 # python manage.py import_gene_similarities yp_rows_store.h5
 
@@ -41,36 +49,66 @@ class Command(BaseCommand):
         # Load in the data
         data = load_h5(file_path, verbose=True)
 
-        total = Gene.objects.count()
-        for i, name1 in enumerate(data["cosine"].index.tolist()):
+        # Skip diagonals! We know a gene is == to itself!
 
-            print(f"Parsing gene {i} of {total}...")
-            gene1, _ = Gene.objects.get_or_create(systematic_name=name1)
-            for name2 in data["cosine"].index.tolist():
-                gene2, _ = Gene.objects.get_or_create(systematic_name=name2)
+        # Create stream (to write names)
+        stream = StringIO()
+        writer = csv.writer(stream, delimiter="\t")
 
-                # Skip null values
-                if str(data["cosine"].loc[name1, name2]) == "nan":
+        print("Writing to file...")
+        total = data["cosine"].shape[0]
+        start_write = time.time()
+        _, tmpfile = tempfile.mkstemp()
+
+        with open(tmpfile, "w") as csv_file:
+            writer = csv.writer(csv_file, delimiter="\t")
+            for i, name1 in enumerate(data["cosine"].index.tolist()):
+                print(f"Parsing gene {i} of {total}...")
+
+                # Allow for different versions of database (with genes we don't have
+                try:
+                    gene1 = Gene.objects.get(systematic_name=name1)
+                except Gene.DoesNotExist:
                     continue
 
-                # Grab the pvalue and score
-                score = float(data["cosine"].loc[name1, name2])
-                pvalue = float(data["pvals"].loc[name1, name2])
+                for name2 in data["cosine"].index.tolist():
 
-                # We only want to save diagonal, try both ways
-                created = False
-                try:
-                    sim = GeneSimilarity.objects.get(gene1=gene1, gene2=gene2)
-                except:
+                    # Allow for different versions of database (with genes we don't have)
                     try:
-                        sim = GeneSimilarity.objects.get(gene2=gene1, gene1=gene2)
-                    except:
-                        sim, created = GeneSimilarity.objects.get_or_create(
-                            gene1=gene1,
-                            gene2=gene2,
-                            score=score,
-                            metric="cosine",
-                            pvalue=pvalue,
-                        )
+                        gene2 = Gene.objects.get(systematic_name=name2)
+                    except Gene.DoesNotExist:
+                        continue
 
-        print("Finished!")
+                    # Only process when in sorted order (skip if not)
+                    if gene1.systematic_name > gene2.systematic_name or gene1 == gene2:
+                        continue
+
+                    # Skip null values
+                    if str(data["cosine"].loc[name1, name2]) == "nan":
+                        continue
+
+                    # Grab the pvalue and score
+                    score = float(data["cosine"].loc[name1, name2])
+                    pvalue = float(data["pvals"].loc[name1, name2])
+
+                    # Grab the pvalue and score
+                    writer.writerow([gene1.id, gene2.id, "cosine", score, pvalue])
+                    writer.writerow([gene2.id, gene1.id, "cosine", score, pvalue])
+
+        end_write = time.time()
+        time_write = end_write - start_write
+        print(f"Took {time_write} to write similarites to file.")
+        print("Creating similarties...")
+        create_start = time.time()
+        with open(tmpfile, "r") as stream:
+            with closing(connection.cursor()) as cursor:
+                cursor.copy_from(
+                    file=stream,
+                    table="datasets_genesimilarity",
+                    sep="\t",
+                    columns=("gene1_id", "gene2_id", "metric", "score", "pvalue"),
+                )
+
+        create_end = time.time()
+        create_time = create_end - create_start
+        print(f"Finished! Total time {create_time} seconds.")

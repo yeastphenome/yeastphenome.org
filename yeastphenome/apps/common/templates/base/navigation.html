@@ -90,6 +90,11 @@
           </ul>
         </li>
        {% if GITHUB_REPOSITORY %}<li><a href="{{ GITHUB_REPOSITORY }}/issues" target="_blank" rel="noopener"><i class="fas fa-comments visible-xs-inline"></i> Support</a></li>{% endif %}
+        <li><a href="{% url 'common:view_cart' %}" class="nav-link waves-effect">
+               <!--<i title="Downloads" class="fas fa-shopping-basket"></i>-->
+               Downloads
+              <span class="clearfix d-none d-sm-inline-block"></span></a>
+        </li>        
         <!-- Search for genes -->
         <li id="global_search_navbar">
           <div>
@@ -99,12 +104,6 @@
     </form>
           </div>
         </li>
-            <li>
-               <a href="{% url 'common:view_cart' %}" class="nav-link waves-effect">
-               <i class="fa fa-shopping-cart" aria-hidden="true"></i>
-                    <span class="clearfix d-none d-sm-inline-block"></span>
-               </a>
-            </li>        
       </ul>
     </div>
   </div>
