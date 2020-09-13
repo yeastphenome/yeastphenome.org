@@ -1,0 +1,145 @@
+<script>
+var color = "steelblue";
+
+// Generate a 1000 data points using normal distribution with mean=20, deviation=5
+//var values = d3.range(1000).map(d3.random.normal(20, 5));
+// var values = [{% for gene in dataset_genes %}{{ gene.value }}{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
+var gene_values = {{ dataset_genes | safe }}
+var values = gene_values.map(function(d){return d.value;})
+
+// A formatter for counts.
+var formatCount = d3.format(",.0f");
+
+var margin = {top: 40, right: 30, bottom: 30, left: 30},
+    width = 960 - margin.left - margin.right,
+    height = 300 - margin.top - margin.bottom;
+
+// TODO: we can set fixed values for min/max if possible with dataset
+var max = d3.max(values);
+var min = d3.min(values);
+var x = d3.scale.linear()
+      .domain([min, max])
+      .range([0, width]);
+
+// Generate a histogram using twenty uniformly-spaced bins.
+var data = d3.layout.histogram()
+    .bins(x.ticks(20))
+    (values);
+
+// Create a lookup by bin id
+var lookup = Object()
+$.each(data, function(i, e){
+    var filtered = gene_values.filter(function(record){ return e.x <= record.value && record.value < e.x + e.dx; });
+    $.each(filtered, function(ii, ee){
+        lookup[ee.label] = i
+    })
+})
+var yMax = d3.max(data, function(d){return d.length});
+var yMin = d3.min(data, function(d){return d.length});
+var colorScale = d3.scale.linear()
+            .domain([yMin, yMax])
+            .range([d3.rgb(color).brighter(), d3.rgb(color).darker()]);
+
+var y = d3.scale.linear()
+    .domain([0, yMax])
+    .range([height, 0]);
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var svg = d3.select("#dataset-genes").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var bar = svg.selectAll(".bar")
+    .data(data)
+  .enter().append("g")
+    .attr("class", "bar")
+    .attr("transform", function(d) { return "translate(" + x(d.x) + "," + y(d.y) + ")"; });
+
+bar.append("rect")
+    .attr("x", 1)
+    .attr("id", function(d, i) { return "histbar-" + i; })
+    .attr("width", (x(data[0].dx) - x(0)) - 1)
+    .attr("class", "histbar")
+    .attr("height", function(d) { return height - y(d.y); })
+    .attr("data-fill", function(d) { return colorScale(d.y) })
+    .attr("data-min", function(d) { return (d.x).toFixed(2) })
+    .attr("data-max", function(d) { return (d.x + d.dx).toFixed(2) })
+    .attr("fill", function(d) { return colorScale(d.y) })
+    .on('mouseover', function(d){ 
+       var genes = gene_values.filter(function(record){ return d.x <= record.value && record.value < d.x + d.dx; });
+       var names = genes.map(function(record){return record.label; });
+       content = "<h2> Range " + (d.x).toFixed(2) + " to " + (d.x + d.dx).toFixed(2) + "</h2><select style='width:200px; height:200px' class='custom-select typehead' multiple>"
+       $.each(names, function(i,e){
+           content = content + "<option value=" + e + ">" + e + "</option>"
+       })
+       content = content + "</select>"
+       $("#gene-names").html(content)
+    });
+
+// title
+svg.append("text")
+        .attr("x", 10)             
+        .attr("y", -30)
+        .attr("text-anchor", "left")  
+        .style("font-size", "12px") 
+        .style("color", "#ccc") 
+        .text("{{ dataset.name }}");
+
+bar.append("text")
+    .attr("dy", ".75em")
+    .attr("y", -12)
+    .attr("x", (x(data[0].dx) - x(0)) / 2)
+    .attr("text-anchor", "middle")
+    .text(function(d) { return formatCount(d.y); });
+
+svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xAxis);
+
+// Find the gene when the user selects
+$('#gene-select').on('click', function() {
+
+  // Get the bar for the gene from the lookup
+  var bar_id = lookup[$("#gene-name").val()];
+
+  // Restore colors to original values
+  $.each($(".histbar"), function(i, e){
+     $(e).attr("fill", $(e).attr("data-fill"));
+  })
+
+  // Then make selected red!
+  var bar = $("#histbar-" + bar_id);
+  bar.attr("fill", "red");
+
+  // Tell the user in case they can't see it
+  $("#gene-detail").html("Gene "+ this.value + " is within range: " + bar.attr("data-min") + " to " + bar.attr("data-max") + ".")
+});
+
+$(document).ready(function(){
+    var genes = Object.keys(lookup);
+   
+    // Constructing the suggestion engine
+    var genes = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.whitespace,
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        local: genes
+    });
+    
+    // Initializing the typeahead
+    $('.gene-search').typeahead({
+        hint: true,
+        highlight: true, /* Enable substring highlighting */
+        minLength: 1 /* Specify minimum characters required for showing suggestions */
+    },
+    {
+        name: 'genes',
+        source: genes
+    });
+});
+</script>

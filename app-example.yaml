@@ -23,6 +23,9 @@ env_variables:
   APP_ENGINE_PASSWORD: 
   APP_ENGINE_DATABASE: 
 
+inbound_services:
+- warmup
+
 handlers:
 # This configures Google App Engine to serve the files in the app's static
 # directory.
@@ -35,3 +38,5 @@ handlers:
 - url: /.*
   script: auto
 
+automatic_scaling:
+  min_idle_instances: 1

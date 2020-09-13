@@ -15,3 +15,8 @@ because we can age and perturb the yeast, and then test if discoveries are relev
 [^budding]: https://www.quora.com/How-long-do-yeast-cells-take-before-dividing
 [^googleai]: https://ai.googleblog.com/2020/04/applying-machine-learning-toyeast.html?m=1
 [^genes]: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5525645/
+
+## Identifiers
+
+- systematic name = ORF (open reading frame) = unique gene labels that look like YAL001C. Y = yeast, A = chromosome (16 in total, letters A to P), L = chromosome arm (Left or Right), 001 = position of the gene relative to the centromere, C = strand (C = crick, W = watson).
+- standard gene name = the main gene name used in the literature, provides a more intuitive understanding  of the gene function, in 99% of cases follows the convention of 3 letter + number (e.g., SRS2, SGS1, ACT1 etc.)

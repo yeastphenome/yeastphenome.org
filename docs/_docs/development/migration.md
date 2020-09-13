@@ -188,3 +188,40 @@ Updating data... this may take some time!
 
 And this does take some time! When the database is in production and the genes
 added, the orf field can be removed with another migrations.
+
+# Import of GeneSimilarity and DatasetSimilarity scores
+
+After adding the `DatasetSimilarity` and `GeneSimilarity` models, instead of calculating
+them for pairwise datasets and genes, we can start with an initial data import.
+In the project [yeastphenome_data_transfer](https://console.cloud.google.com/storage/browser/yeastphenome_data_transfer)
+bucket, there are two HDF (*.h5) files that include:
+
+ - yp_cols_store.h5 contains the correlations between datasets.
+ - yp_rows_store.h5 contains the correlations between genes.
+
+Since pandas is required to read the data (but isn't a dependency of the deployed
+server) you should install it to your local development environment only (and do not
+add to the requirements.txt).
+
+```bash
+source env/bin/activate
+# installed verison 1.1.1 at time of development
+pip install pandas
+# installed version 3.6.1 at time of development
+pip install tables
+```
+
+You can then import each of dataset similarity and gene similarity by doing
+the following:
+
+```bash
+$ python manage.py import_gene_similarities yp_rows_store.h5 
+$ python manage.py import_dataset_similarities yp_cols_store.h5 
+```
+We only import the diagonal, so we do a check for the existence of gene1|gene2 and gene2|gene1.
+
+
+Both files contain a dictionary of dataframes, and we care about the cosine similarity score,
+and the pvalue, both of which are added to each of the `DatasetSimilarity` and `GeneSimilarity` models.
+The index of the gene data file (rows) is the gene systematic name (=ORFs, for  yp_rows_store.h5), and for the datasets file (for yp_cols_store.h5)
+is the dataset id.

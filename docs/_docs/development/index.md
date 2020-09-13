@@ -451,4 +451,96 @@ To view your application in the web browser run:
 That's it! If you see a 500 (or other error) you can usually go to the
 Google Cloud Logs console and see the debug output.
 
+#### Migrations after deployment
+
+If you want to make migrations *after* deployment, this is possible to do with
+the [cloud sql proxy](https://cloud.google.com/sql/docs/mysql/quickstart-proxy-test).
+For Linux this comes down to ensuring your Google Cloud user had admin access to the
+Cloud sql, installing psql:
+
+```bash
+sudo apt-get install mysql-server
+$ which mysql
+/usr/bin/mysql
+```
+
+I also needed to stop the service after it was started:
+
+```bash
+$ sudo /etc/init.d/mysql stop
+[ ok ] Stopping mysql (via systemctl): mysql.service.
+```
+
+Enabling the MySQL Admin API, ensuring you are logged in to your project,
+stopping your local database:
+
+```bash
+cd docker
+docker-compose stop
+```
+
+I also exported `GOOGLE_APPLICATION_CREDENTIALS` from my project, but I'm not sure
+that's necessary. Then you can start the proxy with your instance name. Note that instructions for
+postgres are [here](https://cloud.google.com/sql/docs/postgres/connect-admin-proxy).
+
+```bash
+cloud_sql_proxy -instances=<INSTANCE_CONNECTION_NAME>=tcp:5432
+```
+
+This should show that a new connection is started in the terminal running the proxy:
+
+```bash
+2020/09/12 11:42:31 New connection for "<INSTANCE_CONNECTION_NAME>"
+```
+
+You can then test connecting (with the credentials you created for the cloud database)
+
+```bsah
+psql "host=127.0.0.1 sslmode=disable dbname=<DB_NAME> user=<USER_NAME> password=<PASSWORD> port=5432"
+```
+
+In practice I found that if I don't include the port, it doesn't work. Once that
+works, export the following environment variables (of course defined)
+
+```bash
+export APP_ENGINE_USERNAME=
+export APP_ENGINE_PASSWORD=
+export APP_ENGINE_DATABASE=
+export APP_ENGINE_HOST=127.0.0.1
+```
+
+And then in settings.py, navigating to the Database section and changing the False
+to True. Change this:
+
+```python
+# Case 1: we are running locally but want to do migration, etc. (set False to True)
+if False and os.getenv("APP_ENGINE_HOST") != None: 
+    print("Warning: connecting to production database.")
+
+...
+```
+
+to this
+
+```python
+# Case 1: we are running locally but want to do migration, etc. (set False to True)
+if True and os.getenv("APP_ENGINE_HOST") != None: 
+    print("Warning: connecting to production database.")
+
+```
 <hr>
+
+You then likely want to make /run migrations.
+
+```bash
+make migrations
+make migrate
+```
+
+#### Resident Instances
+
+App Engine by default will start an instance on demand. This is good for small or
+not-regularly-visited apps, but if you want your server to load more quickly, it's
+recommended to use resident instances. The way to do this is to set the 
+[min_idle_instances](https://cloud.google.com/appengine/docs/standard/python/config/appref#min_idle_instances)
+variable to be 1, ensuring that there is something always running.

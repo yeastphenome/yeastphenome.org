@@ -1,0 +1,273 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% load my_filters %}
+{% block title %}Genes / {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<style>
+
+rect.bordered {
+  stroke: #E6E6E6;
+  stroke-width:2px;   
+}
+
+rect {
+   cursor: pointer;
+}
+
+text.mono {
+  font-size: 9pt;
+  font-family: Consolas, courier;
+  fill: #333;
+}
+
+text.axis-workweek {
+  fill: #000;
+}
+
+text.axis-worktime {
+  fill: #000;
+}
+
+#dataset-genes {
+  font: 10px sans-serif;
+}
+
+.search-wrapper {
+    display: flex;
+}
+
+.twitter-typeahead {
+    flex: 1 0 auto;
+}
+
+.bar rect {
+  shape-rendering: crispEdges;
+  cursor: pointer;
+}
+
+.bar text {
+  fill: #999999;
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.typeahead, .tt-query, .tt-hint {
+	border: 2px solid #CCCCCC;
+	border-radius: 8px;
+	font-size: 22px; /* Set input font size */
+	height: 30px;
+	line-height: 30px;
+	outline: medium none;
+	padding: 8px 12px;
+        margin-top:5px;
+        width: 90%;
+}
+
+.typeahead {
+	background-color: #FFFFFF;
+}
+.typeahead:focus {
+	border: 2px solid #0097CF;
+}
+.tt-query {
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+}
+.tt-hint {
+	color: #999999;
+}
+.tt-menu {
+	background-color: #FFFFFF;
+	border: 1px solid rgba(0, 0, 0, 0.2);
+	border-radius: 8px;
+	box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+	margin-top: 12px;
+	padding: 8px 0;
+	width: 422px;
+}
+.tt-suggestion {
+	font-size: 22px;  /* Set suggestion dropdown font size */
+	padding: 3px 20px;
+}
+.tt-suggestion:hover {
+	cursor: pointer;
+	background-color: #0097CF;
+	color: #FFFFFF;
+}
+.tt-suggestion p {
+	margin: 0;
+}
+</style>
+<div class="row">
+    <div class="col-md-12">
+        <h1>Genes</h1>
+        <h3>What gene would you like to explore?</h3>
+         <div class="search-wrapper">
+	<input type="text" class="gene-search typeahead tt-query" autocomplete="off" spellcheck="false" id="gene-name">
+         <button id="gene-select" type="submit" class="btn btn-sm btn-primary search-btn"><i class="fa fa-search"></i></button>
+        </div>
+    </div>
+</div>
+<div class="row" style="padding-top:20px">
+    <div class="col-md-12">
+        <p id='gene-info'></p>
+        <div id='gene-detail'>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'js/typeahead.bundle.js' %}"></script>
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<script>
+// Gene lookup, systematic name by metadata
+var gene_names = [{% for gene in genes %}"{{ gene }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
+
+// Find the gene when the user selects
+$('#gene-select').on('click', function() {
+
+  // Get the bar for the gene from the lookup
+  var gene = $("#gene-name").val();
+
+  // Retrieve the most similar and least similar 100 genes
+  fetch('/api/genes/' + gene + '/10/similar/1')
+     .then(response => response.json())
+     .then(data => showSimilar(data));  
+
+  // TODO load dataest table for gene, add link to show gene with get
+  // send anastasia update with table
+  // remove integer valued genes
+  // keep parsing dataset 1822 of 16175...
+});
+
+
+function showSimilar(scores) {
+
+if (JSON.stringify(scores) === JSON.stringify({})){
+    $("#gene-detail").html("<p class='alert alert-warning'>There are no similarity scores for this gene.</p>");
+    return
+}
+
+$("#gene-info").html("Mouseover genes to see similarity scores.")
+
+var values = []
+var data = []
+var count = 0;
+$.each(scores, function(gene, entry){
+    values.push(entry['score'])
+    entry['gene'] = gene
+    entry['x'] = count
+    data.push(entry);
+    count+=1;
+})
+
+
+
+var minScore = Math.min(values);
+var maxScore = Math.max(values);
+      var margin = { top: 0, right: 0, bottom: 100, left: 0 },
+          width = 960 - margin.left - margin.right,
+          height = 200 - margin.top - margin.bottom,
+          gridSize = Math.floor(width / 24),
+          legendElementWidth = gridSize*2,
+          buckets = 9,
+          colors = ["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58"] // alternatively colorbrewer.YlGnBu[9]
+
+      // Clear the previous plot
+      $("#gene-detail").html("");
+
+      var svg = d3.select("#gene-detail").append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      var heatmapChart = function(data) {
+          var colorScale = d3.scale.quantile()
+              .domain([d3.min(data, function (d) { return d.score; }), buckets - 1, d3.max(data, function (d) { return d.score; })])
+              .range(colors);
+
+          var cards = svg.selectAll(".hour")
+              .data(data, function(d) {return d.gene;});
+
+          cards.append("title");
+
+          cards.enter().append("rect")
+              .attr("x", function(d) { return (d.x) * gridSize; })
+              .attr("y", function(d) { return gridSize; })
+              .attr("rx", 4)
+              .attr("ry", 4)
+              .attr("class", "hour bordered")
+              .attr("width", gridSize)
+              .attr("height", gridSize)
+              .style("fill", function(d) { return colorScale(d.score) })
+              .on("mouseover", function(d) {
+                  $("#gene-info").html("Gene: " + d.gene + " Score: " + d.score)
+               })
+              .on("click", function(d) {
+                  document.location = "?q=" + d.gene
+               })
+
+          cards.transition().duration(1000)
+              .style("fill", function(d) { return colorScale(d.score); });
+
+          cards.select("title").text(function(d) { return d.gene; });          
+          cards.exit().remove();
+
+          var legend = svg.selectAll(".legend")
+              .data(colorScale.quantiles());
+
+          legend.enter().append("g")
+              .attr("class", "legend");
+
+          legend.append("rect")
+            .attr("x", function(d, i) { return legendElementWidth * i; })
+            .attr("y", height)
+            .attr("width", legendElementWidth)
+            .attr("height", gridSize / 2)
+            .style("fill", function(d, i) { return colors[i]; });
+
+          legend.append("text")
+            .attr("class", "mono")
+            .text(function(d) { return (d).toFixed(3) })
+            .attr("x", function(d, i) { return legendElementWidth * i; })
+            .attr("y", height + gridSize);
+
+          legend.exit().remove();
+
+      };
+      heatmapChart(data);      
+}
+
+$(document).ready(function(){
+   
+    // Constructing the suggestion engine
+    var genes = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.whitespace,
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        local: gene_names
+    });
+    
+    // Initializing the typeahead
+    $('.gene-search').typeahead({
+        hint: true,
+        highlight: true, /* Enable substring highlighting */
+        minLength: 1 /* Specify minimum characters required for showing suggestions */
+    },
+    {
+        name: 'genes',
+        source: genes
+    });
+
+    {% if gene %}
+     $("#gene-name").val("{{ gene.systematic_name }}")
+     fetch('/api/genes/{{ gene.systematic_name }}/10/similar/1')
+     .then(response => response.json())
+     .then(data => showSimilar(data));  
+    {% endif %}
+});
+</script>
+{% endblock %}

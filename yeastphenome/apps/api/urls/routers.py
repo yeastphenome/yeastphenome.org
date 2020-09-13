@@ -11,6 +11,14 @@ router.register(r"^papers", views.PaperViewSet, basename="paper")
 urlpatterns = [
     path("", include(router.urls)),
     path("papers/<int:paper_id>/references", views.GetPaperReferences.as_view()),
+    path("genes/<str:systematic_name>/similar", views.GetSimilarGenes.as_view()),
+    path(
+        "genes/<str:systematic_name>/<int:N>/similar", views.GetSimilarGenes.as_view()
+    ),
+    path(
+        "genes/<str:systematic_name>/<int:N>/similar/<int:reverse>",
+        views.GetSimilarGenes.as_view(),
+    ),
     path(
         "search/datasets/explorer",
         views.DatasetsSearch.as_view(),

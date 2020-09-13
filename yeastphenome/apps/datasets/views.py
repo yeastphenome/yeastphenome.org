@@ -4,10 +4,11 @@ from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.views import generic
+from django.contrib import messages
 
 from yeastphenome.apps.common.utils import get_collections_by_year, get_dataset_genes
 from yeastphenome.apps.papers.models import Paper
-from yeastphenome.apps.datasets.models import Dataset, Data, Tag
+from yeastphenome.apps.datasets.models import Dataset, Data, Tag, Gene
 from yeastphenome.apps.datasets.search import get_search_tags, run_search_tag_query
 from yeastphenome.apps.conditions.models import ConditionType
 from yeastphenome.apps.phenotypes.models import Observable
@@ -36,8 +37,30 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
         context["collection_yearly_counts"] = get_collections_by_year(
             context["dataset"].collection
         )
-        context.update(get_dataset_genes())
+        context.update(get_dataset_genes(context["dataset"].id))
         return context
+
+
+# Explore by genes
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def gene_explorer(request):
+
+    # prepare list of genes
+    context = {
+        "genes": Gene.objects.values_list("systematic_name", flat=True).distinct()
+    }
+
+    # A get request for a gene should display it to start
+    if "q" in request.GET:
+        query = request.GET["q"].strip()
+        try:
+            context["gene"] = Gene.objects.get(systematic_name=query)
+        except Gene.DoesNotExist:
+            messages.warning(
+                request,
+                "Gene with systematic name %s does not exist in the database." % query,
+            )
+    return render(request, "genes/index.html", context)
 
 
 # Datasets Explorer (also the datasets index)

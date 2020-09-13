@@ -1,0 +1,4671 @@
+{
+    "nodes": [
+        {
+            "id": 0,
+            "pmid": 11078525,
+            "name": "Chan TF~Zheng XF, 2000",
+            "paper_id": 2,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 1,
+            "pmid": 11452010,
+            "name": "Ni L~Snyder M, 2001",
+            "paper_id": 165,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 2,
+            "pmid": 11606770,
+            "name": "Birrell GW~Brown JM, 2001",
+            "paper_id": 164,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 3,
+            "pmid": 11701889,
+            "name": "Ooi SL~Boeke JD, 2001",
+            "paper_id": 3,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 4,
+            "pmid": 11726929,
+            "name": "Bennett CB~Resnick MA, 2001",
+            "paper_id": 163,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 5,
+            "pmid": 11830665,
+            "name": "Fleming JA~Blackman RK, 2002",
+            "paper_id": 169,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 6,
+            "pmid": 11907261,
+            "name": "Seeley ES~Eitzen G, 2002",
+            "paper_id": 461,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 7,
+            "pmid": 11907266,
+            "name": "Dimmer KS~Westermann B, 2002",
+            "paper_id": 168,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 8,
+            "pmid": 12016207,
+            "name": "Desmoucelles C~Daignan-Fornier B, 2002",
+            "paper_id": 7,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 9,
+            "pmid": 12089449,
+            "name": "Jorgensen P~Tyers M, 2002",
+            "paper_id": 9,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 10,
+            "pmid": 12096123,
+            "name": "Wilson WA~Roach PJ, 2002",
+            "paper_id": 173,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 11,
+            "pmid": 12134085,
+            "name": "Bonangelino CJ~Bonifacino JS, 2002",
+            "paper_id": 167,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 12,
+            "pmid": 12134146,
+            "name": "Steinmetz LM~Davis RW, 2002",
+            "paper_id": 172,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 13,
+            "pmid": 12140549,
+            "name": "Giaever G~Johnston M, 2002",
+            "paper_id": 170,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 14,
+            "pmid": 12149442,
+            "name": "Hanway D~Romesberg FE, 2002",
+            "paper_id": 171,
+            "status": "present",
+            "links": [
+                "11726929"
+            ]
+        },
+        {
+            "id": 15,
+            "pmid": 12432101,
+            "name": "Deutschbauer AM~Davis RW, 2002",
+            "paper_id": 175,
+            "status": "present",
+            "links": [
+                "11606770",
+                "12140549",
+                "12134146",
+                "11701889"
+            ]
+        },
+        {
+            "id": 16,
+            "pmid": 12477387,
+            "name": "Zhang J~Schneider BL, 2002",
+            "paper_id": 174,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 17,
+            "pmid": 12482937,
+            "name": "Chang M~Brown GW, 2002",
+            "paper_id": 6,
+            "status": "present",
+            "links": [
+                "11606770",
+                "11726929",
+                "12149442",
+                "11078525"
+            ]
+        },
+        {
+            "id": 18,
+            "pmid": 12496357,
+            "name": "Begley TJ~Samson LD, 2002",
+            "paper_id": 10,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 19,
+            "pmid": 12543677,
+            "name": "Blackburn AS~Avery SV, 2003",
+            "paper_id": 11,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 20,
+            "pmid": 12586695,
+            "name": "Enyenihi AH~Saunders WS, 2003",
+            "paper_id": 14,
+            "status": "present",
+            "links": [
+                "12140549"
+            ]
+        },
+        {
+            "id": 21,
+            "pmid": 12615994,
+            "name": "Zewail A~Huang J, 2003",
+            "paper_id": 15,
+            "status": "present",
+            "links": [
+                "11078525",
+                "11606770",
+                "11726929",
+                "12149442"
+            ]
+        },
+        {
+            "id": 22,
+            "pmid": 12663529,
+            "name": "Page N~Bussey H, 2003",
+            "paper_id": 19,
+            "status": "present",
+            "links": [
+                "11726929",
+                "12140549",
+                "11452010"
+            ]
+        },
+        {
+            "id": 23,
+            "pmid": 12702675,
+            "name": "Anderson JB~Kohn LM, 2003",
+            "paper_id": 13,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 24,
+            "pmid": 12754197,
+            "name": "Gupta SS~Rao R, 2003",
+            "paper_id": 17,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 25,
+            "pmid": 12816519,
+            "name": "Game JC~Brown JM, 2003",
+            "paper_id": 176,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 26,
+            "pmid": 12871900,
+            "name": "Griffith JL~Devine SE, 2003",
+            "paper_id": 177,
+            "status": "present",
+            "links": [
+                "12140549"
+            ]
+        },
+        {
+            "id": 27,
+            "pmid": 12972632,
+            "name": "Huang ME~Kolodner RD, 2003",
+            "paper_id": 16,
+            "status": "present",
+            "links": [
+                "12482937",
+                "11606770",
+                "12496357",
+                "11726929",
+                "12140549",
+                "12149442",
+                "11078525"
+            ]
+        },
+        {
+            "id": 28,
+            "pmid": 14594803,
+            "name": "Davis-Kaplan SR~Kaplan J, 2004",
+            "paper_id": 180,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 29,
+            "pmid": 14605211,
+            "name": "Ran H~Lau GW, 2003",
+            "paper_id": 18,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 30,
+            "pmid": 14617816,
+            "name": "Schuller C~Kuchler K, 2004",
+            "paper_id": 337,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 31,
+            "pmid": 14657499,
+            "name": "Willingham S~Muchowski PJ, 2003",
+            "paper_id": 12,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 32,
+            "pmid": 14661025,
+            "name": "Parsons AB~Boone C, 2004",
+            "paper_id": 29,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 33,
+            "pmid": 14671320,
+            "name": "Kushner DB~Ahlquist P, 2003",
+            "paper_id": 178,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 34,
+            "pmid": 14676322,
+            "name": "Warringer J~Blomberg A, 2003",
+            "paper_id": 20,
+            "status": "present",
+            "links": [
+                "11078525",
+                "11452010",
+                "11606770",
+                "11726929",
+                "11830665",
+                "12140549"
+            ]
+        },
+        {
+            "id": 35,
+            "pmid": 14718172,
+            "name": "Lum PY~Shoemaker DD, 2004",
+            "paper_id": 187,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 36,
+            "pmid": 14718668,
+            "name": "Giaever G~Davis RW, 2004",
+            "paper_id": 181,
+            "status": "present",
+            "links": [
+                "12140549",
+                "12615994"
+            ]
+        },
+        {
+            "id": 37,
+            "pmid": 14752166,
+            "name": "Marston AL~Amon A, 2004",
+            "paper_id": 183,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 38,
+            "pmid": 14871844,
+            "name": "Aouida M~Ramotar D, 2004",
+            "paper_id": 26,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 39,
+            "pmid": 14968429,
+            "name": "Riles L~Reines D, 2004",
+            "paper_id": 24,
+            "status": "present",
+            "links": [
+                "11078525",
+                "12016207",
+                "12140549",
+                "12615994",
+                "12871900"
+            ]
+        },
+        {
+            "id": 40,
+            "pmid": 14993228,
+            "name": "Serrano R~Arino J, 2004",
+            "paper_id": 25,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 41,
+            "pmid": 15060153,
+            "name": "Lawrence CL~Coote PJ, 2004",
+            "paper_id": 22,
+            "status": "present",
+            "links": [
+                "12134146"
+            ]
+        },
+        {
+            "id": 42,
+            "pmid": 15070751,
+            "name": "Baetz K~Roberge M, 2004",
+            "paper_id": 188,
+            "status": "present",
+            "links": [
+                "14661025",
+                "14718172"
+            ]
+        },
+        {
+            "id": 43,
+            "pmid": 15087496,
+            "name": "Thorpe GW~Dawes IW, 2004",
+            "paper_id": 185,
+            "status": "present",
+            "links": [
+                "11907261",
+                "12134146"
+            ]
+        },
+        {
+            "id": 44,
+            "pmid": 15118337,
+            "name": "Kubota S~Hirata D, 2004",
+            "paper_id": 21,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 45,
+            "pmid": 15161972,
+            "name": "Askree SH~McEachern MJ, 2004",
+            "paper_id": 27,
+            "status": "present",
+            "links": [
+                "12140549"
+            ]
+        },
+        {
+            "id": 46,
+            "pmid": 15173006,
+            "name": "Wu HI~Brown JM, 2004",
+            "paper_id": 186,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 47,
+            "pmid": 15239834,
+            "name": "Hartman JL 4th~Tippery NP, 2004",
+            "paper_id": 30,
+            "status": "present",
+            "links": [
+                "12482937",
+                "14661025",
+                "11726929",
+                "12140549"
+            ]
+        },
+        {
+            "id": 48,
+            "pmid": 15334557,
+            "name": "Mollapour M~Piper PW, 2004",
+            "paper_id": 184,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 49,
+            "pmid": 15388447,
+            "name": "Markovich S~Osherov N, 2004",
+            "paper_id": 23,
+            "status": "present",
+            "links": [
+                "12016207",
+                "12543677",
+                "11078525",
+                "12615994",
+                "12702675"
+            ]
+        },
+        {
+            "id": 50,
+            "pmid": 15469827,
+            "name": "Begley TJ~Samson LD, 2004",
+            "paper_id": 28,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 51,
+            "pmid": 15489514,
+            "name": "Lesuisse E~Dancis A, 2005",
+            "paper_id": 221,
+            "status": "present",
+            "links": [
+                "14594803"
+            ]
+        },
+        {
+            "id": 52,
+            "pmid": 15509654,
+            "name": "Perrone GG~Dawes IW, 2005",
+            "paper_id": 476,
+            "status": "present",
+            "links": [
+                "15087496",
+                "11907266",
+                "14871844",
+                "14676322",
+                "11606770",
+                "12663529",
+                "11907261",
+                "14657499",
+                "12754197",
+                "12134085"
+            ]
+        },
+        {
+            "id": 53,
+            "pmid": 15525520,
+            "name": "Pan X~Boeke JD, 2004",
+            "paper_id": 262,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 54,
+            "pmid": 15575969,
+            "name": "Haugen AC~Van Houten B, 2004",
+            "paper_id": 182,
+            "status": "present",
+            "links": [
+                "15173006",
+                "11606770",
+                "12496357",
+                "12140549"
+            ]
+        },
+        {
+            "id": 55,
+            "pmid": 15641941,
+            "name": "Outten CE~Culotta VC, 2005",
+            "paper_id": 40,
+            "status": "present",
+            "links": [
+                "15087496",
+                "12140549",
+                "18629161"
+            ]
+        },
+        {
+            "id": 56,
+            "pmid": 15645503,
+            "name": "Kang CM~Jiang YW, 2005",
+            "paper_id": 232,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 57,
+            "pmid": 15695358,
+            "name": "Huang S~O'Shea EK, 2005",
+            "paper_id": 41,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 58,
+            "pmid": 15716499,
+            "name": "Deutschbauer AM~Giaever G, 2005",
+            "paper_id": 215,
+            "status": "present",
+            "links": [
+                "14718172",
+                "11606770",
+                "11701889",
+                "12140549",
+                "12432101",
+                "14718668"
+            ]
+        },
+        {
+            "id": 59,
+            "pmid": 15755922,
+            "name": "Gardocki ME~Lopes JM, 2005",
+            "paper_id": 237,
+            "status": "present",
+            "links": [
+                "12615994"
+            ]
+        },
+        {
+            "id": 60,
+            "pmid": 15766533,
+            "name": "Zhao R~Houry WA, 2005",
+            "paper_id": 238,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 61,
+            "pmid": 15806102,
+            "name": "Giorgini F~Muchowski PJ, 2005",
+            "paper_id": 32,
+            "status": "present",
+            "links": [
+                "14657499"
+            ]
+        },
+        {
+            "id": 62,
+            "pmid": 15834151,
+            "name": "Deng C~Brown JM, 2005",
+            "paper_id": 239,
+            "status": "present",
+            "links": [
+                "11606770",
+                "11726929",
+                "12140549",
+                "12496357",
+                "12482937",
+                "12816519",
+                "15173006"
+            ]
+        },
+        {
+            "id": 63,
+            "pmid": 15837808,
+            "name": "Irwin B~Sandmeyer S, 2005",
+            "paper_id": 35,
+            "status": "present",
+            "links": [
+                "14671320",
+                "12140549",
+                "12871900"
+            ]
+        },
+        {
+            "id": 64,
+            "pmid": 15883361,
+            "name": "Panavas T~Nagy PD, 2005",
+            "paper_id": 410,
+            "status": "present",
+            "links": [
+                "11606770",
+                "12663529",
+                "14657499",
+                "14671320",
+                "14752166"
+            ]
+        },
+        {
+            "id": 65,
+            "pmid": 15883373,
+            "name": "Xie MW~Huang J, 2005",
+            "paper_id": 42,
+            "status": "present",
+            "links": [
+                "12482937",
+                "14718668",
+                "12496357",
+                "12140549",
+                "12615994",
+                "14718172",
+                "18629161",
+                "14661025",
+                "11078525"
+            ]
+        },
+        {
+            "id": 66,
+            "pmid": 15908144,
+            "name": "Luban C~Schmidt U, 2005",
+            "paper_id": 36,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 67,
+            "pmid": 15932646,
+            "name": "Stepchenkova EI~Pavlov YI, 2005",
+            "paper_id": 31,
+            "status": "present",
+            "links": [
+                "11606770",
+                "11726929",
+                "12140549",
+                "12482937",
+                "12816519",
+                "12972632",
+                "14594803"
+            ]
+        },
+        {
+            "id": 68,
+            "pmid": 15937126,
+            "name": "Sambade M~Kane PM, 2005",
+            "paper_id": 38,
+            "status": "present",
+            "links": [
+                "14993228",
+                "11907261",
+                "12134085",
+                "12586695",
+                "14661025",
+                "14594803"
+            ]
+        },
+        {
+            "id": 69,
+            "pmid": 15968571,
+            "name": "D'Elia R~Hammond TG, 2005",
+            "paper_id": 192,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 70,
+            "pmid": 15993632,
+            "name": "Corbacho I~Hernandez LM, 2005",
+            "paper_id": 240,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 71,
+            "pmid": 15994967,
+            "name": "Huang RY~Kowalski D, 2005",
+            "paper_id": 34,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 72,
+            "pmid": 16027361,
+            "name": "Serviene E~Nagy PD, 2005",
+            "paper_id": 39,
+            "status": "present",
+            "links": [
+                "15883361"
+            ]
+        },
+        {
+            "id": 73,
+            "pmid": 16061773,
+            "name": "Hellauer K~Turcotte B, 2005",
+            "paper_id": 33,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 74,
+            "pmid": 16121259,
+            "name": "Lee W~Giaever G, 2005",
+            "paper_id": 191,
+            "status": "present",
+            "links": [
+                "11606770",
+                "11726929",
+                "12140549",
+                "12134146",
+                "12149442",
+                "12496357",
+                "12482937",
+                "12586695",
+                "14661025",
+                "14718668",
+                "15173006",
+                "15716499"
+            ]
+        },
+        {
+            "id": 75,
+            "pmid": 16168084,
+            "name": "Eide DJ~Harper JF, 2005",
+            "paper_id": 324,
+            "status": "present",
+            "links": [
+                "12134146"
+            ]
+        },
+        {
+            "id": 76,
+            "pmid": 16170412,
+            "name": "Li W~Zhou B, 2005",
+            "paper_id": 563,
+            "status": "present",
+            "links": [
+                "12140549",
+                "12134146"
+            ]
+        },
+        {
+            "id": 77,
+            "pmid": 16222531,
+            "name": "Gorsich SW~Skory CD, 2006",
+            "paper_id": 370,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 78,
+            "pmid": 16234568,
+            "name": "Dilda PJ~Hogg PJ, 2005",
+            "paper_id": 190,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 79,
+            "pmid": 16251355,
+            "name": "Rand JD~Grant CM, 2006",
+            "paper_id": 263,
+            "status": "present",
+            "links": [
+                "15087496"
+            ]
+        },
+        {
+            "id": 80,
+            "pmid": 16251356,
+            "name": "Reiner S~Schneiter R, 2006",
+            "paper_id": 49,
+            "status": "present",
+            "links": [
+                "11452010",
+                "11907266",
+                "12134085",
+                "15161972"
+            ]
+        },
+        {
+            "id": 81,
+            "pmid": 16267274,
+            "name": "Dunn CD~Jensen RE, 2006",
+            "paper_id": 55,
+            "status": "present",
+            "links": [
+                "11701889",
+                "12140549"
+            ]
+        },
+        {
+            "id": 82,
+            "pmid": 16314574,
+            "name": "Sliwa P~Korona R, 2005",
+            "paper_id": 425,
+            "status": "present",
+            "links": [
+                "12140549",
+                "12134146"
+            ]
+        },
+        {
+            "id": 83,
+            "pmid": 16330752,
+            "name": "Proszynski TJ~Walch-Solimena C, 2005",
+            "paper_id": 37,
+            "status": "present",
+            "links": [
+                "14718668",
+                "14752166",
+                "12134085"
+            ]
+        },
+        {
+            "id": 84,
+            "pmid": 16333747,
+            "name": "Kakimoto M~Yoshimura E, 2005",
+            "paper_id": 43,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 85,
+            "pmid": 16361226,
+            "name": "Cai H~Becker JM, 2006",
+            "paper_id": 53,
+            "status": "present",
+            "links": [
+                "12134085",
+                "12134146",
+                "12663529",
+                "14871844",
+                "14752166",
+                "15070751",
+                "15161972"
+            ]
+        },
+        {
+            "id": 86,
+            "pmid": 16365294,
+            "name": "Ohya Y~Morishita S, 2005",
+            "paper_id": 45,
+            "status": "present",
+            "links": [
+                "11452010",
+                "12089449",
+                "12140549",
+                "12477387"
+            ]
+        },
+        {
+            "id": 87,
+            "pmid": 16413487,
+            "name": "Alto NM~Dixon JE, 2006",
+            "paper_id": 279,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 88,
+            "pmid": 16418483,
+            "name": "Powers RW 3rd~Fields S, 2006",
+            "paper_id": 247,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 89,
+            "pmid": 16437165,
+            "name": "Ravid T~Hochstrasser M, 2006",
+            "paper_id": 153,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 90,
+            "pmid": 16467474,
+            "name": "Chasse SA~Dohlman HG, 2006",
+            "paper_id": 265,
+            "status": "present",
+            "links": [
+                "11452010",
+                "11606770",
+                "12140549"
+            ]
+        },
+        {
+            "id": 91,
+            "pmid": 16487347,
+            "name": "Ando A~Shima J, 2006",
+            "paper_id": 197,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 92,
+            "pmid": 16507139,
+            "name": "Narayanaswamy R~Marcotte EM, 2006",
+            "paper_id": 222,
+            "status": "present",
+            "links": [
+                "11452010",
+                "12140549",
+                "12477387",
+                "14676322"
+            ]
+        },
+        {
+            "id": 93,
+            "pmid": 16552446,
+            "name": "Gatbonton T~Bedalov A, 2006",
+            "paper_id": 51,
+            "status": "present",
+            "links": [
+                "15161972",
+                "12140549"
+            ]
+        },
+        {
+            "id": 94,
+            "pmid": 16582425,
+            "name": "Hancock LC~Lopes JM, 2006",
+            "paper_id": 46,
+            "status": "present",
+            "links": [
+                "15695358",
+                "12140549"
+            ]
+        },
+        {
+            "id": 95,
+            "pmid": 16598687,
+            "name": "van Voorst F~Brandt A, 2006",
+            "paper_id": 50,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 96,
+            "pmid": 16630279,
+            "name": "Snoek IS~Steensma HY, 2006",
+            "paper_id": 195,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 97,
+            "pmid": 16729036,
+            "name": "Dudley AM~Church GM, 2005",
+            "paper_id": 193,
+            "status": "present",
+            "links": [
+                "11606770",
+                "12140549",
+                "14661025",
+                "14718172",
+                "14718668"
+            ]
+        },
+        {
+            "id": 98,
+            "pmid": 16738548,
+            "name": "Brown JA~Brown JM, 2006",
+            "paper_id": 196,
+            "status": "present",
+            "links": [
+                "12140549",
+                "12816519",
+                "15173006",
+                "15575969",
+                "16121259",
+                "11606770"
+            ]
+        },
+        {
+            "id": 99,
+            "pmid": 16738555,
+            "name": "Smith JJ~Aitchison JD, 2006",
+            "paper_id": 374,
+            "status": "present",
+            "links": [
+                "12140549",
+                "15469827"
+            ]
+        },
+        {
+            "id": 100,
+            "pmid": 16818716,
+            "name": "Lam KK~Conibear E, 2006",
+            "paper_id": 52,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 101,
+            "pmid": 16820484,
+            "name": "Trotter EW~Grant CM, 2006",
+            "paper_id": 478,
+            "status": "present",
+            "links": [
+                "16251355",
+                "15087496"
+            ]
+        },
+        {
+            "id": 102,
+            "pmid": 16839886,
+            "name": "Slessareva JE~Dohlman HG, 2006",
+            "paper_id": 266,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 103,
+            "pmid": 16879425,
+            "name": "Fujita K~Iwahashi H, 2006",
+            "paper_id": 194,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 104,
+            "pmid": 16901791,
+            "name": "Parsons AB~Boone C, 2006",
+            "paper_id": 289,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 105,
+            "pmid": 16911514,
+            "name": "Kawahata M~Iefuji H, 2006",
+            "paper_id": 47,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 106,
+            "pmid": 16989656,
+            "name": "Ando A~Shima J, 2007",
+            "paper_id": 199,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 107,
+            "pmid": 17093137,
+            "name": "Liao C~Panaretou B, 2007",
+            "paper_id": 200,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 108,
+            "pmid": 17107617,
+            "name": "Freimoser FM~Amrhein N, 2006",
+            "paper_id": 54,
+            "status": "present",
+            "links": [
+                "16168084",
+                "12096123",
+                "15695358"
+            ]
+        },
+        {
+            "id": 109,
+            "pmid": 17151231,
+            "name": "Lockshon D~Kennedy BK, 2007",
+            "paper_id": 57,
+            "status": "present",
+            "links": [
+                "12663529"
+            ]
+        },
+        {
+            "id": 110,
+            "pmid": 17158920,
+            "name": "Woolstencroft RN~Tyers M, 2006",
+            "paper_id": 331,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 111,
+            "pmid": 17164236,
+            "name": "Fairn GD~McMaster CR, 2007",
+            "paper_id": 67,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 112,
+            "pmid": 17176259,
+            "name": "Bishop AL~Avery SV, 2007",
+            "paper_id": 56,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 113,
+            "pmid": 17259547,
+            "name": "Zakrzewska A~Klis FM, 2007",
+            "paper_id": 269,
+            "status": "present",
+            "links": [
+                "12140549",
+                "12615994",
+                "14676322",
+                "14661025",
+                "14718172",
+                "14718668",
+                "15060153",
+                "15173006",
+                "16738548",
+                "16901791"
+            ]
+        },
+        {
+            "id": 114,
+            "pmid": 17305427,
+            "name": "Kramer RW~Lesser CF, 2007",
+            "paper_id": 270,
+            "status": "present",
+            "links": [
+                "14661025",
+                "14718172",
+                "16413487"
+            ]
+        },
+        {
+            "id": 115,
+            "pmid": 17308930,
+            "name": "Wang J~Zhou B, 2007",
+            "paper_id": 253,
+            "status": "present",
+            "links": [
+                "11907266",
+                "16168084"
+            ]
+        },
+        {
+            "id": 116,
+            "pmid": 17314135,
+            "name": "Loukin SH~Saimi Y, 2007",
+            "paper_id": 254,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 117,
+            "pmid": 17351076,
+            "name": "Ohnuki S~Ohya Y, 2007",
+            "paper_id": 372,
+            "status": "present",
+            "links": [
+                "15937126",
+                "16365294",
+                "16738548"
+            ]
+        },
+        {
+            "id": 118,
+            "pmid": 17360454,
+            "name": "Yuen KW~Spencer FA, 2007",
+            "paper_id": 332,
+            "status": "present",
+            "links": [
+                "12140549",
+                "12972632"
+            ]
+        },
+        {
+            "id": 119,
+            "pmid": 17506111,
+            "name": "Yazawa H~Uemura H, 2007",
+            "paper_id": 257,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 120,
+            "pmid": 17553796,
+            "name": "Thevissen K~Francois IE, 2007",
+            "paper_id": 64,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 121,
+            "pmid": 17644632,
+            "name": "Cheng V~Bakalinsky AT, 2007",
+            "paper_id": 63,
+            "status": "present",
+            "links": [
+                "15334557",
+                "14617816",
+                "15060153"
+            ]
+        },
+        {
+            "id": 122,
+            "pmid": 17660569,
+            "name": "Wilson MA~van Hoof A, 2007",
+            "paper_id": 60,
+            "status": "present",
+            "links": [
+                "12140549"
+            ]
+        },
+        {
+            "id": 123,
+            "pmid": 17785683,
+            "name": "Jo WJ~Vulpe CD, 2007",
+            "paper_id": 198,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 124,
+            "pmid": 17846143,
+            "name": "Morton CO~Coote P, 2007",
+            "paper_id": 562,
+            "status": "present",
+            "links": [
+                "11726929",
+                "12663529",
+                "15161972"
+            ]
+        },
+        {
+            "id": 125,
+            "pmid": 17873082,
+            "name": "Botet J~Santos MA, 2007",
+            "paper_id": 65,
+            "status": "present",
+            "links": [
+                "16901791",
+                "12140549",
+                "14661025"
+            ]
+        },
+        {
+            "id": 126,
+            "pmid": 17923092,
+            "name": "McClellan AJ~Frydman J, 2007",
+            "paper_id": 360,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 127,
+            "pmid": 17950387,
+            "name": "Galvan IJ~Smith ML, 2008",
+            "paper_id": 79,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 128,
+            "pmid": 17954604,
+            "name": "Michelsen K~Schwappach B, 2007",
+            "paper_id": 58,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 129,
+            "pmid": 18056469,
+            "name": "Xia L~Flores-Rozas H, 2007",
+            "paper_id": 61,
+            "status": "present",
+            "links": [
+                "15645503",
+                "15994967"
+            ]
+        },
+        {
+            "id": 130,
+            "pmid": 18070918,
+            "name": "Ju D~Xie Y, 2008",
+            "paper_id": 70,
+            "status": "present",
+            "links": [
+                "16437165",
+                "16361226"
+            ]
+        },
+        {
+            "id": 131,
+            "pmid": 18085829,
+            "name": "Alvaro D~Rothstein R, 2007",
+            "paper_id": 286,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 132,
+            "pmid": 18088421,
+            "name": "Holland S~Avery SV, 2007",
+            "paper_id": 447,
+            "status": "present",
+            "links": [
+                "18157128",
+                "12140549",
+                "12543677",
+                "14718172",
+                "14718668",
+                "15070751",
+                "15087496",
+                "15575969",
+                "16251355",
+                "16121259",
+                "17176259",
+                "17785683"
+            ]
+        },
+        {
+            "id": 133,
+            "pmid": 18093937,
+            "name": "Szymanski KM~Goodman JM, 2007",
+            "paper_id": 59,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 134,
+            "pmid": 18157128,
+            "name": "Delneri D~Oliver SG, 2008",
+            "paper_id": 366,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 135,
+            "pmid": 18160327,
+            "name": "Dilda PJ~Hogg PJ, 2008",
+            "paper_id": 310,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 136,
+            "pmid": 18179719,
+            "name": "Norambuena L~Raikhel NV, 2008",
+            "paper_id": 305,
+            "status": "present",
+            "links": [
+                "15161972",
+                "14718668",
+                "14718172",
+                "14661025",
+                "11078525",
+                "12134085"
+            ]
+        },
+        {
+            "id": 137,
+            "pmid": 18202368,
+            "name": "Nyswaner KM~Garfinkel DJ, 2008",
+            "paper_id": 72,
+            "status": "present",
+            "links": [
+                "12140549",
+                "15837808",
+                "12871900"
+            ]
+        },
+        {
+            "id": 138,
+            "pmid": 18212113,
+            "name": "Chamilos G~Kontoyiannis DP, 2008",
+            "paper_id": 78,
+            "status": "present",
+            "links": [
+                "16234568",
+                "12543677",
+                "15388447",
+                "15994967"
+            ]
+        },
+        {
+            "id": 139,
+            "pmid": 18216282,
+            "name": "Schluter C~Conibear E, 2008",
+            "paper_id": 404,
+            "status": "present",
+            "links": [
+                "12134085",
+                "16818716",
+                "16839886",
+                "16901791"
+            ]
+        },
+        {
+            "id": 140,
+            "pmid": 18224659,
+            "name": "Shima J~Takagi H, 2008",
+            "paper_id": 201,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 141,
+            "pmid": 18245339,
+            "name": "Abe F~Minegishi H, 2008",
+            "paper_id": 216,
+            "status": "present",
+            "links": [
+                "12140549"
+            ]
+        },
+        {
+            "id": 142,
+            "pmid": 18250201,
+            "name": "Fei W~Yang H, 2008",
+            "paper_id": 68,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 143,
+            "pmid": 18253494,
+            "name": "Cook MA~Ho CY, 2008",
+            "paper_id": 353,
+            "status": "present",
+            "links": [
+                "11606770",
+                "11701889",
+                "12089449",
+                "12140549",
+                "12134146",
+                "12432101",
+                "12477387",
+                "14718172",
+                "16729036",
+                "16738548",
+                "16121259"
+            ]
+        },
+        {
+            "id": 144,
+            "pmid": 18258809,
+            "name": "Thomsen R~Jensen TH, 2008",
+            "paper_id": 77,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 145,
+            "pmid": 18314501,
+            "name": "Gustavsson M~Ronne H, 2008",
+            "paper_id": 69,
+            "status": "present",
+            "links": [
+                "14718172",
+                "14718668",
+                "15716499"
+            ]
+        },
+        {
+            "id": 146,
+            "pmid": 18323404,
+            "name": "Loukin S~Saimi Y, 2008",
+            "paper_id": 342,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 147,
+            "pmid": 18394190,
+            "name": "Ruotolo R~Ottonello S, 2008",
+            "paper_id": 308,
+            "status": "present",
+            "links": [
+                "17176259",
+                "15087496",
+                "12482937",
+                "14871844",
+                "14993228",
+                "12496357",
+                "15575969",
+                "11726929",
+                "12140549",
+                "16729036",
+                "17785683",
+                "16168084",
+                "15469827",
+                "18088421"
+            ]
+        },
+        {
+            "id": 148,
+            "pmid": 18400565,
+            "name": "Lis ET~Romesberg FE, 2008",
+            "paper_id": 274,
+            "status": "present",
+            "links": [
+                "12663529",
+                "16251355",
+                "12140549",
+                "16552446"
+            ]
+        },
+        {
+            "id": 149,
+            "pmid": 18420932,
+            "name": "Hillenmeyer ME~Giaever G, 2008",
+            "paper_id": 203,
+            "status": "present",
+            "links": [
+                "16901791",
+                "15716499",
+                "14718668",
+                "12140549",
+                "16729036",
+                "14661025"
+            ]
+        },
+        {
+            "id": 150,
+            "pmid": 18437200,
+            "name": "Jin YH~Freedman JH, 2008",
+            "paper_id": 307,
+            "status": "present",
+            "links": [
+                "15575969",
+                "12496357",
+                "14661025",
+                "12140549"
+            ]
+        },
+        {
+            "id": 151,
+            "pmid": 18455128,
+            "name": "Lain S~Westwood NJ, 2008",
+            "paper_id": 546,
+            "status": "present",
+            "links": [
+                "14718172"
+            ]
+        },
+        {
+            "id": 152,
+            "pmid": 18471310,
+            "name": "Endo A~Shima J, 2008",
+            "paper_id": 369,
+            "status": "present",
+            "links": [
+                "12140549",
+                "14676322",
+                "15883373",
+                "16222531",
+                "16487347",
+                "16989656",
+                "11726929"
+            ]
+        },
+        {
+            "id": 153,
+            "pmid": 18514590,
+            "name": "Serero A~Boiteux S, 2008",
+            "paper_id": 73,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 154,
+            "pmid": 18516048,
+            "name": "Ulanovskaya OA~Kozmin SA, 2008",
+            "paper_id": 80,
+            "status": "present",
+            "links": [
+                "14718668",
+                "15070751"
+            ]
+        },
+        {
+            "id": 155,
+            "pmid": 18562670,
+            "name": "Andersen MP~Gottschling DE, 2008",
+            "paper_id": 450,
+            "status": "present",
+            "links": [
+                "12140549",
+                "17360454",
+                "18085829",
+                "17158920",
+                "12972632",
+                "11701889"
+            ]
+        },
+        {
+            "id": 156,
+            "pmid": 18598947,
+            "name": "Turcotte S~Giaccia AJ, 2008",
+            "paper_id": 276,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 157,
+            "pmid": 18612650,
+            "name": "Gustavsson M~Ronne H, 2008",
+            "paper_id": 75,
+            "status": "present",
+            "links": [
+                "14676322",
+                "11907261",
+                "12134085"
+            ]
+        },
+        {
+            "id": 158,
+            "pmid": 18622397,
+            "name": "Breslow DK~Weissman JS, 2008",
+            "paper_id": 83,
+            "status": "present",
+            "links": [
+                "12140549",
+                "14676322",
+                "14718172",
+                "15525520",
+                "15716499",
+                "18420932"
+            ]
+        },
+        {
+            "id": 159,
+            "pmid": 18629161,
+            "name": "Tucker CL~Fields S, 2004",
+            "paper_id": 448,
+            "status": "present",
+            "links": [
+                "11830665",
+                "12134146",
+                "12140549",
+                "12496357",
+                "12543677",
+                "12615994",
+                "11726929"
+            ]
+        },
+        {
+            "id": 160,
+            "pmid": 18688276,
+            "name": "Ericson E~Nislow C, 2008",
+            "paper_id": 205,
+            "status": "present",
+            "links": [
+                "15161972",
+                "15070751",
+                "15806102",
+                "18420932",
+                "16738548",
+                "16121259",
+                "16552446",
+                "16901791",
+                "12140549",
+                "14657499",
+                "14718172",
+                "14718668"
+            ]
+        },
+        {
+            "id": 161,
+            "pmid": 18755837,
+            "name": "Huang B~Bystrom AS, 2008",
+            "paper_id": 479,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 162,
+            "pmid": 18780730,
+            "name": "Sinha H~Steinmetz LM, 2008",
+            "paper_id": 480,
+            "status": "present",
+            "links": [
+                "16552446"
+            ]
+        },
+        {
+            "id": 163,
+            "pmid": 18812505,
+            "name": "Neklesa TK~Davis RW, 2008",
+            "paper_id": 212,
+            "status": "present",
+            "links": [
+                "12140549",
+                "15883373",
+                "11078525"
+            ]
+        },
+        {
+            "id": 164,
+            "pmid": 18936161,
+            "name": "Mir SS~Cashikar AG, 2009",
+            "paper_id": 93,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 165,
+            "pmid": 18975972,
+            "name": "McCue PP~Phang JM, 2008",
+            "paper_id": 481,
+            "status": "present",
+            "links": [
+                "11606770",
+                "14718668"
+            ]
+        },
+        {
+            "id": 166,
+            "pmid": 19004802,
+            "name": "Ralser M~Lehrach H, 2008",
+            "paper_id": 223,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 167,
+            "pmid": 19004804,
+            "name": "Bockhorn J~Kinzy TG, 2008",
+            "paper_id": 81,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 168,
+            "pmid": 19043571,
+            "name": "Yu L~Bellaoui M, 2008",
+            "paper_id": 204,
+            "status": "present",
+            "links": [
+                "16901791",
+                "15087496",
+                "15173006",
+                "14718668",
+                "12140549",
+                "14718172",
+                "18629161",
+                "14661025",
+                "15070751",
+                "16121259"
+            ]
+        },
+        {
+            "id": 169,
+            "pmid": 19047157,
+            "name": "Herrero AB~Moreno S, 2008",
+            "paper_id": 76,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 170,
+            "pmid": 19054128,
+            "name": "Yoshikawa K~Shimizu H, 2009",
+            "paper_id": 101,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 171,
+            "pmid": 19055778,
+            "name": "Alamgir M~Golshani A, 2008",
+            "paper_id": 74,
+            "status": "present",
+            "links": [
+                "15716499",
+                "16901791",
+                "17950387",
+                "18420932",
+                "12702675",
+                "14661025"
+            ]
+        },
+        {
+            "id": 172,
+            "pmid": 19061187,
+            "name": "Matsufuji Y~Nakagawa T, 2008",
+            "paper_id": 71,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 173,
+            "pmid": 19064668,
+            "name": "Grossmann G~Tanner W, 2008",
+            "paper_id": 545,
+            "status": "present",
+            "links": [
+                "16330752"
+            ]
+        },
+        {
+            "id": 174,
+            "pmid": 19067491,
+            "name": "Tyedmers J~Lindquist S, 2008",
+            "paper_id": 413,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 175,
+            "pmid": 19116312,
+            "name": "Anand VC~Payne GS, 2009",
+            "paper_id": 97,
+            "status": "present",
+            "links": [
+                "12134085"
+            ]
+        },
+        {
+            "id": 176,
+            "pmid": 19129474,
+            "name": "Tan S~Perrone GG, 2009",
+            "paper_id": 482,
+            "status": "present",
+            "links": [
+                "15087496",
+                "15509654"
+            ]
+        },
+        {
+            "id": 177,
+            "pmid": 19144191,
+            "name": "Kemmer D~Roberge M, 2009",
+            "paper_id": 88,
+            "status": "present",
+            "links": [
+                "14661025",
+                "14718172",
+                "15070751",
+                "15937126",
+                "16901791",
+                "18420932"
+            ]
+        },
+        {
+            "id": 178,
+            "pmid": 19220866,
+            "name": "Mira NP~Sa Correia I, 2009",
+            "paper_id": 90,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 179,
+            "pmid": 19284616,
+            "name": "Thorsen M~Tamas MJ, 2009",
+            "paper_id": 309,
+            "status": "present",
+            "links": [
+                "18394190",
+                "15087496",
+                "18420932",
+                "14871844",
+                "15575969",
+                "18437200",
+                "17314135",
+                "18514590",
+                "16729036",
+                "18160327"
+            ]
+        },
+        {
+            "id": 180,
+            "pmid": 19321002,
+            "name": "Jo WJ~Vulpe CD, 2009",
+            "paper_id": 451,
+            "status": "present",
+            "links": [
+                "14594803",
+                "15575969",
+                "15489514",
+                "16729036",
+                "17785683",
+                "18394190",
+                "12140549"
+            ]
+        },
+        {
+            "id": 181,
+            "pmid": 19324962,
+            "name": "Holbein S~Dichtl B, 2009",
+            "paper_id": 483,
+            "status": "present",
+            "links": [
+                "12016207",
+                "16901791",
+                "17107617",
+                "18420932"
+            ]
+        },
+        {
+            "id": 182,
+            "pmid": 19325107,
+            "name": "Jonikas MC~Schuldiner M, 2009",
+            "paper_id": 294,
+            "status": "present",
+            "links": [
+                "12140549"
+            ]
+        },
+        {
+            "id": 183,
+            "pmid": 19416971,
+            "name": "Khozoie C~Avery SV, 2009",
+            "paper_id": 561,
+            "status": "present",
+            "links": [
+                "12543677",
+                "14718172",
+                "14718668",
+                "15087496",
+                "17176259",
+                "17846143",
+                "18088421",
+                "18394190",
+                "18629161",
+                "18688276"
+            ]
+        },
+        {
+            "id": 184,
+            "pmid": 19433630,
+            "name": "Copic A~Miller EA, 2009",
+            "paper_id": 95,
+            "status": "present",
+            "links": [
+                "17151231",
+                "19325107",
+                "12134085"
+            ]
+        },
+        {
+            "id": 185,
+            "pmid": 19503795,
+            "name": "Westmoreland TJ~Bennett CB, 2009",
+            "paper_id": 484,
+            "status": "present",
+            "links": [
+                "11726929",
+                "17158920",
+                "18056469",
+                "12089449",
+                "12477387",
+                "15087496"
+            ]
+        },
+        {
+            "id": 186,
+            "pmid": 19506040,
+            "name": "Burston HE~Conibear E, 2009",
+            "paper_id": 98,
+            "status": "present",
+            "links": [
+                "18216282",
+                "15993632"
+            ]
+        },
+        {
+            "id": 187,
+            "pmid": 19596888,
+            "name": "Lis M~Bobek LA, 2009",
+            "paper_id": 329,
+            "status": "present",
+            "links": [
+                "12140549",
+                "12134146",
+                "12663529",
+                "14718172",
+                "16901791",
+                "17259547",
+                "17846143",
+                "18056469",
+                "18688276"
+            ]
+        },
+        {
+            "id": 188,
+            "pmid": 19625222,
+            "name": "de Graaf B~McCullough AK, 2009",
+            "paper_id": 86,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 189,
+            "pmid": 19631266,
+            "name": "Zhou X~Costa M, 2009",
+            "paper_id": 94,
+            "status": "present",
+            "links": [
+                "12496357",
+                "15469827",
+                "15575969",
+                "18160327",
+                "18437200"
+            ]
+        },
+        {
+            "id": 190,
+            "pmid": 19633105,
+            "name": "Teixeira MC~Sa Correia I, 2009",
+            "paper_id": 92,
+            "status": "present",
+            "links": [
+                "15716499",
+                "15118337",
+                "18420932",
+                "19054128",
+                "17151231",
+                "19220866",
+                "16598687",
+                "16879425"
+            ]
+        },
+        {
+            "id": 191,
+            "pmid": 19638689,
+            "name": "Auesukaree C~Harashima S, 2009",
+            "paper_id": 85,
+            "status": "present",
+            "links": [
+                "16879425"
+            ]
+        },
+        {
+            "id": 192,
+            "pmid": 19683497,
+            "name": "Fillingham J~Andrews BJ, 2009",
+            "paper_id": 99,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 193,
+            "pmid": 19751518,
+            "name": "Merz S~Westermann B, 2009",
+            "paper_id": 89,
+            "status": "present",
+            "links": [
+                "15908144",
+                "16234568",
+                "15087496",
+                "18085829",
+                "11907266",
+                "12140549",
+                "12134146"
+            ]
+        },
+        {
+            "id": 194,
+            "pmid": 19793921,
+            "name": "Kanki T~Klionsky DJ, 2009",
+            "paper_id": 87,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 195,
+            "pmid": 19853568,
+            "name": "Carroll SY~Drubin DG, 2009",
+            "paper_id": 485,
+            "status": "present",
+            "links": [
+                "19506040",
+                "12663529",
+                "16901791",
+                "18420932",
+                "18755837"
+            ]
+        },
+        {
+            "id": 196,
+            "pmid": 19917080,
+            "name": "Arita A~Costa M, 2009",
+            "paper_id": 84,
+            "status": "present",
+            "links": [
+                "15173006",
+                "15469827",
+                "15575969",
+                "15932646",
+                "16168084",
+                "18437200",
+                "18514590",
+                "19284616",
+                "18394190",
+                "11606770",
+                "11726929",
+                "12496357",
+                "12816519"
+            ]
+        },
+        {
+            "id": 197,
+            "pmid": 20007368,
+            "name": "McLaughlin JE~Tumer NE, 2009",
+            "paper_id": 288,
+            "status": "present",
+            "links": [
+                "18085829"
+            ]
+        },
+        {
+            "id": 198,
+            "pmid": 20043226,
+            "name": "Banuelos MG~Gharakhanian E, 2010",
+            "paper_id": 103,
+            "status": "present",
+            "links": [
+                "18420932",
+                "18612650",
+                "11452010",
+                "11907261",
+                "12134085",
+                "12543677",
+                "16729036",
+                "16901791"
+            ]
+        },
+        {
+            "id": 199,
+            "pmid": 20065090,
+            "name": "Vizeacoumar FJ~Andrews BJ, 2010",
+            "paper_id": 406,
+            "status": "present",
+            "links": [
+                "16365294",
+                "12140549",
+                "12586695"
+            ]
+        },
+        {
+            "id": 200,
+            "pmid": 20157578,
+            "name": "Postma L~Ralser M, 2009",
+            "paper_id": 91,
+            "status": "present",
+            "links": [
+                "19004802",
+                "15087496",
+                "16418483"
+            ]
+        },
+        {
+            "id": 201,
+            "pmid": 20202201,
+            "name": "Batova M~Schuller C, 2010",
+            "paper_id": 104,
+            "status": "present",
+            "links": [
+                "15087496",
+                "14617816",
+                "18812505",
+                "18629161",
+                "19284616"
+            ]
+        },
+        {
+            "id": 202,
+            "pmid": 20206679,
+            "name": "Zhao J~Jiang L, 2010",
+            "paper_id": 486,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 203,
+            "pmid": 20210661,
+            "name": "Teixeira MC~Sa Correia I, 2010",
+            "paper_id": 106,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 204,
+            "pmid": 20333241,
+            "name": "Chavel CA~Cullen PJ, 2010",
+            "paper_id": 113,
+            "status": "present",
+            "links": [
+                "12134085",
+                "18216282"
+            ]
+        },
+        {
+            "id": 205,
+            "pmid": 20379744,
+            "name": "Mattiazzi M~Petrovic U, 2010",
+            "paper_id": 411,
+            "status": "present",
+            "links": [
+                "17151231",
+                "19220866"
+            ]
+        },
+        {
+            "id": 206,
+            "pmid": 20398213,
+            "name": "Ruiz-Roig C~de Nadal E, 2010",
+            "paper_id": 393,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 207,
+            "pmid": 20421943,
+            "name": "Matecic M~Smith JS, 2010",
+            "paper_id": 322,
+            "status": "present",
+            "links": [
+                "16418483",
+                "12702675"
+            ]
+        },
+        {
+            "id": 208,
+            "pmid": 20429770,
+            "name": "Mir-Rashed N~Smith ML, 2010",
+            "paper_id": 487,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 209,
+            "pmid": 20498295,
+            "name": "Dakshinamurthy A~Garfinkel DJ, 2010",
+            "paper_id": 108,
+            "status": "present",
+            "links": [
+                "18202368",
+                "12140549",
+                "15837808",
+                "11452010",
+                "12871900"
+            ]
+        },
+        {
+            "id": 210,
+            "pmid": 20610602,
+            "name": "Cooper SJ~Fields S, 2010",
+            "paper_id": 114,
+            "status": "present",
+            "links": [
+                "12140549",
+                "15695358",
+                "16552446"
+            ]
+        },
+        {
+            "id": 211,
+            "pmid": 20641020,
+            "name": "Heuck S~Kanter U, 2010",
+            "paper_id": 454,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 212,
+            "pmid": 20657825,
+            "name": "Fabrizio P~Longo VD, 2010",
+            "paper_id": 321,
+            "status": "present",
+            "links": [
+                "18420932",
+                "16418483",
+                "12140549"
+            ]
+        },
+        {
+            "id": 213,
+            "pmid": 20660648,
+            "name": "Pan X~Boeke JD, 2010",
+            "paper_id": 110,
+            "status": "present",
+            "links": [
+                "14718172",
+                "15525520",
+                "18160327",
+                "18437200",
+                "18622397",
+                "19284616"
+            ]
+        },
+        {
+            "id": 214,
+            "pmid": 20691087,
+            "name": "Alamgir M~Golshani A, 2010",
+            "paper_id": 111,
+            "status": "present",
+            "links": [
+                "17950387",
+                "15525520",
+                "16901791",
+                "15716499",
+                "19144191",
+                "18420932",
+                "14676322",
+                "14594803",
+                "19055778",
+                "14661025",
+                "15070751"
+            ]
+        },
+        {
+            "id": 215,
+            "pmid": 20694151,
+            "name": "Saleem RA~Aitchison JD, 2010",
+            "paper_id": 375,
+            "status": "present",
+            "links": [
+                "16738555",
+                "17151231"
+            ]
+        },
+        {
+            "id": 216,
+            "pmid": 20695822,
+            "name": "Landstetter N~Kuchler K, 2010",
+            "paper_id": 105,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 217,
+            "pmid": 20944018,
+            "name": "Gresham D~Botstein D, 2011",
+            "paper_id": 129,
+            "status": "present",
+            "links": [
+                "16418483",
+                "16729036",
+                "20421943",
+                "20657825",
+                "12140549"
+            ]
+        },
+        {
+            "id": 218,
+            "pmid": 20960220,
+            "name": "Jayakody LN~Kitagaki H, 2011",
+            "paper_id": 488,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 219,
+            "pmid": 20963216,
+            "name": "Ratnakumar S~Oliver SG, 2011",
+            "paper_id": 489,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 220,
+            "pmid": 20967895,
+            "name": "Yadav V~Yadav J, 2011",
+            "paper_id": 122,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 221,
+            "pmid": 20973990,
+            "name": "Mira NP~Sa Correia I, 2010",
+            "paper_id": 107,
+            "status": "present",
+            "links": [
+                "15334557",
+                "16168084",
+                "16911514",
+                "18420932",
+                "19220866"
+            ]
+        },
+        {
+            "id": 222,
+            "pmid": 21035538,
+            "name": "Uluisik I~Koc A, 2011",
+            "paper_id": 118,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 223,
+            "pmid": 21076421,
+            "name": "Baryshnikova A~Myers CL, 2010",
+            "paper_id": 218,
+            "status": "present",
+            "links": [
+                "14676322",
+                "15239834",
+                "15716499",
+                "18622397"
+            ]
+        },
+        {
+            "id": 224,
+            "pmid": 21136082,
+            "name": "Villa-Garcia MJ~Henry SA, 2011",
+            "paper_id": 420,
+            "status": "present",
+            "links": [
+                "12140549"
+            ]
+        },
+        {
+            "id": 225,
+            "pmid": 21167225,
+            "name": "Kitagawa T~Imaeda T, 2011",
+            "paper_id": 206,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 226,
+            "pmid": 21193549,
+            "name": "de Castro PA~Goldman GH, 2011",
+            "paper_id": 115,
+            "status": "present",
+            "links": [
+                "18420932",
+                "12016207",
+                "12615994",
+                "11078525",
+                "12543677"
+            ]
+        },
+        {
+            "id": 227,
+            "pmid": 21193664,
+            "name": "Kwak YS~Weller DM, 2011",
+            "paper_id": 121,
+            "status": "present",
+            "links": [
+                "16901791",
+                "15087496",
+                "18420932",
+                "14605211"
+            ]
+        },
+        {
+            "id": 228,
+            "pmid": 21212869,
+            "name": "Bleackley MR~MacGillivray RT, 2011",
+            "paper_id": 125,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 229,
+            "pmid": 21341307,
+            "name": "Yoshikawa K~Shimizu H, 2011",
+            "paper_id": 127,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 230,
+            "pmid": 21423800,
+            "name": "Brett CL~Rao R, 2011",
+            "paper_id": 128,
+            "status": "present",
+            "links": [
+                "11907261",
+                "12134085"
+            ]
+        },
+        {
+            "id": 231,
+            "pmid": 21541367,
+            "name": "Sun Z~Gitler AD, 2011",
+            "paper_id": 409,
+            "status": "present",
+            "links": [
+                "15806102",
+                "12140549",
+                "14657499"
+            ]
+        },
+        {
+            "id": 232,
+            "pmid": 21601516,
+            "name": "Suzuki T~Yoshida S, 2011",
+            "paper_id": 124,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 233,
+            "pmid": 21685046,
+            "name": "Yu D~Vitek O, 2011",
+            "paper_id": 325,
+            "status": "present",
+            "links": [
+                "21076421",
+                "16168084"
+            ]
+        },
+        {
+            "id": 234,
+            "pmid": 21731954,
+            "name": "Bircham PW~Atkinson PH, 2011",
+            "paper_id": 400,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 235,
+            "pmid": 21814286,
+            "name": "Teng X~Hardwick JM, 2011",
+            "paper_id": 490,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 236,
+            "pmid": 21829381,
+            "name": "Fei W~Yang H, 2011",
+            "paper_id": 123,
+            "status": "present",
+            "links": [
+                "18093937",
+                "18250201"
+            ]
+        },
+        {
+            "id": 237,
+            "pmid": 21880895,
+            "name": "Shi Y~Emr SD, 2011",
+            "paper_id": 117,
+            "status": "present",
+            "links": [
+                "12134085",
+                "18202368",
+                "19064668"
+            ]
+        },
+        {
+            "id": 238,
+            "pmid": 21908599,
+            "name": "Minear S~Cyert MS, 2011",
+            "paper_id": 491,
+            "status": "present",
+            "links": [
+                "14718172",
+                "14718668",
+                "16168084",
+                "16901791",
+                "19321002",
+                "12140549"
+            ]
+        },
+        {
+            "id": 239,
+            "pmid": 21912624,
+            "name": "North M~Vulpe CD, 2011",
+            "paper_id": 207,
+            "status": "present",
+            "links": [
+                "19129474",
+                "18088421",
+                "12140549",
+                "17785683",
+                "15087496"
+            ]
+        },
+        {
+            "id": 240,
+            "pmid": 21960436,
+            "name": "Dos Santos SC~Sa Correia I, 2011",
+            "paper_id": 116,
+            "status": "present",
+            "links": [
+                "15994967",
+                "19416971",
+                "14871844",
+                "20695822",
+                "18394190",
+                "20202201",
+                "14661025",
+                "16170412",
+                "19633105",
+                "17093137",
+                "16061773",
+                "18088421",
+                "20973990",
+                "12543677"
+            ]
+        },
+        {
+            "id": 241,
+            "pmid": 21965291,
+            "name": "Zakrzewska A~Smits GJ, 2011",
+            "paper_id": 402,
+            "status": "present",
+            "links": [
+                "16901791",
+                "18420932",
+                "17259547",
+                "18157128",
+                "20398213",
+                "12140549",
+                "16729036",
+                "16738548"
+            ]
+        },
+        {
+            "id": 242,
+            "pmid": 21978764,
+            "name": "Svensson JP~Samson LD, 2011",
+            "paper_id": 126,
+            "status": "present",
+            "links": [
+                "18420932",
+                "11726929",
+                "12140549",
+                "12149442",
+                "12496357",
+                "12482937",
+                "14718668",
+                "15161972",
+                "15469827",
+                "15716499",
+                "16729036",
+                "16552446",
+                "16901791",
+                "18622397"
+            ]
+        },
+        {
+            "id": 243,
+            "pmid": 22102822,
+            "name": "Berry DB~Gasch AP, 2011",
+            "paper_id": 285,
+            "status": "present",
+            "links": [
+                "15087496",
+                "12482937",
+                "14676322",
+                "18622397",
+                "16251355",
+                "18437200",
+                "12140549",
+                "18629161",
+                "16121259",
+                "19325107"
+            ]
+        },
+        {
+            "id": 244,
+            "pmid": 22140548,
+            "name": "Franzosa EA~McClellan AJ, 2011",
+            "paper_id": 358,
+            "status": "present",
+            "links": [
+                "15766533",
+                "17923092"
+            ]
+        },
+        {
+            "id": 245,
+            "pmid": 22181064,
+            "name": "Rodr\u00edguez-Porrata B~Cordero-Otero R, 2012",
+            "paper_id": 133,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 246,
+            "pmid": 22244311,
+            "name": "Pir P~Oliver SG, 2012",
+            "paper_id": 379,
+            "status": "present",
+            "links": [
+                "12134146",
+                "12140549",
+                "14718668",
+                "15716499",
+                "18157128",
+                "18622397",
+                "21341307"
+            ]
+        },
+        {
+            "id": 247,
+            "pmid": 22253786,
+            "name": "Blackman RK~Nislow C, 2012",
+            "paper_id": 144,
+            "status": "present",
+            "links": [
+                "12140549",
+                "14718668",
+                "16121259",
+                "17785683",
+                "18420932",
+                "18688276",
+                "11830665",
+                "14718172"
+            ]
+        },
+        {
+            "id": 248,
+            "pmid": 22271309,
+            "name": "Yibmantasiri P~Bellows DS, 2012",
+            "paper_id": 492,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 249,
+            "pmid": 22326528,
+            "name": "Wilmes A~Miller JH, 2012",
+            "paper_id": 399,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 250,
+            "pmid": 22356628,
+            "name": "Davey HM~Griffith GW, 2012",
+            "paper_id": 493,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 251,
+            "pmid": 22384317,
+            "name": "Fell GL~Rosenwald AG, 2011",
+            "paper_id": 494,
+            "status": "present",
+            "links": [
+                "20043226",
+                "16729036"
+            ]
+        },
+        {
+            "id": 252,
+            "pmid": 22384326,
+            "name": "Kloimwieder A~Winston F, 2011",
+            "paper_id": 403,
+            "status": "present",
+            "links": [
+                "14752166",
+                "12586695",
+                "12140549",
+                "12432101"
+            ]
+        },
+        {
+            "id": 253,
+            "pmid": 22384333,
+            "name": "Hoon S~Nislow C, 2011",
+            "paper_id": 213,
+            "status": "present",
+            "links": [
+                "15087496",
+                "18420932",
+                "14718668",
+                "12140549",
+                "16121259"
+            ]
+        },
+        {
+            "id": 254,
+            "pmid": 22384346,
+            "name": "Piggott N~Measday V, 2011",
+            "paper_id": 367,
+            "status": "present",
+            "links": [
+                "15716499",
+                "15118337",
+                "18420932",
+                "18157128",
+                "19054128",
+                "16222531",
+                "18253494",
+                "18471310",
+                "12140549",
+                "12089449",
+                "19633105",
+                "16598687",
+                "17506111",
+                "16879425",
+                "11701889"
+            ]
+        },
+        {
+            "id": 255,
+            "pmid": 22438835,
+            "name": "Hoose SA~Polymenis M, 2012",
+            "paper_id": 209,
+            "status": "present",
+            "links": [
+                "12089449",
+                "12140549",
+                "12477387"
+            ]
+        },
+        {
+            "id": 256,
+            "pmid": 22457822,
+            "name": "Chesi A~Gitler AD, 2012",
+            "paper_id": 132,
+            "status": "present",
+            "links": [
+                "12140549"
+            ]
+        },
+        {
+            "id": 257,
+            "pmid": 22479188,
+            "name": "Albulescu LO~Pleiss JA, 2012",
+            "paper_id": 456,
+            "status": "present",
+            "links": [
+                "18622397",
+                "12140549"
+            ]
+        },
+        {
+            "id": 258,
+            "pmid": 22511765,
+            "name": "Kim H~Cunningham KW, 2012",
+            "paper_id": 136,
+            "status": "present",
+            "links": [
+                "18420932",
+                "19129474",
+                "12140549",
+                "14661025"
+            ]
+        },
+        {
+            "id": 259,
+            "pmid": 22586468,
+            "name": "Peyroche G~Plateau P, 2012",
+            "paper_id": 135,
+            "status": "present",
+            "links": [
+                "18420932",
+                "12140549",
+                "12149442",
+                "12816519",
+                "16121259"
+            ]
+        },
+        {
+            "id": 260,
+            "pmid": 22615293,
+            "name": "Hoepfner D~Parker CN, 2012",
+            "paper_id": 442,
+            "status": "present",
+            "links": [
+                "18420932",
+                "14718668",
+                "17553796"
+            ]
+        },
+        {
+            "id": 261,
+            "pmid": 22658600,
+            "name": "Witkin KL~Cohen-Fix O, 2012",
+            "paper_id": 371,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 262,
+            "pmid": 22685415,
+            "name": "North M~Eide D, 2012",
+            "paper_id": 453,
+            "status": "present",
+            "links": [
+                "18622397",
+                "12140549",
+                "19325107"
+            ]
+        },
+        {
+            "id": 263,
+            "pmid": 22704625,
+            "name": "Hoepfner D~Winzeler EA, 2012",
+            "paper_id": 344,
+            "status": "present",
+            "links": [
+                "12140549"
+            ]
+        },
+        {
+            "id": 264,
+            "pmid": 22727066,
+            "name": "Jaime MD~Nislow C, 2012",
+            "paper_id": 333,
+            "status": "present",
+            "links": [
+                "18420932",
+                "17259547",
+                "14718668",
+                "12134085"
+            ]
+        },
+        {
+            "id": 265,
+            "pmid": 22747191,
+            "name": "Manikova D~Chovanec M, 2012",
+            "paper_id": 357,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 266,
+            "pmid": 22751784,
+            "name": "Singh-Babak SD~Cowen LE, 2012",
+            "paper_id": 334,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 267,
+            "pmid": 22842922,
+            "name": "Tkach JM~Brown GW, 2012",
+            "paper_id": 407,
+            "status": "present",
+            "links": [
+                "12482937",
+                "20065090",
+                "21076421",
+                "14661025",
+                "18085829"
+            ]
+        },
+        {
+            "id": 268,
+            "pmid": 22902726,
+            "name": "Schmidt M~Boyer MP, 2012",
+            "paper_id": 130,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 269,
+            "pmid": 22918956,
+            "name": "Krumpe K~Schuldiner M, 2012",
+            "paper_id": 385,
+            "status": "present",
+            "links": [
+                "12140549",
+                "18622397",
+                "19325107"
+            ]
+        },
+        {
+            "id": 270,
+            "pmid": 22959270,
+            "name": "Zhang Y~Lobachev KS, 2012",
+            "paper_id": 465,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 271,
+            "pmid": 22970195,
+            "name": "Ayer A~Perrone GG, 2012",
+            "paper_id": 208,
+            "status": "present",
+            "links": [
+                "19129474",
+                "15509654",
+                "21136082"
+            ]
+        },
+        {
+            "id": 272,
+            "pmid": 23021432,
+            "name": "Orij R~Smits GJ, 2012",
+            "paper_id": 134,
+            "status": "present",
+            "links": [
+                "15937126",
+                "16168084",
+                "19751518",
+                "21423800",
+                "21965291",
+                "11907266",
+                "12140549",
+                "14993228"
+            ]
+        },
+        {
+            "id": 273,
+            "pmid": 23026396,
+            "name": "Zhao Y~Jiang L, 2013",
+            "paper_id": 306,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 274,
+            "pmid": 23103169,
+            "name": "Qian W~Zhang J, 2012",
+            "paper_id": 496,
+            "status": "present",
+            "links": [
+                "12140549",
+                "12134146",
+                "15716499",
+                "18420932",
+                "16314574",
+                "16729036"
+            ]
+        },
+        {
+            "id": 275,
+            "pmid": 23104007,
+            "name": "Armakola M~Gitler AD, 2012",
+            "paper_id": 548,
+            "status": "present",
+            "links": [
+                "15806102",
+                "14657499",
+                "21541367"
+            ]
+        },
+        {
+            "id": 276,
+            "pmid": 23144132,
+            "name": "Smith MR~Bakalinsky AT, 2013",
+            "paper_id": 151,
+            "status": "present",
+            "links": [
+                "15087496",
+                "11907266",
+                "15509654",
+                "19751518",
+                "18629161"
+            ]
+        },
+        {
+            "id": 277,
+            "pmid": 23157175,
+            "name": "Zhang L~Jiang L, 2013",
+            "paper_id": 497,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 278,
+            "pmid": 23208710,
+            "name": "Lis M~Bobek LA, 2013",
+            "paper_id": 210,
+            "status": "present",
+            "links": [
+                "19596888",
+                "20379744",
+                "12140549",
+                "14718172"
+            ]
+        },
+        {
+            "id": 279,
+            "pmid": 23227207,
+            "name": "Servien\u0117 E~Urbonavi\u010dius J, 2012",
+            "paper_id": 499,
+            "status": "present",
+            "links": [
+                "19853568",
+                "12663529"
+            ]
+        },
+        {
+            "id": 280,
+            "pmid": 23306636,
+            "name": "Hoshida H~Akada R, 2013",
+            "paper_id": 549,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 281,
+            "pmid": 23344949,
+            "name": "Czyz O~Zaremberg V, 2013",
+            "paper_id": 302,
+            "status": "present",
+            "links": [
+                "23021432",
+                "12140549",
+                "14993228",
+                "19064668",
+                "21423800"
+            ]
+        },
+        {
+            "id": 282,
+            "pmid": 23358190,
+            "name": "Gaytan BD~Vulpe CD, 2013",
+            "paper_id": 149,
+            "status": "present",
+            "links": [
+                "19416971",
+                "15883373",
+                "21912624",
+                "12140549",
+                "12134146",
+                "22685415"
+            ]
+        },
+        {
+            "id": 283,
+            "pmid": 23378416,
+            "name": "Zeidler U~d'Enfert C, 2013",
+            "paper_id": 550,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 284,
+            "pmid": 23382077,
+            "name": "Huang D~Paulovich AG, 2013",
+            "paper_id": 137,
+            "status": "present",
+            "links": [
+                "12482937"
+            ]
+        },
+        {
+            "id": 285,
+            "pmid": 23383298,
+            "name": "Michaillat L~Mayer A, 2013",
+            "paper_id": 390,
+            "status": "present",
+            "links": [
+                "11907261"
+            ]
+        },
+        {
+            "id": 286,
+            "pmid": 23403841,
+            "name": "O'Connor STF~Vulpe C, 2012",
+            "paper_id": 502,
+            "status": "present",
+            "links": [
+                "12140549",
+                "18755837",
+                "21912624"
+            ]
+        },
+        {
+            "id": 287,
+            "pmid": 23467670,
+            "name": "Samanfar B~Golshani A, 2013",
+            "paper_id": 140,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 288,
+            "pmid": 23478965,
+            "name": "Richie DL~Hoepfner D, 2013",
+            "paper_id": 405,
+            "status": "present",
+            "links": [
+                "22615293"
+            ]
+        },
+        {
+            "id": 289,
+            "pmid": 23552365,
+            "name": "Gonzalez-Ramos D~Daran JM, 2013",
+            "paper_id": 141,
+            "status": "present",
+            "links": [
+                "19638689",
+                "16879425"
+            ]
+        },
+        {
+            "id": 290,
+            "pmid": 23593017,
+            "name": "Ide S~Kobayashi T, 2013",
+            "paper_id": 445,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 291,
+            "pmid": 23624539,
+            "name": "Galvan Marquez I~Smith ML, 2013",
+            "paper_id": 139,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 292,
+            "pmid": 23661198,
+            "name": "Vahey MD~Voldman J, 2013",
+            "paper_id": 143,
+            "status": "present",
+            "links": [
+                "18420932",
+                "21076421",
+                "12140549",
+                "15716499",
+                "15525520"
+            ]
+        },
+        {
+            "id": 293,
+            "pmid": 23665193,
+            "name": "Hirasawa T~Shimizu H, 2013",
+            "paper_id": 142,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 294,
+            "pmid": 23690178,
+            "name": "Peters LZ~Ben-Aroya S, 2013",
+            "paper_id": 391,
+            "status": "present",
+            "links": [
+                "12140549"
+            ]
+        },
+        {
+            "id": 295,
+            "pmid": 23718894,
+            "name": "Darvishi E~Smith ML, 2013",
+            "paper_id": 507,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 296,
+            "pmid": 23733464,
+            "name": "Islahudin F~Avery SV, 2013",
+            "paper_id": 508,
+            "status": "present",
+            "links": [
+                "14718172",
+                "14718668",
+                "19416971",
+                "20429770"
+            ]
+        },
+        {
+            "id": 297,
+            "pmid": 23825022,
+            "name": "Choy JS~Basrai MA, 2013",
+            "paper_id": 398,
+            "status": "present",
+            "links": [
+                "15716499",
+                "12140549",
+                "18157128"
+            ]
+        },
+        {
+            "id": 298,
+            "pmid": 23828602,
+            "name": "Ding J~Bakalinsky AT, 2013",
+            "paper_id": 138,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 299,
+            "pmid": 23832094,
+            "name": "Tun NM~Wu MJ, 2013",
+            "paper_id": 509,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 300,
+            "pmid": 23959800,
+            "name": "Papic D~Rapaport D, 2013",
+            "paper_id": 384,
+            "status": "present",
+            "links": [
+                "12140549",
+                "18622397"
+            ]
+        },
+        {
+            "id": 301,
+            "pmid": 23964287,
+            "name": "Gaytan BD~Vulpe CD, 2013",
+            "paper_id": 145,
+            "status": "present",
+            "links": [
+                "22253786",
+                "23157175",
+                "21912624",
+                "23358190",
+                "12140549",
+                "12134146"
+            ]
+        },
+        {
+            "id": 302,
+            "pmid": 24040048,
+            "name": "Svensson JP~Samson LD, 2013",
+            "paper_id": 147,
+            "status": "present",
+            "links": [
+                "23661198",
+                "11726929",
+                "12140549",
+                "12496357",
+                "12482937",
+                "15469827",
+                "16729036",
+                "16901791",
+                "18420932",
+                "20944018",
+                "21978764"
+            ]
+        },
+        {
+            "id": 303,
+            "pmid": 24040173,
+            "name": "Novo M~Gonzalez R, 2013",
+            "paper_id": 146,
+            "status": "present",
+            "links": [
+                "16487347",
+                "19638689",
+                "22384346",
+                "18157128",
+                "19054128",
+                "12140549",
+                "20210661",
+                "19633105",
+                "16598687",
+                "17506111",
+                "16879425"
+            ]
+        },
+        {
+            "id": 304,
+            "pmid": 24189258,
+            "name": "Knechtle P~Sorensen AS, 2014",
+            "paper_id": 516,
+            "status": "present",
+            "links": [
+                "19325107"
+            ]
+        },
+        {
+            "id": 305,
+            "pmid": 24204588,
+            "name": "Darvishi E~Smith ML, 2013",
+            "paper_id": 517,
+            "status": "present",
+            "links": [
+                "17950387",
+                "20691087",
+                "20429770",
+                "19055778"
+            ]
+        },
+        {
+            "id": 306,
+            "pmid": 24211263,
+            "name": "Teng X~Hardwick JM, 2013",
+            "paper_id": 463,
+            "status": "present",
+            "links": [
+                "12140549",
+                "12816519",
+                "18420932",
+                "18622397",
+                "21814286",
+                "23103169"
+            ]
+        },
+        {
+            "id": 307,
+            "pmid": 24260565,
+            "name": "Gaytan BD~Vulpe CD, 2013",
+            "paper_id": 148,
+            "status": "present",
+            "links": [
+                "22253786",
+                "12016207",
+                "23358190",
+                "12140549",
+                "12134146"
+            ]
+        },
+        {
+            "id": 308,
+            "pmid": 24262822,
+            "name": "Mattiazzi Usaj M~Petrovic U, 2014",
+            "paper_id": 552,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 309,
+            "pmid": 24273168,
+            "name": "Ruggles KV~Sturley SL, 2014",
+            "paper_id": 392,
+            "status": "present",
+            "links": [
+                "18093937",
+                "18250201"
+            ]
+        },
+        {
+            "id": 310,
+            "pmid": 24286259,
+            "name": "Sousa M~Sousa MJ, 2013",
+            "paper_id": 365,
+            "status": "present",
+            "links": [
+                "16911514",
+                "18420932",
+                "21814286",
+                "20973990"
+            ]
+        },
+        {
+            "id": 311,
+            "pmid": 24339793,
+            "name": "Zhang Y~Lobachev KS, 2013",
+            "paper_id": 473,
+            "status": "present",
+            "links": [
+                "22959270"
+            ]
+        },
+        {
+            "id": 312,
+            "pmid": 24360837,
+            "name": "Hoepfner D~Movva NR, 2014",
+            "paper_id": 156,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 313,
+            "pmid": 24374339,
+            "name": "Prescott TA~Simmonds MS, 2014",
+            "paper_id": 395,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 314,
+            "pmid": 24410772,
+            "name": "Okada N~Shima J, 2014",
+            "paper_id": 283,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 315,
+            "pmid": 24566173,
+            "name": "Bleackley MR~Anderson MA, 2014",
+            "paper_id": 304,
+            "status": "present",
+            "links": [
+                "18622397",
+                "12140549"
+            ]
+        },
+        {
+            "id": 316,
+            "pmid": 24569176,
+            "name": "Prescott TA~Simmonds MS, 2014",
+            "paper_id": 214,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 317,
+            "pmid": 24586198,
+            "name": "Garay E~Deluna A, 2014",
+            "paper_id": 150,
+            "status": "present",
+            "links": [
+                "15525520",
+                "16418483",
+                "19751518",
+                "20421943",
+                "20657825",
+                "20944018"
+            ]
+        },
+        {
+            "id": 318,
+            "pmid": 24708151,
+            "name": "Schlecht U~St Onge RP, 2014",
+            "paper_id": 154,
+            "status": "present",
+            "links": [
+                "18420932",
+                "21423800",
+                "22253786",
+                "23021432",
+                "12140549",
+                "12134146",
+                "14993228",
+                "16121259",
+                "17785683"
+            ]
+        },
+        {
+            "id": 319,
+            "pmid": 24722918,
+            "name": "Cohen Y~Schuldiner M, 2014",
+            "paper_id": 387,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 320,
+            "pmid": 24723613,
+            "name": "Lee AY~Giaever G, 2014",
+            "paper_id": 155,
+            "status": "present",
+            "links": [
+                "18420932",
+                "14718668",
+                "14718172",
+                "14661025",
+                "12140549",
+                "22253786"
+            ]
+        },
+        {
+            "id": 321,
+            "pmid": 24750237,
+            "name": "Bleackley MR~Anderson MA, 2014",
+            "paper_id": 280,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 322,
+            "pmid": 24766815,
+            "name": "Kemmeren P~Holstege FC, 2014",
+            "paper_id": 217,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 323,
+            "pmid": 24870034,
+            "name": "Nair S~Perrone GG, 2014",
+            "paper_id": 394,
+            "status": "present",
+            "links": [
+                "18420932",
+                "14657499",
+                "11907266",
+                "12140549",
+                "15806102"
+            ]
+        },
+        {
+            "id": 324,
+            "pmid": 24926745,
+            "name": "Tun NM~Wu MJ, 2014",
+            "paper_id": 543,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 325,
+            "pmid": 24968945,
+            "name": "Gaupel AC~Tenniswood M, 2014",
+            "paper_id": 282,
+            "status": "present",
+            "links": [
+                "12496357",
+                "15469827"
+            ]
+        },
+        {
+            "id": 326,
+            "pmid": 24993029,
+            "name": "Walker ME~Jiranek V, 2014",
+            "paper_id": 364,
+            "status": "present",
+            "links": [
+                "15334557",
+                "16487347",
+                "16630279",
+                "18224659",
+                "19638689",
+                "16251356",
+                "22384346",
+                "18157128",
+                "23344949",
+                "18245339",
+                "20210661",
+                "21136082",
+                "18629161",
+                "20973990",
+                "19633105",
+                "16598687",
+                "16879425",
+                "21423800",
+                "21965291"
+            ]
+        },
+        {
+            "id": 327,
+            "pmid": 25026036,
+            "name": "Elbaz-Alon Y~Schuldiner M, 2014",
+            "paper_id": 389,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 328,
+            "pmid": 25071194,
+            "name": "Bin-Umer MA~Tumer NE, 2014",
+            "paper_id": 314,
+            "status": "present",
+            "links": [
+                "15087496",
+                "20007368"
+            ]
+        },
+        {
+            "id": 329,
+            "pmid": 25074250,
+            "name": "Hwang G~Naganuma A, 2014",
+            "paper_id": 520,
+            "status": "present",
+            "links": [
+                "14661025",
+                "14871844",
+                "15469827",
+                "12140549"
+            ]
+        },
+        {
+            "id": 330,
+            "pmid": 25171409,
+            "name": "Jarosz DF~Lindquist S, 2014",
+            "paper_id": 553,
+            "status": "present",
+            "links": [
+                "18420932",
+                "19067491"
+            ]
+        },
+        {
+            "id": 331,
+            "pmid": 25287021,
+            "name": "Pereira FB~Domingues L, 2014",
+            "paper_id": 225,
+            "status": "present",
+            "links": [
+                "16222531",
+                "18471310",
+                "20210661",
+                "19633105",
+                "20973990"
+            ]
+        },
+        {
+            "id": 332,
+            "pmid": 25331360,
+            "name": "Jiang L~Zhang Y, 2014",
+            "paper_id": 300,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 333,
+            "pmid": 25362059,
+            "name": "Uehara K~Shimoi H, 2015",
+            "paper_id": 554,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 334,
+            "pmid": 25519239,
+            "name": "Aiyar RS~Steinmetz LM, 2014",
+            "paper_id": 443,
+            "status": "present",
+            "links": [
+                "18420932",
+                "24708151"
+            ]
+        },
+        {
+            "id": 335,
+            "pmid": 25616894,
+            "name": "Junne T~Hoepfner D, 2015",
+            "paper_id": 299,
+            "status": "present",
+            "links": [
+                "23478965",
+                "24360837",
+                "22704625"
+            ]
+        },
+        {
+            "id": 336,
+            "pmid": 25667933,
+            "name": "Nislow C~Hammond TG, 2015",
+            "paper_id": 313,
+            "status": "present",
+            "links": [
+                "24723613",
+                "14718668",
+                "15716499",
+                "18420932"
+            ]
+        },
+        {
+            "id": 337,
+            "pmid": 25721128,
+            "name": "Hendry JA~Brown GW, 2015",
+            "paper_id": 290,
+            "status": "present",
+            "links": [
+                "15161972",
+                "12482937",
+                "18562670",
+                "12140549",
+                "22842922",
+                "18085829",
+                "12972632"
+            ]
+        },
+        {
+            "id": 338,
+            "pmid": 25756177,
+            "name": "Krol K~Skoneczna A, 2015",
+            "paper_id": 415,
+            "status": "present",
+            "links": [
+                "15489514",
+                "18420932",
+                "15161972",
+                "15509654",
+                "14871844",
+                "18085829",
+                "14718172"
+            ]
+        },
+        {
+            "id": 339,
+            "pmid": 25773006,
+            "name": "Du J~Jiang L, 2015",
+            "paper_id": 524,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 340,
+            "pmid": 25817432,
+            "name": "Gallina I~Lisby M, 2015",
+            "paper_id": 555,
+            "status": "present",
+            "links": [
+                "19054128",
+                "17360454",
+                "22842922"
+            ]
+        },
+        {
+            "id": 341,
+            "pmid": 25823586,
+            "name": "Zhu J~Li R, 2015",
+            "paper_id": 401,
+            "status": "present",
+            "links": [
+                "23825022",
+                "15716499",
+                "17360454"
+            ]
+        },
+        {
+            "id": 342,
+            "pmid": 26149385,
+            "name": "Sauerwald J~Rapaport D, 2015",
+            "paper_id": 383,
+            "status": "present",
+            "links": [
+                "12140549",
+                "22918956",
+                "18622397",
+                "23959800"
+            ]
+        },
+        {
+            "id": 343,
+            "pmid": 26163422,
+            "name": "Yimit A~Brown GW, 2015",
+            "paper_id": 439,
+            "status": "present",
+            "links": [
+                "25817432",
+                "12140549",
+                "25721128",
+                "22842922",
+                "18085829"
+            ]
+        },
+        {
+            "id": 344,
+            "pmid": 26179970,
+            "name": "Krastel P~Hoepfner D, 2015",
+            "paper_id": 345,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 345,
+            "pmid": 26209329,
+            "name": "V\u00e1squez-Soto B~Norambuena L, 2015",
+            "paper_id": 298,
+            "status": "present",
+            "links": [
+                "18179719",
+                "14718668",
+                "19506040",
+                "11078525"
+            ]
+        },
+        {
+            "id": 346,
+            "pmid": 26240381,
+            "name": "Tigano M~Ottonello S, 2015",
+            "paper_id": 291,
+            "status": "present",
+            "links": [
+                "11907266",
+                "12134146",
+                "19751518",
+                "19793921",
+                "18394190",
+                "15908144",
+                "16361226",
+                "17164236",
+                "18755837"
+            ]
+        },
+        {
+            "id": 347,
+            "pmid": 26247883,
+            "name": "Ghavidel A~Harkness TAA, 2015",
+            "paper_id": 328,
+            "status": "present",
+            "links": [
+                "11701889",
+                "22356628"
+            ]
+        },
+        {
+            "id": 348,
+            "pmid": 26267134,
+            "name": "Costa C~Teixeira MC, 2015",
+            "paper_id": 525,
+            "status": "present",
+            "links": [
+                "18420932",
+                "19633105"
+            ]
+        },
+        {
+            "id": 349,
+            "pmid": 26324718,
+            "name": "Deranieh RM~Greenberg ML, 2015",
+            "paper_id": 311,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 350,
+            "pmid": 26341223,
+            "name": "Garc\u00eda R~Arroyo J, 2015",
+            "paper_id": 526,
+            "status": "present",
+            "links": [
+                "16901791",
+                "16911514",
+                "18420932",
+                "19638689",
+                "17259547",
+                "16333747",
+                "14871844",
+                "16365294",
+                "15388447",
+                "15993632",
+                "12663529",
+                "16989656",
+                "12140549",
+                "14661025",
+                "11452010",
+                "23227207"
+            ]
+        },
+        {
+            "id": 351,
+            "pmid": 26344761,
+            "name": "Dobzinski N~Gerst JE, 2015",
+            "paper_id": 388,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 352,
+            "pmid": 26357016,
+            "name": "Frohlich F~Walther TC, 2015",
+            "paper_id": 527,
+            "status": "present",
+            "links": [
+                "18093937",
+                "18250201",
+                "18622397",
+                "19064668",
+                "20043226"
+            ]
+        },
+        {
+            "id": 353,
+            "pmid": 26456335,
+            "name": "McCormick MA~Kennedy BK, 2015",
+            "paper_id": 292,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 354,
+            "pmid": 26466677,
+            "name": "Stauffer B~Powers T, 2015",
+            "paper_id": 297,
+            "status": "present",
+            "links": [
+                "22511765",
+                "23383298",
+                "12140549"
+            ]
+        },
+        {
+            "id": 355,
+            "pmid": 26646153,
+            "name": "Choy JS~Basrai MA, 2015",
+            "paper_id": 296,
+            "status": "present",
+            "links": [
+                "22842922"
+            ]
+        },
+        {
+            "id": 356,
+            "pmid": 26680305,
+            "name": "Wu J~Hopper AK, 2015",
+            "paper_id": 312,
+            "status": "present",
+            "links": [
+                "12140549"
+            ]
+        },
+        {
+            "id": 357,
+            "pmid": 26688044,
+            "name": "Johnson AJ~Wu MJ, 2016",
+            "paper_id": 293,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 358,
+            "pmid": 26748095,
+            "name": "Simoneau A~Wurtele H, 2016",
+            "paper_id": 437,
+            "status": "present",
+            "links": [
+                "18420932",
+                "24723613"
+            ]
+        },
+        {
+            "id": 359,
+            "pmid": 26771486,
+            "name": "Ast T~Schuldiner M, 2016",
+            "paper_id": 377,
+            "status": "present",
+            "links": [
+                "12140549",
+                "18622397",
+                "19325107"
+            ]
+        },
+        {
+            "id": 360,
+            "pmid": 26912831,
+            "name": "Saka K~Kobayashi T, 2016",
+            "paper_id": 295,
+            "status": "present",
+            "links": [
+                "12140549",
+                "23593017"
+            ]
+        },
+        {
+            "id": 361,
+            "pmid": 26994103,
+            "name": "Luo C~Jiang L, 2016",
+            "paper_id": 537,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 362,
+            "pmid": 27033550,
+            "name": "Yang J~Nystrom T, 2016",
+            "paper_id": 470,
+            "status": "present",
+            "links": [
+                "14676322",
+                "14657499"
+            ]
+        },
+        {
+            "id": 363,
+            "pmid": 27146641,
+            "name": "Johnson AJ~Wu MJ, 2016",
+            "paper_id": 529,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 364,
+            "pmid": 27188886,
+            "name": "Pautasso C~Rossi S, 2016",
+            "paper_id": 436,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 365,
+            "pmid": 27373154,
+            "name": "Hill SM~Nystrom T, 2016",
+            "paper_id": 348,
+            "status": "present",
+            "links": [
+                "19116312"
+            ]
+        },
+        {
+            "id": 366,
+            "pmid": 27440388,
+            "name": "Zhao L~Liu B, 2016",
+            "paper_id": 326,
+            "status": "present",
+            "links": [
+                "20065090"
+            ]
+        },
+        {
+            "id": 367,
+            "pmid": 27442849,
+            "name": "Salvado Z~Guillamon JM, 2016",
+            "paper_id": 354,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 368,
+            "pmid": 27510723,
+            "name": "Kwon Y~Koo JC, 2016",
+            "paper_id": 327,
+            "status": "present",
+            "links": [
+                "22727066",
+                "14993228",
+                "12140549",
+                "19596888"
+            ]
+        },
+        {
+            "id": 369,
+            "pmid": 27617677,
+            "name": "Styles EB~Andrews BJ, 2016",
+            "paper_id": 330,
+            "status": "present",
+            "links": [
+                "18420932",
+                "15161972",
+                "22842922",
+                "17158920",
+                "21076421",
+                "12496357",
+                "12482937",
+                "14871844",
+                "16552446",
+                "12140549",
+                "14661025",
+                "15239834",
+                "11726929",
+                "18085829",
+                "20065090",
+                "16365294"
+            ]
+        },
+        {
+            "id": 370,
+            "pmid": 27660105,
+            "name": "Kwon Y~Kwak YS, 2016",
+            "paper_id": 397,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 371,
+            "pmid": 27693354,
+            "name": "Mulleder M~Ralser M, 2016",
+            "paper_id": 361,
+            "status": "present",
+            "links": [
+                "14661025",
+                "15883373",
+                "15937126",
+                "18622397",
+                "23383298",
+                "24211263",
+                "24766815"
+            ]
+        },
+        {
+            "id": 372,
+            "pmid": 27711131,
+            "name": "Jakubkova M~Tomaska L, 2016",
+            "paper_id": 340,
+            "status": "present",
+            "links": [
+                "24211263",
+                "11907266",
+                "18612650",
+                "24273168",
+                "24360837",
+                "12140549",
+                "17151231",
+                "25026036",
+                "20202201"
+            ]
+        },
+        {
+            "id": 373,
+            "pmid": 27727276,
+            "name": "Payen C~Dunham MJ, 2016",
+            "paper_id": 422,
+            "status": "present",
+            "links": [
+                "24211263",
+                "15716499",
+                "18420932",
+                "18157128",
+                "23103169"
+            ]
+        },
+        {
+            "id": 374,
+            "pmid": 27733850,
+            "name": "Gonzalez R~Valero E, 2016",
+            "paper_id": 339,
+            "status": "present",
+            "links": [
+                "16487347",
+                "24040173",
+                "18157128",
+                "12140549",
+                "20210661"
+            ]
+        },
+        {
+            "id": 375,
+            "pmid": 27905431,
+            "name": "Aviram N~Schuldiner M, 2016",
+            "paper_id": 376,
+            "status": "present",
+            "links": [
+                "18622397",
+                "12140549",
+                "19325107"
+            ]
+        },
+        {
+            "id": 376,
+            "pmid": 27909446,
+            "name": "North M~Vulpe CD, 2016",
+            "paper_id": 349,
+            "status": "present",
+            "links": [
+                "12482937",
+                "21912624",
+                "19625222",
+                "12140549",
+                "12134146"
+            ]
+        },
+        {
+            "id": 377,
+            "pmid": 27922451,
+            "name": "Vlaming H~Leeuwen F, 2016",
+            "paper_id": 350,
+            "status": "present",
+            "links": [
+                "21076421"
+            ]
+        },
+        {
+            "id": 378,
+            "pmid": 28049721,
+            "name": "Yofe I~Thoms S, 2017",
+            "paper_id": 373,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 379,
+            "pmid": 28076367,
+            "name": "Bozaquel-Morais BL~Montero-Lomeli M, 2017",
+            "paper_id": 434,
+            "status": "present",
+            "links": [
+                "24360837",
+                "14661025"
+            ]
+        },
+        {
+            "id": 380,
+            "pmid": 28152593,
+            "name": "Lebesgue N~Lemeer S, 2017",
+            "paper_id": 382,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 381,
+            "pmid": 28209762,
+            "name": "Bae NS~Swanson MJ, 2017",
+            "paper_id": 355,
+            "status": "present",
+            "links": [
+                "23964287",
+                "24211263",
+                "20691087",
+                "23157175",
+                "12615994",
+                "14718172",
+                "14661025",
+                "15695358"
+            ]
+        },
+        {
+            "id": 382,
+            "pmid": 28303947,
+            "name": "Plateau P~Lazard M, 2017",
+            "paper_id": 356,
+            "status": "present",
+            "links": [
+                "22586468",
+                "24723613",
+                "22747191",
+                "24360837",
+                "12140549",
+                "18088421",
+                "19004804"
+            ]
+        },
+        {
+            "id": 383,
+            "pmid": 28404745,
+            "name": "Dalton LE~Conibear E, 2017",
+            "paper_id": 433,
+            "status": "present",
+            "links": [
+                "19506040",
+                "24360837"
+            ]
+        },
+        {
+            "id": 384,
+            "pmid": 28416670,
+            "name": "Schmidt TT~Hombauer H, 2017",
+            "paper_id": 538,
+            "status": "present",
+            "links": [
+                "12972632"
+            ]
+        },
+        {
+            "id": 385,
+            "pmid": 28428821,
+            "name": "Henriques SF~Sa Correia I, 2017",
+            "paper_id": 432,
+            "status": "present",
+            "links": [
+                "18420932",
+                "19220866",
+                "20973990"
+            ]
+        },
+        {
+            "id": 386,
+            "pmid": 28472365,
+            "name": "Maclean CJ~Zhang J, 2017",
+            "paper_id": 460,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 387,
+            "pmid": 28520786,
+            "name": "Choi J~O'Shea EK, 2017",
+            "paper_id": 362,
+            "status": "present",
+            "links": [
+                "18622397",
+                "19325107",
+                "15695358"
+            ]
+        },
+        {
+            "id": 388,
+            "pmid": 28598353,
+            "name": "Zatorska E~Strahl S, 2017",
+            "paper_id": 380,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 389,
+            "pmid": 28768697,
+            "name": "Zacchi LF~Bernstein KA, 2017",
+            "paper_id": 542,
+            "status": "present",
+            "links": [
+                "15806102",
+                "14657499",
+                "19067491"
+            ]
+        },
+        {
+            "id": 390,
+            "pmid": 28794014,
+            "name": "Cohen N~Schuldiner M, 2017",
+            "paper_id": 386,
+            "status": "present",
+            "links": [
+                "18622397",
+                "12140549",
+                "23959800"
+            ]
+        },
+        {
+            "id": 391,
+            "pmid": 28818866,
+            "name": "Segura-Wang M~Korbel JO, 2017",
+            "paper_id": 412,
+            "status": "present",
+            "links": [
+                "12482937",
+                "18562670",
+                "23825022",
+                "12140549",
+                "17360454",
+                "12134146",
+                "12972632"
+            ]
+        },
+        {
+            "id": 392,
+            "pmid": 29187527,
+            "name": "Eisenberg-Bord M~Bohnert M, 2018",
+            "paper_id": 530,
+            "status": "present",
+            "links": [
+                "18250201",
+                "18093937",
+                "18622397",
+                "12140549",
+                "21829381"
+            ]
+        },
+        {
+            "id": 393,
+            "pmid": 29329531,
+            "name": "Bottoms S~Piotrowski JS, 2018",
+            "paper_id": 429,
+            "status": "present",
+            "links": [
+                "16901791",
+                "19638689",
+                "19054128",
+                "20398213",
+                "18780730",
+                "24360837"
+            ]
+        },
+        {
+            "id": 394,
+            "pmid": 29351850,
+            "name": "Jaeger PA~Ideker T, 2018",
+            "paper_id": 414,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 395,
+            "pmid": 29507053,
+            "name": "Salignon J~Yvert G, 2018",
+            "paper_id": 417,
+            "status": "present",
+            "links": [
+                "12140549",
+                "23103169"
+            ]
+        },
+        {
+            "id": 396,
+            "pmid": 29549835,
+            "name": "Ng SMS~Chia CSB, 2018",
+            "paper_id": 541,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 397,
+            "pmid": 29575540,
+            "name": "Campos SE~DeLuna A, 2018",
+            "paper_id": 418,
+            "status": "present",
+            "links": [
+                "20657825",
+                "26456335",
+                "24586198",
+                "20944018",
+                "16418483",
+                "20421943"
+            ]
+        },
+        {
+            "id": 398,
+            "pmid": 29783050,
+            "name": "Jiang L~Papadopoulos V, 2018",
+            "paper_id": 539,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 399,
+            "pmid": 30381188,
+            "name": "Ruta L~Farcasanu I, 2018",
+            "paper_id": 426,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 400,
+            "pmid": 30455629,
+            "name": "Fruhmann G~Cullin C, 2018",
+            "paper_id": 469,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 401,
+            "pmid": 30679518,
+            "name": "Alfatah M~Arumugam P, 2019",
+            "paper_id": 540,
+            "status": "present",
+            "links": [
+                "12140549",
+                "14718668",
+                "29549835"
+            ]
+        },
+        {
+            "id": 402,
+            "pmid": 30985885,
+            "name": "Madeira JB~Montero-Lomeli M, 2019",
+            "paper_id": 466,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 403,
+            "pmid": 31029968,
+            "name": "Alfatah M~Arumugam P, 2019",
+            "paper_id": 531,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 404,
+            "pmid": 31511699,
+            "name": "Puddu F~Jackson SP, 2019",
+            "paper_id": 457,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 405,
+            "pmid": 31734159,
+            "name": "Kuroda K~Avalos J, 2019",
+            "paper_id": 471,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 406,
+            "pmid": 31799324,
+            "name": "Lage P~Mendes-Ferreira A, 2019",
+            "paper_id": 467,
+            "status": "present",
+            "links": [
+                "18420932",
+                "19220866",
+                "14617816"
+            ]
+        },
+        {
+            "id": 407,
+            "pmid": 31836620,
+            "name": "Zhao Y~Deng Y, 2020",
+            "paper_id": 533,
+            "status": "present",
+            "links": [
+                "22685415",
+                "18514590",
+                "21212869"
+            ]
+        },
+        {
+            "id": 408,
+            "pmid": 31854076,
+            "name": "Novarina D~Chang M, 2019",
+            "paper_id": 459,
+            "status": "present",
+            "links": [
+                "22959270",
+                "26456335",
+                "16418483",
+                "12972632"
+            ]
+        },
+        {
+            "id": 409,
+            "pmid": 31885205,
+            "name": "Galardini M~Beltrao P, 2019",
+            "paper_id": 458,
+            "status": "present",
+            "links": [
+                "18420932",
+                "24211263"
+            ]
+        },
+        {
+            "id": 410,
+            "pmid": 31904504,
+            "name": "Zhao Y~Deng Y, 2020",
+            "paper_id": 534,
+            "status": "present",
+            "links": []
+        },
+        {
+            "id": 411,
+            "pmid": 32054832,
+            "name": "Chen X~Petranovic D, 2020",
+            "paper_id": 468,
+            "status": "present",
+            "links": [
+                "27440388",
+                "24870034",
+                "27373154",
+                "30455629",
+                "14657499",
+                "27033550"
+            ]
+        },
+        {
+            "id": 412,
+            "pmid": 32064787,
+            "name": "Mattiazzi Usaj M~Andrews BJ, 2020",
+            "paper_id": 462,
+            "status": "present",
+            "links": [
+                "26456335",
+                "12134085",
+                "11907261",
+                "21076421",
+                "12140549",
+                "19325107",
+                "27617677",
+                "19506040",
+                "16729036"
+            ]
+        },
+        {
+            "id": 413,
+            "pmid": 32066383,
+            "name": "Cao C~Zhao Y, 2020",
+            "paper_id": 535,
+            "status": "present",
+            "links": [
+                "22842922",
+                "31836620",
+                "26994103",
+                "21212869",
+                "15641941",
+                "12663529",
+                "16361226",
+                "16729036"
+            ]
+        }
+    ]
+}
