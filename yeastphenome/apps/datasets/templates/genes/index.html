@@ -80,11 +80,11 @@
 {% if gene %}{% include "style/sidenav.html" %}
 <div class="large-2 columns" id="sidenav">
     <div>
-        <div class="yeast-navbar" style="position: fixed; top: 35.0rem; left:34.7rem;">
+        <div class="yeast-navbar" style="position: fixed; top: 35.0rem; left:25.7rem;">
             <ul class="nav side-nav">
                 <li id="nav-title"><span></span></li>
                 <li id="navbar_details"><a href="#">Overview</a></li>
-                {% if datasets %}<li id="navbar_datasets"><a href="#datasets">Datasets</a></li>{% endif %}
+                {% if datasets_top or datasets_bottom %}<li id="navbar_datasets"><a href="#datasets">Datasets</a></li>{% endif %}
                 {% if sims.top or sims.bottom %}<li id="navbar_similar"><a href="#similar">Similar Genes</a></li>{% endif %}
             </ul>
         </div>
@@ -112,30 +112,45 @@
             <tr><th width="20%" scope="row">Description</th><td>{% if gene.description %}{{ gene.description }}{% else %}{{ metadata.description }}{% endif %}</td></tr>
         </table>
     </div>
-</div>{% endif %}{% if datasets %}
-<div class="row" style="padding-top:20px" id='datasets'>
+</div>{% endif %}
+
+
+{% if datasets_top or datasets_bottom %}<div class="row" style="padding-top:20px" id='datasets'>
     <div class="col-md-12">
-      <h1>Datasets</h1>
-      <p class="alert alert-info">This table is not done correctly yet to only show top/bottom genes, and download buttons are missing</p>
-      {% include "datasets/datasets_table.html" %}
+    <ul class="nav nav-tabs">
+      {% if datasets_top %}<li class="active"><a data-toggle="tab" href="#datasets_top">Top 10</a></li>{% endif %}
+      {% if datasets_bottom %}<li><a data-toggle="tab" href="#datasets_bottom">Bottom 10</a></li>{% endif %}
+    </ul>
+
+    <div class="tab-content">
+      {% if datasets_top %}<div id="datasets_top" class="tab-pane fade in active">
+      <h1>Datasets with Highest Scores</h1>
+      {% include "datasets/data_table.html" with datasets=datasets_top %}
+      </div>{% endif %}
+      {% if datasets_bottom %}<div id="datasets_bottom" class="tab-pane fade">
+      <h1>Datasets with Lowest Scores</h1>
+      {% include "datasets/data_table.html" with datasets=datasets_bottom %}
+      </div>{% endif %}
     </div>
+  </div>
 </div>{% endif %}
 
 {% if sims.top or sims.bottom %}<div class="row" style="padding-top:20px" id='similar'>
     <div class="col-md-12">
     <ul class="nav nav-tabs">
-      {% if sims.top %}<li class="active"><a data-toggle="tab" href="#top25">Top 25</a></li>{% endif %}
-      <li><a data-toggle="tab" href="#bottom25">Bottom 25</a></li>
+      {% if sims.top %}<li class="active"><a data-toggle="tab" href="#top10">Top 10</a></li>{% endif %}
+      {% if sims.bottom %}<li><a data-toggle="tab" href="#bottom10">Bottom 10</a></li>{% endif %}
     </ul>
 
     <div class="tab-content">
-      {% if sims.top %}<div id="top25" class="tab-pane fade in active">
+      {% if sims.top %}<div id="top10" class="tab-pane fade in active">
       {% include "genes/similar_table.html" with scores=sims.top title="Most Similar Genes" table_id="similarTable" %}
       </div>{% endif %}
-      {% if sims.bottom %}<div id="bottom25" class="tab-pane fade">
+      {% if sims.bottom %}<div id="bottom10" class="tab-pane fade">
       {% include "genes/similar_table.html" with scores=sims.bottom title="Least Similar Genes" table_id="nonsimilarTable" %}
       </div>{% endif %}
     </div>
+    <button class="dataset_similar_download" type="button" class="btn btn-default">Download all scores</button>
   </div>
 </div>{% endif %}
 
@@ -144,7 +159,10 @@
 <script src="{% static 'js/typeahead.bundle.js' %}"></script>
 <script>
 // Gene lookup, systematic name by metadata
-var gene_names = [{% for gene in genes %}"{{ gene }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
+var gene_names = [{% for gene in genes %}"{{ gene }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %}{% if not aliases %}{% else %},{% endif %}{% for alias in aliases %}"{{ alias.1 }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
+
+// Alias lookup, alias index for gene
+var aliases = { {% for alias in aliases %}"{{ alias.1 }}":"{{ alias.0 }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %} }
 
 // Find the gene when the user selects
 $('#gene-select').on('click', function() {
@@ -152,11 +170,28 @@ $('#gene-select').on('click', function() {
   // Get the bar for the gene from the lookup
   var gene = $("#gene-name").val();
   $("#fade").show();
-  document.location = "/datasets/genes?q=" + gene
+
+  // Case 1: it's an alias, look up the gene
+  if (gene in aliases) {
+      document.location = "/datasets/genes?q=" + aliases[gene];
+
+  // Case 2: return the gene
+  } else {
+      document.location = "/datasets/genes?q=" + gene;
+  }
 });
 
 $(document).ready(function(){
-   
+ 
+    {% if gene %}$(".dataset_download_gene").click(function(){
+        document.location = "{% url 'datasets:download_gene' gene.systematic_name %}"
+    })
+    $(".dataset_similar_download").click(function(){
+        document.location = "#";
+        $("#fade").show();
+        document.location = "{% url 'datasets:download_sims' gene.systematic_name %}"
+    }){% endif %}
+
     // Constructing the suggestion engine
     var genes = new Bloodhound({
         datumTokenizer: Bloodhound.tokenizers.whitespace,
@@ -175,10 +210,9 @@ $(document).ready(function(){
         source: genes
     });
 
-    {% if gene %}$("#gene-name").val("{{ gene.systematic_name }}"){% endif %}
-
+    {% if gene %}$("#gene-name").val("{{ gene.systematic_name }}")
     $("#similarTable").tablesorter();
-    $("#nonsimilarTable").tablesorter();
+    $("#nonsimilarTable").tablesorter();{% endif %}
 });
 
 </script>
