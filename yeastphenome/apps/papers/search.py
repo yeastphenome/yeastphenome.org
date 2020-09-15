@@ -11,7 +11,7 @@ from yeastphenome.apps.papers.models import Paper
 
 def get_search_tags():
     """Return a list of tags, each with a name and icon, to return to the
-       paper explorer tag search
+    paper explorer tag search
     """
     queryset = Paper.objects.exclude(
         Q(data_statuses__name__exact="not relevant")
@@ -94,9 +94,9 @@ def get_search_tags():
 
 def run_search_tag_query(query, taglist=None, return_instances=False):
     """this function is called from the common/views.py for the explorer function
-       It takes in a list of tags (and associated models) to build a query. E.g.:
-       [{'value': 'human protein', 'icon': '🏷️', 'code': 'tag', 'style': '--tag-bg:hsl(108,45%,65%)'}, {'value': 'hap a/hap alpha/hom', 'icon': '🏺', 'code': 'collection', 'style': '--tag-bg:hsl(267,63%,69%)'}, {'value': 'haploid MatA', 'icon': '🏺', 'code': 'collection', 'style': '--tag-bg:hsl(24,51%,69%)'}]
-       The function here must know how to map the code (e.g., Collection) to a model to search
+    It takes in a list of tags (and associated models) to build a query. E.g.:
+    [{'value': 'human protein', 'icon': '🏷️', 'code': 'tag', 'style': '--tag-bg:hsl(108,45%,65%)'}, {'value': 'hap a/hap alpha/hom', 'icon': '🏺', 'code': 'collection', 'style': '--tag-bg:hsl(267,63%,69%)'}, {'value': 'haploid MatA', 'icon': '🏺', 'code': 'collection', 'style': '--tag-bg:hsl(24,51%,69%)'}]
+    The function here must know how to map the code (e.g., Collection) to a model to search
     """
     # First do a search based on the tags, assemble those of liked kind
     tags = {}

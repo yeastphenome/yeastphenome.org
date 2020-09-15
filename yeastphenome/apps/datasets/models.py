@@ -317,7 +317,7 @@ class Gene(models.Model):
 
     def get_ranked_similar(self, reverse=False):
         """Given a gene, get a sorted listed from the most to least similar.
-           Assume each gene represented twice.
+        Assume each gene represented twice.
         """
         if not reverse:
             return GeneSimilarity.objects.filter(Q(gene1=self)).order_by("-score")
@@ -329,7 +329,7 @@ class Gene(models.Model):
 
 class DatasetSimilarity(models.Model):
     """A dataset similarity is a similarity metric calculated to compare datasets
-       based on genes.
+    based on genes.
     """
 
     dataset1 = models.ForeignKey(
@@ -344,8 +344,8 @@ class DatasetSimilarity(models.Model):
 
     def save(self, *args, **kwargs):
         """Override the save function to ensure that only one similarity score
-           for any pair of datasets can be created. If a different ordering is 
-           presented, it is fixed and we get an integrity error.
+        for any pair of datasets can be created. If a different ordering is
+        presented, it is fixed and we get an integrity error.
         """
         # Only update order if not in databsase yet, ensure ordered by name
         if not self.pk:
@@ -373,7 +373,7 @@ class DatasetSimilarity(models.Model):
 
 class GeneSimilarity(models.Model):
     """A gene similarity is a similarity metric calculated to compare genes
-       based on datasets.
+    based on datasets.
     """
 
     gene1 = models.ForeignKey(
@@ -388,10 +388,14 @@ class GeneSimilarity(models.Model):
     )
     pvalue = models.DecimalField(max_digits=10, decimal_places=6)
 
+    @property
+    def pvalue_scientific_notation(self):
+        pass
+
     def save(self, *args, **kwargs):
         """Override the save function to ensure that only one similarity score
-           for any pair of genes can be created. If a different ordering is 
-           presented, it is fixed and we get an integrity error.
+        for any pair of genes can be created. If a different ordering is
+        presented, it is fixed and we get an integrity error.
         """
         # Only update order if not in databsase yet, ensure genes ordered by name
         if not self.pk:

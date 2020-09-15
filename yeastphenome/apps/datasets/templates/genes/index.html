@@ -31,51 +31,69 @@
   shape-rendering: crispEdges;
 }
 
-.typeahead, .tt-query, .tt-hint {
-	border: 2px solid #CCCCCC;
-	border-radius: 8px;
-	font-size: 22px; /* Set input font size */
-	height: 30px;
-	line-height: 30px;
-	outline: medium none;
-	padding: 8px 12px;
-        margin-top:5px;
-        width: 90%;
-}
 
+.typeahead, .tt-query, .tt-hint {
+  border: 2px solid #CCCCCC;
+  font-size: 24px;
+  line-height: 30px;
+  outline: medium none;
+  padding: 8px 12px;
+  width: 600px;
+  max-height: 150px;
+  overflow-y: auto;
+}
 .typeahead {
-	background-color: #FFFFFF;
+  background-color: #FFFFFF;
 }
 .typeahead:focus {
-	border: 2px solid #0097CF;
+  border: 2px solid #0097CF;
 }
 .tt-query {
-	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
 }
 .tt-hint {
-	color: #999999;
+  color: #999999;
 }
-.tt-menu {
-	background-color: #FFFFFF;
-	border: 1px solid rgba(0, 0, 0, 0.2);
-	border-radius: 8px;
-	box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-	margin-top: 12px;
-	padding: 8px 0;
-	width: 422px;
+.tt-dropdown-menu {
+  background-color: red !important;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  margin-top: 12px;
+  padding: 8px 0;
+  width: 350px;
 }
 .tt-suggestion {
-	font-size: 22px;  /* Set suggestion dropdown font size */
-	padding: 3px 20px;
+  background-color: white !important;
+  font-size: 24px;
+  line-height: 24px;
+  padding: 3px 20px;
 }
-.tt-suggestion:hover {
-	cursor: pointer;
-	background-color: #0097CF;
-	color: #FFFFFF;
+
+.tt-cursor {
+  background-color: #0097cf !important
 }
+
 .tt-suggestion p {
-	margin: 0;
+  margin: 0;
 }
+
+.tt-suggestion:hover .tt-cursor:hover {
+    cursor: pointer;
+    color: black;
+    background-color: #0097cf !important;
+}
+.tt-dropdown-menu .tt-suggestion.tt-cursor {
+  text-decoration: none;
+  background-color: yellow !important;
+  outline: 0;
+  color: #111;
+}
+
+#scrollable-dropdown-menu .tt-menu {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
 </style>
 {% if gene %}{% include "style/sidenav.html" %}
 <div class="large-2 columns" id="sidenav">
@@ -93,9 +111,11 @@
 <div class="row">
     <div class="col-md-12">
         <h1>Genes</h1>
+
          <div class="search-wrapper">
-	<input type="text" class="gene-search typeahead tt-query" autocomplete="off" spellcheck="false" id="gene-name" placeholder="What gene would you like to explore?">
-         <button id="gene-select" type="submit" class="btn btn-sm btn-primary search-btn"><i class="fa fa-search"></i></button>
+		<div id="scrollable-dropdown-menu">
+		  <input class="typeahead tt-query" placeholder="What gene would you like to see?" data-items="4" type="text" >
+		</div>
         </div>
     </div>
 </div>
@@ -104,16 +124,15 @@
     <div class="col-md-12">
         <h1>{{ gene.common_name }} / {{ gene.systematic_name }}</h1>
         <table class="table">
-            <tr><th width="20%" scope="row">Systematic name:</th><td>{{ gene.systematic_name }} {% if metadata.name_description %}({{ metadata.name_description }}){% endif %}</td></tr>
-            <tr><th width="20%" scope="row">Common name:</th><td>{{ gene.common_name }}</td></tr>
-            {% if metadata.main_strain %}<tr><th width="20%" scope="row">Main Strain:</th><td>{{ metadata.main_strain }}</td></tr>{% endif %}
-            {% if metadata.sgdid %}<tr><th width="20%" scope="row">SGDID:</th><td>{{ metadata.sgdid }}</td></tr>{% endif %}
+            <tr><th width="20%" scope="row">Standard Name:</th><td>{{ metadata.display_name }}</td></tr>
+            <tr><th width="20%" scope="row">Systematic name:</th><td>{{ gene.systematic_name }}</td></tr>
+            {% if metadata.sgdid %}<tr><th width="20%" scope="row">SGD ID:</th><td>{{ metadata.sgdid }}</td></tr>{% endif %}
             {% if metadata.aliases %}<tr><th width="20%" scope="row">Aliases:</th><td>{% for alias in metadata.aliases %} {% if alias.link %}<a href="{{ alias.link }}" target="_blank">{% endif %} {{ alias.display_name }}{% if alias.link %}</a>{% endif %} {% if forloop.last %}{% else %}| {% endif %}{% endfor %}</td></tr>{% endif %}
             <tr><th width="20%" scope="row">Description</th><td>{% if gene.description %}{{ gene.description }}{% else %}{{ metadata.description }}{% endif %}</td></tr>
+            {% if metadata.name_description %}<tr><th width="20%" scope="row">Name Description</th><td>{{ metadata.name_description }}</td></tr>{% endif %}
         </table>
     </div>
 </div>{% endif %}
-
 
 {% if datasets_top or datasets_bottom %}<div class="row" style="padding-top:20px" id='datasets'>
     <div class="col-md-12">
@@ -125,11 +144,11 @@
     <div class="tab-content">
       {% if datasets_top %}<div id="datasets_top" class="tab-pane fade in active">
       <h1>Datasets with Highest Scores</h1>
-      {% include "datasets/data_table.html" with datasets=datasets_top %}
+      {% include "datasets/data_table.html" with datasets=datasets_top table_id="datasets_top_table" %}
       </div>{% endif %}
       {% if datasets_bottom %}<div id="datasets_bottom" class="tab-pane fade">
       <h1>Datasets with Lowest Scores</h1>
-      {% include "datasets/data_table.html" with datasets=datasets_bottom %}
+      {% include "datasets/data_table.html" with datasets=datasets_bottom table_id="datasets_bottom_table" %}
       </div>{% endif %}
     </div>
   </div>
@@ -156,6 +175,7 @@
 
 {% endblock %}
 {% block scripts %}
+{% include "scripts/tablesorter.html" %}
 <script src="{% static 'js/typeahead.bundle.js' %}"></script>
 <script>
 // Gene lookup, systematic name by metadata
@@ -164,21 +184,18 @@ var gene_names = [{% for gene in genes %}"{{ gene }}"{% if forloop.last %}{% els
 // Alias lookup, alias index for gene
 var aliases = { {% for alias in aliases %}"{{ alias.1 }}":"{{ alias.0 }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %} }
 
-// Find the gene when the user selects
-$('#gene-select').on('click', function() {
+$('input.typeahead').on('typeahead:selected', function(event, selection) {
+     var gene = $(this).val();
+     $("#fade").show();
 
-  // Get the bar for the gene from the lookup
-  var gene = $("#gene-name").val();
-  $("#fade").show();
+     // Case 1: it's an alias, look up the gene
+     if (gene in aliases) {
+       document.location = "/datasets/genes?q=" + aliases[gene];
 
-  // Case 1: it's an alias, look up the gene
-  if (gene in aliases) {
-      document.location = "/datasets/genes?q=" + aliases[gene];
-
-  // Case 2: return the gene
-  } else {
-      document.location = "/datasets/genes?q=" + gene;
-  }
+     // Case 2: return the gene
+     } else {
+       document.location = "/datasets/genes?q=" + gene;
+     }
 });
 
 $(document).ready(function(){
@@ -200,19 +217,20 @@ $(document).ready(function(){
     });
     
     // Initializing the typeahead
-    $('.gene-search').typeahead({
-        hint: true,
-        highlight: true, /* Enable substring highlighting */
-        minLength: 1 /* Specify minimum characters required for showing suggestions */
-    },
-    {
-        name: 'genes',
-        source: genes
+    $('.typeahead').typeahead({      
+        highlight: true,
+        hint: true        
+      }, {
+      name: 'genes',
+      limit: 100,
+      source: genes
     });
 
     {% if gene %}$("#gene-name").val("{{ gene.systematic_name }}")
     $("#similarTable").tablesorter();
     $("#nonsimilarTable").tablesorter();{% endif %}
+    {% if datasets_top %}{% include "scripts/tablesorter_function.html" with divid="#datasets_top_table" %}{% endif %}
+    {% if datasets_bottom %}{% include "scripts/tablesorter_function.html" with divid="#datasets_bottom_table" %}{% endif %}
 });
 
 </script>

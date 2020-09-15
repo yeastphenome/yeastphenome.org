@@ -9,7 +9,7 @@ from yeastphenome.apps.datasets.models import Dataset, Datatype, Gene, Tag, Coll
 
 def get_search_tags():
     """Return a list of tags, each with a name and icon, to return to the
-       data explorer tag search
+    data explorer tag search
     """
     # DataTypes
     datatypes = [
@@ -58,7 +58,7 @@ def get_search_tags():
 
 def run_search_tag_query(query, taglist=None, return_instances=False, collection=None):
     """this function is called from the papers/views.py for the explorer function
-       It takes in a list of tags (and associated models) to build a query for papers.
+    It takes in a list of tags (and associated models) to build a query for papers.
     """
     # First do a search based on the tags, assemble those of liked kind
     tags = {}

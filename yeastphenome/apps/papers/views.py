@@ -30,8 +30,7 @@ from yeastphenome.settings import (
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def paper_explorer(request, year=None):
-    """Return a paginated list of papers with the data explorer.
-    """
+    """Return a paginated list of papers with the data explorer."""
     queryset = Paper.objects.exclude(
         Q(data_statuses__name__exact="not relevant")
         | Q(tested_statuses__name__exact="not relevant")
@@ -164,9 +163,11 @@ def paper_datasets(request, paper_id):
     txt = "\n".join([(u"%s\t%s" % (d.id, d.name)) for d in p.dataset_set.all()])
 
     response = HttpResponse(txt, content_type="text/plain")
-    response["Content-Disposition"] = (
-        'attachment; filename="%s_%d_datasets_list.txt"'
-        % (settings.DOWNLOAD_PREFIX, p.pmid)
+    response[
+        "Content-Disposition"
+    ] = 'attachment; filename="%s_%d_datasets_list.txt"' % (
+        settings.DOWNLOAD_PREFIX,
+        p.pmid,
     )
 
     return response

@@ -9,8 +9,7 @@ from itertools import chain
 
 
 def get_querysets():
-    """Return two datasets, one for condition sets and one for mediums (that are structured the same)
-    """
+    """Return two datasets, one for condition sets and one for mediums (that are structured the same)"""
     g = Count(
         "dataset",
         filter=~Q(dataset__paper__latest_data_status__status__name="not relevant"),
@@ -32,7 +31,7 @@ def get_querysets():
 
 def get_search_tags():
     """Return a list of tags, each with a name and icon, to return to the
-       conditions explorer tag search
+    conditions explorer tag search
     """
     queryset1, queryset2 = get_querysets()
 
@@ -57,8 +56,7 @@ def get_search_tags():
 
 
 def run_search_tag_query(query, taglist=None, return_instances=False):
-    """take a query string and a taglist to run the phenotypes query.
-    """
+    """take a query string and a taglist to run the phenotypes query."""
     tags = {}
     for tag in taglist or []:
         if tag["code"] not in tags:

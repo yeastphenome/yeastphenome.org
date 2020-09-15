@@ -32,7 +32,7 @@ import json
 
 class GetSimilarGenes(RatelimitMixin, APIView):
     """Given A gene systematic name, return ordered list of similarity scores
-       (most to least similar), top N for each
+    (most to least similar), top N for each
     """
 
     ratelimit_key = "ip"
@@ -68,6 +68,21 @@ class GetSimilarGenes(RatelimitMixin, APIView):
 
         # Must make model json serializable
         return Response(status=200, data=scores)
+
+
+class GetGenes(RatelimitMixin, APIView):
+    """Return a list of all genes"""
+
+    ratelimit_key = "ip"
+    ratelimit_rate = settings.VIEW_RATE_LIMIT
+    ratelimit_block = settings.VIEW_RATE_LIMIT_BLOCK
+    ratelimit_method = "GET"
+    renderer_classes = (JSONRenderer,)
+
+    def get(self, request):
+        print("GET GetGenes")
+        genes = list(Gene.objects.values_list("systematic_name", flat=True).distinct())
+        return Response(status=200, data=genes)
 
 
 # Papers
@@ -106,8 +121,7 @@ class PaperViewSet(viewsets.ModelViewSet):
 
 
 class BaseSearch(RatelimitMixin, APIView):
-    """A search to take a query, and filter by specific tags
-    """
+    """A search to take a query, and filter by specific tags"""
 
     ratelimit_key = "ip"
     ratelimit_rate = settings.VIEW_RATE_LIMIT
@@ -161,8 +175,7 @@ class PhenotypesSearch(BaseSearch):
 
 
 class GetPaperReferences(RatelimitMixin, APIView):
-    """Given a paper id, get all references for it to populate a graph.
-    """
+    """Given a paper id, get all references for it to populate a graph."""
 
     ratelimit_key = "ip"
     ratelimit_rate = settings.VIEW_RATE_LIMIT

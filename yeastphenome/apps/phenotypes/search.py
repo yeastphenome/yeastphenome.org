@@ -9,7 +9,7 @@ from yeastphenome.apps.datasets.models import Datatype
 
 def get_search_tags():
     """Return a list of tags, each with a name and icon, to return to the
-       phenotype explorer tag search
+    phenotype explorer tag search
     """
     # Observables
     observables = [
@@ -39,8 +39,7 @@ def get_search_tags():
 
 
 def run_search_tag_query(query, taglist=None, return_instances=False):
-    """take a query string and a taglist to run the phenotypes query.
-    """
+    """take a query string and a taglist to run the phenotypes query."""
     tags = {}
     for tag in taglist or []:
         if tag["code"] not in tags:
@@ -69,7 +68,10 @@ def run_search_tag_query(query, taglist=None, return_instances=False):
         measurement_query = Q(phenotype__measurement__name__in=tags["measurement"])
 
     results = queryset.filter(
-        observables_query, tag_query, phenotype_query, measurement_query,
+        observables_query,
+        tag_query,
+        phenotype_query,
+        measurement_query,
     )
 
     # Now filter down results more, search all fields for query if defined

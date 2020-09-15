@@ -18,9 +18,9 @@ import random
 
 def select_random_graph():
     """Select a random graph and template to show on the home page. We don't
-       include the citation graph because many papers don't have this metadata
-       and it would appear empty. When we have a global citation network we
-       can choose a reliable starting point and render that instead.
+    include the citation graph because many papers don't have this metadata
+    and it would appear empty. When we have a global citation network we
+    can choose a reliable starting point and render that instead.
     """
     # Randomly select graph to render
     graph_choice = random.choice(range(4))
@@ -64,8 +64,8 @@ def select_random_graph():
 
 def get_phenotype_measurements(hide_legend=False):
     """Return a breakdown of phenotypes according to what they measure.
-       Most of these are undefined, but it might be useful to see those
-       that are.
+    Most of these are undefined, but it might be useful to see those
+    that are.
     """
     undefined = 0
     counts = {}
@@ -90,7 +90,7 @@ def get_phenotype_measurements(hide_legend=False):
 
 def get_papers_by_year(add_padding=True):
     """Generate a dictionary of papers by year. If add_padding is True,
-       add an empty year to the left and right (default)
+    add an empty year to the left and right (default)
     """
     counts = (
         Paper.objects.values("pub_date")
@@ -112,11 +112,11 @@ def get_papers_by_year(add_padding=True):
 
 
 def get_collections_by_year(collection):
-    """Show the change over time of a collection tyoe. This function returns 
-       a lookup with single values, and also accumulated values. 
-       This graph displays on a page for a single dataset. There is only one 
-       dataset without a collection, and it was published in 2015 (and this 
-       will return that one number).
+    """Show the change over time of a collection tyoe. This function returns
+    a lookup with single values, and also accumulated values.
+    This graph displays on a page for a single dataset. There is only one
+    dataset without a collection, and it was published in 2015 (and this
+    will return that one number).
     """
     counts = {}
     for dataset in Dataset.objects.filter(collection=collection):
@@ -159,8 +159,7 @@ def get_dataset_genes(dataset_id=None):
 
 
 def get_dataset_sources():
-    """generate data to render into a graph for data set sources
-    """
+    """generate data to render into a graph for data set sources"""
     sourcetypes = [x["name"] for x in Sourcetype.objects.values("name").distinct()]
     counts = {}
     for sourcetype in sourcetypes:
@@ -175,7 +174,7 @@ def get_dataset_sources():
 
 def get_latest_stats():
     """Return number of papers, phenotypes, and datasets to display in the index
-       view. If no entries are found, display counts of zero.
+    view. If no entries are found, display counts of zero.
     """
     papers_queryset = Paper.objects.all()
     phenotypes_queryset = Phenotype.objects.all()

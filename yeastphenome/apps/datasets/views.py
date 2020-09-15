@@ -188,8 +188,7 @@ def tag(request, id):
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download_sims(request, systematic_name):
-    """Download all dataset similarity scores (based on a gene)
-    """
+    """Download all dataset similarity scores (based on a gene)"""
     gene = Gene.objects.get(systematic_name=systematic_name)
     sims = gene.get_ranked_similar()
 
@@ -222,8 +221,7 @@ def download_sims(request, systematic_name):
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download_all(request, systematic_name=None):
-    """Download all datasets. If a gene name is provided, filter to those
-    """
+    """Download all datasets. If a gene name is provided, filter to those"""
     datasets = (
         Dataset.objects.select_related("paper__latest_tested_status__status")
         .filter(paper__latest_data_status__status__name="loaded")
