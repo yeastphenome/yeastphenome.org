@@ -8,6 +8,14 @@ urlpatterns = [
         "collection/<int:collection_id>/", views.data_explorer, name="collection_detail"
     ),
     path("genes", views.gene_explorer, name="genes"),
+    path(
+        "gene/download/<str:systematic_name>/", views.download_all, name="download_gene"
+    ),
+    path(
+        "gene/download/sims/<str:systematic_name>/",
+        views.download_sims,
+        name="download_sims",
+    ),
     url(r"^(?P<domain>papers)/(?P<id>\d+)/", views.data, name="data"),
     url(r"^(?P<domain>datasets)/(?P<id>\d+)/", views.data, name="data"),
     url(r"^(?P<domain>conditions)/(?P<id>\d+)/", views.data, name="data"),

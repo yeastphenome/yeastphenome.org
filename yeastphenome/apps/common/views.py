@@ -103,7 +103,7 @@ def introduction(request):
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def add_to_cart(request, dataset_id, next=None):
     """Add one or more datasets to the cart, if they exist. A dataset id
-       can be a single string of values, comma separted, or just the value.
+    can be a single string of values, comma separted, or just the value.
     """
     if "cart" not in request.session:
         request.session["cart"] = []
@@ -136,8 +136,7 @@ def add_to_cart(request, dataset_id, next=None):
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def remove_from_cart(request, dataset_id, next=None):
-    """Remove a dataset from the cart, if it exists.
-    """
+    """Remove a dataset from the cart, if it exists."""
     dataset_id = int(dataset_id)
     if "cart" in request.session and dataset_id in request.session["cart"]:
         request.session["cart"].pop(request.session["cart"].index(dataset_id))
@@ -158,8 +157,8 @@ def remove_from_cart(request, dataset_id, next=None):
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def clear_cart(request):
     """remove all datasets from the session cart. We don't add a message because
-       this view is only accessible from the View Cart page, and when it's cleared
-       the user is shown a message that there are no items in the cart.
+    this view is only accessible from the View Cart page, and when it's cleared
+    the user is shown a message that there are no items in the cart.
     """
     if "cart" in request.session:
         del request.session["cart"]
@@ -168,8 +167,7 @@ def clear_cart(request):
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def view_cart(request):
-    """View all datasets in the cart, and provide a button to download.
-    """
+    """View all datasets in the cart, and provide a button to download."""
     context = {
         "datasets": Dataset.objects.filter(id__in=request.session.get("cart", []))
     }

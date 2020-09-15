@@ -4,8 +4,7 @@ from yeastphenome.apps.papers.models import Paper
 
 
 def get_pubmed_paper(pmid):
-    """A shared function to retrieve the Paper in xml
-    """
+    """A shared function to retrieve the Paper in xml"""
     Entrez.email = ENTREZ_EMAIL
     handle = Entrez.efetch(db="pubmed", id=[str(pmid)], retmode="xml")
     return Entrez.read(handle)
@@ -13,8 +12,8 @@ def get_pubmed_paper(pmid):
 
 def get_paper_references(pmid, xml_data=None):
     """Get references that are provided given a given pmid. The user can optionally
-       pass in the xml_data (already retrieved) so we can share one call between
-       functions.
+    pass in the xml_data (already retrieved) so we can share one call between
+    functions.
     """
     if xml_data is None:
         xml_data = get_pubmed_paper(pmid)
@@ -39,7 +38,7 @@ def get_paper_references(pmid, xml_data=None):
 
 def get_paper_references_context(paper, xml_data=None):
     """Generate the same references, but return the correct context to generate
-       the graph
+    the graph
     """
     refs = get_paper_references(paper.pmid, xml_data)
 
@@ -90,7 +89,7 @@ def get_paper_references_context(paper, xml_data=None):
 
 def get_pubmed_paper_context(pmid, xml_data=None):
     """Given a Pubmed identifier (pmid) use the Pubmed API (Entrez) to return
-       metadata about the paper
+    metadata about the paper
     """
     if xml_data is None:
         xml_data = get_pubmed_paper(pmid)

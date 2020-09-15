@@ -2,8 +2,7 @@ from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 
 class IsStaffOrSuperUser(BasePermission):
-    """Allows access to staff (admin) or superuser.
-    """
+    """Allows access to staff (admin) or superuser."""
 
     def has_permission(self, request, view):
 
@@ -14,8 +13,7 @@ class IsStaffOrSuperUser(BasePermission):
 
 
 class AllowAnyGet(BasePermission):
-    """Allows an anonymous user access for GET requests only.
-    """
+    """Allows an anonymous user access for GET requests only."""
 
     def has_permission(self, request, view):
 

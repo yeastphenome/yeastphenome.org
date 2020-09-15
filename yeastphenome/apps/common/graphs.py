@@ -27,8 +27,8 @@ def papers_citation_graph(request):
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def paper_citation_graph_explorable(request):
     """An explorable citation graph that starts with one of a set of known
-       papers, and goes from there.
-       NOT CURRENTLY IN USE - needs to be refactored
+    papers, and goes from there.
+    NOT CURRENTLY IN USE - needs to be refactored
     """
     paper = Paper.objects.get(id=2)
     context = get_paper_references_context(paper)
@@ -43,7 +43,7 @@ def paper_citation_graph_explorable(request):
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def paper_citation_graph(request, paper_id):
     """A citation graph that shows all of a paper's citations, and whether or
-       not each outgoing citation is in the database
+    not each outgoing citation is in the database
     """
     try:
         paper = Paper.objects.get(id=paper_id)
@@ -99,7 +99,9 @@ def phenotype_measurements(request):
 def dataset_sources(request):
     """Render a chart.js visualization for datastes broken down by sources"""
     return render(
-        request, "graphs/dataset-sources-wrapper.html", get_dataset_sources(),
+        request,
+        "graphs/dataset-sources-wrapper.html",
+        get_dataset_sources(),
     )
 
 

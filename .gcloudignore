@@ -19,6 +19,8 @@ backup
 db.sqlite3
 env
 docker
+/data
+yp_rows_store.h5
 
 # Python pycache:
 __pycache__/

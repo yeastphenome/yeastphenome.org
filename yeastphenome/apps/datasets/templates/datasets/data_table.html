@@ -1,0 +1,38 @@
+{% if datasets %}
+<form action="{% url 'datasets:download' %}" method="get">
+    <table id="{{ table_id }}" class="tablesorter table table-condensed table-hover" width="100%">
+        <thead><tr>
+        <th data-placeholder="Select an id">Dataset ID</th>
+        <th data-placeholder="Select an name">Dataset Name</th>
+        <th data-placeholder="Select a score">Score</th></tr>
+        </thead>
+        <tbody id="papersTableBody">
+        {% for d in datasets %}<tr>
+            <td class="col-md-2"><a href="/datasets/{{ d.dataset.id }}/">{{ d.dataset.id }}</a></td>
+            <td class="col-md-5"><a href="/datasets/{{ d.dataset.id }}/">{{ d.dataset.name }}</a></td>
+            <td class="col-md-5">{{ d.value }}</td>
+        </tr>{% endfor %}
+        </tbody>
+    </table>
+</form><button class="dataset_download_gene" type="button" class="btn btn-default">Download all datasets</button>{% endif %}
+
+<script language="JavaScript">
+function toggle(source) {
+  checkboxes = document.getElementsByClassName('dataset');
+  for(var i=0, n=checkboxes.length;i<n;i++) {
+    if(!checkboxes[i].disabled) {
+        checkboxes[i].checked = source.checked;
+    }
+  }
+  btn = document.getElementById('dataset_download');
+  btn.disabled = !source.checked;
+}
+</script>
+
+<script language="JavaScript">
+var chkbxs = $('tbody .dataset');
+chkbxs.change(function () {
+    $('#dataset_download').prop('disabled', chkbxs.filter(':checked').length < 1);
+});
+chkbxs.change();
+</script>
