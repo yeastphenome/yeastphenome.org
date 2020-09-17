@@ -55,7 +55,6 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
 # Explore by genes
 
 
-@never_cache
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def gene_explorer(request):
 

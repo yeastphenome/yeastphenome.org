@@ -184,19 +184,42 @@ var gene_names = [{% for gene in genes %}"{{ gene }}"{% if forloop.last %}{% els
 // Alias lookup, alias index for gene
 var aliases = { {% for alias in aliases %}"{{ alias.1 }}":"{{ alias.0 }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %} }
 
+function run_search(gene) {
+   $("#fade").show();
+
+   // Case 1: it's an alias, look up the gene
+   if (gene in aliases) {
+     document.location = "/datasets/genes?q=" + aliases[gene];
+
+   // Case 2: return the gene
+   } else {
+     document.location = "/datasets/genes?q=" + gene;
+   }
+   $("#fade").hide();
+}
+
+// Selecting a gene from the typehead list
 $('input.typeahead').on('typeahead:selected', function(event, selection) {
      var gene = $(this).val();
-     $("#fade").show();
-
-     // Case 1: it's an alias, look up the gene
-     if (gene in aliases) {
-       document.location = "/datasets/genes?q=" + aliases[gene];
-
-     // Case 2: return the gene
-     } else {
-       document.location = "/datasets/genes?q=" + gene;
-     }
+     run_search(gene)
 });
+
+
+// Pressing enter in the box
+$(document).on("keypress", "input", function(e){
+    if(e.which == 13){
+        var gene = $(this).val();
+        run_search(gene)
+    }
+});
+
+function download(url){
+    $("#fade").show()
+    frame = document.createElement("iframe");
+    frame.onload=function(){$("#fade").hide();}
+    frame.src=url;
+    document.body.appendChild(frame);
+}
 
 $(document).ready(function(){
  
@@ -205,8 +228,9 @@ $(document).ready(function(){
     })
     $(".dataset_similar_download").click(function(){
         document.location = "#";
-        $("#fade").show();
-        document.location = "{% url 'datasets:download_sims' gene.systematic_name %}"
+//        $("#fade").show();
+        download("{% url 'datasets:download_sims' gene.systematic_name %}")
+//        $("#fade").hide();
     }){% endif %}
 
     // Constructing the suggestion engine

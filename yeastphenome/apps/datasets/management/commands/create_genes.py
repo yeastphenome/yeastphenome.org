@@ -15,11 +15,7 @@ class Command(BaseCommand):
         print("Creating genes...")
         # genes = Data.objects.values_list("orf", flat=True).distinct()
         # If genes are already created in database, can obtain with this line (much faster)
-        genes = list(
-            Gene.objects.filter(primary_sgdid=None)
-            .values_list("systematic_name", flat=True)
-            .distinct()
-        )
+        genes = list(Gene.objects.values_list("systematic_name", flat=True).distinct())
 
         # Create all genes!
         total = len(genes)
@@ -39,8 +35,12 @@ class Command(BaseCommand):
                     print(f"Issue with obtaining gene {name} metadata from SGD.")
                     meta = {}
 
-                # Create gene aliases
-                alias_names = [x["display_name"] for x in meta.get("aliases", [])]
+                # Create gene aliases - we only want ones that are category "Alias"
+                alias_names = [
+                    x["display_name"]
+                    for x in meta.get("aliases", [])
+                    if x["category"] == "Alias"
+                ]
 
                 # Get display name
                 common_name = meta.get("display_name") or meta.get("gene_name")
@@ -71,12 +71,4 @@ class Command(BaseCommand):
                 gene.save()
                 # Find all associated Data and update with the correct gene
                 # If genes not yet associated, comment out this line
-                Data.objects.filter(orf=gene.systematic_name).update(gene=gene)
-
-        # print somes stats
-        print(
-            f"Genes without primary_sgdid: {Gene.objects.filter(primary_sgdid=None).count()}"
-        )
-        print(
-            f"Genes without common_name: {Gene.objects.filter(common_name=None).count()}"
-        )
+                # Data.objects.filter(orf=gene.systematic_name).update(gene=gene)
