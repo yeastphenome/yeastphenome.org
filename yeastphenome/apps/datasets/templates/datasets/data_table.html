@@ -1,14 +1,17 @@
 {% if datasets %}
+<style>
+    .tablesorter thead .disabled {
+        display:none;
+    }
+</style>
 <form action="{% url 'datasets:download' %}" method="get">
     <table id="{{ table_id }}" class="tablesorter table table-condensed table-hover" width="100%">
         <thead><tr>
-        <th data-placeholder="Select an id">Dataset ID</th>
         <th data-placeholder="Select an name">Dataset Name</th>
-        <th data-placeholder="Select a score">Score</th></tr>
+        <th data-sorter="false" data-filter="false">Phenotypic Scores</th></tr>
         </thead>
         <tbody id="papersTableBody">
         {% for d in datasets %}<tr>
-            <td class="col-md-2"><a href="/datasets/{{ d.dataset.id }}/">{{ d.dataset.id }}</a></td>
             <td class="col-md-5"><a href="/datasets/{{ d.dataset.id }}/">{{ d.dataset.name }}</a></td>
             <td class="col-md-5">{{ d.value }}</td>
         </tr>{% endfor %}
