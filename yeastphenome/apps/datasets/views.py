@@ -1,6 +1,6 @@
 from django.db.models import Q
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.paginator import Paginator
@@ -23,6 +23,7 @@ from yeastphenome.apps.datasets.utils import get_gene_metadata
 from yeastphenome.apps.conditions.models import ConditionType
 from yeastphenome.apps.phenotypes.models import Observable
 
+from itertools import chain
 from decimal import Decimal
 from libchebipy import ChebiEntity
 import csv
@@ -55,12 +56,16 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
 # Explore by genes
 
 
+@never_cache
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def gene_explorer(request):
 
     # prepare list of genes, plus genes and aliases
     context = {
         "genes": Gene.objects.values_list("systematic_name", flat=True).distinct(),
+        "common_names": Gene.objects.values_list(
+            "systematic_name", "common_name"
+        ).distinct(),
         "aliases": GeneAlias.objects.values_list(
             "gene__systematic_name", "name"
         ).distinct(),
@@ -69,9 +74,18 @@ def gene_explorer(request):
     # A get request for a gene should display it to start
     if "q" in request.GET:
         query = request.GET["q"].strip()
+
         try:
-            context["gene"] = Gene.objects.get(systematic_name=query)
-            context["metadata"] = get_gene_metadata(query)
+            # First look up based on systematic or common name
+            gene = Gene.objects.get(
+                Q(systematic_name__iexact=query) | Q(common_name__iexact=query)
+            )
+
+            # If not found, try for an alias
+            if not gene:
+                gene = GeneAlias.objects.get(name__iexact=query).gene_set.first()
+            context["gene"] = gene
+            context["metadata"] = get_gene_metadata(context["gene"].systematic_name)
 
             # Get top/bottom 10 most similar
             sims = list(context["gene"].get_ranked_similar())
@@ -201,7 +215,7 @@ def download_sims(request, systematic_name):
 
     # prepare csv writer
     writer = csv.writer(response, delimiter="\t")
-    columns = ["gene_similarity_id", "gene1", "gene2", "metric", "score", "pvalue"]
+    columns = ["gene_similarity_id", "gene1", "gene2", "score", "pvalue"]
     writer.writerow(columns)
 
     for sim in sims:
@@ -210,7 +224,6 @@ def download_sims(request, systematic_name):
                 sim.id,
                 sim.gene1.systematic_name,
                 sim.gene2.systematic_name,
-                sim.metric,
                 float(sim.score),
                 float(sim.pvalue),
             ]
@@ -218,36 +231,66 @@ def download_sims(request, systematic_name):
     return response
 
 
+class Echo:
+    """An object that implements just the write method of the file-like interface."""
+
+    def write(self, value):
+        """Write the value by returning it, instead of storing in a buffer."""
+        return value
+
+
+def some_streaming_csv_view(request):
+    """A view that streams a large CSV file."""
+    # Generate a sequence of rows. The range is based on the maximum number of
+    # rows that can be handled by a single sheet in most spreadsheet
+    # applications.
+    rows = (["Row {}".format(idx), str(idx)] for idx in range(65536))
+    response = StreamingHttpResponse(
+        (writer.writerow(row) for row in rows), content_type="text/csv"
+    )
+    response["Content-Disposition"] = 'attachment; filename="somefilename.csv"'
+    return response
+
+
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download_all(request, systematic_name=None):
     """Download all datasets. If a gene name is provided, filter to those"""
-    datasets = (
-        Dataset.objects.select_related("paper__latest_tested_status__status")
-        .filter(paper__latest_data_status__status__name="loaded")
-        .all()
-    )
-    if systematic_name is not None:
-        datasets = datasets.exclude(
-            Q(data__value=None) | Q(data__value=Decimal("NaN"))
-        ).filter(data__gene__systematic_name=systematic_name)
+    if systematic_name:
+        datasets = (
+            Dataset.objects.select_related("paper__latest_tested_status__status")
+            .filter(
+                paper__latest_data_status__status__name="loaded",
+                data__gene__systematic_name__iexact=systematic_name,
+            )
+            .distinct()
+        )
+    else:
+        datasets = (
+            Dataset.objects.select_related("paper__latest_tested_status__status")
+            .filter(paper__latest_data_status__status__name="loaded")
+            .distinct()
+        )
 
-    # prepare response to write rows to
-    response = HttpResponse(content_type="text/plain")
+    # prepare streaming response to write rows to
+    pseudo_buffer = Echo()
+    writer = csv.writer(pseudo_buffer, delimiter="\t")
+
     filename = (
         "%s_datasets_%s.txt" % (settings.DOWNLOAD_PREFIX, systematic_name)
         if systematic_name
         else "%s_datasets_%s.txt" % settings.DOWNLOAD_PREFIX
     )
+
+    # The first row needs to be a column with headers
+    writer.writerow(["id", "name", "pmid", "latest_tested_status"])
+    response = StreamingHttpResponse(
+        (
+            writer.writerow([d.id, d.name, d.paper.pmid, d.paper.latest_tested_status])
+            for d in datasets
+        ),
+        content_type="text/csv",
+    )
     response["Content-Disposition"] = 'attachment; filename="%s"' % filename
-
-    # prepare csv writer
-    writer = csv.writer(response, delimiter="\t")
-    columns = ["id", "name", "pmid", "latest_tested_status"]
-    writer.writerow(columns)
-
-    for d in datasets:
-        writer.writerow([d.id, d.name, d.paper.pmid, d.paper.latest_tested_status])
-
     return response
 
 

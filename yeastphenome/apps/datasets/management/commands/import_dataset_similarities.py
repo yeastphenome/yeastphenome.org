@@ -84,7 +84,6 @@ class Command(BaseCommand):
                             dataset1=dataset1,
                             dataset2=dataset2,
                             score=score,
-                            metric="cosine",
                             pvalue=pvalue,
                         )
         print("Finished!")

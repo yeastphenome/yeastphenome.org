@@ -338,7 +338,6 @@ class DatasetSimilarity(models.Model):
     dataset2 = models.ForeignKey(
         Dataset, on_delete=models.CASCADE, related_name="dataset_similarity2"
     )
-    metric = models.CharField(max_length=50)
     score = models.DecimalField(max_digits=10, decimal_places=3)
     pvalue = models.DecimalField(max_digits=10, decimal_places=6)
 
@@ -367,7 +366,6 @@ class DatasetSimilarity(models.Model):
         unique_together = (
             "dataset1",
             "dataset2",
-            "metric",
         )
 
 
@@ -382,7 +380,6 @@ class GeneSimilarity(models.Model):
     gene2 = models.ForeignKey(
         Gene, on_delete=models.CASCADE, related_name="gene_similarity2"
     )
-    metric = models.CharField(max_length=50)
     score = models.DecimalField(
         max_digits=10, decimal_places=3, help_text="z-score of the metric."
     )
@@ -417,7 +414,6 @@ class GeneSimilarity(models.Model):
         unique_together = (
             "gene1",
             "gene2",
-            "metric",
         )
 
 
