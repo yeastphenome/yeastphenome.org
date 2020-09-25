@@ -5,10 +5,10 @@
     }
 </style>
 <form action="{% url 'datasets:download' %}" method="get">
-    <table id="{{ table_id }}" class="tablesorter table table-condensed table-hover" width="100%">
+    <table id="{{ table_id }}" class="table table-condensed table-hover" width="100%">
         <thead><tr>
-        <th data-placeholder="Select an name">Dataset Name</th>
-        <th data-sorter="false" data-filter="false">Phenotypic Scores</th></tr>
+        <th>Dataset Name</th>
+        <th>Phenotypic Scores</th></tr>
         </thead>
         <tbody id="papersTableBody">
         {% for d in datasets %}<tr>
@@ -17,7 +17,7 @@
         </tr>{% endfor %}
         </tbody>
     </table>
-</form><button class="dataset_download_gene" type="button" class="btn btn-default">Download all datasets</button>{% endif %}
+</form><a><button class="dataset_download_gene btn btn-default" type="button" class="btn btn-default">Download all datasets</button></a><a href="{% url 'datasets:gene_datasets' gene.systematic_name %}"><button type="button" class="btn btn-default">View Entire Table</button></a>{% endif %}
 
 <script language="JavaScript">
 function toggle(source) {

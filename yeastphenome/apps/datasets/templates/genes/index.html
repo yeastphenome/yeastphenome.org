@@ -38,7 +38,7 @@
   line-height: 30px;
   outline: medium none;
   padding: 8px 12px;
-  width: 600px;
+  width: 800px;
   max-height: 150px;
   overflow-y: auto;
 }
@@ -110,11 +110,9 @@
 </div>{% endif %}
 <div class="row">
     <div class="col-md-12">
-        <h1>Genes</h1>
-
          <div class="search-wrapper">
 		<div id="scrollable-dropdown-menu">
-		  <input class="typeahead tt-query" placeholder="What gene would you like to see?" data-items="4" type="text" >
+		  <input class="typeahead tt-query" placeholder="Systematic ORF name (YJL092W), common name (SRS2), or alias (RADH)" data-items="4" type="text" >
 		</div>
         </div>
     </div>
@@ -169,7 +167,7 @@
       {% include "genes/similar_table.html" with scores=sims.bottom title="Phenotypic Similarities" table_id="nonsimilarTable" %}
       </div>{% endif %}
     </div>
-    <button class="dataset_similar_download" type="button" class="btn btn-default">Download all scores</button>
+    <a><button class="dataset_similar_download btn btn-default" type="button">Download all scores</button></a>{% if gene %}<a href="{% url 'datasets:similar_genes' gene.systematic_name %}"><button type="button" class="btn btn-default">View Entire Table</button></a>{% endif %}
   </div>
 </div>{% endif %}
 
@@ -248,11 +246,7 @@ $(document).ready(function(){
       source: genes
     });
 
-    {% if gene %}$("#gene-name").val("{{ gene.systematic_name }}")
-    $("#similarTable").tablesorter();
-    $("#nonsimilarTable").tablesorter();{% endif %}
-    {% if datasets_top %}{% include "scripts/tablesorter_function.html" with divid="#datasets_top_table" %}{% endif %}
-    {% if datasets_bottom %}{% include "scripts/tablesorter_function.html" with divid="#datasets_bottom_table" %}{% endif %}
+    {% if gene %}$("#gene-name").val("{{ gene.systematic_name }}"){% endif %}
 });
 
 </script>
