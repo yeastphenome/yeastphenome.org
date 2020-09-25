@@ -16,6 +16,14 @@ urlpatterns = [
         views.download_sims,
         name="download_sims",
     ),
+    path(
+        "gene/similar/<str:systematic_name>/", views.similar_genes, name="similar_genes"
+    ),
+    path(
+        "gene/datasets/<str:systematic_name>/",
+        views.gene_datasets,
+        name="gene_datasets",
+    ),
     url(r"^(?P<domain>papers)/(?P<id>\d+)/", views.data, name="data"),
     url(r"^(?P<domain>datasets)/(?P<id>\d+)/", views.data, name="data"),
     url(r"^(?P<domain>conditions)/(?P<id>\d+)/", views.data, name="data"),

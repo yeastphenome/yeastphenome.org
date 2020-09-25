@@ -1,7 +1,7 @@
 from django.db.models import Q
 
 from yeastphenome.apps.phenotypes.models import Phenotype
-from yeastphenome.apps.conditions.models import ConditionSet, Medium
+from yeastphenome.apps.conditions.models import Medium, Condition
 from yeastphenome.apps.datasets.models import Dataset, Datatype, Gene, Tag, Collection
 
 # Search functions
@@ -37,8 +37,8 @@ def get_search_tags():
 
     # Condition Sets
     conditions = [
-        {"value": x[0], "icon": "🌨️", "code": "conditionset"}
-        for x in ConditionSet.objects.values_list("systematic_name").distinct()
+        {"value": x[0], "icon": "🌨️", "code": "conditions"}
+        for x in Condition.objects.values_list("type__name").distinct()
     ]
 
     # Mediums
@@ -82,7 +82,7 @@ def run_search_tag_query(query, taglist=None, return_instances=False, collection
     datatype_query = Q()
     medium_query = Q()
     phenotype_query = Q()
-    conditionset_query = Q()
+    conditions_query = Q()
 
     if "tag" in tags:
         tag_query = Q(tags__name__in=tags["tag"])
@@ -103,8 +103,10 @@ def run_search_tag_query(query, taglist=None, return_instances=False, collection
     if "phenotype" in tags:
         phenotype_query = Q(phenotype__name__in=tags["phenotype"])
 
-    if "conditionset" in tags:
-        conditionset_query = Q(conditionset__systematic_name__in=tags["conditionset"])
+    if "conditions" in tags:
+        conditions_query = Q(
+            conditionset__conditions__type__name__in=tags["conditions"]
+        )
 
     results = queryset.filter(
         tag_query,
@@ -113,7 +115,7 @@ def run_search_tag_query(query, taglist=None, return_instances=False, collection
         datatype_query,
         medium_query,
         phenotype_query,
-        conditionset_query,
+        conditions_query,
     )
 
     # Now filter down results more, search all fields for query if defined
@@ -123,7 +125,7 @@ def run_search_tag_query(query, taglist=None, return_instances=False, collection
             | Q(phenotype__name__icontains=query)
             | Q(collection__name__icontains=query)
             | Q(medium__systematic_name__icontains=query)
-            | Q(conditionset__systematic_name__icontains=query)
+            | Q(conditionset__conditions__type__name__icontains=query)
         ).distinct()
 
     if return_instances is True:

@@ -1,6 +1,6 @@
 from django.db.models import Q
 from django.shortcuts import render
-from django.http import HttpResponse, StreamingHttpResponse
+from django.http import HttpResponse, StreamingHttpResponse, Http404
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.paginator import Paginator
@@ -16,6 +16,7 @@ from yeastphenome.apps.datasets.models import (
     Tag,
     Gene,
     GeneAlias,
+    GeneSimilarity,
     Collection,
 )
 from yeastphenome.apps.datasets.search import get_search_tags, run_search_tag_query
@@ -55,12 +56,8 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
 # Explore by genes
 
 
-@never_cache
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def gene_explorer(request):
-
-    # prepare list of genes, plus genes and aliases
-    context = {
+def get_gene_names_context():
+    return {
         "genes": Gene.objects.values_list("systematic_name", flat=True).distinct(),
         "common_names": Gene.objects.values_list(
             "systematic_name", "common_name"
@@ -69,6 +66,14 @@ def gene_explorer(request):
             "gene__systematic_name", "name"
         ).distinct(),
     }
+
+
+@never_cache
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def gene_explorer(request):
+
+    # prepare list of genes, plus genes and aliases
+    context = get_gene_names_context()
 
     # A get request for a gene should display it to start
     if "q" in request.GET:
@@ -107,6 +112,55 @@ def gene_explorer(request):
                 "Gene with systematic name %s does not exist in the database." % query,
             )
     return render(request, "genes/index.html", context)
+
+
+@never_cache
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def similar_genes(request, systematic_name):
+
+    try:
+        gene = Gene.objects.get(
+            Q(systematic_name__iexact=systematic_name)
+            | Q(common_name__iexact=systematic_name)
+        )
+    except Gene.DoesNotExist:
+        raise Http404
+
+    sims = (
+        GeneSimilarity.objects.filter(gene1=gene)
+        .values_list("gene2__systematic_name", "gene2__common_name", "score", "pvalue")
+        .order_by("-score")
+        .distinct()
+    )
+    total_sims = sims.count()
+    ranks = [1 - (idx / total_sims) for idx, sim in enumerate(sims)]
+    context = get_gene_names_context()
+    context.update({"gene": gene, "sims": sims, "ranks": ranks})
+    return render(request, "genes/similar_genes.html", context)
+
+
+@never_cache
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def gene_datasets(request, systematic_name):
+
+    try:
+        gene = Gene.objects.get(
+            Q(systematic_name__iexact=systematic_name)
+            | Q(common_name__iexact=systematic_name)
+        )
+    except Gene.DoesNotExist:
+        raise Http404
+
+    queryset = (
+        Data.objects.exclude(Q(value=None) | Q(value=Decimal("NaN")))
+        .filter(gene=gene)
+        .order_by("-value")
+    )
+    total = queryset.count()
+    ranks = [1 - (idx / total) for idx, sim in enumerate(queryset)]
+    context = get_gene_names_context()
+    context.update({"gene": gene, "datasets": queryset, "ranks": ranks})
+    return render(request, "genes/gene_datasets.html", context)
 
 
 # Datasets Explorer (also the datasets index)
