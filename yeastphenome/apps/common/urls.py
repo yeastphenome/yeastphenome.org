@@ -10,7 +10,13 @@ urlpatterns = [
     path("faq/", views.faq, name="faq"),
     path("contributors/", views.contributors, name="contributors"),
     path("cart/", views.view_cart, name="view_cart"),
+    path("cart/add/<str:dataset_id>/", views.add_to_cart, name="add_to_cart"),
     path("cart/add/<str:dataset_id>/<str:next>", views.add_to_cart, name="add_to_cart"),
+    path(
+        "cart/remove/<str:dataset_id>/",
+        views.remove_from_cart,
+        name="remove_from_cart",
+    ),
     path(
         "cart/remove/<str:dataset_id>/<str:next>",
         views.remove_from_cart,

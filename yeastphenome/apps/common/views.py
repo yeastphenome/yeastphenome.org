@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.cache import never_cache
 
 from yeastphenome.apps.common.forms import SearchForm
 from yeastphenome.apps.common.utils import (
@@ -104,31 +105,30 @@ def introduction(request):
 def add_to_cart(request, dataset_id, next=None):
     """Add one or more datasets to the cart, if they exist. A dataset id
     can be a single string of values, comma separted, or just the value.
+    If the request is a POST, we assume coming from a page and return
+    a message as JSON.
     """
     if "cart" not in request.session:
         request.session["cart"] = []
 
     added_count = 0
-
     for d_id in dataset_id.split(","):
-        if not d_id:
-            continue
-        try:
-            dataset = Dataset.objects.get(id=d_id)
-            if dataset.id not in request.session["cart"]:
-                request.session["cart"].append(dataset.id)
-                request.session.modified = True
-                added_count += 1
-        except:
-            pass
+        dataset = Dataset.objects.get(id=d_id)
+        if dataset.id not in request.session["cart"]:
+            request.session["cart"].append(dataset.id)
+            request.session.modified = True
+            added_count += 1
 
     if added_count == 1:
         message = "1 dataset was added to your cart."
     else:
         message = "%s datasets were added to your cart." % added_count
-    messages.success(request, message)
 
     # Return to the same page the user was browsing
+    if request.method == "POST":
+        return JsonResponse({"message": message})
+
+    messages.success(request, message)
     if next is not None:
         return redirect(next)
     return redirect("common:view_cart")
@@ -141,12 +141,14 @@ def remove_from_cart(request, dataset_id, next=None):
     if "cart" in request.session and dataset_id in request.session["cart"]:
         request.session["cart"].pop(request.session["cart"].index(dataset_id))
         request.session.modified = True
-        messages.success(
-            request,
-            "Dataset with id %s was removed from your download cart." % dataset_id,
-        )
+        message = "Dataset with id %s was removed from your download cart." % dataset_id
     else:
-        messages.info(request, "Dataset with id %s is not in your cart." % dataset_id)
+        message = "Dataset with id %s is not in your cart." % dataset_id
+
+    if request.method == "POST":
+        return JsonResponse({"message": message})
+
+    messages.info(request, message)
 
     # Return to the same page the user was browsing
     if next is not None:
@@ -165,10 +167,11 @@ def clear_cart(request):
     return redirect("common:view_cart")
 
 
+@never_cache
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def view_cart(request):
     """View all datasets in the cart, and provide a button to download."""
-    context = {
-        "datasets": Dataset.objects.filter(id__in=request.session.get("cart", []))
-    }
+    cart = request.session.get("cart", [])
+    print(cart)
+    context = {"datasets": Dataset.objects.filter(id__in=cart)}
     return render(request, "cart/view_cart.html", context)

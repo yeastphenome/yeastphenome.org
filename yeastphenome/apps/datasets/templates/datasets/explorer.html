@@ -70,7 +70,7 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
                   </ul>
             </div>
         </div>
-        <div class="row">
+        <div class="row" style="padding-bottom:200px">
             <div class="col-md-12">
                 <div class="btn-group">
                <h4>Browse</h4>
@@ -84,17 +84,6 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
               </div>
             </div>
         </div>
-
-        <div class="row">
-            <div class="col-md-12">
-                <div class="alert alert-warning" role="alert"><strong>Warning:</strong> These data may contain errors.
-                  <p>YeastPhenome.org is running in beta version.
-                     The data are available for download, but, as of today, we cannot guarantee lack of errors or code bugs introduced during processing.
-                     This warning will be removed after all cross-checks and validations have been completed.
-                     In the meantime, please, be careful when using the data.</p>
-                </div>
-            </div>
-      </div>
     </div>
     <div class="col-md-9">
         <div class="row">
@@ -103,7 +92,7 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
                 {% csrf_token %}
                <input type="text" name="q" class="form-control" placeholder="Search (press enter to search only using filters)" required="" id="id_q">
                 </form>
-                <button type="button" id="add-to-cart-all" class="btn btn-default"><a href="">Add Selected to Downloads</a></button>
+                {% if results %}<button type="button" id="add-to-cart-all" class="btn btn-default"><a href="">Add Selected to Downloads</a></button>{% endif %}
 
             </div>
         </div>
@@ -121,9 +110,8 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
                {% if results.count != 0 %}
                   {% include "datasets/datasets_table.html" with datasets=results.results %}
                {% endif %}
-            </div>{% endif %}{% if datasets %}
+            </div>{% endif %}
               {% include "datasets/datasets_table.html" with template='datasets_class' %}
-             {% endif %}
         </div>
     </div>
 </div></div></div>
@@ -234,10 +222,17 @@ function doTagsSearch() {
    var promise = new Promise(function(resolve, reject) {
         var tags = $('[name=tags]').val();
         var query = $("#id_q").val();
-        console.log(tags)
         return resolve({"tags": tags, "query": query});
             
    }).then(function(query){
+
+       // Don't run the search if we don't have tags or a query
+       if (query.tags.length == 0 && query.query == "") {
+          $('#message').html("<div class='alert alert-warning'>Please provide a search query or dataset filter to run search.</div>");
+          $("#fade").hide();
+           return
+       }
+       console.log(cart)
        $.ajax({
            url : "{% url 'api:datasets_search' %}",
            type : "POST",
@@ -271,19 +266,21 @@ function doTagsSearch() {
                      // datatype of data available
                      var dt = datatypes[i[1]]
 
-                     console.log(i)
-                     var content = "<tr><td><input id='" + i[0] + "' type='checkbox' name='" + i[0] + "' class='dataset'></td><td class='col-md-1'><a href='/datasets/"+ i[0]+ "/'>" + i[0]+ "</a></td><td class='col-md-2'><a href='/papers/"+ i[2]+ "'>" + i[3] + "~" + i[4] + "</a></td><td class='col-md-2'><a href='/phenotypes/" + i[13] + "/'>" + i[6] + "(" + i[7] + ")" + "</a></td><td class='col-md-2'><a href='/conditions/" + i[14] + "/'>" + i[8] +"</a></td><td class='col-md-2'><a href='/conditions/media/" + i[15] + "/'>" + medium + "</td><td class='col-md-2'><a href='/datasets/collection/" + i[16] + "/'>" + i[10] + "</a></td><td class='col-md-2'><span class='text-success available'>" + dt +"</span></td><td class='col-md-1'>"
-
-                     if (i[0] in cart) {
-                       content += "<a href='cart/remove/datasets:index" + i[0] + "'><button type='button' class='btn btn-danger btn-sm' style='width:120px'>Remove</button></a></td></tr>"
+                     var content = "<tr><td><input id='" + i[0] + "' type='checkbox' name='" + i[0] + "' class='dataset'></td><td class='col-md-1'><a href='/datasets/"+ i[0]+ "/' target='_blank'>" + i[0]+ "</a></td><td class='col-md-2'>" + i[3] + "~" + i[4] + "</td><td class='col-md-2'>" + i[6] + " (" + i[7] + ")" + "</a></td><td class='col-md-2'>" + i[8] +"</td><td class='col-md-2'>" + medium + "</td><td class='col-md-2'>" + i[16] + "</td><td class='col-md-2'><span class='text-success available'>" + dt +"</span></td><td class='col-md-1'>"
+                     if ($.inArray(parseInt(i[0]), cart) != -1) {
+                       content += "<button id='dataset-cart-" + i[0] + "' data-id=" + i[0] + " type='button' class='btn btn-danger btn-sm remove-from-cart' style='width:100px'>Remove</button></td></tr>"
                      } else {
-                     content += "<a href='cart/add/datasets:index" + i[0]+ "'><button type='button' class='btn btn-primary btn-sm' style='width:120px'>Add to Downloads</button></a></td></tr>"}
-
+                     content += "<button id='dataset-cart-" + i[0] + "' type='button' class='btn btn-primary btn-sm add-to-cart' data-id=" + i[0] + " style='width:100px'>Add</button></a></td></tr>"}
                       $("#papersTableBody").append(content);
                     })
 
-                  console.log("success"); // another sanity check
-                  $("#papersTable").tablesorter();
+                  $("#papersTable").DataTable();
+                  $("#papersTable").show();
+
+                  add_to_cart()
+                  remove_from_cart()
+                  update_checkboxes()
+
               }
               $("#fade").hide();
            },
@@ -297,13 +294,73 @@ function doTagsSearch() {
      })
    })
 }
-</script>
-{% if datasets %}
-{% include "scripts/tablesorter.html" %}
-<script>
-    $(document).ready(function(){
-        $("#papersTable").tablesorter();
+
+{% if datasets %}$(document).ready(function(){$("#papersTable").DataTable();});{% endif %}
+
+// If we click a link to add or remove from cart
+function add_to_cart() {
+  $(".add-to-cart").click(function(event){
+    var dataset_id = $(this).attr("data-id");
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    const request = new Request(
+        "/cart/add/" + dataset_id + "/",
+        {headers: {'X-CSRFToken': csrftoken}});
+
+    fetch(request, {
+        method: 'POST',
+        mode: 'same-origin'  // Do not send CSRF token to another domain.
+    }).then(response => response.json())
+       .then(data => {
+          var element = $('#dataset-cart-' + dataset_id);
+          console.log(data)
+          console.log(element)
+          $(element).removeClass('add-to-cart');
+          $(element).removeClass('btn-primary');
+          $(element).addClass('remove-from-cart');
+          $(element).addClass('btn-danger');
+          $(element).text("Remove")
+          remove_from_cart();
+       });
+  })
+}
+
+
+function remove_from_cart() {
+  $(".remove-from-cart").click(function(event){
+    var dataset_id = $(this).attr("data-id");
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+   console.log('REMOVE')
+    const request = new Request(
+        "/cart/remove/" + dataset_id + "/",
+        {headers: {'X-CSRFToken': csrftoken}});
+
+    fetch(request, {
+        method: 'POST',
+        mode: 'same-origin'  // Do not send CSRF token to another domain.
+    }).then(response => response.json())
+       .then(data => {
+          var element = $('#dataset-cart-' + dataset_id);
+          console.log(data)
+          console.log(element)
+          $(element).removeClass('remove-from-cart');
+          $(element).removeClass('btn-danger');
+          $(element).addClass('add-to-cart');
+          $(element).addClass('btn-primary');
+          $(element).text("Add")
+          add_to_cart();
+       });
+  })
+}
+
+
+function update_checkboxes() {
+    var chkbxs = $('tbody .dataset');
+    chkbxs.change(function () {
+       $('#dataset_download').prop('disabled', chkbxs.filter(':checked').length < 1);
     });
+    chkbxs.change();
+}
 
 $("#add-to-cart-all").click(function(event){
      $("#fade").show();
@@ -312,9 +369,7 @@ $("#add-to-cart-all").click(function(event){
         ids = ids + "," + $(e).attr("name")
      })
      document.location = "/cart/add/" + ids + "/datasets:index"
-
 })
 
 </script>
-{% endif %}
 {% endblock %}
