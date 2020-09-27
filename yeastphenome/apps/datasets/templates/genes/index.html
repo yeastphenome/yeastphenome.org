@@ -30,71 +30,12 @@
   stroke: #000;
   shape-rendering: crispEdges;
 }
-
-
-.typeahead, .tt-query, .tt-hint {
-  border: 2px solid #CCCCCC;
-  font-size: 24px;
-  line-height: 30px;
-  outline: medium none;
-  padding: 8px 12px;
-  width: 800px;
-  max-height: 150px;
-  overflow-y: auto;
-}
-.typeahead {
-  background-color: #FFFFFF;
-}
-.typeahead:focus {
-  border: 2px solid #0097CF;
-}
-.tt-query {
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
-}
-.tt-hint {
-  color: #999999;
-}
-.tt-dropdown-menu {
-  background-color: red !important;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  margin-top: 12px;
-  padding: 8px 0;
-  width: 350px;
-}
-.tt-suggestion {
-  background-color: white !important;
-  font-size: 24px;
-  line-height: 24px;
-  padding: 3px 20px;
-}
-
-.tt-cursor {
-  background-color: #0097cf !important
-}
-
-.tt-suggestion p {
-  margin: 0;
-}
-
-.tt-suggestion:hover .tt-cursor:hover {
-    cursor: pointer;
-    color: black;
-    background-color: #0097cf !important;
-}
-.tt-dropdown-menu .tt-suggestion.tt-cursor {
-  text-decoration: none;
-  background-color: yellow !important;
-  outline: 0;
-  color: #111;
-}
-
 #scrollable-dropdown-menu .tt-menu {
   max-height: 250px;
   overflow-y: auto;
 }
-
 </style>
+{% include "style/typeahead.html" %}
 {% if gene %}{% include "style/sidenav.html" %}
 <div class="large-2 columns" id="sidenav">
     <div>

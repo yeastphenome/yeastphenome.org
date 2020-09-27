@@ -27,53 +27,8 @@
   stroke: #000;
   shape-rendering: crispEdges;
 }
-
-.typeahead, .tt-query, .tt-hint {
-	border: 2px solid #CCCCCC;
-	border-radius: 8px;
-	font-size: 22px; /* Set input font size */
-	height: 30px;
-	line-height: 30px;
-	outline: medium none;
-	padding: 8px 12px;
-        margin-top:5px;
-        width: 90%;
-}
-
-.typeahead {
-	background-color: #FFFFFF;
-}
-.typeahead:focus {
-	border: 2px solid #0097CF;
-}
-.tt-query {
-	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
-}
-.tt-hint {
-	color: #999999;
-}
-.tt-menu {
-	background-color: #FFFFFF;
-	border: 1px solid rgba(0, 0, 0, 0.2);
-	border-radius: 8px;
-	box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-	margin-top: 12px;
-	padding: 8px 0;
-	width: 422px;
-}
-.tt-suggestion {
-	font-size: 22px;  /* Set suggestion dropdown font size */
-	padding: 3px 20px;
-}
-.tt-suggestion:hover {
-	cursor: pointer;
-	background-color: #0097CF;
-	color: #FFFFFF;
-}
-.tt-suggestion p {
-	margin: 0;
-}
 </style>
+{% include "style/typeahead.html" %}
 <div class="row">
     <div class="col-md-9">
         <div id="dataset-genes"></div>
@@ -82,11 +37,10 @@
     <div class="col-md-3">
          {% if dataset_genes %}Find a Gene
          <div class="search-wrapper">
-	<input type="text" class="gene-search typeahead tt-query" autocomplete="off" spellcheck="false" id="gene-name">
-         <button id="gene-select" type="submit" class="btn btn-sm btn-primary search-btn"><i class="fa fa-search"></i></button>
+	<input type="text" style="width:200px" class="gene-search typeahead tt-query" autocomplete="off" spellcheck="false" id="gene-name">
      </div>
         <span id="gene-detail"></span>
-        <p id="gene-names" style="margin-top:20px" class="alert alert-warning">Mouse over bars to see genes</p>
+        <p id="gene-names" style="margin-top:20px" class="alert alert-warning">Click on bars to see genes</p>
         {% endif %}
     </div>
 </div>

@@ -1,14 +1,15 @@
 from django.db.models import Q
+from django.db import connection
 from django.shortcuts import render
-from django.http import HttpResponse, StreamingHttpResponse, Http404
+from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.views import generic
 from django.contrib import messages
+from django.views import generic
+
 
 from django.views.decorators.cache import never_cache
-from yeastphenome.apps.common.utils import get_collections_by_year, get_dataset_genes
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.datasets.models import (
     Dataset,
@@ -46,10 +47,25 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["collection_yearly_counts"] = get_collections_by_year(
-            context["dataset"].collection
+        genes = (
+            context["dataset"]
+            .data_set.exclude(value=None)
+            .values_list("gene__systematic_name", "value", "gene__id")
         )
-        context.update(get_dataset_genes(context["dataset"].id))
+        gene_ids = [gene[2] for gene in genes]
+        genes = [{"label": x[0], "value": float(x[1])} for x in genes]
+        context["aliases"] = (
+            GeneAlias.objects.filter(gene__id__in=gene_ids)
+            .values_list("gene__systematic_name", "name")
+            .distinct()
+        )
+        context["common_names"] = (
+            Gene.objects.filter(id__in=gene_ids)
+            .exclude(common_name=None)
+            .values_list("systematic_name", "common_name")
+            .distinct()
+        )
+        context["dataset_genes"] = sorted(genes, key=lambda i: i["value"])
         return context
 
 
@@ -68,7 +84,6 @@ def get_gene_names_context():
     }
 
 
-@never_cache
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def gene_explorer(request):
 
@@ -166,9 +181,13 @@ def gene_datasets(request, systematic_name):
 # Datasets Explorer (also the datasets index)
 
 
+@never_cache
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def data_explorer(request, collection_id=None):
-
+    """Dataset search is equivalent to the API version, but instead takes GET
+    parameters to derive tags and a query. This will enable users to copy
+    a particular search and share it with colleagues.
+    """
     # The user can optionally be searching by a collection
     collection = None
     if collection_id:
@@ -184,15 +203,33 @@ def data_explorer(request, collection_id=None):
                 request, "We could not find collection with id %s" % collection_id
             )
 
+    taglist = []
+    for key in [
+        "datatype",
+        "tag",
+        "gene",
+        "medium",
+        "conditions",
+        "collection",
+        "phenotype",
+        "query",
+    ]:
+        for tag in request.GET.get(key, "").split(","):
+            if not tag:
+                continue
+            taglist.append({"value": tag, "code": key})
+
     context = {
         "tags": get_search_tags(),
         "cart": request.session.get("cart", []),
         "DOWNLOAD_PREFIX": settings.DOWNLOAD_PREFIX,
     }
-    if "q" in request.GET:
-        query = request.GET["q"].strip()
+
+    # Use same function above to update search results
+    queryset = []
+    if taglist:
         queryset = run_search_tag_query(
-            query, return_instances=True, collection=collection
+            query=None, taglist=taglist, return_instances=True, collection=collection
         )
 
         # 50 results per page
@@ -202,29 +239,6 @@ def data_explorer(request, collection_id=None):
             "results": paginator.get_page(page),
             "count": queryset.count(),
         }
-
-    else:
-
-        if collection:
-            datasets = Dataset.objects.filter(
-                conditionset__systematic_name="standard", collection=collection
-            )
-        else:
-            datasets = Dataset.objects.filter(conditionset__systematic_name="standard")
-
-        # These are the original datasets that were associated with the growth class
-        # This result is small enough to not be paginated
-        context.update(
-            {
-                "datasets": datasets.filter(
-                    phenotype__observable__name__startswith="growth"
-                )
-                .filter(control_conditionset__isnull=True)
-                .filter(control_medium__isnull=True)
-                .exclude(paper__latest_data_status__status__name="not relevant")
-                .distinct(),
-            }
-        )
 
     return render(request, "datasets/explorer.html", context)
 
@@ -284,14 +298,6 @@ def download_sims(request, systematic_name):
     return response
 
 
-class Echo:
-    """An object that implements just the write method of the file-like interface."""
-
-    def write(self, value):
-        """Write the value by returning it, instead of storing in a buffer."""
-        return value
-
-
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download_all(request, systematic_name=None):
     """Download all datasets. If a gene name is provided, filter to those"""
@@ -302,18 +308,16 @@ def download_all(request, systematic_name=None):
                 paper__latest_data_status__status__name="loaded",
                 data__gene__systematic_name__iexact=systematic_name,
             )
+            .values_list("id", "name", "paper__pmid", "paper__latest_tested_status")
             .distinct()
         )
     else:
         datasets = (
             Dataset.objects.select_related("paper__latest_tested_status__status")
             .filter(paper__latest_data_status__status__name="loaded")
+            .values_list("id", "name", "paper__pmid", "paper__latest_tested_status")
             .distinct()
         )
-
-    # prepare streaming response to write rows to
-    pseudo_buffer = Echo()
-    writer = csv.writer(pseudo_buffer, delimiter="\t")
 
     filename = (
         "%s_datasets_%s.txt" % (settings.DOWNLOAD_PREFIX, systematic_name)
@@ -321,29 +325,28 @@ def download_all(request, systematic_name=None):
         else "%s_datasets_%s.txt" % settings.DOWNLOAD_PREFIX
     )
 
-    # The first row needs to be a column with headers
-    writer.writerow(["id", "name", "pmid", "latest_tested_status"])
-    response = StreamingHttpResponse(
-        (
-            writer.writerow([d.id, d.name, d.paper.pmid, d.paper.latest_tested_status])
-            for d in datasets
-        ),
-        content_type="text/csv",
-    )
-    response["Content-Disposition"] = 'attachment; filename="%s"' % filename
+    sql, params = datasets.query.sql_with_params()
+    sql = f"COPY ({sql}) TO STDOUT WITH (FORMAT CSV, HEADER, DELIMITER E'\t')"
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = f"attachment; filename={filename}"
+    with connection.cursor() as cur:
+        sql = cur.mogrify(sql, params)
+        cur.copy_expert(sql, response)
     return response
 
 
-@never_cache
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download(request):
 
     file_header = ""
 
-    # datasets = []
-    # for key, value in request.GET.iteritems():
-    #     datasets.append(key)
-    datasets = sorted(request.GET)
+    # View passes: ?papersTable_length=10&14=on&26=on
+    datasets = []
+    for key, value in request.GET.items():
+        try:
+            datasets.append(int(key))
+        except:
+            pass
 
     data = (
         Data.objects.filter(dataset_id__in=datasets)
@@ -366,7 +369,7 @@ def download(request):
         "ORF\t"
         + "\t".join(
             [
-                u"%s" % get_object_or_404(Dataset, pk=dataset_id)
+                "%s" % get_object_or_404(Dataset, pk=dataset_id)
                 for dataset_id in datasets_ids
             ]
         )
@@ -376,7 +379,6 @@ def download(request):
     data_row = []
     for i, orf in enumerate(orfs):
         new_row = orf + "\t" + "\t".join([str(val) for val in matrix[i]])
-        print(new_row)
         data_row.append(new_row)
 
     txt3 = "\n".join(data_row)
@@ -399,13 +401,13 @@ def data(request, domain, id):
     if domain == "papers":
         paper = get_object_or_404(Paper, pk=id)
         datasets = paper.dataset_set
-        file_header = u"# Paper: %s (PMID %s)\n" % (paper, paper.pmid)
+        file_header = "# Paper: %s (PMID %s)\n" % (paper, paper.pmid)
 
     if domain == "datasets":
         # datasets = get_object_or_404(Dataset, pk=id)
         datasets = Dataset.objects.filter(pk=id)
         dataset = datasets.first()
-        file_header = u"# Paper: %s (PMID %s)\n# Dataset: %s\n" % (
+        file_header = "# Paper: %s (PMID %s)\n# Dataset: %s\n" % (
             dataset.paper,
             dataset.paper.pmid,
             dataset,
@@ -414,7 +416,7 @@ def data(request, domain, id):
     if domain == "conditions":
         conditiontype = get_object_or_404(ConditionType, pk=id)
         datasets = conditiontype.datasets()
-        file_header = u"# Condition: %s (ID %s)\n" % (conditiontype, conditiontype.id)
+        file_header = "# Condition: %s (ID %s)\n" % (conditiontype, conditiontype.id)
 
     if domain == "chebi":
         chebi_entity = ChebiEntity("CHEBI:" + str(id))
@@ -427,7 +429,7 @@ def data(request, domain, id):
         datasets = Dataset.objects.filter(
             conditionset__conditions__type__chebi_id__in=children
         )
-        file_header = u"# Data for conditions annotated as %s (ChEBI:%s)\n" % (
+        file_header = "# Data for conditions annotated as %s (ChEBI:%s)\n" % (
             chebi_entity.get_name(),
             id,
         )
@@ -435,7 +437,7 @@ def data(request, domain, id):
     if domain == "phenotypes":
         phenotype = get_object_or_404(Observable, pk=id)
         datasets = phenotype.datasets()
-        file_header = u"# Phenotype: %s (ID %s)\n" % (phenotype, phenotype.id)
+        file_header = "# Phenotype: %s (ID %s)\n" % (phenotype, phenotype.id)
 
     data = Data.objects.filter(dataset_id__in=datasets.values("id")).all()
 
@@ -454,7 +456,7 @@ def data(request, domain, id):
         "\t"
         + "\t".join(
             [
-                u"%s" % get_object_or_404(Dataset, pk=dataset_id)
+                "%s" % get_object_or_404(Dataset, pk=dataset_id)
                 for dataset_id in datasets_ids
             ]
         )
@@ -464,7 +466,6 @@ def data(request, domain, id):
     data_row = []
     for i, orf in enumerate(orfs):
         new_row = orf + "\t" + "\t".join([str(val) for val in matrix[i]])
-        print(new_row)
         data_row.append(new_row)
 
     txt3 = "\n".join(data_row)

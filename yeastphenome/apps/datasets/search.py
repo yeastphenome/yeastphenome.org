@@ -31,7 +31,7 @@ def get_search_tags():
 
     # Phenotypes
     phenotypes = [
-        {"value": x[0], "icon": "🐶", "code": "medium"}
+        {"value": x[0], "icon": "🐶", "code": "phenotype"}
         for x in Phenotype.objects.values_list("name").distinct()
     ]
 
@@ -60,12 +60,17 @@ def run_search_tag_query(query, taglist=None, return_instances=False, collection
     """this function is called from the papers/views.py for the explorer function
     It takes in a list of tags (and associated models) to build a query for papers.
     """
-    # First do a search based on the tags, assemble those of liked kind
+    # First do a search based on the tags, assemble those of liked kind. A tag without
+    # a code is part of the list of queries
+    queries = [] if not query else [query]
     tags = {}
     for tag in taglist or []:
-        if tag["code"] not in tags:
-            tags[tag["code"]] = []
-        tags[tag["code"]].append(tag["value"])
+        if tag["code"] in ["", "query"]:
+            queries.append(tag["value"])
+        else:
+            if tag["code"] not in tags:
+                tags[tag["code"]] = []
+            tags[tag["code"]].append(tag["value"])
 
     queryset = Dataset.objects.exclude(
         paper__latest_data_status__status__name="not relevant"
@@ -104,8 +109,10 @@ def run_search_tag_query(query, taglist=None, return_instances=False, collection
         phenotype_query = Q(phenotype__name__in=tags["phenotype"])
 
     if "conditions" in tags:
+        print(tags)
         conditions_query = Q(
-            conditionset__conditions__type__name__in=tags["conditions"]
+            conditionset__conditions__type__name__iregex="(%s)"
+            % "|".join(tags["conditions"])
         )
 
     results = queryset.filter(
@@ -119,13 +126,14 @@ def run_search_tag_query(query, taglist=None, return_instances=False, collection
     )
 
     # Now filter down results more, search all fields for query if defined
-    if query not in ["", None]:
+    if queries:
+        queries = "(%s)" % "|".join(queries)
         results = results.filter(
-            Q(name__icontains=query)
-            | Q(phenotype__name__icontains=query)
-            | Q(collection__name__icontains=query)
-            | Q(medium__systematic_name__icontains=query)
-            | Q(conditionset__conditions__type__name__icontains=query)
+            Q(name__iregex=queries)
+            | Q(phenotype__name__iregex=queries)
+            | Q(collection__name__iregex=queries)
+            | Q(medium__systematic_name__iregex=queries)
+            | Q(conditionset__conditions__type__name__iregex=queries)
         ).distinct()
 
     if return_instances is True:
