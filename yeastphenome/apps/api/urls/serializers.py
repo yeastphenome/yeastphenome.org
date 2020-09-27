@@ -27,6 +27,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 import json
 
+
 # Genes
 
 
@@ -148,9 +149,8 @@ class BaseSearch(RatelimitMixin, APIView):
         except:
             results[
                 "message"
-            ] = "There was an issue parsing your query! Please <a href='https://github.com/yeastphenome/yeastphenome.org/issues'>submit a ticket</a>"
+            ] = "There was an issue parsing your query! Please <a target='_blank' href='https://github.com/yeastphenome/yeastphenome.org/issues'>submit a ticket</a>"
             tags = {}
-
         return Response(status=200, data=results)
 
 

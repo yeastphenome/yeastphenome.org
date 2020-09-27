@@ -33,7 +33,7 @@
                 <span class="text-muted">{{ dataset.data_available|capfirst }}</span>
                 {% endif %}
             </td>
-            <td>{% if not request.session.cart %}<a href="{% url 'common:add_to_cart' dataset.id "datasets:growth" %}"><button type="button" class="btn btn-primary btn-sm" style="width:120px">Add</button></a>{% else %}{% if dataset.id not in request.session.cart %}<a href="{% url 'common:add_to_cart' dataset.id "datasets:index" %}"><button type="button" class="btn btn-primary btn-sm" style="width:120px">Add</button></a>{% else %}<a href="{% url 'common:remove_from_cart' dataset.id "datasets:index" %}"><button type="button" class="btn btn-danger btn-sm" style="width:120px">Remove</button></a>{% endif %}{% endif %}
+            <td>{% if not request.session.cart %}<button type="button" class="btn btn-primary btn-sm add-to-cart" style="width:120px" data-id="{{ dataset.id }}">Add</button>{% else %}{% if dataset.id not in request.session.cart %}<button type="button" data-id="{{ dataset.id }}" class="btn btn-primary btn-sm add-to-cart" style="width:120px">Add</button>{% else %}<button type="button" class="btn btn-danger btn-sm remove-from-cart" data-id="{{ dataset.id }}" style="width:120px">Remove</button>{% endif %}{% endif %}
             </td>
         </tr>{% endfor %}
         </tbody>
@@ -56,7 +56,8 @@
         Page {{ datasets.number }} of {{ datasets.paginator.num_pages }}.
     </span>
     {% endif %}
-    <button id="dataset_download" type="submit" class="btn btn-default" disabled="true">Download selected datasets</button>
+    <br>
+    <button id="dataset_download" type="submit" class="btn btn-default" disabled="true" style="display:none">Download selected datasets</button>
 
 </form>
 

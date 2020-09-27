@@ -10,7 +10,6 @@ from django.views import generic
 
 
 from django.views.decorators.cache import never_cache
-from yeastphenome.apps.common.utils import get_collections_by_year
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.datasets.models import (
     Dataset,
@@ -48,15 +47,24 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["collection_yearly_counts"] = get_collections_by_year(
-            context["dataset"].collection
-        )
         genes = (
             context["dataset"]
             .data_set.exclude(value=None)
-            .values_list("gene__systematic_name", "value")
+            .values_list("gene__systematic_name", "value", "gene__id")
         )
+        gene_ids = [gene[2] for gene in genes]
         genes = [{"label": x[0], "value": float(x[1])} for x in genes]
+        context["aliases"] = (
+            GeneAlias.objects.filter(gene__id__in=gene_ids)
+            .values_list("gene__systematic_name", "name")
+            .distinct()
+        )
+        context["common_names"] = (
+            Gene.objects.filter(id__in=gene_ids)
+            .exclude(common_name=None)
+            .values_list("systematic_name", "common_name")
+            .distinct()
+        )
         context["dataset_genes"] = sorted(genes, key=lambda i: i["value"])
         return context
 
@@ -176,7 +184,10 @@ def gene_datasets(request, systematic_name):
 @never_cache
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def data_explorer(request, collection_id=None):
-
+    """Dataset search is equivalent to the API version, but instead takes GET
+    parameters to derive tags and a query. This will enable users to copy
+    a particular search and share it with colleagues.
+    """
     # The user can optionally be searching by a collection
     collection = None
     if collection_id:
@@ -192,15 +203,33 @@ def data_explorer(request, collection_id=None):
                 request, "We could not find collection with id %s" % collection_id
             )
 
+    taglist = []
+    for key in [
+        "datatype",
+        "tag",
+        "gene",
+        "medium",
+        "conditions",
+        "collection",
+        "phenotype",
+        "query",
+    ]:
+        for tag in request.GET.get(key, "").split(","):
+            if not tag:
+                continue
+            taglist.append({"value": tag, "code": key})
+
     context = {
         "tags": get_search_tags(),
         "cart": request.session.get("cart", []),
         "DOWNLOAD_PREFIX": settings.DOWNLOAD_PREFIX,
     }
-    if "q" in request.GET:
-        query = request.GET["q"].strip()
+
+    # Use same function above to update search results
+    queryset = []
+    if taglist:
         queryset = run_search_tag_query(
-            query, return_instances=True, collection=collection
+            query=None, taglist=taglist, return_instances=True, collection=collection
         )
 
         # 50 results per page
@@ -210,13 +239,6 @@ def data_explorer(request, collection_id=None):
             "results": paginator.get_page(page),
             "count": queryset.count(),
         }
-
-    else:
-
-        if collection:
-            context["datasets"] = Dataset.objects.filter(
-                conditionset__systematic_name="standard", collection=collection
-            )
 
     return render(request, "datasets/explorer.html", context)
 
@@ -357,7 +379,6 @@ def download(request):
     data_row = []
     for i, orf in enumerate(orfs):
         new_row = orf + "\t" + "\t".join([str(val) for val in matrix[i]])
-        print(new_row)
         data_row.append(new_row)
 
     txt3 = "\n".join(data_row)
@@ -445,7 +466,6 @@ def data(request, domain, id):
     data_row = []
     for i, orf in enumerate(orfs):
         new_row = orf + "\t" + "\t".join([str(val) for val in matrix[i]])
-        print(new_row)
         data_row.append(new_row)
 
     txt3 = "\n".join(data_row)

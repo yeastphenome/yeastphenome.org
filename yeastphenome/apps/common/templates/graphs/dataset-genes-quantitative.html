@@ -5,6 +5,28 @@ var color = "steelblue";
 //var values = d3.range(1000).map(d3.random.normal(20, 5));
 // var values = [{% for gene in dataset_genes %}{{ gene.value }}{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
 var gene_values = {{ dataset_genes | safe }}
+
+// parse aliases and common names into list
+var aliases = {}
+var _aliases = [{% for alias in aliases %}["{{ alias.0 }}", "{{ alias.1 }}"] {% if forloop.last %}{% else %},{% endif %}{% endfor %} ]
+var aliases_lookup = { {% for alias in aliases %}"{{ alias.1 }}": "{{ alias.0 }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %} }
+$.each(_aliases, function(i, alias){
+    if (!(alias[0] in aliases)) {
+        aliases[alias[0]] = []
+    } 
+    aliases[alias[0]].push(alias[1]);
+})
+
+var common_names = {}
+var _common_names = [{% for alias in common_names %}["{{ alias.0 }}", "{{ alias.1 }}"] {% if forloop.last %}{% else %},{% endif %}{% endfor %} ]
+var common_names_lookup = { {% for alias in common_names %}"{{ alias.1 }}": "{{ alias.0 }}" {% if forloop.last %}{% else %},{% endif %}{% endfor %} }
+$.each(_common_names, function(i, alias){
+    if (!(alias[0] in common_names)) {
+        common_names[alias[0]] = []
+    } 
+    common_names[alias[0]].push(alias[1]);
+})
+
 var values = gene_values.map(function(d){return d.value;})
 
 // A formatter for counts.
@@ -26,7 +48,7 @@ var data = d3.layout.histogram()
     .bins(x.ticks(20))
     (values);
 
-// Create a lookup by bin id
+// Create a lookup by bin id to index into count
 var lookup = Object()
 $.each(data, function(i, e){
     var filtered = gene_values.filter(function(record){ return e.x <= record.value && record.value < e.x + e.dx; });
@@ -34,6 +56,7 @@ $.each(data, function(i, e){
         lookup[ee.label] = i
     })
 })
+
 var yMax = d3.max(data, function(d){return d.length});
 var yMin = d3.min(data, function(d){return d.length});
 var colorScale = d3.scale.linear()
@@ -70,25 +93,48 @@ bar.append("rect")
     .attr("data-min", function(d) { return (d.x).toFixed(2) })
     .attr("data-max", function(d) { return (d.x + d.dx).toFixed(2) })
     .attr("fill", function(d) { return colorScale(d.y) })
-    .on('mouseover', function(d){ 
+    .on('click', function(d, i){ 
+
+       // Restore colors to original values
+       $.each($(".histbar"), function(i, e){
+         $(e).attr("fill", $(e).attr("data-fill"));
+       })
+
+       // Then make selected red!
+       var bar = $("#histbar-" + i);
+       bar.attr("fill", "red");
+
        var genes = gene_values.filter(function(record){ return d.x <= record.value && record.value < d.x + d.dx; });
        var names = genes.map(function(record){return record.label; });
-       content = "<h2> Range " + (d.x).toFixed(2) + " to " + (d.x + d.dx).toFixed(2) + "</h2><select style='width:200px; height:200px' class='custom-select typehead' multiple>"
+
+       content = "<h2> Range " + (d.x).toFixed(2) + " to " + (d.x + d.dx).toFixed(2) + "</h2><div style='width:200px; height:200px; overflow:scroll;' class='custom-select typehead'><ul>"
        $.each(names, function(i,e){
-           content = content + "<option value=" + e + ">" + e + "</option>"
+
+           // If we have aliases and common names, add them too
+           has_aliases = false
+           if (e in common_names) {
+               $.each(common_names[e], function(ii,ee){
+                   content = content + "<a target='_blank' href='/datasets/genes?q="+ e + "'><li value=" + e + ">" + ee + " / " + e + "</li></a>"
+               })
+               has_aliases = true
+           }
+           if (e in aliases) {
+               $.each(aliases[e], function(ii, ee){
+                   content = content + "<a target='_blank' href='/datasets/genes?q="+ e + "'><li value=" + e + ">" + ee + " / " + e + "</li></a>"
+               })
+               has_aliases = true
+           }
+
+           // Only add the gene if it doesn't have aliases
+           if (!has_aliases){
+               content = content + "<a target='_blank' href='/datasets/genes?q="+ e+ "'><li value=" + e + ">" + e + "</li></a>"
+           }
+
        })
-       content = content + "</select>"
+       
+       content = content + "</li></div>"
        $("#gene-names").html(content)
     });
-
-// title
-svg.append("text")
-        .attr("x", 10)             
-        .attr("y", -30)
-        .attr("text-anchor", "left")  
-        .style("font-size", "12px") 
-        .style("color", "#ccc") 
-        .text("{{ dataset.name }}");
 
 bar.append("text")
     .attr("dy", ".75em")
@@ -102,27 +148,59 @@ svg.append("g")
     .attr("transform", "translate(0," + height + ")")
     .call(xAxis);
 
-// Find the gene when the user selects
-$('#gene-select').on('click', function() {
+$('#gene-name').bind("keypress", {}, keypressSearch);
 
+function keypressSearch(e) {
+    var code = (e.keyCode ? e.keyCode : e.which);
+    if (code == 13) { //Enter keycode                
+        e.preventDefault();
+        doSearch();
+    }
+};
+
+
+function doSearch() {
+  var gene_name = $("#gene-name").val();
+
+  // First ensure it's not a common name or alias
+  if (gene_name in aliases_lookup) {
+      gene_name = aliases_lookup[gene_name]
+  } else if (gene_name in common_names_lookup) {
+      gene_name = common_names_lookup[gene_name]
+  }
+  
   // Get the bar for the gene from the lookup
-  var bar_id = lookup[$("#gene-name").val()];
+  if (gene_name in lookup) {
+      var bar_id = lookup[gene_name];
 
-  // Restore colors to original values
-  $.each($(".histbar"), function(i, e){
-     $(e).attr("fill", $(e).attr("data-fill"));
-  })
+      // Restore colors to original values
+      $.each($(".histbar"), function(i, e){
+         $(e).attr("fill", $(e).attr("data-fill"));
+      })
 
-  // Then make selected red!
-  var bar = $("#histbar-" + bar_id);
-  bar.attr("fill", "red");
+      // Then make selected red!
+      var bar = $("#histbar-" + bar_id);
+      bar.attr("fill", "red");
 
-  // Tell the user in case they can't see it
-  $("#gene-detail").html("Gene "+ this.value + " is within range: " + bar.attr("data-min") + " to " + bar.attr("data-max") + ".")
+      // Tell the user in case they can't see it
+      $("#gene-detail").html("Gene <a target='_blank' href='/datasets/genes?q=" + gene_name + "'>" + gene_name + "</a> is within range: " + bar.attr("data-min") + " to " + bar.attr("data-max") + ".")
+
+  } else {
+      $("#gene-detail").html("Gene "+ gene_name + " is not in this dataset.")
+  }
+}
+
+// Find the gene when the user selects
+$('input.typeahead').on('typeahead:selected', function(event, selection) {
+  doSearch();
 });
 
+
 $(document).ready(function(){
-    var genes = Object.keys(lookup);
+    var alias_list = [{% for alias in aliases %}"{{ alias.1 }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
+    var common_list = [{% for alias in common_list %}"{{ alias.1 }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
+
+    var genes = $.merge(Object.keys(lookup), alias_list, common_list)
    
     // Constructing the suggestion engine
     var genes = new Bloodhound({
