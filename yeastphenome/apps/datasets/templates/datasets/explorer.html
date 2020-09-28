@@ -304,6 +304,7 @@ function doTagsSearch() {
               } else {
                   $("#message").html("<div class='alert alert-info'>Found " + json['count'] + " results.</div>");
                   $("#papersTable").DataTable().destroy();
+                  $("#papersTableBody").empty();                      
   
                   // data type lookup, int to correspond to name
                   var datatypes = json['datatypes']
