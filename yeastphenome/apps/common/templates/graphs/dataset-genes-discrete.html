@@ -174,8 +174,6 @@ svg.selectAll(".bar")
     .attr("text-anchor", "middle")
     .text(function(d) { return formatCount(d.y); });
 
-console.log("THIS ONE")
-
 
 $('#gene-name').bind("keypress", {}, keypressSearch);
 
@@ -198,7 +196,7 @@ function doSearch() {
       gene_name = common_names_lookup[gene_name]
   }
   
-  // All gene names are uppercase
+  // Most gene names are uppercase
   gene_name = gene_name.toUpperCase() 
 
   // Get the bar for the gene from the lookup
