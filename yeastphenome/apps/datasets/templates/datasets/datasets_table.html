@@ -22,7 +22,7 @@
             <td><input id="{{ dataset.id }}" type="checkbox" name="{{ dataset.id }}" class="dataset" {# {% if not dataset.has_data_in_db %}disabled{% endif %} #}></td>
             <td class="col-md-1"><a href="/datasets/{{ dataset.id }}/">{{ dataset.id }}</a></td>
             <td class="col-md-2"><a href="{% url 'papers:detail' dataset.paper.id %}">{{ dataset.paper }}</a></td>
-            <td class="col-md-2"><a href="{% url 'phenotypes:detail' dataset.phenotype.observable.id %}">{{ dataset.phenotype.observable.name }} {% if dataset.phenotype.reporter %} ({{ dataset.phenotype.reporter }}) {% endif %}</a></td>
+            <td class="col-md-2">{% if dataset.phenotype.observable %}<a href="{% url 'phenotypes:detail' dataset.phenotype.observable.id %}">{{ dataset.phenotype.observable.name }} {% if dataset.phenotype.reporter %} ({{ dataset.phenotype.reporter }}) {% endif %}</a>{% endif %}</td>
             <td class="col-md-2"><a href="{% url 'conditions:detail' dataset.conditionset.id %}">{{ dataset.conditionset.display_name }}</a></td>
             <td class="col-md-2">{% if dataset.medium %}<a href="{% url 'conditions:medium_detail' dataset.medium.id %}">{{ dataset.medium.display_name }}</a>{% endif %}</td>
             <td class="col-md-2"><a href="{% url 'datasets:collection_detail' dataset.collection.id %}">{{ dataset.collection.shortname }}</a></td>
@@ -33,7 +33,7 @@
                 <span class="text-muted">{{ dataset.data_available|capfirst }}</span>
                 {% endif %}
             </td>
-            <td>{% if not request.session.cart %}<button type="button" class="btn btn-primary btn-sm add-to-cart" style="width:120px" data-id="{{ dataset.id }}">Add</button>{% else %}{% if dataset.id not in request.session.cart %}<button type="button" data-id="{{ dataset.id }}" class="btn btn-primary btn-sm add-to-cart" style="width:120px">Add</button>{% else %}<button type="button" class="btn btn-danger btn-sm remove-from-cart" data-id="{{ dataset.id }}" style="width:120px">Remove</button>{% endif %}{% endif %}
+            <td>{% if not request.session.cart %}<button id="dataset-cart-{{ dataset.id }}" type="button" class="btn btn-primary btn-sm add-to-cart" style="width:120px" data-id="{{ dataset.id }}">Add</button>{% else %}{% if dataset.id not in request.session.cart %}<button id="dataset-cart-{{ dataset.id }}" type="button" data-id="{{ dataset.id }}" class="btn btn-primary btn-sm add-to-cart" style="width:120px">Add</button>{% else %}<button id="dataset-cart-{{ dataset.id }}" type="button" class="btn btn-danger btn-sm remove-from-cart" data-id="{{ dataset.id }}" style="width:120px">Remove</button>{% endif %}{% endif %}
             </td>
         </tr>{% endfor %}
         </tbody>

@@ -114,20 +114,14 @@ bar.append("rect")
            has_aliases = false
            if (e in common_names) {
                $.each(common_names[e], function(ii,ee){
-                   content = content + "<a target='_blank' href='/datasets/genes?q="+ e + "'><li value=" + e + ">" + ee + " / " + e + "</li></a>"
-               })
-               has_aliases = true
-           }
-           if (e in aliases) {
-               $.each(aliases[e], function(ii, ee){
-                   content = content + "<a target='_blank' href='/datasets/genes?q="+ e + "'><li value=" + e + ">" + ee + " / " + e + "</li></a>"
+                   content = content + "<a href='/datasets/genes?q="+ e + "'><li value=" + e + ">" + e + " / " + ee + "</li></a>"
                })
                has_aliases = true
            }
 
            // Only add the gene if it doesn't have aliases
            if (!has_aliases){
-               content = content + "<a target='_blank' href='/datasets/genes?q="+ e+ "'><li value=" + e + ">" + e + "</li></a>"
+               content = content + "<a href='/datasets/genes?q="+ e+ "'><li value=" + e + ">" + e + "</li></a>"
            }
 
        })
@@ -169,6 +163,9 @@ function doSearch() {
       gene_name = common_names_lookup[gene_name]
   }
   
+  // All gene names are uppercase
+  gene_name = gene_name.toUpperCase() 
+
   // Get the bar for the gene from the lookup
   if (gene_name in lookup) {
       var bar_id = lookup[gene_name];
@@ -183,7 +180,7 @@ function doSearch() {
       bar.attr("fill", "red");
 
       // Tell the user in case they can't see it
-      $("#gene-detail").html("Gene <a target='_blank' href='/datasets/genes?q=" + gene_name + "'>" + gene_name + "</a> is within range: " + bar.attr("data-min") + " to " + bar.attr("data-max") + ".")
+      $("#gene-detail").html("Gene <a href='/datasets/genes?q=" + gene_name + "'>" + gene_name + "</a> is within range: " + bar.attr("data-min") + " to " + bar.attr("data-max") + ".")
 
   } else {
       $("#gene-detail").html("Gene "+ gene_name + " is not in this dataset.")

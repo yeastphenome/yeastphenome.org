@@ -1,5 +1,4 @@
 from django.db.models import Q
-from django.db import connection
 from django.shortcuts import render
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404
@@ -7,7 +6,6 @@ from django.conf import settings
 from django.core.paginator import Paginator
 from django.contrib import messages
 from django.views import generic
-
 
 from django.views.decorators.cache import never_cache
 from yeastphenome.apps.papers.models import Paper
@@ -21,13 +19,15 @@ from yeastphenome.apps.datasets.models import (
     Collection,
 )
 from yeastphenome.apps.datasets.search import get_search_tags, run_search_tag_query
-from yeastphenome.apps.datasets.utils import get_gene_metadata
+from yeastphenome.apps.datasets.utils import get_gene_metadata, send_file
 from yeastphenome.apps.conditions.models import ConditionType
 from yeastphenome.apps.phenotypes.models import Observable
 
 from decimal import Decimal
 from libchebipy import ChebiEntity
-import csv
+import os
+import tempfile
+import pandas
 
 from ratelimit.mixins import RatelimitMixin
 from ratelimit.decorators import ratelimit
@@ -270,51 +270,42 @@ def tag(request, id):
 def download_sims(request, systematic_name):
     """Download all dataset similarity scores (based on a gene)"""
     gene = Gene.objects.get(systematic_name=systematic_name)
-    sims = gene.get_ranked_similar()
+    sims = gene.get_ranked_similar().values_list(
+        "id", "gene1", "gene2", "score", "pvalue"
+    )
 
-    # prepare response to write rows to
-    response = HttpResponse(content_type="text/plain")
     filename = "%s_gene_similarities_%s.txt" % (
         settings.DOWNLOAD_PREFIX,
         systematic_name,
     )
-    response["Content-Disposition"] = 'attachment; filename="%s"' % filename
 
-    # prepare csv writer
-    writer = csv.writer(response, delimiter="\t")
-    columns = ["gene_similarity_id", "gene1", "gene2", "score", "pvalue"]
-    writer.writerow(columns)
-
-    for sim in sims:
-        writer.writerow(
-            [
-                sim.id,
-                sim.gene1.systematic_name,
-                sim.gene2.systematic_name,
-                float(sim.score),
-                float(sim.pvalue),
-            ]
-        )
-    return response
+    df = pandas.DataFrame(sims)
+    df.columns = ["gene_similarity_id", "gene1", "gene2", "score", "pvalue"]
+    exported_file = os.path.join(tempfile.gettempdir(), filename)
+    if not os.path.exists(exported_file):
+        df.to_csv(exported_file, sep=",", index=None)
+    return send_file(exported_file)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download_all(request, systematic_name=None):
     """Download all datasets. If a gene name is provided, filter to those"""
-    if systematic_name:
-        datasets = (
-            Dataset.objects.select_related("paper__latest_tested_status__status")
-            .filter(
-                paper__latest_data_status__status__name="loaded",
-                data__gene__systematic_name__iexact=systematic_name,
-            )
-            .values_list("id", "name", "paper__pmid", "paper__latest_tested_status")
-            .distinct()
-        )
-    else:
+
+    if systematic_name in ["all", None]:
         datasets = (
             Dataset.objects.select_related("paper__latest_tested_status__status")
             .filter(paper__latest_data_status__status__name="loaded")
+            .values_list("id", "name", "paper__pmid", "paper__latest_tested_status")
+            .distinct()
+        )
+
+    else:
+        datasets = (
+            Dataset.objects.filter(data__gene__systematic_name=systematic_name)
+            .select_related("paper__latest_tested_status__status")
+            .filter(
+                paper__latest_data_status__status__name="loaded",
+            )
             .values_list("id", "name", "paper__pmid", "paper__latest_tested_status")
             .distinct()
         )
@@ -325,14 +316,12 @@ def download_all(request, systematic_name=None):
         else "%s_datasets_%s.txt" % settings.DOWNLOAD_PREFIX
     )
 
-    sql, params = datasets.query.sql_with_params()
-    sql = f"COPY ({sql}) TO STDOUT WITH (FORMAT CSV, HEADER, DELIMITER E'\t')"
-    response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = f"attachment; filename={filename}"
-    with connection.cursor() as cur:
-        sql = cur.mogrify(sql, params)
-        cur.copy_expert(sql, response)
-    return response
+    df = pandas.DataFrame(datasets)
+    df.columns = ["id", "name", "pmid", "latest_tested_status"]
+    exported_file = os.path.join(tempfile.gettempdir(), filename)
+    if not os.path.exists(exported_file):
+        df.to_csv(exported_file, sep=",", index=None)
+    return send_file(exported_file)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
