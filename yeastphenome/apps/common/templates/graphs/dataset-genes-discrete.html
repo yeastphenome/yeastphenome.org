@@ -42,19 +42,21 @@ var counts = Object()
 $.each(gene_values, function(i, e){
     lookup[e.label] = e.value
     if (!(e.value in counts)) {
-         counts[e.value] = 0
+         counts[parseInt(e.value)] = 0
     }
-    counts[e.value] += 1     
+    counts[parseInt(e.value)] += 1     
 })
 
 console.log(lookup);
+console.log(counts);
 
 // Create data array
 var data = Array()
 $.each(counts, function(i, e){
-    data.push({"count": e,"value": i})
+    data.push({"count": e,"value": parseInt(i)})
 })
 console.log(data)
+data.sort((a, b) => (a.value < b.value))
 
 var yMax = d3.max(data, function(d){return d.value});
 var yMin = d3.min(data, function(d){return d.value});
@@ -150,20 +152,14 @@ svg.selectAll(".bar")
            has_aliases = false
            if (e in common_names) {
                $.each(common_names[e], function(ii,ee){
-                   content = content + "<a target='_blank' href='/datasets/genes?q="+ e + "'><li value=" + e + ">" + ee + " / " + e + "</li></a>"
-               })
-               has_aliases = true
-           }
-           if (e in aliases) {
-               $.each(aliases[e], function(ii, ee){
-                   content = content + "<a target='_blank' href='/datasets/genes?q="+ e + "'><li value=" + e + ">" + ee + " / " + e + "</li></a>"
+                   content = content + "<a href='/datasets/genes?q="+ e + "'><li value=" + e + ">" + e + " / " + ee + "</li></a>"
                })
                has_aliases = true
            }
 
            // Only add the gene if it doesn't have aliases
            if (!has_aliases){
-               content = content + "<a target='_blank' href='/datasets/genes?q="+ e+ "'><li value=" + e + ">" + e + "</li></a>"
+               content = content + "<a href='/datasets/genes?q="+ e+ "'><li value=" + e + ">" + e + "</li></a>"
            }
 
        })
@@ -178,10 +174,6 @@ svg.selectAll(".bar")
     .attr("text-anchor", "middle")
     .text(function(d) { return formatCount(d.y); });
 
-svg.append("g")
-    .attr("class", "x axis")
-    .attr("transform", "translate(0," + height + ")")
-    .call(xAxis);
 
 $('#gene-name').bind("keypress", {}, keypressSearch);
 
@@ -204,6 +196,9 @@ function doSearch() {
       gene_name = common_names_lookup[gene_name]
   }
   
+  // Most gene names are uppercase
+  gene_name = gene_name.toUpperCase() 
+
   // Get the bar for the gene from the lookup
   if (gene_name in lookup) {
 
@@ -220,7 +215,7 @@ function doSearch() {
       bar.attr("fill", "red");
 
       // Tell the user in case they can't see it
-      $("#gene-detail").html("Gene <a target='_blank' href='/datasets/genes?q=" + gene_name + "'>" + gene_name + "</a> has value: " + bar_value + ".")
+      $("#gene-detail").html("Gene <a href='/datasets/genes?q=" + gene_name + "'>" + gene_name + "</a> has value: " + bar_value + ".")
 
   } else {
       $("#gene-detail").html("Gene "+ gene_name + " is not in this dataset.")

@@ -163,11 +163,11 @@ function download(url){
 $(document).ready(function(){
  
     {% if gene %}$(".dataset_download_gene").click(function(){
-        download("{% url 'datasets:download_gene' gene.systematic_name %}")
+        document.location = "/datasets/download/{{ gene.systematic_name }}/"
     })
 
     $(".dataset_similar_download").click(function(){
-        download("{% url 'datasets:download_sims' gene.systematic_name %}")
+        document.location = "{% url 'datasets:download_sims' gene.systematic_name %}"
     }){% endif %}
 
     // Constructing the suggestion engine
