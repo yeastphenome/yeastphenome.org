@@ -95,6 +95,11 @@
 }
 
 </style>
+<div class="row" style="padding-bottom:20px">
+    <div class="col-md-12">
+    <a href="/datasets/genes">Genes</a> > <a href="#">{{ gene.common_name }}/{{ gene.systematic_name }}</a>
+    </div>
+</div>
 <div class="row">
     <div class="col-md-12">
          <div class="search-wrapper">
@@ -111,10 +116,10 @@
     <table id="similar_table" class="tablesorter table table-striped" width="100%">
         <thead>
         <tr>
-            <th data-placeholder="Select an name" class="text-nowrap" width="25%">Gene</th>
-            <th width="25%">Correlation</th>
-            <th width="25%">P-Value</th>
-            <th width="25%">Rank</th>
+            <th style="text-align:left" data-placeholder="Select an name" class="text-nowrap" width="25%">Gene</th>
+            <th style="text-align:left" width="25%">Correlation</th>
+            <th style="text-align:left" width="25%">P-Value</th>
+            <th style="text-align:left" width="25%">Percentile</th>
         </tr>
         </thead>
         <tbody>

@@ -47,8 +47,11 @@ $.each(gene_values, function(i, e){
     counts[parseInt(e.value)] += 1     
 })
 
-console.log(lookup);
-console.log(counts);
+// Create a lookup for gene values
+var gene_values_lookup = Object()
+$.each(gene_values, function(i, e){
+    gene_values_lookup[e.label] = e.value
+})
 
 // Create data array
 var data = Array()
@@ -148,18 +151,21 @@ svg.selectAll(".bar")
        content = "<h2> Bar with value " + bar_value + "</h2><div style='width:200px; height:200px; overflow:scroll;' class='custom-select typehead'><ul>"
        $.each(names, function(i,e){
 
+           gene_value = gene_values_lookup[e] || ""
+
            // If we have aliases and common names, add them too
            has_aliases = false
            if (e in common_names) {
                $.each(common_names[e], function(ii,ee){
-                   content = content + "<a href='/datasets/genes?q="+ e + "'><li value=" + e + ">" + e + " / " + ee + "</li></a>"
+                   gene_value = gene_values_lookup[e]
+                   content = content + "<li value=" + e + "><a href='/datasets/genes?q="+ e + "'>" + e + " / " + ee + "</a>: " + gene_value + "</li>"
                })
                has_aliases = true
            }
 
            // Only add the gene if it doesn't have aliases
            if (!has_aliases){
-               content = content + "<a href='/datasets/genes?q="+ e+ "'><li value=" + e + ">" + e + "</li></a>"
+               content = content + "<li value=" + e + "><a href='/datasets/genes?q="+ e + "'>" + e + " / " + ee + "</a>: " + gene_value + "</li>"
            }
 
        })
@@ -189,6 +195,9 @@ function keypressSearch(e) {
 function doSearch() {
   var gene_name = $("#gene-name").val();
 
+  // Most gene names are uppercase
+  gene_name = gene_name.toUpperCase() 
+
   // First ensure it's not a common name or alias
   if (gene_name in aliases_lookup) {
       gene_name = aliases_lookup[gene_name]
@@ -196,9 +205,6 @@ function doSearch() {
       gene_name = common_names_lookup[gene_name]
   }
   
-  // Most gene names are uppercase
-  gene_name = gene_name.toUpperCase() 
-
   // Get the bar for the gene from the lookup
   if (gene_name in lookup) {
 

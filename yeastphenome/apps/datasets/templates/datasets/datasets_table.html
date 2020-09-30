@@ -21,14 +21,14 @@
         {% for dataset in datasets %}<tr>
             <td><input id="{{ dataset.id }}" type="checkbox" name="{{ dataset.id }}" class="dataset" {# {% if not dataset.has_data_in_db %}disabled{% endif %} #}></td>
             <td class="col-md-1"><a href="/datasets/{{ dataset.id }}/">{{ dataset.id }}</a></td>
-            <td class="col-md-2"><a href="{% url 'papers:detail' dataset.paper.id %}">{{ dataset.paper }}</a></td>
-            <td class="col-md-2">{% if dataset.phenotype.observable %}<a href="{% url 'phenotypes:detail' dataset.phenotype.observable.id %}">{{ dataset.phenotype.observable.name }} {% if dataset.phenotype.reporter %} ({{ dataset.phenotype.reporter }}) {% endif %}</a>{% endif %}</td>
-            <td class="col-md-2"><a href="{% url 'conditions:detail' dataset.conditionset.id %}">{{ dataset.conditionset.display_name }}</a></td>
-            <td class="col-md-2">{% if dataset.medium %}<a href="{% url 'conditions:medium_detail' dataset.medium.id %}">{{ dataset.medium.display_name }}</a>{% endif %}</td>
-            <td class="col-md-2"><a href="{% url 'datasets:collection_detail' dataset.collection.id %}">{{ dataset.collection.shortname }}</a></td>
+            <td class="col-md-2">{{ dataset.paper }}</td>
+            <td class="col-md-2">{% if dataset.phenotype.observable %}{{ dataset.phenotype.observable.name }} {% if dataset.phenotype.reporter %} ({{ dataset.phenotype.reporter }}) {% endif %}{% endif %}</td>
+            <td class="col-md-2">{{ dataset.conditionset.display_name }}</td>
+            <td class="col-md-2">{% if dataset.medium %}{{ dataset.medium.display_name }}{% endif %}</td>
+            <td class="col-md-2">{{ dataset.collection.shortname }}</td>
             <td class="col-md-1">
                 {% if dataset.has_data_in_db %}
-                <span class="text-success available">{{ dataset.data_available|capfirst }}</span>
+                <span class="available">{{ dataset.data_available|capfirst }}</span>
                 {% else %}
                 <span class="text-muted">{{ dataset.data_available|capfirst }}</span>
                 {% endif %}

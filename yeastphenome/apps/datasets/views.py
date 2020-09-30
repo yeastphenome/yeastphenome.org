@@ -207,7 +207,6 @@ def data_explorer(request, collection_id=None):
     for key in [
         "datatype",
         "tag",
-        "gene",
         "medium",
         "conditions",
         "collection",
