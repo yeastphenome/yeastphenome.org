@@ -138,6 +138,9 @@ if True and os.getenv("APP_ENGINE_HOST") != None:
 # Case 2: we are running on app engine
 elif os.getenv("APP_ENGINE_CONNECTION_NAME") != None:
 
+    # Ensure debug is absolutely off
+    TEMPLATES[0]["OPTIONS"]["debug"] = False
+
     # Running on production App Engine, so connect to Google Cloud SQL using
     # the unix socket at /cloudsql/<your-cloudsql-connection string>
     DATABASES = {

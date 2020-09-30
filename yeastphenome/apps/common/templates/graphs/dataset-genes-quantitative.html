@@ -57,6 +57,12 @@ $.each(data, function(i, e){
     })
 })
 
+// Create a lookup for gene values
+var gene_values_lookup = Object()
+$.each(gene_values, function(i, e){
+    gene_values_lookup[e.label] = e.value
+})
+
 var yMax = d3.max(data, function(d){return d.length});
 var yMin = d3.min(data, function(d){return d.length});
 var colorScale = d3.scale.linear()
@@ -110,18 +116,24 @@ bar.append("rect")
        content = "<h2> Range " + (d.x).toFixed(2) + " to " + (d.x + d.dx).toFixed(2) + "</h2><div style='width:200px; height:200px; overflow:scroll;' class='custom-select typehead'><ul>"
        $.each(names, function(i,e){
 
+           // Grab the value
+           gene_value = gene_values_lookup[e] || ""
+           console.log(gene_value)
+
            // If we have aliases and common names, add them too
            has_aliases = false
+
            if (e in common_names) {
-               $.each(common_names[e], function(ii,ee){
-                   content = content + "<a href='/datasets/genes?q="+ e + "'><li value=" + e + ">" + e + " / " + ee + "</li></a>"
+               $.each(common_names[e], function(ii, ee){
+                   gene_value = gene_values_lookup[e]
+                   content = content + "<li value=" + e + "><a href='/datasets/genes?q="+ e + "'>" + e + " / " + ee + "</a>: " + gene_value + "</li>"
                })
                has_aliases = true
            }
 
            // Only add the gene if it doesn't have aliases
            if (!has_aliases){
-               content = content + "<a href='/datasets/genes?q="+ e+ "'><li value=" + e + ">" + e + "</li></a>"
+               content = content + "<li value=" + e + "><a href='/datasets/genes?q="+ e + "'>" + e + " / " + e + "</a>: " + gene_value + "</li>"
            }
 
        })
@@ -156,15 +168,16 @@ function keypressSearch(e) {
 function doSearch() {
   var gene_name = $("#gene-name").val();
 
+  // Most gene names are uppercase
+  gene_name = gene_name.toUpperCase() 
+
   // First ensure it's not a common name or alias
   if (gene_name in aliases_lookup) {
       gene_name = aliases_lookup[gene_name]
   } else if (gene_name in common_names_lookup) {
       gene_name = common_names_lookup[gene_name]
-  }
-  
-  // Most gene names are uppercase
-  gene_name = gene_name.toUpperCase() 
+  } 
+  console.log(gene_name)
 
   // Get the bar for the gene from the lookup
   if (gene_name in lookup) {

@@ -2,7 +2,7 @@ from django.db.models import Q
 
 from yeastphenome.apps.phenotypes.models import Phenotype
 from yeastphenome.apps.conditions.models import Medium, Condition
-from yeastphenome.apps.datasets.models import Dataset, Datatype, Gene, Tag, Collection
+from yeastphenome.apps.datasets.models import Dataset, Datatype, Tag, Collection
 
 # Search functions
 
@@ -21,12 +21,6 @@ def get_search_tags():
     tags = [
         {"value": x[0], "icon": "🏷️", "code": "tag"}
         for x in Tag.objects.values_list("name").distinct()
-    ]
-
-    # Genes
-    genes = [
-        {"value": x[0], "icon": "🧬", "code": "gene"}
-        for x in Gene.objects.values_list("systematic_name").distinct()
     ]
 
     # Phenotypes
@@ -53,7 +47,7 @@ def get_search_tags():
         for x in Collection.objects.values_list("name").distinct()
     ]
 
-    return datatypes + tags + genes + collections + mediums + phenotypes + conditions
+    return datatypes + tags + collections + mediums + phenotypes + conditions
 
 
 def run_search_tag_query(query, taglist=None, return_instances=False, collection=None):
@@ -82,7 +76,6 @@ def run_search_tag_query(query, taglist=None, return_instances=False, collection
 
     # Prepare querysets
     tag_query = Q()
-    gene_query = Q()
     collection_query = Q()
     datatype_query = Q()
     medium_query = Q()
@@ -91,9 +84,6 @@ def run_search_tag_query(query, taglist=None, return_instances=False, collection
 
     if "tag" in tags:
         tag_query = Q(tags__name__in=tags["tag"])
-
-    if "gene" in tags:
-        gene_query = Q(data__gene__systematic_name__in=tags["gene"])
 
     if "collection" in tags:
         collection_query = Q(collection__name__in=tags["collection"])
@@ -117,7 +107,6 @@ def run_search_tag_query(query, taglist=None, return_instances=False, collection
 
     results = queryset.filter(
         tag_query,
-        gene_query,
         collection_query,
         datatype_query,
         medium_query,
