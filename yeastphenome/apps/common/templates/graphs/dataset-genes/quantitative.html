@@ -1,0 +1,277 @@
+<script>
+
+var color = "steelblue";
+
+// Generate a 1000 data points using normal distribution with mean=20, deviation=5
+//var values = d3.range(1000).map(d3.random.normal(20, 5));
+// var values = [{% for gene in dataset_genes %}{{ gene.value }}{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
+var gene_values = {{ dataset_genes | safe }}
+
+// parse aliases and common names into list
+var aliases = {}
+var _aliases = [{% for alias in aliases %}["{{ alias.0 }}", "{{ alias.1 }}"] {% if forloop.last %}{% else %},{% endif %}{% endfor %} ]
+var aliases_lookup = { {% for alias in aliases %}"{{ alias.1 }}": "{{ alias.0 }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %} }
+$.each(_aliases, function(i, alias){
+    if (!(alias[0] in aliases)) {
+        aliases[alias[0]] = []
+    } 
+    aliases[alias[0]].push(alias[1]);
+})
+
+var common_names = {}
+var _common_names = [{% for alias in common_names %}["{{ alias.0 }}", "{{ alias.1 }}"] {% if forloop.last %}{% else %},{% endif %}{% endfor %} ]
+var common_names_lookup = { {% for alias in common_names %}"{{ alias.1 }}": "{{ alias.0 }}" {% if forloop.last %}{% else %},{% endif %}{% endfor %} }
+$.each(_common_names, function(i, alias){
+    if (!(alias[0] in common_names)) {
+        common_names[alias[0]] = []
+    } 
+    common_names[alias[0]].push(alias[1]);
+})
+
+var values = gene_values.map(function(d){return d.value;})
+
+// A formatter for counts.
+var formatCount = d3.format(",.0f");
+
+var margin = {top: 40, right: 30, bottom: 30, left: 30},
+    width = 960 - margin.left - margin.right,
+    height = 300 - margin.top - margin.bottom;
+
+// TODO: we can set fixed values for min/max if possible with dataset
+var max = d3.max(values);
+var min = d3.min(values);
+var x = d3.scale.linear()
+      .domain([min, max])
+      .range([0, width]);
+
+// Generate a histogram using twenty uniformly-spaced bins.
+var data = d3.layout.histogram()
+    .bins(x.ticks(20))
+    (values);
+
+// Create a lookup by bin id to index into count
+var lookup = Object()
+$.each(data, function(i, e){
+    var filtered = gene_values.filter(function(record){ return e.x <= record.value && record.value < e.x + e.dx; });
+    $.each(filtered, function(ii, ee){
+        lookup[ee.label] = i
+    })
+})
+
+// Create a lookup for gene values
+var gene_values_lookup = Object()
+var gene_rank_lookup = Object()
+$.each(gene_values, function(i, e){
+    gene_values_lookup[e.label] = e.value
+    gene_rank_lookup[e.label] = e.rank
+})
+
+var yMax = d3.max(data, function(d){return d.length});
+var yMin = d3.min(data, function(d){return d.length});
+var colorScale = d3.scale.linear()
+            .domain([yMin, yMax])
+            .range([d3.rgb(color).brighter(), d3.rgb(color).darker()]);
+
+var y = d3.scale.linear()
+    .domain([0, yMax])
+    .range([height, 0]);
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var svg = d3.select("#dataset-genes").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var bar = svg.selectAll(".bar")
+    .data(data)
+  .enter().append("g")
+    .attr("class", "bar")
+    .attr("transform", function(d) { return "translate(" + x(d.x) + "," + y(d.y) + ")"; });
+
+bar.append("rect")
+    .attr("x", 1)
+    .attr("id", function(d, i) { return "histbar-" + i; })
+    .attr("width", (x(data[0].dx) - x(0)) - 1)
+    .attr("class", "histbar")
+    .attr("height", function(d) { return height - y(d.y); })
+    .attr("data-fill", function(d) { return colorScale(d.y) })
+    .attr("data-min", function(d) { return (d.x).toFixed(2) })
+    .attr("data-max", function(d) { return (d.x + d.dx).toFixed(2) })
+    .attr("fill", function(d) { return colorScale(d.y) })
+    .on('click', function(d, i){ 
+
+       // Restore colors to original values
+       $.each($(".histbar"), function(i, e){
+         $(e).attr("fill", $(e).attr("data-fill"));
+       })
+
+       // Then make selected red!
+       var bar = $("#histbar-" + i);
+       bar.attr("fill", "red");
+
+       var genes = gene_values.filter(function(record){ return d.x <= record.value && record.value < d.x + d.dx; });
+       var names = genes.map(function(record){return record.label; });
+
+       content = "Showing range " + (d.x).toFixed(2) + " to " + (d.x + d.dx).toFixed(2) + " or <a style='cursor:pointer' onclick=restore_original()>show all values</a>"
+       $("#group_message").html(content)
+
+       // Clear original content
+       $("#scores_table_body").empty();
+       $("#scores_table").DataTable().destroy();
+
+       content = ""
+       $.each(names, function(i,e){
+
+           // Grab the value and pvalue
+           gene_value = gene_values_lookup[e] || ""
+           gene_rank = gene_rank_lookup[e] || ""
+
+           // If we have aliases and common names, add them too
+           has_aliases = false
+
+           if (e in common_names) {
+               $.each(common_names[e], function(ii, ee){
+                   gene_value = gene_values_lookup[e]
+                   content += "<tr><td id='td-" + ee + "'><a href='/datasets/genes?q="+ e + "'>" + e + " / " + ee + "</a></td><td>" + gene_value + "</td><td>" + gene_rank + "</td></tr>\n"
+               })
+               has_aliases = true
+           }
+
+           // Only add the gene if it doesn't have aliases
+           if (!has_aliases){
+               content += "<tr><td id='td-" + e + "'><a href='/datasets/genes?q="+ e + "'>" + e + " / " + e + "</a></td><td>" + gene_value + "</td><td>" + gene_rank + "</td></tr>\n"
+           }
+       })
+
+       $("#scores_table_body").html(content)
+       $("#scores_table").show();
+       $("#scores_table").DataTable()
+       
+    });
+
+bar.append("text")
+    .attr("dy", ".75em")
+    .attr("y", -12)
+    .attr("x", (x(data[0].dx) - x(0)) / 2)
+    .attr("text-anchor", "middle")
+    .text(function(d) { return formatCount(d.y); });
+
+svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xAxis);
+
+$('#gene-name').bind("keypress", {}, keypressSearch);
+
+function keypressSearch(e) {
+    var code = (e.keyCode ? e.keyCode : e.which);
+    if (code == 13) { //Enter keycode                
+        e.preventDefault();
+        doSearch();
+    }
+};
+
+
+function doSearch() {
+  var gene_name = $("#gene-name").val();
+
+  // Most gene names are uppercase
+  gene_name = gene_name.toUpperCase() 
+
+  // First ensure it's not a common name or alias
+  if (gene_name in aliases_lookup) {
+      gene_name = aliases_lookup[gene_name]
+  } else if (gene_name in common_names_lookup) {
+      gene_name = common_names_lookup[gene_name]
+  } 
+  console.log(gene_name)
+
+  // Get the bar for the gene from the lookup
+  if (gene_name in lookup) {
+      restore_original();
+      var bar_id = lookup[gene_name];
+
+      // Restore colors to original values
+      $.each($(".histbar"), function(i, e){
+         $(e).attr("fill", $(e).attr("data-fill"));
+      })
+
+      // the displayLength being used
+      var displayLength = parseInt($("select[name=scores_table_length]").val());
+
+      // see http://datatables.net/docs/DataTables/1.9.beta.1/DataTable.html#%24_details for more detals
+      var table = $("#scores_table").dataTable();
+      var items = table.$("tr", { "filter": "applied" });
+
+      // if there's more than one page continue, else do nothing
+      if (items.length > displayLength) {
+
+        // get the index of the row inside that sorted/filtered array
+        var index = 0
+        $.each(items, function(i, e){
+            if ($(e).attr("id") == "tr-" + gene_name) {
+                index = i
+                return
+            }            
+        })        
+
+        // get the page by removing the decimals
+        var page = Math.floor(index / displayLength);
+
+        // paginate to that page 
+        table.fnPageChange(page);
+      }
+
+      $("tr").removeClass('highlight');
+      $("#tr-" + gene_name).addClass('highlight');
+
+      // Then make selected red!
+      var bar = $("#histbar-" + bar_id);
+      bar.attr("fill", "red");
+
+      // Tell the user in case they can't see it
+      $("#gene-detail").html("Gene <a href='/datasets/genes?q=" + gene_name + "'>" + gene_name + "</a> is within range: " + bar.attr("data-min") + " to " + bar.attr("data-max") + ".")
+
+  } else {
+      $("#gene-detail").html("Gene "+ gene_name + " is not in this dataset.")
+  }
+}
+
+// Find the gene when the user selects
+$('input.typeahead').on('typeahead:selected', function(event, selection) {
+  doSearch();
+});
+
+
+$(document).ready(function(){
+    var alias_list = [{% for alias in aliases %}"{{ alias.1 }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
+    var common_list = [{% for alias in common_list %}"{{ alias.1 }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
+
+    var genes = $.merge(Object.keys(lookup), alias_list, common_list)
+   
+    // Constructing the suggestion engine
+    var genes = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.whitespace,
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        local: genes
+    });
+
+    // Show initial set of genes
+    {% if dataset_genes %}$("#scores_table").DataTable({"pageLength":10}){% endif %}    
+
+    // Initializing the typeahead
+    $('.gene-search').typeahead({
+        hint: true,
+        highlight: true, /* Enable substring highlighting */
+        minLength: 1 /* Specify minimum characters required for showing suggestions */
+    },
+    {
+        name: 'genes',
+        source: genes
+    });
+});
+</script>

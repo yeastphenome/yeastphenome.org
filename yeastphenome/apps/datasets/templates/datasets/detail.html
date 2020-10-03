@@ -9,11 +9,7 @@
         <h1>Dataset #{{ dataset.id }}</h1>
     </div>
 </div>
-<div class="row">
-    <div class="col-md-12">
-       {% include "graphs/dataset-genes.html" %}
-    </div>
-</div>
+</style>
 <div class="row">
     <div class="col-xs-12">
             <table class="table" id="datasetTable">
@@ -69,6 +65,8 @@
                 </tr>
             </table>
             <a class="btn btn-success" role="button" href="/datasets/download/?{{ dataset.id }}=on">Download</a>
+            <a class="btn btn-success" role="button" href="{% url 'datasets:dataset_plot' dataset.id %}">Explore</a>
+
     </div>
 </div>
 <div class="row" style="padding-top:20px">
@@ -82,11 +80,56 @@
     </div>
 </div>
 
+{% if datasets_top or datasets_bottom %}<div class="row" style="padding-top:30px" id='datasets'>
+    <div class="col-md-12">
+    <ul class="nav nav-tabs">
+      {% if datasets_top %}<li class="active"><a data-toggle="tab" href="#datasets_top">Top 10</a></li>{% endif %}
+      {% if datasets_bottom %}<li><a data-toggle="tab" href="#datasets_bottom">Bottom 10</a></li>{% endif %}
+    </ul>
+
+    <div class="tab-content">
+      {% if datasets_top %}<div id="datasets_top" class="tab-pane fade in active">
+      <h1>Phenotypic Scores</h1>
+      {% include "datasets/dataset_table.html" with datasets=datasets_top table_id="datasets_top_table" %}
+      </div>{% endif %}
+      {% if datasets_bottom %}<div id="datasets_bottom" class="tab-pane fade">
+      <h1>Phenotypic Scores</h1>
+      {% include "datasets/dataset_table.html" with datasets=datasets_bottom table_id="datasets_bottom_table" %}
+      </div>{% endif %}
+    </div>
+  </div>
+</div>{% endif %}
+
+{% if sims.top or sims.bottom %}<div class="row" style="padding-top:50px" id='similar'>
+    <div class="col-md-12">
+    <ul class="nav nav-tabs">
+      {% if sims.top %}<li class="active"><a data-toggle="tab" href="#top10">Top 10</a></li>{% endif %}
+      {% if sims.bottom %}<li><a data-toggle="tab" href="#bottom10">Bottom 10</a></li>{% endif %}
+    </ul>
+
+    <div class="tab-content">
+      {% if sims.top %}<div id="top10" class="tab-pane fade in active">
+      {% include "datasets/similar_table.html" with scores=sims.top title="Phenotypic Similarities" table_id="similarTable" %}
+      </div>{% endif %}
+      {% if sims.bottom %}<div id="bottom10" class="tab-pane fade">
+      {% include "datasets/similar_table.html" with scores=sims.bottom title="Phenotypic Similarities" table_id="nonsimilarTable" %}
+      </div>{% endif %}
+    </div>
+    <a href="/datasets/download/similar/{{ dataset.id }}/"><button class="btn btn-default" type="button">Download all scores</button></a><a href="{% url 'datasets:similar_dataset_table' dataset.id %}"><button type="button" class="btn btn-default">View Entire Table</button></a>
+  </div>
+</div>{% endif %}
+
+
 {% endblock %}
 {% block scripts %}
 {% include "scripts/tablesorter.html" %}
 {% include "scripts/script_popup.html" %}
 <script>$(document).ready(function(){
     $("#datasetTable").tablesorter();
+    {% if datasets_top %}$("#datasets_top_table").DataTable();{% endif %}
+    {% if datasets_bottom %}$("#datasets_bottom_table").DataTable();{% endif %}
+    {% if sims.top %}$("#similarTable").DataTable();{% endif %}
+    {% if sims.bottom %}$("#nonsimilarTable").DataTable();{% endif %}
+
 });</script>
 {% endblock %}

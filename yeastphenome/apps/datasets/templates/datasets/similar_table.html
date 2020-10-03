@@ -1,0 +1,13 @@
+      <h1>{{ title }}</h1>
+    <table id="{{ table_id }}" class="tablesorter table table-striped" width="100%">
+        <thead>
+        <tr>
+            <th style="text-align:left" with="33%">Dataset Name</th>
+            <th style="text-align:left" width="33%">Correlation</th>
+            <th style="text-align:left" width="33%">P-Value</th>
+        </tr>
+        </thead>
+        <tbody>
+{% for sim in scores %}<tr><td><a href="{% url 'datasets:detail' sim.0 %}">{{ sim.1 }}</a></td><td>{{ sim.2 }}</td><td>{{ sim.3|stringformat:".2e" }}</td></tr>{% endfor %}
+        </tbody>
+      </table>

@@ -11,6 +11,7 @@ from django.views.decorators.cache import never_cache
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.datasets.models import (
     Dataset,
+    DatasetSimilarity,
     Data,
     Tag,
     Gene,
@@ -47,32 +48,55 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        genes = (
-            context["dataset"]
-            .data_set.exclude(value=None)
-            .values_list("gene__systematic_name", "value", "gene__id")
-        )
-        gene_ids = [gene[2] for gene in genes]
-        genes = [{"label": x[0], "value": float(x[1])} for x in genes]
-        context["aliases"] = (
-            GeneAlias.objects.filter(gene__id__in=gene_ids)
-            .values_list("gene__systematic_name", "name")
+
+        # Get DatasetSimilarity values
+        sims = (
+            DatasetSimilarity.objects.filter(dataset1=context["dataset"])
+            .values_list("dataset2_id", "dataset2__name", "score", "pvalue")
+            .order_by("-score")
             .distinct()
         )
-        context["common_names"] = (
-            Gene.objects.filter(id__in=gene_ids)
-            .exclude(common_name=None)
-            .values_list("systematic_name", "common_name")
-            .distinct()
+        context["sims"] = {"top": sims[:10], "bottom": sims[len(sims) - 10 :]}
+
+        # Filter to data with values defined, sorted greatest to smallest
+        queryset = (
+            Data.objects.filter(dataset=context["dataset"])
+            .exclude(Q(value=None) | Q(value=Decimal("NaN")))
+            .order_by("-value")
+            .values_list("gene__systematic_name", "gene__common_name", "value")
         )
-        context["dataset_genes"] = sorted(genes, key=lambda i: i["value"])
+
+        context["datasets_top"] = queryset[:10]
+        context["datasets_bottom"] = queryset[len(queryset) - 10 :]
         return context
+
+
+@never_cache
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def dataset_plot(request, dataset_id):
+    """The dataset plot shows an interactive graph of the dataset, on which
+    the user can click bars to see genes (and values) within a particular
+    range
+    """
+    try:
+        dataset = Dataset.objects.get(id=dataset_id)
+    except Dataset.DoesNotExist:
+        raise Http404
+
+    # prepare list of genes, plus genes and aliases
+    context = get_gene_names_context()
+    context.update(get_dataset_gene_table_context(dataset))
+    context.update({"dataset": dataset})
+    return render(request, "datasets/plot.html", context)
 
 
 # Explore by genes
 
 
 def get_gene_names_context():
+    """This context is needed for the gene search box, to find based on gene
+    systematic, common name, or alias.
+    """
     return {
         "genes": Gene.objects.values_list("systematic_name", flat=True).distinct(),
         "common_names": Gene.objects.values_list(
@@ -82,6 +106,40 @@ def get_gene_names_context():
             "gene__systematic_name", "name"
         ).distinct(),
     }
+
+
+def get_dataset_gene_table_context(dataset):
+    """this context is needed for the graph."""
+    context = {}
+    genes = (
+        dataset.data_set.exclude(value=None)
+        .order_by("-value")
+        .values_list("gene__systematic_name", "value", "gene__id", "gene__common_name")
+        .distinct()
+    )
+
+    # Calculate ranking
+    total_genes = genes.count()
+    ranks = [1 - (idx / total_genes) for idx, _ in enumerate(genes)]
+
+    gene_ids = [gene[2] for gene in genes]
+    genes = [
+        {"label": x[0], "value": float(x[1]), "name": x[3], "rank": round(ranks[i], 3)}
+        for i, x in enumerate(genes)
+    ]
+    context["aliases"] = (
+        GeneAlias.objects.filter(gene__id__in=gene_ids)
+        .values_list("gene__systematic_name", "name")
+        .distinct()
+    )
+    context["common_names"] = (
+        Gene.objects.filter(id__in=gene_ids)
+        .exclude(common_name=None)
+        .values_list("systematic_name", "common_name")
+        .distinct()
+    )
+    context["dataset_genes"] = sorted(genes, key=lambda i: i["value"])
+    return context
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
@@ -129,7 +187,6 @@ def gene_explorer(request):
     return render(request, "genes/index.html", context)
 
 
-@never_cache
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def similar_genes(request, systematic_name):
 
@@ -155,6 +212,27 @@ def similar_genes(request, systematic_name):
 
 
 @never_cache
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def similar_dataset_table(request, dataset_id):
+
+    try:
+        dataset = Dataset.objects.get(id=dataset_id)
+    except Dataset.DoesNotExist:
+        raise Http404
+
+    sims = (
+        DatasetSimilarity.objects.filter(dataset1=dataset)
+        .values_list("dataset2_id", "dataset2__name", "score", "pvalue")
+        .order_by("-score")
+        .distinct()
+    )
+
+    total = sims.count()
+    ranks = [1 - (idx / total) for idx, sim in enumerate(sims)]
+    context = {"dataset": dataset, "datasets": sims, "ranks": ranks}
+    return render(request, "datasets/dataset_similarity_explorer.html", context)
+
+
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def gene_datasets(request, systematic_name):
 
@@ -267,8 +345,12 @@ def tag(request, id):
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download_sims(request, systematic_name):
-    """Download all dataset similarity scores (based on a gene)"""
-    gene = Gene.objects.get(systematic_name=systematic_name)
+    """Download all GeneSimilary values (based on a gene)"""
+    try:
+        gene = Gene.objects.get(systematic_name=systematic_name)
+    except Gene.DoesNotExist:
+        raise Http404
+
     sims = gene.get_ranked_similar().values_list(
         "id", "gene1", "gene2", "score", "pvalue"
     )
@@ -280,6 +362,34 @@ def download_sims(request, systematic_name):
 
     df = pandas.DataFrame(sims)
     df.columns = ["gene_similarity_id", "gene1", "gene2", "score", "pvalue"]
+    exported_file = os.path.join(tempfile.gettempdir(), filename)
+    if not os.path.exists(exported_file):
+        df.to_csv(exported_file, sep=",", index=None)
+    return send_file(exported_file)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def download_dataset_sims(request, dataset_id):
+    """Download all DatasetSimilarity scores (based on a dataset)"""
+    try:
+        dataset = Dataset.objects.get(id=dataset_id)
+    except Dataset.DoesNotExist:
+        raise Http404
+
+    sims = (
+        DatasetSimilarity.objects.filter(Q(dataset1=dataset) | Q(dataset2=dataset))
+        .values_list("id", "dataset1_id", "dataset2_id", "score", "pvalue")
+        .order_by("-score")
+        .distinct()
+    )
+
+    filename = "%s_dataset_%s_similarities.txt" % (
+        settings.DOWNLOAD_PREFIX,
+        dataset.id,
+    )
+
+    df = pandas.DataFrame(sims)
+    df.columns = ["dataset_similarity_id", "dataset1", "dataset2", "score", "pvalue"]
     exported_file = os.path.join(tempfile.gettempdir(), filename)
     if not os.path.exists(exported_file):
         df.to_csv(exported_file, sep=",", index=None)

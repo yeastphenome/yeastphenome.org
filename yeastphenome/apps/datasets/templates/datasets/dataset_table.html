@@ -1,0 +1,22 @@
+{% if datasets %}
+<style>
+    .tablesorter thead .disabled {
+        display:none;
+    }
+</style>
+    <table id="{{ table_id }}" class="table table-condensed table-hover" width="100%">
+        <thead><tr>
+        <th style="text-align:left">Gene Name</th>
+        <th style="text-align:left">Phenotypic Score</th></tr>
+        </thead>
+        <tbody id="papersTableBody">
+        {% for d in datasets %}<tr>
+            <td class="col-md-5"><a href="/datasets/genes?q={{ d.0 }}/">{{ d.1 }} / {{ d.0 }}</a></td>
+            <td class="col-md-5">{{ d.2 }}</td>
+        </tr>{% endfor %}
+        </tbody>
+    </table>
+<a href="/datasets/download/?{{ dataset.id }}=on"><button type="button" class="btn btn-default">Download all scores</button></a>
+<a href="{% url 'datasets:dataset_plot' dataset.id %}"><button type="button" class="btn btn-default">View Entire Table</button></a>
+
+{% endif %}

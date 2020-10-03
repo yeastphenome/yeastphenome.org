@@ -1,0 +1,134 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% load my_filters %}
+{% block title %}Dataset Exporer {{ dataset.id }} / {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<style>
+#dataset-genes {
+  font: 10px sans-serif;
+}
+
+.search-wrapper {
+    display: flex;
+}
+
+.twitter-typeahead {
+    flex: 1 0 auto;
+}
+
+.bar rect {
+  shape-rendering: crispEdges;
+  cursor: pointer;
+}
+
+.bar text {
+  fill: #999999;
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+
+.typeahead, .tt-query, .tt-hint {
+  border: 2px solid #CCCCCC;
+  font-size: 24px;
+  line-height: 30px;
+  outline: medium none;
+  padding: 8px 12px;
+  width: 800px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+.typeahead {
+  background-color: #FFFFFF;
+}
+.typeahead:focus {
+  border: 2px solid #0097CF;
+}
+.tt-query {
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+}
+.tt-hint {
+  color: #999999;
+}
+.tt-dropdown-menu {
+  background-color: red !important;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  margin-top: 12px;
+  padding: 8px 0;
+  width: 350px;
+}
+.tt-suggestion {
+  background-color: white !important;
+  font-size: 24px;
+  line-height: 24px;
+  padding: 3px 20px;
+}
+
+.tt-cursor {
+  background-color: #0097cf !important
+}
+
+.tt-suggestion p {
+  margin: 0;
+}
+
+.tt-suggestion:hover .tt-cursor:hover {
+    cursor: pointer;
+    color: black;
+    background-color: #0097cf !important;
+}
+.tt-dropdown-menu .tt-suggestion.tt-cursor {
+  text-decoration: none;
+  background-color: yellow !important;
+  outline: 0;
+  color: #111;
+}
+
+#scrollable-dropdown-menu .tt-menu {
+  max-height: 250px;
+  overflow-y: auto;
+}
+</style>
+
+<div class="row" style="padding-bottom:20px">
+    <div class="col-md-12">
+    <a href="/datasets/">Datasets</a> > <a href="{% url 'datasets:detail' dataset.id %}">{{ dataset.id }}</a> > Similar
+    </div>
+</div>
+
+{% if datasets %}<div class="row" style="padding-top:20px" id='similar'>
+    <div class="col-md-12">
+      <h1>Similar Datasets to Dataset {{ dataset.id }}</h1>
+    <table id="dataset_table" class="tablesorter table table-striped" width="100%">
+        <thead>
+        <tr>
+            <th width="33%">Dataset Name</th>
+            <th width="25%">Score</th>
+            <th width="25%">P-Value</th>
+            <th width="25%">Percentile</th>
+        </tr>
+        </thead>
+        <tbody>{% for d in datasets %}<tr>
+        <td><a href="{% url 'datasets:detail' d.0 %}">{{ d.1 }}</a></td><td>{{ d.2 }}</td><td>{{ d.3 }}</td><td>{{ ranks|lookup:forloop.counter0|floatformat:3 }}</td>
+    </tr>{% endfor %}
+      </table>
+    </div>
+    <a href="/datasets/download/similar/{{ dataset.id }}/"><button type="button"class="btn btn-default" type="button">Download all scores</button></a>
+  </div>
+</div>{% endif %}
+
+{% endblock %}
+{% block scripts %}
+<script>
+
+$(document).ready(function(){ 
+    $("#dataset_table").DataTable({"pageLength": 50});
+});
+
+</script>
+{% endblock %}
