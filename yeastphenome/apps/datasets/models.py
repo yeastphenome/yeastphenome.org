@@ -354,12 +354,6 @@ class DatasetSimilarity(models.Model):
                     "score for a gene similarity cannot be a null or empty value."
                 )
 
-            # Ensure similarity ordered by systematic name
-            if self.dataset1.name > self.dataset2.name:
-                holder = self.dataset1
-                self.dataset1 = self.dataset2
-                self.dataset2 = holder
-
         super(DatasetSimilarity, self).save(*args, **kwargs)
 
     class Meta:
@@ -401,12 +395,6 @@ class GeneSimilarity(models.Model):
                 raise FieldError(
                     "score for a gene similarity cannot be a null or empty value."
                 )
-
-            # Ensure similarity ordered by systematic name
-            if self.gene1.systematic_name > self.gene2.systematic_name:
-                holder = self.gene1
-                self.gene1 = self.gene2
-                self.gene2 = holder
 
         super(GeneSimilarity, self).save(*args, **kwargs)
 

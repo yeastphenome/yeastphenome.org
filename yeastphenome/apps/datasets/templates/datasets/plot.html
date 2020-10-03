@@ -1,0 +1,40 @@
+{% extends "base/wide.html" %}
+{% load static %}
+{% load my_filters %}
+{% load humanize %}
+{% block title %}{{ object }} / Datasets / Papers / {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="row" style="padding-bottom:35px">
+    <div class="col-md-12">
+        <h1>Dataset #{{ dataset.id }}</h1>
+    </div>
+</div>
+</style>
+<div class="row" style="padding-bottom:20px">
+    <div class="col-md-12">
+    <a href="/datasets/">Datasets</a> > <a href="{% url 'datasets:detail' dataset.id %}">{{ dataset.id }}</a> > Genes
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+       {% include "graphs/dataset-genes/index.html" %}
+    </div>
+</div>
+<div class="row" style="padding-top:50px">
+    <div class="col-xs-12">
+        <div class="alert alert-warning" role="alert"><strong>Warning:</strong> These data may contain errors.
+              <p>YeastPhenome.org is running in beta version.
+                     The data are available for download, but, as of today, we cannot guarantee lack of errors or code bugs introduced during processing.
+                     This warning will be removed after all cross-checks and validations have been completed.
+                     In the meantime, please, be careful when using the data.</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+{% include "scripts/script_popup.html" %}
+<script>$(document).ready(function(){
+    $("#datasetTable").DataTable();
+});</script>
+{% endblock %}
