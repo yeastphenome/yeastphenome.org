@@ -112,7 +112,7 @@ def get_dataset_gene_table_context(dataset):
     """this context is needed for the graph."""
     context = {}
     genes = (
-        dataset.data_set.exclude(value=None)
+        dataset.data_set.exclude(Q(value=None) | Q(value=Decimal("NaN")))
         .order_by("-value")
         .values_list("gene__systematic_name", "value", "gene__id", "gene__common_name")
         .distinct()
@@ -126,6 +126,7 @@ def get_dataset_gene_table_context(dataset):
     genes = [
         {"label": x[0], "value": float(x[1]), "name": x[3], "rank": round(ranks[i], 3)}
         for i, x in enumerate(genes)
+        if x[3]
     ]
     context["aliases"] = (
         GeneAlias.objects.filter(gene__id__in=gene_ids)
