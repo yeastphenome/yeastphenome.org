@@ -36,10 +36,9 @@ tr.highlight {
 <div class="row">
     <div class="col-md-9">
         <div id="dataset-genes"></div>
-        Updated on {% now "M. d, Y" %}
     </div>
     <div class="col-md-3">
-         {% if dataset_genes %}Find a Gene
+         {% if dataset_genes %}Search genes
          <div class="search-wrapper">
 	<input type="text" style="width:200px" class="gene-search typeahead tt-query" autocomplete="off" spellcheck="false" id="gene-name">
      </div>
@@ -58,14 +57,14 @@ tr.highlight {
         <tr>
             <th class="text-nowrap" width="30%">Gene Name</th>
             <th width="30%">Value</th>
-            <th width="30%">Percentile</th>
+            <th width="30%">Percentile (lowest to highest)</th>
         </tr>
         </thead>
-        <tbody id="scores_table_body">{% for entry in dataset_genes %}<tr id="tr-{{ entry.label }}"><td><a href="/datasets/genes?q={{ entry.label }}">{{ entry.label }} / {{ entry.name }}</a></td><td>{{ entry.value }}</td><td>{{ entry.rank }}</td>
+        <tbody id="scores_table_body">{% for entry in dataset_genes %}<tr id="tr-{{ entry.label }}"><td><a href="/datasets/genes?q={{ entry.label }}">{{ entry.label }} / {{ entry.name }}</a></td><td>{{ entry.value }}</td><td>{{ entry.rank }} %</td>
         </tr>{% endfor %}
         </tbody>
       </table>
-      <a href="/datasets/download/?{{ dataset.id }}=on"><button type="button" class="btn btn-default">Download all scores</button></a>
+      <a href="/datasets/download/?{{ dataset.id }}=on"><button type="button" class="btn btn-default">Download all</button></a>
     </div>
 </div>
 
@@ -97,7 +96,7 @@ function restore_original() {
     $("#scores_table_body").empty()
     $("#scores_table").DataTable().destroy();
     $("#scores_table_body").html($("#full_table").html());
-    $("#scores_table").DataTable({"pageLength": 10});
+    $("#scores_table").DataTable({"pageLength": 10, "language": {"search": "Filter:"}});
     $("#group_message").text("Showing all values")
 
 }

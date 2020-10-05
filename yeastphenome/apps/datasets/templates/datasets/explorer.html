@@ -297,7 +297,7 @@ function doTagsSearch() {
 }
 
 {% if datasets or results %}$(document).ready(function(){
-    $("#papersTable").DataTable({"pageLength": 10,  "language": {"search": "Filter the results:"}});
+    $("#papersTable").DataTable({"pageLength": 10,  "language": {"search": "Filter:"}});
     $("#dataset_download").show();
     add_to_cart()
     remove_from_cart()

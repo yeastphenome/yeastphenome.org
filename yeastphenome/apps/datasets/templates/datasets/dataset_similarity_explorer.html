@@ -110,15 +110,15 @@
             <th width="33%">Dataset Name</th>
             <th width="25%">Score</th>
             <th width="25%">P-Value</th>
-            <th width="25%">Percentile</th>
+            <th width="25%">Percentile (lowest to highest)</th>
         </tr>
         </thead>
         <tbody>{% for d in datasets %}<tr>
-        <td><a href="{% url 'datasets:detail' d.0 %}">{{ d.1 }}</a></td><td>{{ d.2 }}</td><td>{{ d.3 }}</td><td>{{ ranks|lookup:forloop.counter0|floatformat:3 }}</td>
+        <td><a href="{% url 'datasets:detail' d.0 %}">{{ d.1 }}</a></td><td>{{ d.2 }}</td><td>{{ d.3 }}</td><td>{{ ranks|lookup:forloop.counter0|floatformat:2 }} %</td>
     </tr>{% endfor %}
       </table>
     </div>
-    <a href="/datasets/download/similar/{{ dataset.id }}/"><button type="button"class="btn btn-default" type="button">Download all scores</button></a>
+    <a href="/datasets/download/similar/{{ dataset.id }}/"><button type="button"class="btn btn-default" type="button">Download all</button></a>
   </div>
 </div>{% endif %}
 
@@ -127,7 +127,7 @@
 <script>
 
 $(document).ready(function(){ 
-    $("#dataset_table").DataTable({"pageLength": 50});
+    $("#dataset_table").DataTable({"pageLength": 50, "order": [[ 2, "desc" ]]});
 });
 
 </script>

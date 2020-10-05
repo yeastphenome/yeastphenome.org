@@ -95,11 +95,6 @@
 }
 
 </style>
-<div class="row" style="padding-bottom:20px">
-    <div class="col-md-12">
-    <a href="/datasets/genes">Genes</a> > <a href="#">{{ gene.common_name }}/{{ gene.systematic_name }}</a>
-    </div>
-</div>
 <div class="row">
     <div class="col-md-12">
          <div class="search-wrapper">
@@ -107,6 +102,12 @@
 		  <input class="typeahead tt-query" placeholder="Systematic ORF name (YJL092W), common name (SRS2), or alias (RADH)" data-items="4" type="text" >
 		</div>
         </div>
+    </div>
+</div>
+
+<div class="row" style="padding-top:20px">
+    <div class="col-md-12">
+    <a href="/datasets/genes">Genes</a> > <a href="/datasets/genes?q={{ gene.systematic_name }}">{{ gene.common_name }}/{{ gene.systematic_name }}</a> > Similar genes
     </div>
 </div>
 
@@ -119,14 +120,14 @@
             <th style="text-align:left" data-placeholder="Select an name" class="text-nowrap" width="25%">Gene</th>
             <th style="text-align:left" width="25%">Correlation</th>
             <th style="text-align:left" width="25%">P-Value</th>
-            <th style="text-align:left" width="25%">Percentile</th>
+            <th style="text-align:left" width="25%">Percentile (lowest to highest)</th>
         </tr>
         </thead>
         <tbody>
-{% for sim in sims %}<tr><td><a href="/datasets/genes?q={{ sim.0 }}">{{ sim.1 }}/{{ sim.0 }}</a></td><td>{{ sim.2 }}</td><td>{{ sim.3|stringformat:".2e" }}</td><td>{{ ranks|lookup:forloop.counter0|floatformat:3 }}</td></tr>{% endfor %}
+{% for sim in sims %}<tr><td><a href="/datasets/genes?q={{ sim.0 }}">{{ sim.1 }}/{{ sim.0 }}</a></td><td>{{ sim.2 }}</td><td>{{ sim.3|stringformat:".2e" }}</td><td>{{ ranks|lookup:forloop.counter0|floatformat:2 }} %</td></tr>{% endfor %}
       </table>
     </div>
-    <button class="dataset_similar_download btn btn-default" type="button">Download all scores</button>
+    <button class="dataset_similar_download btn btn-default" type="button">Download all</button>
   </div>
 </div>{% endif %}
 
@@ -203,7 +204,7 @@ $(document).ready(function(){
     });
 
     {% if gene %}$("#gene-name").val("{{ gene.systematic_name }}")
-    $("#similar_table").DataTable({"pageLength": 100});{% endif %}
+    $("#similar_table").DataTable({"pageLength": 100,  "order": [[ 2, "asc" ]], "language": {"search": "Filter:"}});{% endif %}
 });
 
 </script>

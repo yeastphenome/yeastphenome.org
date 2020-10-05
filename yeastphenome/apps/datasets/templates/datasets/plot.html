@@ -20,21 +20,11 @@
        {% include "graphs/dataset-genes/index.html" %}
     </div>
 </div>
-<div class="row" style="padding-top:50px">
-    <div class="col-xs-12">
-        <div class="alert alert-warning" role="alert"><strong>Warning:</strong> These data may contain errors.
-              <p>YeastPhenome.org is running in beta version.
-                     The data are available for download, but, as of today, we cannot guarantee lack of errors or code bugs introduced during processing.
-                     This warning will be removed after all cross-checks and validations have been completed.
-                     In the meantime, please, be careful when using the data.</p>
-        </div>
-    </div>
-</div>
 
 {% endblock %}
 {% block scripts %}
 {% include "scripts/script_popup.html" %}
 <script>$(document).ready(function(){
-    $("#datasetTable").DataTable();
+    $("#datasetTable").DataTable({"language": {"search": "Filter:"}});
 });</script>
 {% endblock %}
