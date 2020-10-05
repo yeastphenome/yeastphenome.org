@@ -64,36 +64,22 @@
                     <td>{{ dataset.tags_link_list|safe }}</td>
                 </tr>
             </table>
-            <a class="btn btn-success" role="button" href="/datasets/download/?{{ dataset.id }}=on">Download</a>
-            <a class="btn btn-success" role="button" href="{% url 'datasets:dataset_plot' dataset.id %}">Explore</a>
-
-    </div>
-</div>
-<div class="row" style="padding-top:20px">
-    <div class="col-xs-12">
-        <div class="alert alert-warning" role="alert"><strong>Warning:</strong> These data may contain errors.
-              <p>YeastPhenome.org is running in beta version.
-                     The data are available for download, but, as of today, we cannot guarantee lack of errors or code bugs introduced during processing.
-                     This warning will be removed after all cross-checks and validations have been completed.
-                     In the meantime, please, be careful when using the data.</p>
-        </div>
     </div>
 </div>
 
 {% if datasets_top or datasets_bottom %}<div class="row" style="padding-top:30px" id='datasets'>
     <div class="col-md-12">
+    <h1 style="padding-bottom:20px">Phenotypic Scores</h1>
     <ul class="nav nav-tabs">
       {% if datasets_top %}<li class="active"><a data-toggle="tab" href="#datasets_top">Top 10</a></li>{% endif %}
       {% if datasets_bottom %}<li><a data-toggle="tab" href="#datasets_bottom">Bottom 10</a></li>{% endif %}
     </ul>
 
     <div class="tab-content">
-      {% if datasets_top %}<div id="datasets_top" class="tab-pane fade in active">
-      <h1>Phenotypic Scores</h1>
+      {% if datasets_top %}<div id="datasets_top" class="tab-pane fade in active" style="padding-top:20px">
       {% include "datasets/dataset_table.html" with datasets=datasets_top table_id="datasets_top_table" %}
       </div>{% endif %}
-      {% if datasets_bottom %}<div id="datasets_bottom" class="tab-pane fade">
-      <h1>Phenotypic Scores</h1>
+      {% if datasets_bottom %}<div id="datasets_bottom" class="tab-pane fade" style="padding-top:20px">
       {% include "datasets/dataset_table.html" with datasets=datasets_bottom table_id="datasets_bottom_table" %}
       </div>{% endif %}
     </div>
@@ -102,20 +88,21 @@
 
 {% if sims.top or sims.bottom %}<div class="row" style="padding-top:50px" id='similar'>
     <div class="col-md-12">
+    <h1 style="padding-bottom:20px">Phenotypic Similarities</h1>
     <ul class="nav nav-tabs">
       {% if sims.top %}<li class="active"><a data-toggle="tab" href="#top10">Top 10</a></li>{% endif %}
       {% if sims.bottom %}<li><a data-toggle="tab" href="#bottom10">Bottom 10</a></li>{% endif %}
     </ul>
 
     <div class="tab-content">
-      {% if sims.top %}<div id="top10" class="tab-pane fade in active">
-      {% include "datasets/similar_table.html" with scores=sims.top title="Phenotypic Similarities" table_id="similarTable" %}
+      {% if sims.top %}<div id="top10" class="tab-pane fade in active" style="padding-top:20px">
+      {% include "datasets/similar_table.html" with scores=sims.top table_id="similarTable" %}
       </div>{% endif %}
-      {% if sims.bottom %}<div id="bottom10" class="tab-pane fade">
-      {% include "datasets/similar_table.html" with scores=sims.bottom title="Phenotypic Similarities" table_id="nonsimilarTable" %}
+      {% if sims.bottom %}<div id="bottom10" class="tab-pane fade" style="padding-top:20px">
+      {% include "datasets/similar_table.html" with scores=sims.bottom table_id="nonsimilarTable" %}
       </div>{% endif %}
     </div>
-    <a href="/datasets/download/similar/{{ dataset.id }}/"><button class="btn btn-default" type="button">Download all scores</button></a><a href="{% url 'datasets:similar_dataset_table' dataset.id %}"><button type="button" class="btn btn-default">View Entire Table</button></a>
+    <a href="/datasets/download/similar/{{ dataset.id }}/"><button class="btn btn-default" type="button">Download all</button></a><a href="{% url 'datasets:similar_dataset_table' dataset.id %}"><button type="button" class="btn btn-default">View all</button></a>
   </div>
 </div>{% endif %}
 
@@ -124,12 +111,23 @@
 {% block scripts %}
 {% include "scripts/tablesorter.html" %}
 {% include "scripts/script_popup.html" %}
-<script>$(document).ready(function(){
+<script>
+
+function create_table(divid) {
+    // Not currently used, but will create a datatable with extra bits removed
+    $(divid).dataTable({
+        "bPaginate": false,
+        "bLengthChange": false,
+        "bFilter": true,
+        "language": {
+           "search": "Filter:"
+        },
+        "bInfo": false,
+        "bAutoWidth": false });
+}
+
+$(document).ready(function(){
     $("#datasetTable").tablesorter();
-    {% if datasets_top %}$("#datasets_top_table").DataTable();{% endif %}
-    {% if datasets_bottom %}$("#datasets_bottom_table").DataTable();{% endif %}
-    {% if sims.top %}$("#similarTable").DataTable();{% endif %}
-    {% if sims.bottom %}$("#nonsimilarTable").DataTable();{% endif %}
 
 });</script>
 {% endblock %}

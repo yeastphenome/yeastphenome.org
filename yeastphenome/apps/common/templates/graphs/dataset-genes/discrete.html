@@ -61,7 +61,6 @@ var data = Array()
 $.each(counts, function(i, e){
     data.push({"count": e,"value": parseInt(i)})
 })
-console.log(data)
 data.sort((a, b) => (a.value < b.value))
 
 var yMax = d3.max(data, function(d){return d.value});
@@ -138,13 +137,22 @@ svg.selectAll(".bar")
       .attr("height", function(d) { return height - y(d.count); })
       .on('click', function(d, i){ 
 
+       // If it's already selected, unselect and restore original table
+       var bar = $("#histbar-" + i);
+       var color = bar.attr("fill")
+
        // Restore colors to original values
        $.each($(".histbar"), function(i, e){
          $(e).attr("fill", $(e).attr("data-fill"));
        })
 
+       // Case 1, unset filter
+       if (color == "red"){
+           restore_original()
+           return
+       }
+
        // Then make selected red!
-       var bar = $("#histbar-" + i);
        bar.attr("fill", "red");
        var bar_value = bar.attr("data-value");
 
@@ -184,7 +192,7 @@ svg.selectAll(".bar")
 
        $("#scores_table_body").html(content)
        $("#scores_table").show();
-       $("#scores_table").DataTable()
+       $("#scores_table").DataTable({"language": {"search": "Filter:"}})
 
     })
     .append("text")
@@ -263,9 +271,7 @@ function doSearch() {
 
       $("tr").removeClass('highlight');
       $("#tr-" + gene_name).addClass('highlight');
-
-      // Tell the user in case they can't see it
-      $("#gene-detail").html("Gene <a href='/datasets/genes?q=" + gene_name + "'>" + gene_name + "</a> has value: " + bar_value + ".")
+      $("#gene-detail").html("")
 
   } else {
       $("#gene-detail").html("Gene "+ gene_name + " is not in this dataset.")
@@ -280,10 +286,11 @@ $('input.typeahead').on('typeahead:selected', function(event, selection) {
 
 $(document).ready(function(){
     var alias_list = [{% for alias in aliases %}"{{ alias.1 }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
-    var common_list = [{% for alias in common_list %}"{{ alias.1 }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
+    var common_list = [{% for alias in common_names %}"{{ alias.1 }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
 
-    var genes = $.merge(Object.keys(lookup), alias_list, common_list)
-   
+    var genes = $.merge(Object.keys(lookup), alias_list)
+    var genes = $.merge(genes, common_list)   
+
     // Constructing the suggestion engine
     var genes = new Bloodhound({
         datumTokenizer: Bloodhound.tokenizers.whitespace,
@@ -292,7 +299,7 @@ $(document).ready(function(){
     });
 
     // Show initial set of genes
-    {% if dataset_genes %}$("#scores_table").DataTable({"pageLength":10}){% endif %}    
+    {% if dataset_genes %}$("#scores_table").DataTable({"pageLength":10, "language": {"search": "Filter:"}}){% endif %}    
     
     // Initializing the typeahead
     $('.gene-search').typeahead({

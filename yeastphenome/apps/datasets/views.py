@@ -56,7 +56,10 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
             .order_by("-score")
             .distinct()
         )
-        context["sims"] = {"top": sims[:10], "bottom": sims[len(sims) - 10 :]}
+        # Show bottom values ascending, top values descending
+        bottom = sims[len(sims) - 10 :]
+        bottom.reverse()
+        context["sims"] = {"top": sims[:10], "bottom": bottom}
 
         # Filter to data with values defined, sorted greatest to smallest
         queryset = (
@@ -68,6 +71,7 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
 
         context["datasets_top"] = queryset[:10]
         context["datasets_bottom"] = queryset[len(queryset) - 10 :]
+        context["datasets_bottom"].reverse()
         return context
 
 
@@ -84,8 +88,7 @@ def dataset_plot(request, dataset_id):
         raise Http404
 
     # prepare list of genes, plus genes and aliases
-    context = get_gene_names_context()
-    context.update(get_dataset_gene_table_context(dataset))
+    context = get_dataset_gene_table_context(dataset)
     context.update({"dataset": dataset})
     return render(request, "datasets/plot.html", context)
 
@@ -120,7 +123,7 @@ def get_dataset_gene_table_context(dataset):
 
     # Calculate ranking
     total_genes = genes.count()
-    ranks = [1 - (idx / total_genes) for idx, _ in enumerate(genes)]
+    ranks = [(idx / total_genes) * 100 for idx, _ in enumerate(genes)]
 
     gene_ids = [gene[2] for gene in genes]
     genes = [
@@ -167,7 +170,10 @@ def gene_explorer(request):
 
             # Get top/bottom 10 most similar
             sims = list(context["gene"].get_ranked_similar())
-            context["sims"] = {"top": sims[:10], "bottom": sims[len(sims) - 10 :]}
+            bottom = sims[len(sims) - 10 :]
+            bottom.reverse()
+
+            context["sims"] = {"top": sims[:10], "bottom": bottom}
 
             # Filter to data with values defined, sorted greatest to smallest
             queryset = (
@@ -179,6 +185,7 @@ def gene_explorer(request):
             # We just will show top and bottom 10
             context["datasets_top"] = queryset[:10]
             context["datasets_bottom"] = queryset[len(queryset) - 10 :]
+            context["datasets_bottom"].reverse()
 
         except Gene.DoesNotExist:
             messages.warning(
@@ -206,7 +213,7 @@ def similar_genes(request, systematic_name):
         .distinct()
     )
     total_sims = sims.count()
-    ranks = [1 - (idx / total_sims) for idx, sim in enumerate(sims)]
+    ranks = [(idx / total_sims) * 100 for idx, sim in enumerate(sims)]
     context = get_gene_names_context()
     context.update({"gene": gene, "sims": sims, "ranks": ranks})
     return render(request, "genes/similar_genes.html", context)
@@ -229,7 +236,7 @@ def similar_dataset_table(request, dataset_id):
     )
 
     total = sims.count()
-    ranks = [1 - (idx / total) for idx, sim in enumerate(sims)]
+    ranks = [(idx / total) * 100 for idx, sim in enumerate(sims)]
     context = {"dataset": dataset, "datasets": sims, "ranks": ranks}
     return render(request, "datasets/dataset_similarity_explorer.html", context)
 
@@ -246,12 +253,12 @@ def gene_datasets(request, systematic_name):
         raise Http404
 
     queryset = (
-        Data.objects.exclude(Q(value=None) | Q(value=Decimal("NaN")))
-        .filter(gene=gene)
+        Data.objects.filter(gene=gene)
+        .exclude(Q(value=None) | Q(value=Decimal("NaN")))
         .order_by("-value")
     )
     total = queryset.count()
-    ranks = [1 - (idx / total) for idx, sim in enumerate(queryset)]
+    ranks = [(idx / total) * 100 for idx, sim in enumerate(queryset)]
     context = get_gene_names_context()
     context.update({"gene": gene, "datasets": queryset, "ranks": ranks})
     return render(request, "genes/gene_datasets.html", context)

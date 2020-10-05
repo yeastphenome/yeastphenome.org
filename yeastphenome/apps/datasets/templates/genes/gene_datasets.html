@@ -105,7 +105,13 @@
     </div>
 </div>
 
-{% if datasets %}<div class="row" style="padding-top:20px" id='similar'>
+<div class="row" style="padding-top:20px">
+    <div class="col-md-12">
+    <a href="/datasets/genes">Genes</a> > <a href="/datasets/genes?q={{ gene.systematic_name }}">{{ gene.systematic_name }}</a> > Datasets
+    </div>
+</div>
+
+{% if datasets %}<div class="row" id='similar'>
     <div class="col-md-12">
       <h1>Phenotypic Scores for {{ gene.common_name }}/{{ gene.systematic_name }}</h1>
     <table id="similar_table" class="tablesorter table table-striped" width="100%">
@@ -113,14 +119,14 @@
         <tr>
             <th width="33%">Dataset Name</th>
             <th width="25%">Value</th>
-            <th width="25%">Percentile</th>
+            <th width="25%">Percentile (lowest to highest)</th>
         </tr>
         </thead>
         <tbody>
-{% for d in datasets %}<tr><td><a href="/datasets/{{ d.dataset.id }}">{{ d.dataset.name }}</a></td><td>{{ d.value }}</td><td>{{ ranks|lookup:forloop.counter0|floatformat:3 }}</td></tr>{% endfor %}
+{% for d in datasets %}<tr><td><a href="/datasets/{{ d.dataset.id }}">{{ d.dataset.name }}</a></td><td>{{ d.value }}</td><td>{{ ranks|lookup:forloop.counter0|floatformat:2 }} %</td></tr>{% endfor %}
       </table>
     </div>
-    <button class="dataset_download_gene btn btn-default" type="button">Download all scores</button>
+    <button class="dataset_download_gene btn btn-default" type="button">Download all</button>
   </div>
 </div>{% endif %}
 
@@ -198,7 +204,7 @@ $(document).ready(function(){
     });
 
     {% if gene %}$("#gene-name").val("{{ gene.systematic_name }}")
-    $("#similar_table").DataTable({"pageLength": 100});{% endif %}
+    $("#similar_table").DataTable({"pageLength": 100, "order": [[ 2, "desc" ]], "language": {"search": "Filter:"}});{% endif %}
 });
 
 </script>
