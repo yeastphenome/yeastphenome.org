@@ -6,7 +6,7 @@
     <table id="papersTable" class="tablesorter table table-condensed table-hover" width="100%" {% if datasets %}{% else %}style="display:none"{% endif %}>
 
         <thead>
-        <td style="text-align: left;"><input type="checkbox" onClick="toggle(this)"></td>
+        <td id="first_column" class="no-sort" style="text-align: left;"><input type="checkbox" onClick="toggle(this)"></td>
         <th>Dataset</th>
         <th>Paper</th>
         <th>Phenotype</th>
@@ -76,6 +76,8 @@ function toggle(source) {
 
 <script language="JavaScript">
 var chkbxs = $('tbody .dataset');
+
+$("#first_column").removeClass("sorting_asc");
 chkbxs.change(function () {
     $('#dataset_download').prop('disabled', chkbxs.filter(':checked').length < 1);
 });

@@ -101,6 +101,13 @@
     </div>
 </div>
 
+<div class="row">
+    <div class="col-md-12">
+        <div id="dataset_plot"></div>
+    </div>
+</div>
+
+
 {% if datasets %}<div class="row" style="padding-top:20px" id='similar'>
     <div class="col-md-12">
       <h1>Similar Datasets to Dataset {{ dataset.id }}</h1>
@@ -113,8 +120,8 @@
             <th width="25%">Percentile (lowest to highest)</th>
         </tr>
         </thead>
-        <tbody>{% for d in datasets %}<tr>
-        <td><a href="{% url 'datasets:detail' d.0 %}">{{ d.1 }}</a></td><td>{{ d.2 }}</td><td>{{ d.3 }}</td><td>{{ ranks|lookup:forloop.counter0|floatformat:2 }} %</td>
+        <tbody id="dataset_table_body">{% for d in datasets %}<tr id="tr-{{ d.0 }}">
+        <td id="td-{{ d.0 }}"><a href="{% url 'datasets:detail' d.0 %}">{{ d.1 }}</a></td><td>{{ d.2 }}</td><td>{{ d.3 }}</td><td>{{ ranks|lookup:forloop.counter0|floatformat:1 }}%</td>
     </tr>{% endfor %}
       </table>
     </div>
@@ -124,10 +131,199 @@
 
 {% endblock %}
 {% block scripts %}
+<script src="{% static 'js/typeahead.bundle.js' %}"></script>
+<script src="https://d3js.org/d3.v3.min.js"></script>
+
 <script>
 
-$(document).ready(function(){ 
-    $("#dataset_table").DataTable({"pageLength": 50, "order": [[ 2, "asc" ]], "language": {"search": "Filter:"}});
+// Restore original, full table
+function restore_original() {
+
+     // Restore colors to original values
+     $.each($(".histbar"), function(i, e){
+       $(e).attr("fill", $(e).attr("data-fill"));
+     })
+
+    $("#dataset_table_body").empty()
+    $("#dataset_table").DataTable().destroy();
+    $("#dataset_table_body").html($("#full_table").html());
+    $("#dataset_table").dataTable({"pageLength": 10, "language": {"search": "Filter:"}, "order": [[ 2, "asc" ]]});
+    $('#dataset_table').DataTable().order([1, 'desc']).draw();
+
+}
+
+var color = "steelblue";
+
+var datasets = [{% for entry in datasets %}{"dataset_id": "{{ entry.0 }}", "name": "{{ entry.1 }}", "score": {{ entry.2 }}, "pvalue": {{ entry.3 }}, "rank": "{{ ranks|lookup:forloop.counter0|floatformat:1 }}%" }{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
+var values = [{% for entry in datasets %}{{ entry.2 }}{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
+
+// A formatter for counts.
+var formatCount = d3.format(",.0f");
+
+var margin = {top: 40, right: 30, bottom: 30, left: 30},
+    width = 960 - margin.left - margin.right,
+    height = 300 - margin.top - margin.bottom;
+
+// TODO: we can set fixed values for min/max if possible with dataset
+var max = d3.max(values);
+var min = d3.min(values);
+var x = d3.scale.linear()
+      .domain([min, max])
+      .range([0, width]);
+
+// Generate a histogram using twenty uniformly-spaced bins.
+var data = d3.layout.histogram()
+    .bins(x.ticks(20))
+    (values);
+
+// Create a lookup by bin id to index into count
+var lookup = Object()
+$.each(data, function(i, e){
+    var filtered = datasets.filter(function(record){ return e.x <= record.score && record.score < e.x + e.dx; });
+    $.each(filtered, function(ii, ee){
+        lookup[ee.dataset_id] = i
+    })
+})
+
+// Lookup of value by dataset
+var dataset_lookup = Object()
+var dataset_id_lookup = Object()
+$.each(datasets, function(i, e){
+    dataset_lookup[e.dataset_id] = e
+    dataset_id_lookup[e.name] = e.dataset_id
+})
+
+
+var yMax = d3.max(data, function(d){return d.length});
+var yMin = d3.min(data, function(d){return d.length});
+var colorScale = d3.scale.linear()
+            .domain([yMin, yMax])
+            .range([d3.rgb(color).brighter(), d3.rgb(color).darker()]);
+
+var y = d3.scale.linear()
+    .domain([0, yMax])
+    .range([height, 0]);
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var svg = d3.select("#dataset_plot").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var bar = svg.selectAll(".bar")
+    .data(data)
+  .enter().append("g")
+    .attr("class", "bar")
+    .attr("transform", function(d) { return "translate(" + x(d.x) + "," + y(d.y) + ")"; });
+
+update_plot = function(d, i) {
+
+    // If it's already selected, unselect and restore original table
+    var bar = $("#histbar-" + i);
+    var color = bar.attr("fill")
+
+    // Restore colors to original values
+    $.each($(".histbar"), function(i, e){
+      $(e).attr("fill", $(e).attr("data-fill"));
+    })
+
+    // Case 1, unset filter
+    if (color == "red"){
+        restore_original()
+        return
+    }
+
+    // Then make selected red!
+    bar.attr("fill", "red");
+
+    var ds = datasets.filter(function(record){ return d.x <= record.score && record.score < d.x + d.dx; });
+
+    // Dataset ids
+    var names = ds.map(function(record){return record.dataset_id; });
+
+    value_range = " | Value range: " + (d.x).toFixed(2) + "-" + (d.x + d.dx).toFixed(2) + ". <a style='cursor:pointer' onclick=restore_original()>Reset filter</a>."
+
+    // Clear original content
+    $("#dataset_table_body").empty();
+    $("#dataset_table").DataTable().destroy();
+
+    content = ""
+    $.each(names, function(i,e){
+
+        // Grab the value and pvalue
+        dataset_value = dataset_lookup[e].score || ""
+        dataset_name = dataset_lookup[e].name || "Dataset id: " + e
+        dataset_pvalue = dataset_lookup[e].pvalue || ""
+        dataset_rank = dataset_lookup[e].rank || ""
+
+        console.log(dataset_pvalue)
+        content += "<tr><td id='td-" + e + "'><a href='/datasets/"+ e + "'>" + dataset_name + "</a></td><td>" + dataset_value + "</td><td>" + dataset_pvalue + "</td><td>"+ dataset_rank + "</td></tr>\n"
+    })
+
+    $("#dataset_table_body").html(content)
+    $("#dataset_table").show();
+    $("#dataset_table").DataTable({"language": {"search": "Filter:", "order": [[ 2, "asc" ]]}})
+    $('#dataset_table').DataTable().order([1, 'desc']).draw();
+    $("#dataset_table_length").append(value_range)
+
+}
+
+bar.append("rect")
+    .attr("x", 1)
+    .attr("id", function(d, i) { return "histbar-" + i; })
+    .attr("width", (x(data[0].dx) - x(0)) - 1)
+    .attr("class", "histbar")
+    .attr("height", function(d) { return height - y(d.y); })
+    .attr("data-fill", function(d) { return colorScale(d.y) })
+    .attr("data-min", function(d) { return (d.x).toFixed(2) })
+    .attr("data-max", function(d) { return (d.x + d.dx).toFixed(2) })
+    .attr("fill", function(d) { return colorScale(d.y) })
+    .on('click', function(d, i){update_plot(d, i)});
+
+bar.append("text")
+    .attr("dy", ".75em")
+    .attr("y", -12)
+    .attr("x", (x(data[0].dx) - x(0)) / 2)
+    .attr("text-anchor", "middle")
+    .text(function(d) { return formatCount(d.y); });
+
+svg.append("g")
+    .attr("class", "x axis .xaxis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xAxis);
+
+
+$(document).ready(function(){
+
+    // Add the dataset id to the end
+    var names = [{% for ds in datasets %}"{{ ds.1 }} || {{ ds.0 }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
+   
+    // Constructing the suggestion engine
+    var names = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.whitespace,
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        local: names
+    });
+
+    // Show initial set of datasets
+    {% if datasets %}$("#dataset_table").DataTable({"pageLength":25, "language": {"search": "Filter:", "order": [[ 2, "asc" ]]}})
+    $('#dataset_table').DataTable().order([1, 'desc']).draw();
+    {% endif %}    
+
+    // Initializing the typeahead
+    $('.dataset-search').typeahead({
+        hint: true,
+        highlight: true, /* Enable substring highlighting */
+        minLength: 1 /* Specify minimum characters required for showing suggestions */
+    },
+    {
+        name: 'names',
+        source: names
+    });
 });
 
 </script>

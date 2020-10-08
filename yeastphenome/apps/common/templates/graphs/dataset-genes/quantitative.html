@@ -116,8 +116,7 @@ update_plot = function(d, i) {
     var genes = gene_values.filter(function(record){ return d.x <= record.value && record.value < d.x + d.dx; });
     var names = genes.map(function(record){return record.label; });
 
-    content = "Showing range " + (d.x).toFixed(2) + " to " + (d.x + d.dx).toFixed(2) + " or <a style='cursor:pointer' onclick=restore_original()>show all values</a>"
-    $("#group_message").html(content)
+    value_range = " | Value range: " + (d.x).toFixed(2) + "-" + (d.x + d.dx).toFixed(2) + ". <a style='cursor:pointer' onclick=restore_original()>Reset filter</a>."
 
     // Clear original content
     $("#scores_table_body").empty();
@@ -149,7 +148,10 @@ update_plot = function(d, i) {
 
     $("#scores_table_body").html(content)
     $("#scores_table").show();
-    $("#scores_table").DataTable({"language": {"search": "Filter:"}})
+    $("#scores_table").DataTable({"language": {"search": "Filter:", "order": [[ 2, "asc" ]]}})
+    $('#scores_table').DataTable().order([1, 'desc']).draw();
+    $("#scores_table_length").append(value_range)
+
 }
 
 bar.append("rect")
@@ -271,7 +273,9 @@ $(document).ready(function(){
     });
 
     // Show initial set of genes
-    {% if dataset_genes %}$("#scores_table").DataTable({"pageLength":10, "language": {"search": "Filter:"}}){% endif %}    
+    {% if dataset_genes %}$("#scores_table").DataTable({"pageLength":25, "language": {"search": "Filter:", "order": [[ 2, "asc" ]]}})
+    $('#scores_table').DataTable().order([1, 'desc']).draw();
+    {% endif %}    
 
     // Initializing the typeahead
     $('.gene-search').typeahead({
