@@ -4,17 +4,17 @@
 {% load humanize %}
 {% block title %}{{ object }} / Datasets / Papers / {{ SITE_NAME }}{% endblock %}
 {% block content %}
+<div class="row" style="padding-bottom:20px">
+    <div class="col-md-12">
+    <a href="/datasets/">Datasets</a> > <a href="{% url 'datasets:detail' dataset.id %}">{{ dataset.id }}</a> > Genes
+    </div>
+</div>
 <div class="row" style="padding-bottom:35px">
     <div class="col-md-12">
         <h1>Dataset #{{ dataset.id }}</h1>
     </div>
 </div>
 </style>
-<div class="row" style="padding-bottom:20px">
-    <div class="col-md-12">
-    <a href="/datasets/">Datasets</a> > <a href="{% url 'datasets:detail' dataset.id %}">{{ dataset.id }}</a> > Genes
-    </div>
-</div>
 <div class="row">
     <div class="col-md-12">
        {% include "graphs/dataset-genes/index.html" %}
@@ -25,6 +25,6 @@
 {% block scripts %}
 {% include "scripts/script_popup.html" %}
 <script>$(document).ready(function(){
-    $("#datasetTable").DataTable({"language": {"search": "Filter:"}});
+    $("#datasetTable").DataTable({"language": {"search": "Filter:"}, "order": [[ 2, "asc" ]]});
 });</script>
 {% endblock %}

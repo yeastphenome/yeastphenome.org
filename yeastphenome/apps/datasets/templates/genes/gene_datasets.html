@@ -123,13 +123,12 @@
         </tr>
         </thead>
         <tbody>
-{% for d in datasets %}<tr><td><a href="/datasets/{{ d.dataset.id }}">{{ d.dataset.name }}</a></td><td>{{ d.value }}</td><td>{{ ranks|lookup:forloop.counter0|floatformat:2 }} %</td></tr>{% endfor %}
+{% for d in datasets %}<tr><td><a href="/datasets/{{ d.dataset.id }}">{{ d.dataset.name }}</a></td><td>{{ d.value }}</td><td>{{ ranks|lookup:forloop.counter0|floatformat:1 }}%</td></tr>{% endfor %}
       </table>
     </div>
     <button class="dataset_download_gene btn btn-default" type="button">Download all</button>
   </div>
 </div>{% endif %}
-
 {% endblock %}
 {% block scripts %}
 {% include "scripts/tablesorter.html" %}
@@ -204,7 +203,7 @@ $(document).ready(function(){
     });
 
     {% if gene %}$("#gene-name").val("{{ gene.systematic_name }}")
-    $("#similar_table").DataTable({"pageLength": 100, "order": [[ 2, "desc" ]], "language": {"search": "Filter:"}});{% endif %}
+    $("#similar_table").DataTable({"pageLength": 100, "order": [[ 2, "asc" ]], "language": {"search": "Filter:"}});{% endif %}
 });
 
 </script>

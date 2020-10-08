@@ -123,7 +123,7 @@ def get_dataset_gene_table_context(dataset):
 
     # Calculate ranking
     total_genes = genes.count()
-    ranks = [(idx / total_genes) * 100 for idx, _ in enumerate(genes)]
+    ranks = [(1 - (idx / total_genes)) * 100 for idx, _ in enumerate(genes)]
 
     gene_ids = [gene[2] for gene in genes]
     genes = [
@@ -213,7 +213,7 @@ def similar_genes(request, systematic_name):
         .distinct()
     )
     total_sims = sims.count()
-    ranks = [(idx / total_sims) * 100 for idx, sim in enumerate(sims)]
+    ranks = [(1 - (idx / total_sims)) * 100 for idx, sim in enumerate(sims)]
     context = get_gene_names_context()
     context.update({"gene": gene, "sims": sims, "ranks": ranks})
     return render(request, "genes/similar_genes.html", context)
@@ -236,7 +236,7 @@ def similar_dataset_table(request, dataset_id):
     )
 
     total = sims.count()
-    ranks = [(idx / total) * 100 for idx, sim in enumerate(sims)]
+    ranks = [(1 - (idx / total)) * 100 for idx, sim in enumerate(sims)]
     context = {"dataset": dataset, "datasets": sims, "ranks": ranks}
     return render(request, "datasets/dataset_similarity_explorer.html", context)
 
@@ -258,7 +258,7 @@ def gene_datasets(request, systematic_name):
         .order_by("-value")
     )
     total = queryset.count()
-    ranks = [(idx / total) * 100 for idx, sim in enumerate(queryset)]
+    ranks = [(1 - (idx / total)) * 100 for idx, sim in enumerate(queryset)]
     context = get_gene_names_context()
     context.update({"gene": gene, "datasets": queryset, "ranks": ranks})
     return render(request, "genes/gene_datasets.html", context)

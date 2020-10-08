@@ -51,7 +51,6 @@ tr.highlight {
 <div class="row">
     <div class="col-md-12">
       <h1>Phenotypic Scores</h1>
-      <p id="group_message">Showing all values<small></small></p>
     <table id="scores_table" class="tablesorter table table-striped" width="100%">
         <thead>
         <tr>
@@ -60,7 +59,7 @@ tr.highlight {
             <th width="30%">Percentile (lowest to highest)</th>
         </tr>
         </thead>
-        <tbody id="scores_table_body">{% for entry in dataset_genes %}<tr id="tr-{{ entry.label }}"><td><a href="/datasets/genes?q={{ entry.label }}">{{ entry.label }} / {{ entry.name }}</a></td><td>{{ entry.value }}</td><td>{{ entry.rank }} %</td>
+        <tbody id="scores_table_body">{% for entry in dataset_genes %}<tr id="tr-{{ entry.label }}"><td><a href="/datasets/genes?q={{ entry.label }}">{{ entry.label }} / {{ entry.name }}</a></td><td>{{ entry.value }}</td><td>{{ entry.rank }}%</td>
         </tr>{% endfor %}
         </tbody>
       </table>
@@ -96,8 +95,9 @@ function restore_original() {
     $("#scores_table_body").empty()
     $("#scores_table").DataTable().destroy();
     $("#scores_table_body").html($("#full_table").html());
-    $("#scores_table").DataTable({"pageLength": 10, "language": {"search": "Filter:"}});
-    $("#group_message").text("Showing all values")
+    $("#scores_table").dataTable({"pageLength": 10, "language": {"search": "Filter:"}, "order": [[ 2, "asc" ]]});
+    $('#scores_table').DataTable().order([1, 'desc']).draw();
+    $("#group_message").text("")
 
 }
 </script>
