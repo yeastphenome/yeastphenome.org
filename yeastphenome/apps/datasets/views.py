@@ -57,9 +57,13 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
             .distinct()
         )
         # Show bottom values ascending, top values descending
-        bottom = sims[len(sims) - 10 :]
-        bottom.reverse()
-        context["sims"] = {"top": sims[:10], "bottom": bottom}
+        top = []
+        bottom = []
+        if sims.count() >= 10:
+            top = sims[:10]
+            bottom = sims[len(sims) - 10 :]
+            bottom.reverse()
+        context["sims"] = {"top": top, "bottom": bottom}
 
         # Filter to data with values defined, sorted greatest to smallest
         queryset = (

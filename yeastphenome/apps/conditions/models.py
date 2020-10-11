@@ -108,7 +108,7 @@ class ConditionType(models.Model):
 
     def datasets(self):
         return (
-            apps.get_model("papers", "Dataset")
+            apps.get_model("datasets", "Dataset")
             .objects.filter(
                 Q(conditionset__conditions__type=self)
                 | Q(medium__conditions__type=self)
