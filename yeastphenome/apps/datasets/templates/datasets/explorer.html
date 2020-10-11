@@ -57,23 +57,12 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
 </style>
     <div class="col-md-12">
         <div class="row">
-            <div class="col-md-9 public-homepage-side-panel">
+            <div class="col-md-12 public-homepage-side-panel">
                 <h1>Datasets</h1>
                 <div>
                   <h3>Search</h3>
                   <input name='tags' value="">
                 </div>
-            </div>
-            <div class="col-md-3">
-             <div class="btn-group" style="padding-top:25px; float:right;">
-		<div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
-		  <div class="btn-group mr-2" role="group" aria-label="First group">
-		    <button type="button" class="btn btn-default"><a class="dropdown-item" href="{% url 'papers:all' %}">Papers</a></button>
-		    <button type="button" class="btn btn-default"><a href="{% url 'conditions:index' %}">Conditions</a></button>
-		    <button type="button" class="btn btn-default"><a href="{% url 'phenotypes:index' %}">Phenotypes</a></button>
-		  </div>
-		</div>
-              </div>
             </div>
         </div>
         <div class="row">
@@ -302,92 +291,12 @@ function doTagsSearch() {
 
 {% if datasets or results %}$(document).ready(function(){
     $("#papersTable").DataTable({"pageLength": 10,  
-        "language": {"search": "Filter:"}, 
-        "columnDefs": [ {
-           "targets": [0],
-            "orderable": false
-         }]
+        "language": {"search": "Filter:"} 
     });
     $("#dataset_download").show();
     add_to_cart()
     remove_from_cart()
     {% if results.count > 0 %}$(".dataTables_length").html("<label>Show <select name=\"papersTable_length\" aria-controls=\"papersTable\" class=\"form-control input-sm\"><option value=\"10\">10</option><option value=\"25\">25</option><option value=\"50\">50</option><option value=\"100\">100</option></select> entries out of {{ results.count }} </label>"){% endif %}
-
 });{% endif %}
-
-// If we click a link to add or remove from cart
-function add_to_cart() {
-  $(".add-to-cart").click(function(event){
-    var dataset_id = $(this).attr("data-id");
-    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-    const request = new Request(
-        "/cart/add/" + dataset_id + "/",
-        {headers: {'X-CSRFToken': csrftoken}});
-
-    fetch(request, {
-        method: 'POST',
-        mode: 'same-origin'  // Do not send CSRF token to another domain.
-    }).then(response => response.json())
-       .then(data => {
-          var element = $('#dataset-cart-' + dataset_id);
-          console.log(data)
-          console.log(element)
-          $(element).removeClass('add-to-cart');
-          $(element).removeClass('btn-primary');
-          $(element).addClass('remove-from-cart');
-          $(element).addClass('btn-danger');
-          $(element).text("Remove")
-          remove_from_cart();
-       });
-  })
-}
-
-
-function remove_from_cart() {
-  $(".remove-from-cart").click(function(event){
-    var dataset_id = $(this).attr("data-id");
-    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-   console.log('REMOVE')
-    const request = new Request(
-        "/cart/remove/" + dataset_id + "/",
-        {headers: {'X-CSRFToken': csrftoken}});
-
-    fetch(request, {
-        method: 'POST',
-        mode: 'same-origin'  // Do not send CSRF token to another domain.
-    }).then(response => response.json())
-       .then(data => {
-          var element = $('#dataset-cart-' + dataset_id);
-          console.log(data)
-          console.log(element)
-          $(element).removeClass('remove-from-cart');
-          $(element).removeClass('btn-danger');
-          $(element).addClass('add-to-cart');
-          $(element).addClass('btn-primary');
-          $(element).text("Add")
-          add_to_cart();
-       });
-  })
-}
-
-
-function update_checkboxes() {
-    var chkbxs = $('tbody .dataset');
-    chkbxs.change(function () {
-       $('#dataset_download').prop('disabled', chkbxs.filter(':checked').length < 1);
-    });
-    chkbxs.change();
-}
-
-$("#add-to-cart-all").click(function(event){
-     $("#fade").show();
-     ids = ""
-     $.each($("[type=checkbox].dataset:checked"), function(i, e){
-        ids = ids + "," + $(e).attr("name")
-     })
-     document.location = "/cart/add/" + ids + "/datasets:index"
-})
-$("#first_column").removeClass("sorting_asc");
 </script>
 {% endblock %}

@@ -1,38 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    {% include "head.html" with JavaScript='tablesorter' script_popup=1 %}
-    <title>{{ class_name|capfirst }} / Datasets / {{ SITE_NAME }}</title>
-</head>
-
-<body>
-{% include "navbar.html" with active='datasets' %}
+{% extends "base/wide.html" %}
+{% load static %}
+{% block title %}{{ class_name|capfirst }} / Datasets / {{ SITE_NAME }}{% endblock %}
+{% block content %}
 
 <div class="container-fluid">
-
     <div class="row">
-
         <div class="col-xs-12">
-
             <h1>Tag: {{ tag.name }}</h1>
-
             <p>Description: {{ tag.description }}</p>
-
             {% include "datasets/datasets_table.html" with template='datasets_class' %}
-
-            {% include "footer.html" %}
-
         </div>
     </div>
 </div>
 
+{% endblock %}
+{% block scripts %}
 <script>
-    $(document).ready(function(){
-        $("#papersTable").tablesorter();
-    });
+$(document).ready(function(){
+  $("#papersTable").DataTable({"pageLength": 10,  
+        "language": {"search": "Filter:"} 
+  });
+  $("#dataset_download").show();
+  add_to_cart()
+  remove_from_cart()
+  $(".dataTables_length").html("<label>Show <select name=\"papersTable_length\" aria-controls=\"papersTable\" class=\"form-control input-sm\"><option value=\"10\">10</option><option value=\"25\">25</option><option value=\"50\">50</option><option value=\"100\">100</option></select> entries out of {{ results.count }} </label>")
+
+});
 </script>
-
-{% include "ga.html" %}
-
-</body>
-</html>
+{% endblock %}

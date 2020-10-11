@@ -1,8 +1,19 @@
+<style>
+#first_column::after {
+    content: "" !important;
+    cursor: default;
+}
+
+#first_column {
+    cursor: default;
+}
+</style>
 {% if template == 'paper' %}
 <a href="/{{ template }}s/{{ object.id }}/{{ DOWNLOAD_PREFIX }}_{{ object.pmid }}_datasets_list.txt">Download the list of datasets</a>
 {% endif %}
 
 <form action="{% url 'datasets:download' %}" method="get">
+    {% csrf_token %}
     <table id="papersTable" class="tablesorter table table-condensed table-hover" width="100%" {% if datasets %}{% else %}style="display:none"{% endif %}>
 
         <thead>
@@ -72,14 +83,85 @@ function toggle(source) {
   btn = document.getElementById('dataset_download');
   btn.disabled = !source.checked;
 }
-</script>
 
-<script language="JavaScript">
 var chkbxs = $('tbody .dataset');
 
-$("#first_column").removeClass("sorting_asc");
+$("#first_column").removeClass("no-sort sorting_asc");
 chkbxs.change(function () {
     $('#dataset_download').prop('disabled', chkbxs.filter(':checked').length < 1);
 });
 chkbxs.change();
+
+// If we click a link to add or remove from cart
+function add_to_cart() {
+  $(".add-to-cart").click(function(event){
+    var dataset_id = $(this).attr("data-id");
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    const request = new Request(
+        "/cart/add/" + dataset_id + "/",
+        {headers: {'X-CSRFToken': csrftoken}});
+
+    fetch(request, {
+        method: 'POST',
+        mode: 'same-origin'  // Do not send CSRF token to another domain.
+    }).then(response => response.json())
+       .then(data => {
+          var element = $('#dataset-cart-' + dataset_id);
+          console.log(data)
+          console.log(element)
+          $(element).removeClass('add-to-cart');
+          $(element).removeClass('btn-primary');
+          $(element).addClass('remove-from-cart');
+          $(element).addClass('btn-danger');
+          $(element).text("Remove")
+          remove_from_cart();
+       });
+  })
+}
+
+
+function remove_from_cart() {
+  $(".remove-from-cart").click(function(event){
+    var dataset_id = $(this).attr("data-id");
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const request = new Request(
+        "/cart/remove/" + dataset_id + "/",
+        {headers: {'X-CSRFToken': csrftoken}});
+
+    fetch(request, {
+        method: 'POST',
+        mode: 'same-origin'  // Do not send CSRF token to another domain.
+    }).then(response => response.json())
+       .then(data => {
+          var element = $('#dataset-cart-' + dataset_id);
+          console.log(data)
+          console.log(element)
+          $(element).removeClass('remove-from-cart');
+          $(element).removeClass('btn-danger');
+          $(element).addClass('add-to-cart');
+          $(element).addClass('btn-primary');
+          $(element).text("Add")
+          add_to_cart();
+       });
+  })
+}
+
+
+function update_checkboxes() {
+    var chkbxs = $('tbody .dataset');
+    chkbxs.change(function () {
+       $('#dataset_download').prop('disabled', chkbxs.filter(':checked').length < 1);
+    });
+    chkbxs.change();
+}
+
+$("#add-to-cart-all").click(function(event){
+     $("#fade").show();
+     ids = ""
+     $.each($("[type=checkbox].dataset:checked"), function(i, e){
+        ids = ids + "," + $(e).attr("name")
+     })
+     document.location = "/cart/add/" + ids + "/datasets:index"
+})
 </script>

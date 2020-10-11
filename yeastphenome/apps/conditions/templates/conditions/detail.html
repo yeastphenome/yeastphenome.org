@@ -4,7 +4,10 @@
 <div class="row">
     <div class="col-md-12">
         <h1>{{ object }}</h1>
+           {% csrf_token %}
             <table class="table">
+
+
                 <tr>
                     <th width="20%" scope="row" class="first">ChEBI name</th>
                     <td class="first">{{ object.chebi_name }}
@@ -17,36 +20,40 @@
                     </td>
                 </tr>
 
-                <tr>
+                {% if object.other_names %}<tr>
+                    <th width="20%" scope="row" class="first">Other names</th>
+                    <td class="first">{{ object.other_names }}</td>
+                </tr>{% endif %}
+
+                {% if object.pubchem_name %}<tr>
                     <th width="20%" scope="row">PubChem name</th>
                     <td>{{ object.pubchem_name }}
                         {% if object.pubchem_id %}
                             &mdash; <a class="external" href="https://pubchem.ncbi.nlm.nih.gov/compound/{{ object.pubchem_id }}/">PCID:{{ object.pubchem_id }}</a>
                         {% endif %}
                     </td>
-                </tr>
-
-                <tr>
-                    <th width="20%" scope="row">Names used in publications</th>
-                    <td>
-                        {{ object.name }}{% if object.other_names %}, {{ object.other_names }}{% endif %}
-                    </td>
-                </tr>
-                {% if object.definition %}<tr>
-                    <th width="20%" scope="row">Description</th>
-                    <td>{{ object.definition }}</td>
                 </tr>{% endif %}
-            </table>
-            {% include "datasets/datasets_table.html" with template='condition' %}
+
+                {% if object.tags %}<tr>
+                    <th width="20%" scope="row">Tags</th>
+                    <td>{% for tag in object.tags.all %}<a href="{% url 'conditions:tag' tag.id %}">{{ tag.name }}</a>{% if forloop.last %}{% else %},{% endif %}{% endfor %}</td>
+                </tr>{% endif %}
+            </table>{% if object.datasets.count > 0 %}
+             <h2 style="padding-top:30px">Datasets</h2>
+            {% include "datasets/datasets_table.html" with datasets=object.datasets.all %}{% endif %}
     </div>
 </div>
 {% endblock %}
 {% block scripts %}
-{% include "scripts/tablesorter.html" %}
-{% include "scripts/script_popup.html" %}
 <script>
-    $(document).ready(function(){
-        $("#papersTable").tablesorter();
+{% if object.datasets.count > 0 %}$(document).ready(function(){
+    $("#papersTable").DataTable({"pageLength": 10,  
+        "language": {"search": "Filter:"} 
     });
+    $("#dataset_download").show();
+    add_to_cart()
+    remove_from_cart()
+    $(".dataTables_length").html("<label>Show <select name=\"papersTable_length\" aria-controls=\"papersTable\" class=\"form-control input-sm\"><option value=\"10\">10</option><option value=\"25\">25</option><option value=\"50\">50</option><option value=\"100\">100</option></select> entries out of {{ results.count }} </label>")
+});{% endif %}
 </script>
 {% endblock %}

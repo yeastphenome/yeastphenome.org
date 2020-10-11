@@ -59,7 +59,7 @@ tr.highlight {
             <th width="30%">Percentile (lowest to highest)</th>
         </tr>
         </thead>
-        <tbody id="scores_table_body">{% for entry in dataset_genes %}<tr id="tr-{{ entry.label }}"><td><a href="/datasets/genes?q={{ entry.label }}">{{ entry.label }} / {{ entry.name }}</a></td><td>{{ entry.value }}</td><td>{{ entry.rank }}%</td>
+        <tbody id="scores_table_body">{% for entry in dataset_genes %}<tr id="tr-{{ entry.label }}"><td><a href="/datasets/genes?q={{ entry.label }}">{{ entry.label }} / {{ entry.name }}</a></td><td>{{ entry.value }}</td><td>{{ entry.rank|floatformat:1 }}%</td>
         </tr>{% endfor %}
         </tbody>
       </table>

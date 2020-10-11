@@ -1,21 +1,17 @@
 import re
 
-from itertools import chain
-
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.shortcuts import render
 from django.views import generic
+from django.http import Http404
 
-# from django.views.decorators.cache import never_cache
-
-from yeastphenome.apps.conditions.models import ConditionType, ConditionSet, Medium
+from yeastphenome.apps.conditions.models import ConditionType, ConditionSet, Medium, Tag
 from yeastphenome.apps.datasets.models import Dataset
 
 from yeastphenome.apps.conditions.search import (
     get_search_tags,
     run_search_tag_query,
-    get_querysets,
 )
 
 from libchebipy import ChebiEntity
@@ -31,20 +27,42 @@ from yeastphenome.settings import (
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def index(request):
 
-    queryset1, queryset2 = get_querysets()
-    queryset = list(chain(queryset1, queryset2))
+    # Count == 0 indicates a search, no search is set to None
+    queryset = []
+    count = None
+    taglist = []
+    for key in [
+        "pubchem_name",
+        "other_name",
+        "chebi_name",
+        "name",
+        "tag",
+        "query",
+    ]:
+        for tag in request.GET.get(key, "").split(","):
+            if not tag:
+                continue
+            taglist.append({"value": tag, "code": key})
 
-    if "q" in request.GET:
-        q = request.GET["q"].strip()
-        queryset = run_search_tag_query(q, return_instances=True)
+    if taglist:
+        queryset = run_search_tag_query(query=None, taglist=taglist)
 
-    # 50 results per page
-    paginator = Paginator(queryset, 50)
-    page = request.GET.get("page")
+        # 50 results per page
+        paginator = Paginator(queryset, 50)
+        page = request.GET.get("page")
+        queryset = paginator.get_page(page)
+        count = len(queryset)
+
+    queryset = {
+        "results": queryset,
+        "count": count,
+    }
+
+    print(queryset)
     return render(
         request,
         "conditions/explorer.html",
-        {"queryset": paginator.get_page(page), "tags": get_search_tags()},
+        {"queryset": queryset, "tags": get_search_tags()},
     )
 
 
@@ -94,6 +112,16 @@ def conditionclass(request, class_id):
             "USER_AUTH": request.user.is_authenticated,
         },
     )
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def conditions_by_tag(request, tag_id):
+    try:
+        tag = Tag.objects.get(id=tag_id)
+    except Tag.DoesNotExist:
+        raise Http404
+
+    return render(request, "conditions/tag.html", {"tag": tag})
 
 
 class MediumDetailView(generic.DetailView, RatelimitMixin):

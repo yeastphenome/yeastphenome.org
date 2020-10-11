@@ -1,39 +1,15 @@
-from django.db.models import Q, Count
+from django.db.models import Q
 
-from yeastphenome.apps.conditions.models import ConditionSet, Medium, Tag
-from yeastphenome.apps.datasets.models import Datatype
-
-from itertools import chain
+from yeastphenome.apps.conditions.models import ConditionType, Tag
 
 # Search functions
-
-
-def get_querysets():
-    """Return two datasets, one for condition sets and one for mediums (that are structured the same)"""
-    g = Count(
-        "dataset",
-        filter=~Q(dataset__paper__latest_data_status__status__name="not relevant"),
-    )
-    queryset1 = (
-        ConditionSet.objects.all()
-        .annotate(num_datasets=g)
-        .filter(num_datasets__gte=0)
-        .distinct()
-    )
-    queryset2 = (
-        Medium.objects.all()
-        .annotate(num_datasets=g)
-        .filter(num_datasets__gte=0)
-        .distinct()
-    )
-    return queryset1, queryset2
 
 
 def get_search_tags():
     """Return a list of tags, each with a name and icon, to return to the
     conditions explorer tag search
     """
-    queryset1, queryset2 = get_querysets()
+    queryset = ConditionType.objects.all()
 
     # Tags
     tags = [
@@ -42,85 +18,92 @@ def get_search_tags():
     ]
 
     # Any kind of name
-    names = [
+    chebi_names = [
         {"value": x[0], "icon": "📛", "code": "chebi_name"}
-        for x in queryset1.values_list("conditions__type__chebi_name").distinct()
-        if x[0] not in [None, ""]
-    ] + [
-        {"value": x[0], "icon": "📛", "code": "chebi_name"}
-        for x in queryset2.values_list("conditions__type__chebi_name").distinct()
+        for x in queryset.values_list("chebi_name").distinct()
         if x[0] not in [None, ""]
     ]
 
-    return tags + names
+    pubchem_names = [
+        {"value": x[0], "icon": "📛", "code": "pubchem_name"}
+        for x in queryset.values_list("pubchem_name").distinct()
+        if x[0] not in [None, ""]
+    ]
+
+    other_names = [
+        {"value": x[0], "icon": "📛", "code": "other_name"}
+        for x in queryset.values_list("other_names").distinct()
+        if x[0] not in [None, ""]
+    ]
+
+    names = [
+        {"value": x[0], "icon": "📛", "code": "name"}
+        for x in queryset.values_list("name").distinct()
+        if x[0] not in [None, ""]
+    ]
+
+    return tags + chebi_names + other_names + names + pubchem_names
 
 
-def run_search_tag_query(query, taglist=None, return_instances=False):
+def run_search_tag_query(query, taglist=None):
     """take a query string and a taglist to run the phenotypes query."""
+    queries = [] if not query else [query]
     tags = {}
     for tag in taglist or []:
-        if tag["code"] not in tags:
-            tags[tag["code"]] = []
-        tags[tag["code"]].append(tag["value"])
+        if tag["code"] in ["", "query"]:
+            queries.append(tag["value"])
+        else:
+            if tag["code"] not in tags:
+                tags[tag["code"]] = []
+            tags[tag["code"]].append(tag["value"])
 
-    queryset1, queryset2 = get_querysets()
+    # We want to search through condition types
+    queryset = ConditionType.objects.all()
 
     # Filter querysets
     tag_query = Q()
+    name_query = Q()
+    chebi_query = Q()
+    other_name_query = Q()
+    pubchem_name_query = Q()
 
     if "tag" in tags:
-        tag_query = Q(
-            conditions__type__tags__name__iregex="(" + "$|^".join(tags["tag"]) + ")"
+        tag_query = Q(tags__name__iregex="(" + "$|^".join(tags["tag"]) + ")")
+
+    if "name" in tags:
+        name_query = Q(name__iregex="(" + "$|^".join(tags["name"]) + ")")
+
+    if "chebi_name" in tags:
+        chebi_query = Q(chebi_name__iregex="(" + "$|^".join(tags["chebi_name"]) + ")")
+
+    if "other_name" in tags:
+        other_name_query = Q(
+            other_names__iregex="(" + "$|^".join(tags["other_name"]) + ")"
         )
 
-    queryset1 = queryset1.filter(tag_query)
-    queryset2 = queryset2.filter(tag_query)
+    if "pubchem_name" in tags:
+        pubchem_name_query = Q(
+            pubchem_name__iregex="(" + "$|^".join(tags["pubchem_name"]) + ")"
+        )
+
+    print(tags)
+    queryset = queryset.filter(
+        tag_query, name_query, chebi_query, other_name_query, pubchem_name_query
+    )
 
     # Now filter down results more, search all fields for query if defined
-    if query not in ["", None]:
+    if queries:
+        queries = "(%s)" % "|".join(queries)
         f = (
-            Q(systematic_name__icontains=query)
-            | Q(common_name__icontains=query)
-            | Q(description__icontains=query)
-            | Q(display_name__icontains=query)
-            | Q(conditions__type__name__icontains=query)
-            | Q(conditions__type__other_names__icontains=query)
-            | Q(conditions__type__chebi_name__icontains=query)
-            | Q(conditions__type__pubchem_name__icontains=query)
+            Q(name__iregex=queries)
+            | Q(tags__name__iregex=queries)
+            | Q(description__iregex=queries)
+            | Q(other_names__iregex=queries)
+            | Q(pubchem_name__iregex=queries)
+            | Q(chebi_name__iregex=queries)
         )
 
-        queryset1 = queryset1.filter(f).distinct()
-        queryset2 = queryset2.filter(f).distinct()
+        queryset = queryset.filter(f).distinct()
 
-    # Combine the queryset into a chained list
-    if return_instances:
-        return list(chain(queryset1, queryset2))
-
-    queryset1_ids = queryset1.values_list("id", flat=True).distinct()
-    queryset2_ids = queryset2.values_list("id", flat=True).distinct()
-
-    # NOTE: The original table format called for getting conditions type names nad papers, which explodes the
-    # size of the table. This is edited to only return unique ids
-    # queryset1 = queryset1.filter(id__in=queryset1_ids).values_list("id", "conditions__type__name", "dataset__paper__id", "dataset__paper__first_author", "dataset__phenotype__name").distinct()
-    # queryset2 = queryset2.filter(id__in=queryset2_ids).values_list("id", "conditions__type__name", "dataset__paper__id", "dataset__paper__first_author", "dataset__phenotype__name").distinct()
-
-    # queryset1 = queryset1.filter(id__in=queryset1_ids).values_list("id", "conditions__conditionset__display_name").distinct()
-    # queryset2 = queryset2.filter(id__in=queryset2_ids).values_list("id", "conditions__conditionset__display_name").distinct()
-
-    queryset1 = (
-        queryset1.filter(id__in=queryset1_ids)
-        .values_list("id", "conditions__type__name")
-        .distinct()
-    )
-    queryset2 = (
-        queryset2.filter(id__in=queryset2_ids)
-        .values_list("id", "conditions__type__name")
-        .distinct()
-    )
-
-    values_list = list(chain(queryset1, queryset2))
-    return {
-        "results": values_list,
-        "count": len(values_list),
-        "datatypes": {x[0]: x[1] for x in Datatype.objects.values_list("id", "name")},
-    }
+    # Return the queryset
+    return queryset

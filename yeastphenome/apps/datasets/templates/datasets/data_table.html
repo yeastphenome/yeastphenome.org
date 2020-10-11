@@ -13,7 +13,7 @@
         <tbody id="papersTableBody">
         {% for d in datasets %}<tr>
             <td class="col-md-5"><a href="/datasets/{{ d.dataset.id }}/">{{ d.dataset.name }}</a></td>
-            <td class="col-md-5">{{ d.value }}</td>
+            <td class="col-md-5">{{ d.value|floatformat:1 }}</td>
         </tr>{% endfor %}
         </tbody>
     </table>
