@@ -63,7 +63,7 @@ def get_search_tags():
 
     # Phenotypes (from dataset)
     phenotypes = [
-        {"value": x[0], "icon": "🐶", "code": "medium"}
+        {"value": x[0], "icon": "🐶", "code": "phenotype"}
         for x in Phenotype.objects.values_list("name").distinct()
     ]
 
@@ -92,18 +92,23 @@ def get_search_tags():
     )
 
 
-def run_search_tag_query(query, taglist=None, return_instances=False):
+def run_search_tag_query(query=None, taglist=None):
     """this function is called from the common/views.py for the explorer function
     It takes in a list of tags (and associated models) to build a query. E.g.:
-    [{'value': 'human protein', 'icon': '🏷️', 'code': 'tag', 'style': '--tag-bg:hsl(108,45%,65%)'}, {'value': 'hap a/hap alpha/hom', 'icon': '🏺', 'code': 'collection', 'style': '--tag-bg:hsl(267,63%,69%)'}, {'value': 'haploid MatA', 'icon': '🏺', 'code': 'collection', 'style': '--tag-bg:hsl(24,51%,69%)'}]
+    [{'value': 'human protein', 'icon': '🏷️', 'code': 'tag', 'style': '--tag-bg:hsl(108,45%,65%)'},
+     {'value': 'hap a/hap alpha/hom', 'icon': '🏺', 'code': 'collection', 'style': '--tag-bg:hsl(267,63%,69%)'},
+     {'value': 'haploid MatA', 'icon': '🏺', 'code': 'collection', 'style': '--tag-bg:hsl(24,51%,69%)'}]
     The function here must know how to map the code (e.g., Collection) to a model to search
     """
-    # First do a search based on the tags, assemble those of liked kind
+    queries = [] if not query else [query]
     tags = {}
     for tag in taglist or []:
-        if tag["code"] not in tags:
-            tags[tag["code"]] = []
-        tags[tag["code"]].append(tag["value"])
+        if tag["code"] in ["", "query"]:
+            queries.append(tag["value"])
+        else:
+            if tag["code"] not in tags:
+                tags[tag["code"]] = []
+            tags[tag["code"]].append(tag["value"])
 
     # Exclude the papers marked as "not relevant"
     queryset = Paper.objects.exclude(
@@ -154,7 +159,7 @@ def run_search_tag_query(query, taglist=None, return_instances=False):
             dataset__conditionset__systematic_name__in=tags["conditionset"]
         )
 
-    results = queryset.filter(
+    queryset = queryset.filter(
         authors_query,
         years_query,
         gene_query,
@@ -167,45 +172,17 @@ def run_search_tag_query(query, taglist=None, return_instances=False):
     )
 
     # Now filter down results more, search all fields for query if defined
-    if query not in ["", None]:
-        results = results.filter(
-            Q(dataset__name__icontains=query)
-            | Q(dataset__phenotype__name__icontains=query)
-            | Q(dataset__collection__name__icontains=query)
-            | Q(data_abstract__icontains=query)
-            | Q(pmid__icontains=query)
-            | Q(notes__icontains=query)
-            | Q(dataset__medium__systematic_name__icontains=query)
-            | Q(dataset__conditionset__systematic_name__icontains=query)
-        ).distinct()
-
-    if return_instances:
-        return results
-
-    # paper id, first author, last author, phenotypes, conditionss)
-    # (165, 'Ni L', 'Snyder M', 'axial budding pattern', 'standard')
-    values_list = []
-    seen = []
-    for paper in results:
-        if paper.id in seen:
-            continue
-
-        conditiontypes = [x.name for x in paper.conditiontypes()]
-        phenotypes = [x.name for x in paper.phenotypes()]
-        values_list.append(
-            [
-                paper.id,
-                paper.first_author,
-                paper.last_author,
-                " ".join(phenotypes[:7]),
-                " ".join(conditiontypes[:7]),
-                paper.pub_date,
-            ]
+    if queries:
+        queries = "(%s)" % "|".join(queries)
+        queryset = queryset.filter(
+            Q(dataset__name__iregex=queries)
+            | Q(dataset__phenotype__name__iregex=queries)
+            | Q(dataset__collection__name__iregex=queries)
+            | Q(data_abstract__iregex=queries)
+            | Q(pmid__iregex=queries)
+            | Q(notes__iregex=queries)
+            | Q(dataset__medium__systematic_name__iregex=queries)
+            | Q(dataset__conditionset__systematic_name__iregex=queries)
         )
-        seen.append(paper.id)
 
-    return {
-        "results": values_list,
-        "count": len(values_list),
-        "datatypes": {x[0]: x[1] for x in Datatype.objects.values_list("id", "name")},
-    }
+    return queryset

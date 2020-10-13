@@ -10,36 +10,45 @@ def get_search_tags():
     conditions explorer tag search
     """
     queryset = ConditionType.objects.all()
+    seen = set()
+
+    # Names have duplicates
+    def not_seen(value):
+        if value in seen:
+            return False
+        seen.add(value)
+        return True
 
     # Tags
     tags = [
-        {"value": x[0], "icon": "🏷️", "code": "tag"}
-        for x in Tag.objects.values_list("name").distinct()
+        {"value": x, "icon": "🏷️", "code": "tag"}
+        for x in Tag.objects.values_list("name", flat=True).distinct()
+        if x not in [None, ""] and not_seen(x)
     ]
 
     # Any kind of name
     chebi_names = [
-        {"value": x[0], "icon": "📛", "code": "chebi_name"}
-        for x in queryset.values_list("chebi_name").distinct()
-        if x[0] not in [None, ""]
+        {"value": x, "icon": "📛", "code": "chebi_name"}
+        for x in queryset.values_list("chebi_name", flat=True).distinct()
+        if x not in [None, ""] and not_seen(x)
     ]
 
     pubchem_names = [
-        {"value": x[0], "icon": "📛", "code": "pubchem_name"}
-        for x in queryset.values_list("pubchem_name").distinct()
-        if x[0] not in [None, ""]
+        {"value": x, "icon": "📛", "code": "pubchem_name"}
+        for x in queryset.values_list("pubchem_name", flat=True).distinct()
+        if x not in [None, ""] and not_seen(x)
     ]
 
     other_names = [
-        {"value": x[0], "icon": "📛", "code": "other_name"}
-        for x in queryset.values_list("other_names").distinct()
-        if x[0] not in [None, ""]
+        {"value": x, "icon": "📛", "code": "other_name"}
+        for x in queryset.values_list("other_names", flat=True).distinct()
+        if x not in [None, ""] and not_seen(x)
     ]
 
     names = [
-        {"value": x[0], "icon": "📛", "code": "name"}
-        for x in queryset.values_list("name").distinct()
-        if x[0] not in [None, ""]
+        {"value": x, "icon": "📛", "code": "name"}
+        for x in queryset.values_list("name", flat=True).distinct()
+        if x not in [None, ""] and not_seen(x)
     ]
 
     return tags + chebi_names + other_names + names + pubchem_names
@@ -86,7 +95,6 @@ def run_search_tag_query(query, taglist=None):
             pubchem_name__iregex="(" + "$|^".join(tags["pubchem_name"]) + ")"
         )
 
-    print(tags)
     queryset = queryset.filter(
         tag_query, name_query, chebi_query, other_name_query, pubchem_name_query
     )

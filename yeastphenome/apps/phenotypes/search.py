@@ -2,8 +2,6 @@ from django.db.models import Q
 
 from yeastphenome.apps.phenotypes.models import Phenotype, Observable, Tag, Measurement
 
-from yeastphenome.apps.datasets.models import Datatype
-
 # Search functions
 
 
@@ -38,16 +36,20 @@ def get_search_tags():
     return observables + phenotypes + tags + measurements
 
 
-def run_search_tag_query(query, taglist=None, return_instances=False):
+def run_search_tag_query(query=None, taglist=None):
     """take a query string and a taglist to run the phenotypes query."""
+    queries = [] if not query else [query]
     tags = {}
     for tag in taglist or []:
-        if tag["code"] not in tags:
-            tags[tag["code"]] = []
-        tags[tag["code"]].append(tag["value"])
+        if tag["code"] in ["", "query"]:
+            queries.append(tag["value"])
+        else:
+            if tag["code"] not in tags:
+                tags[tag["code"]] = []
+            tags[tag["code"]].append(tag["value"])
 
     # A phenotype search actually returns observables
-    queryset = Observable.objects.all()
+    queryset = Observable.objects.order_by("name").all()
 
     # Prepare querysets
     observables_query = Q()
@@ -55,6 +57,7 @@ def run_search_tag_query(query, taglist=None, return_instances=False):
     measurement_query = Q()
     tag_query = Q()
 
+    print(queryset.count())
     if "observable" in tags:
         observables_query = Q(name__in=tags["observable"])
 
@@ -67,35 +70,22 @@ def run_search_tag_query(query, taglist=None, return_instances=False):
     if "measurement" in tags:
         measurement_query = Q(phenotype__measurement__name__in=tags["measurement"])
 
-    results = queryset.filter(
+    queryset = queryset.filter(
         observables_query,
         tag_query,
         phenotype_query,
         measurement_query,
     )
 
-    # Now filter down results more, search all fields for query if defined
-    if query not in ["", None]:
-        results = results.filter(
-            Q(name__icontains=query)
-            | Q(tags__name__icontains=query)
-            | Q(phenotype__name__icontains=query)
-            | Q(phenotype__description__icontains=query)
-            | Q(phenotype__measurement__name__icontains=query)
-            | Q(phenotype__reporter__icontains=query)
-        ).distinct()
-
-    if return_instances:
-        return results
-
-    values_list = []
-    for observable in results:
-        condition_types = ", ".join([x.name for x in observable.conditiontypes()[:7]])
-        papers = ", ".join([str(x) for x in observable.papers()[:7]])
-        values_list.append([observable.link_detail(), condition_types, papers])
-
-    return {
-        "results": values_list,
-        "count": len(values_list),
-        "datatypes": {x[0]: x[1] for x in Datatype.objects.values_list("id", "name")},
-    }
+    if queries:
+        queries = "(%s)" % "|".join(queries)
+        f = (
+            Q(name__icontains=queries)
+            | Q(tags__name__iregex=queries)
+            | Q(phenotype__name__iregex=queries)
+            | Q(phenotype__description__iregex=queries)
+            | Q(phenotype__measurement__name__iregex=queries)
+            | Q(phenotype__reporter__iregex=queries)
+        )
+        queryset = queryset.filter(f).distinct()
+    return queryset
