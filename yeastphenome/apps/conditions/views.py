@@ -6,7 +6,8 @@ from django.db import models
 from django.shortcuts import render
 from django.views import generic
 from django.http import Http404
-from django.views.decorators.cache import never_cache
+
+# from django.views.decorators.cache import never_cache
 from yeastphenome.apps.conditions.models import ConditionType, ConditionSet, Medium, Tag
 from yeastphenome.apps.datasets.models import Dataset
 
@@ -66,14 +67,13 @@ def index(request):
     )
 
 
-@never_cache
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def browse(request):
     """This view is currently not used - it's not clear how to generate this ordered set"""
     # conditions annotated with tag count sort highest on top
     qs = ConditionType.objects.all().annotate(count=models.Count("pk"))
-    qs = qs.filter(tags__in=Tag.objects.all())
-    qs = qs.order_by("-count")
+    qs = qs.filter(tags__in=list(Tag.objects.all()))
+    qs = qs.order_by("-count")[:100]
     context = {"data": qs}
     return render(request, "conditions/graphs/browse.html", context)
 
