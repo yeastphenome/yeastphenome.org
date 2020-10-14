@@ -71,9 +71,8 @@ def index(request):
 def browse(request):
     """This view is currently not used - it's not clear how to generate this ordered set"""
     # conditions annotated with tag count sort highest on top
-    qs = ConditionType.objects.all().annotate(count=models.Count("pk"))
-    qs = qs.filter(tags__in=list(Tag.objects.all()))
-    qs = qs.order_by("-count")[:100]
+    qs = Tag.objects.all().annotate(count=models.Count("conditiontype"))
+    qs = qs.order_by("-count")
     context = {"data": qs}
     return render(request, "conditions/graphs/browse.html", context)
 

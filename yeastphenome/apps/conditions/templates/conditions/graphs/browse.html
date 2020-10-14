@@ -16,6 +16,10 @@ a, a:visited, a:active {
   text-decoration: none;
 }
 
+.bubble {
+  cursor: pointer !important;
+}
+
 .button.active {
   background: #000;
   color: #fff;
@@ -69,7 +73,7 @@ a, a:visited, a:active {
 </style>
 <div class="row">
     <div class="col-md-12">
-        <h1>Browse Conditions</h1>
+        <h1>Browse Condition Tags</h1>
         <div id="vis"></div>
     </div>
 </div>
@@ -226,10 +230,7 @@ function bubbleChart() {
 
   // Nice looking colors - no reason to buck the trend
   // @v4 scales now have a flattened naming scheme
-  var fillColor = d3.scaleOrdinal()
-    .domain(['low', 'medium', 'high'])
-    .range(['#d84b2a', '#beccae', '#7aa25c']);
-
+  var fillColor = d3.scaleOrdinal(d3.schemeCategory20);
 
   /*
    * This data manipulation function takes the raw data from
@@ -252,7 +253,7 @@ function bubbleChart() {
     // @v4: new flattened scale names.
     var radiusScale = d3.scalePow()
       .exponent(0.5)
-      .range([2, 30])
+      .range([10, 100])
       .domain([0, maxAmount]);
 
     // Use map() to convert raw data into node data.
@@ -311,11 +312,12 @@ function bubbleChart() {
     var bubblesE = bubbles.enter().append('circle')
       .classed('bubble', true)
       .attr('r', 0)
-      .attr('fill', function (d) { return fillColor(d.count); })
-      .attr('stroke', function (d) { return d3.rgb(fillColor(d.count)).darker(); })
+      .attr('fill', function (d, i) { return fillColor(i); })
+      .attr('stroke', function (d, i) { return d3.rgb(fillColor(i)).darker(); })
       .attr('stroke-width', 2)
       .on('mouseover', showDetail)
-      .on('mouseout', hideDetail);
+      .on('mouseout', hideDetail)
+      .on('click', function(d) { document.location = "/conditions/" + d.id });
 
     // @v4 Merge the original empty selection and the enter selection
     bubbles = bubbles.merge(bubblesE);
@@ -374,7 +376,7 @@ function bubbleChart() {
     var content = '<span class="name">Title: </span><span class="value">' +
                   d.name +
                   '</span><br/>' +
-                  '<span class="name">Amount: </span><span class="value">' +
+                  '<span class="name">Count: </span><span class="value">' +
                   d.value +
                   '</span>';
 
