@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     url(r"^$", views.index, name="index"),
+    url(r"^browse/$", views.browse, name="browse"),
     url(r"^(?P<pk>\d+)/$", views.ConditiontypeDetailView.as_view(), name="detail"),
     url(r"^chebi/(?P<class_id>\d+)/$", views.conditionclass, name="class"),
     url(r"^tag/(?P<tag_id>\d+)/$", views.conditions_by_tag, name="tag"),

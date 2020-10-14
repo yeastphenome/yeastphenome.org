@@ -24,7 +24,7 @@
 
 {% if object.pmid != 0 %}<div class="row">
     <div class="col-md-12">
-        <table class="table" id="papersTable">
+        <table class="table">
             <tr>
                 <th width="20%" scope="row" class="first">Pubmed ID</th>
                 <td class="first"><a class="external" href="https://www.ncbi.nlm.nih.gov/pubmed/{{ object.pmid }}/">{{ object.pmid }}</a></td>
@@ -83,18 +83,13 @@
      </div>
 </div>
 <hr>
-<div class="row" id="citations">
-    <div class="col-md-12">
-    <h2>Explore Citations</h2>
-    {% include "graphs/citation-graph.html" %}
-    <a style="padding-left:600px" href="{% url 'common:paper-citation-graph' paper.id %}">View Full Page</a>
-    </div>
-</div>
 {% endblock %}
 {% block scripts %}
-{% include "scripts/tablesorter.html" %}
-{% include "scripts/script_popup.html" %}
-<script>$(document).ready(function(){
-    $("#papersTable").tablesorter();
-});</script>
+<script>
+{% if datasets %}$(document).ready(function(){
+    $("#papersTable").dataTable({"pageLength": 10, "language": {"search": "Filter:"}});
+    $("#dataset_download").show();
+    add_to_cart()
+    remove_from_cart()
+});{% endif %}</script>
 {% endblock %}

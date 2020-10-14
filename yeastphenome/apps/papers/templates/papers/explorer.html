@@ -4,6 +4,10 @@
 <link rel='stylesheet' href='https://unpkg.com/@yaireo/tagify/dist/tagify.css'>
 
 <style>
+
+.no-sort::after { display: none!important; }
+.no-sort { pointer-events: none!important; cursor: default!important; }
+
 .customSuggestionsList > div{
   max-height: 300px;
   border: 2px solid pink;
@@ -12,6 +16,10 @@
 .tagify {
   width: 100%;
   max-width: 700px;
+}
+
+.tagify__tag, .tagify__input {
+  font-size: 14px;
 }
 
 .pen-intro{
@@ -47,71 +55,41 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
     min-height: 11ch;
 }
 </style>
-    <div class="col-md-3">
+    <div class="col-md-12">
         <div class="row">
             <div class="col-md-12 public-homepage-side-panel">
-                <div class="box">
-                  <h3>Paper Filters</h3>
+                <h1>Papers</h1>
+                <div>
+                  <h3>Search</h3>
                   <input name='tags' value="">
                 </div>
             </div>
+            <!--<div class="col-md-2">
+                <h1></h1>
+                <a href="{% url 'conditions:browse' %}"><button class="btn btn-default" type="button">Browse</button></a>
+            </div>-->
         </div>
-        <div class="row">
-            <div class="col-md-12">
-               <h4>Legend</h4>
-                <ul class="list-group"><!--https://emojipedia.org/-->
-                  <li class="list-group-item">👱️ authors</li>
-                  <li class="list-group-item">🕰️ year</li>
-                  <li class="list-group-item">🏺 collection</li>
-                  <li class="list-group-item">🌨️ condition</li>
-                  <li class="list-group-item">💽 datatype</li>
-                  <li class="list-group-item">🧬 gene</li>
-                  <li class="list-group-item">🧫 medium</li>
-                  <li class="list-group-item">🐶 phenotype</li>
-                  <li class="list-group-item">🏷️ tag</li>
-                  </ul>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <div class="btn-group">
-               <h4>Browse</h4>
-		<div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
-		  <div class="btn-group mr-2" role="group" aria-label="First group">
-		    <button type="button" class="btn btn-default"><a href="{% url 'datasets:index' %}">Datasets</a></button>
-		    <button type="button" class="btn btn-default"><a href="{% url 'conditions:index' %}">Conditions</a></button>
-		    <button type="button" class="btn btn-default"><a href="{% url 'phenotypes:index' %}">Phenotypes</a></button>
-		  </div>
-		</div>
-            </div>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-9">
         <div class="row">
             <div class="col-md-12" style="padding-top:20px">
-                <form id="searchform">
+                <form id="searchform" style="display:none">
                 {% csrf_token %}
-               <input type="text" name="q" class="form-control" placeholder="Search (press enter to search only with filters)" required="" id="id_q">
+               <input type="text" name="q" class="form-control" placeholder="Search (press enter to search only using filters)" required="" id="id_q">
                 </form>
             </div>
         </div>
         <div class="row">
-            <div class="col-md-12" id="messages" style="padding-bottom:20px">
+            <div class="col-md-12" id="message" style="padding-bottom:5px">{% if queryset.count == 0 %}
+                  <div class="alert alert-info">There were no relevant results for your search.</div>
+               {% endif %}
             </div>
         </div>
         <div class="row">
-            <div class="col-md-12" id="results" style="padding-bottom:30px">{% if results %}
-               {% if results.count == 0 %}
-                  <div class="alert alert-info">There we no results for your search.</div>
-               {% else %}
-                  <div class="alert alert-info">We found {{ results.count }} results for your search.</div>
-               {% for result in results.results %}<div class="box"><p>Dataset: <a href="/datasets/{{ result.0 }}">{{ result.1 }}</a></p><p>Collection: {{ result.2 }}</p><p>Datatype of Published Data: {{ result.3 }}</p><p><a href="/papers/{{ result.4 }}">Link to Paper</a></p><p>{% if result.5 %}Tags: {{ result.5 }}{% endif %}</p></div>{% endfor %}
-               {% endif %}
-            </div>{% endif %}{% if papers_list %}
-              {% include "papers/papers_table.html" %}
-             {% endif %}
+            <div class="col-md-12" id="results" style="padding-bottom:30px">{% if queryset.results %}
+                  {% if queryset.count > 0 %}
+                  {% include "papers/papers_table.html" with papers_list=queryset.results %}
+            {% endif %}{% endif %}</div>
         </div>
+
     </div>
 </div></div></div>
 {% endblock %}
@@ -134,7 +112,7 @@ var input = document.querySelector('input[name=tags]'),
         whitelist: tags,
         transformTag: transformTag,
         // backspace: "edit",
-        placeholder: "Add filters",
+        placeholder: "growth, standard, transport",
         dropdown : {
             enabled: 1,            // show suggestion after 1 typed character
             fuzzySearch: false,    // match only suggestions that starts with the typed characters
@@ -151,7 +129,7 @@ var input = document.querySelector('input[name=tags]'),
                try {
                     return `<tag title='${tagData.value}' contenteditable='false' spellcheck="false" class='tagify__tag ${tagData.class ? tagData.class : ""}' ${this.getAttributes(tagData)}>
                         <x title='remove tag' class='tagify__tag__removeBtn'></x>
-                        <div>${tagData.icon}
+                        <div style="font-size:14px">
                             <span class='tagify__tag-text'>${tagData.value}</span>
                         </div>
                     </tag>`
@@ -160,7 +138,7 @@ var input = document.querySelector('input[name=tags]'),
             },
             dropdownItem : function(tagData){
                 try {
-                    return `<div class='tagify__dropdown__item ${tagData.class ? tagData.class : ""}' tagifySuggestionIdx="${tagData.tagifySuggestionIdx}">${tagData.icon}
+                    return `<div style="font-size:14px" class='tagify__dropdown__item ${tagData.class ? tagData.class : ""}' tagifySuggestionIdx="${tagData.tagifySuggestionIdx}">
                             <span>${tagData.value}</span>
                         </div>`
                 }
@@ -182,41 +160,84 @@ function getRandomColor(){
     return 'hsl(' + h + ',' + s + '%,' + l + '%)';
 }
 
-function transformTag( tagData ){
-    tagData.style = "--tag-bg:" + getRandomColor();
+function transformTag(tagData){
 
-    if( tagData.value.toLowerCase() == 'shit' )
-       tagData.value = 's✲✲t'
+    // If the term doesn't have an icon, it's a custom query
+    if (!("icon" in tagData)) {
+        tagData["icon"] = ""
+        tagData["code"] = ""
+        tagData.style = "--tag-bg:" + "white";
+    } else {
+        tagData.style = "--tag-bg:" + getRandomColor();
+    }
 }
 
-tagify.on('invalid', function(e){
-    console.log(e, e.detail);
-})
 
-tagify.on('add', function(e){
-    console.log(e.detail)
-    console.log( "original Input:", tagify.DOM.originalInput);
-    console.log( "original Input's value:", tagify.DOM.originalInput.value);
-    console.log( "event detail:", e.detail);
+tagify.on('remove', function(e){
+    update_placeholder()
+    doTagsSearch();
 });
 
-// add the first 2 tags and makes them readonly
-//var tagsToAdd = tagify.settings.whitelist.slice(0, 2)
-//tagify.addTags(tagsToAdd)
+// Gets tags from url and add to box
+// Important - this must be called before we define the add listener, otherwise infinite loop
 
-$("#id_q").bind("keypress", {}, keypressSearch);
+function add_tags_by_key(key) {
+    var querytags = []
+
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    string = urlParams.get(key);
+
+    if (string != undefined) {
+        $.each(string.split(','), function(i, e) {
+            querytags.push({"value": e,  "code": key})
+        })
+    }
+    tagify.addTags(querytags)
+}
+add_tags_by_key("conditionset")
+add_tags_by_key("phenotype")
+add_tags_by_key("medium")
+add_tags_by_key("datatype")
+add_tags_by_key("collection")
+add_tags_by_key("gene")
+add_tags_by_key("tag")
+add_tags_by_key("year")
+add_tags_by_key("authors")
+add_tags_by_key("collection")
+add_tags_by_key("query")
+add_tags_by_key("q")
+
+
+update_placeholder = function() {
+
+    // Remove placeholder if there are tags, otherwise reset
+    if ($('[name=tags]').val() == ""){
+        $(".tagify__input").attr("data-placeholder", "growth, standard, transport");
+    } else {
+        $(".tagify__input").attr("data-placeholder", "");
+    }
+}
+
+update_placeholder()
+
+// After getting all from url, then define callback
+tagify.on('add', function(e){
+    update_placeholder()
+    doTagsSearch();
+});
+
+
+$('input[name=tags]').bind("keypress", {}, keypressSearch);
 
 function keypressSearch(e) {
     var code = (e.keyCode ? e.keyCode : e.which);
-    if (code == 13) { //Enter keycode                        
+    if (code == 13) { //Enter keycode                
         e.preventDefault();
         doTagsSearch();
     }
 };
 
-function AddCommas(x) {
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
 
 // Function to retrieve attributes and do search
 function doTagsSearch() {
@@ -224,59 +245,53 @@ function doTagsSearch() {
    $("#fade").show();
    var promise = new Promise(function(resolve, reject) {
         var tags = $('[name=tags]').val();
-        var query = $("#id_q").val();
-        console.log(tags)
-        return resolve({"tags": tags, "query": query});
+        return resolve({"tags": tags});
             
    }).then(function(query){
-       $.ajax({
-           url : "{% url 'api:papers_search' %}",
-           type : "POST",
-           data : { query: query }, // data sent with the post request
 
-           // handle a successful response
-           success : function(json) {
-              console.log(json); // log the returned json to the console
+       // Don't run the search if we don't have tags or a query
+       if (query.tags.length == 0) {
+           $("#fade").hide();
+           $("#papersTable_wrapper").hide();
+           return
+       }
 
-              $("#papersTableBody").empty();                   
-              $(".pagination").hide(); 
-
-              if (json['count'] == 0){
-                  $('#messages').html("<div class='alert alert-info'>There we no results for your search.</div>");
+       // Keep list of tags
+       tags = Object()
+       if (query.tags.length > 0) {
+           $.each(JSON.parse(query.tags), function(i, e){          
+              console.log(e)
+              if (!(e['code'] in tags)) {
+                  tags[e['code']] = e['value']
               } else {
-                  $("#messages").html("<div class='alert alert-info'>Found " + json['count'] + " results.</div>");
-
-                  $.each(json['results'], function(e, i) {
-
-                    // (165, 'Ni L', 'Snyder M', 'axial budding pattern', 'standard')
-                    var paper_name = i[1] + "," + i[5]
-                    if (i[2] != null){
-                       paper_name = i[1] + "~" + i[2] +  "," + i[5]
-                    }
-                    $("#papersTableBody").append("<tr><td class='text-nowrap'><a href='/papers/" + i[0]+ "'>" + paper_name + "</a></td><td>" + i[3]+ "</td><td>" + i[4]+ "</td></tr>")
-                  })
-                  $("#papersTable").tablesorter();
+                  tags[e['code']] += "," + e['value']  
               }
-              $("#fade").hide();
-           },
+           })
+       }
 
-           // handle a non-successful response
-           error : function(xhr, errmsg, err) {
-              $('#messages').html("<div class='alert alert-warning' data-alert>Oops! We have encountered an error: "+errmsg+
-                        " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
-                        console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+       // Add the query anyway (even if empty) as the first argument
+       url = "{{ DOMAIN }}/papers/"
+       count = 0       
+       $.each(tags, function(i, e){          
+           if (i == "") {
+               i = "query"
            }
-     })
-   })
+           if (count == 0){
+               url = url + "?" + i + "=" + e 
+           } else {
+               url = url + "&" + i + "=" + e 
+           }
+           count+=1
+       })
+       document.location = url
+   })   
+
 }
 
-</script>
-{% if papers_list %}
-{% include "scripts/tablesorter.html" %}
-<script>
-    $(document).ready(function(){
-        $("#papersTable").tablesorter();
+{% if queryset %}$(document).ready(function(){
+    $("#papersTable").DataTable({"pageLength": 10,  
+        "language": {"search": "Filter:"} 
     });
+});{% endif %}
 </script>
-{% endif %}
 {% endblock %}

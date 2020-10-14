@@ -64,6 +64,10 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
                   <input name='tags' value="">
                 </div>
             </div>
+            <div class="col-md-2">
+                <h1></h1>
+                <a href="{% url 'conditions:browse' %}"><button class="btn btn-default" type="button">Browse</button></a>
+            </div>
         </div>
         <div class="row">
             <div class="col-md-12" style="padding-top:20px">
@@ -95,6 +99,7 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
 <script>
 
 var tags = {{ tags | safe }}
+console.log(tags)
 
 var input = document.querySelector('input[name=tags]'),
     tagify = new Tagify(input, {
@@ -121,7 +126,6 @@ var input = document.querySelector('input[name=tags]'),
                 </div>`
             },
             tag : function(tagData){
-               console.log(tagData);
                try {
                     return `<tag title='${tagData.value}' contenteditable='false' spellcheck="false" class='tagify__tag ${tagData.class ? tagData.class : ""}' ${this.getAttributes(tagData)}>
                         <x title='remove tag' class='tagify__tag__removeBtn'></x>
@@ -183,8 +187,6 @@ function add_tags_by_key(key) {
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     string = urlParams.get(key);
-
-    console.log(string);
 
     if (string != undefined) {
         $.each(string.split(','), function(i, e) {
@@ -283,8 +285,6 @@ function doTagsSearch() {
     $("#papersTable").DataTable({"pageLength": 10,  
         "language": {"search": "Filter:"} 
     });
-    {% if queryset.count > 0 %}$(".dataTables_length").html("<label>Show <select name=\"papersTable_length\" aria-controls=\"papersTable\" class=\"form-control input-sm\"><option value=\"10\">10</option><option value=\"25\">25</option><option value=\"50\">50</option><option value=\"100\">100</option></select> entries out of {{ results.count }} </label>"){% endif %}
-
 });{% endif %}
 </script>
 {% endblock %}

@@ -223,7 +223,6 @@ def similar_genes(request, systematic_name):
     return render(request, "genes/similar_genes.html", context)
 
 
-@never_cache
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def similar_dataset_table(request, dataset_id):
 

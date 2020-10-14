@@ -3,7 +3,7 @@ from django.views import generic
 from django.shortcuts import render
 from django.core.paginator import Paginator
 
-# from django.views.decorators.cache import never_cache
+from django.views.decorators.cache import never_cache
 
 from .models import Paper
 from .utils import (
@@ -28,34 +28,50 @@ from yeastphenome.settings import (
 )
 
 
+@never_cache
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def paper_explorer(request, year=None):
     """Return a paginated list of papers with the data explorer."""
-    queryset = Paper.objects.exclude(
-        Q(data_statuses__name__exact="not relevant")
-        | Q(tested_statuses__name__exact="not relevant")
+    # Count == 0 indicates a search, no search is set to None
+    queryset = []
+    count = None
+    taglist = []
+    for key in [
+        "conditionset",
+        "phenotype",
+        "medium",
+        "datatype",
+        "collection",
+        "gene",
+        "tag",
+        "year",
+        "authors",
+        "query",
+    ]:
+        for tag in request.GET.get(key, "").split(","):
+            if not tag:
+                continue
+            taglist.append({"value": tag, "code": key})
+
+    if taglist:
+        queryset = run_search_tag_query(query=None, taglist=taglist)
+
+        # 50 results per page
+        paginator = Paginator(queryset, 50)
+        page = request.GET.get("page")
+        queryset = paginator.get_page(page)
+
+        # Filter to year, if defined
+        if year is not None:
+            queryset = queryset.filter(pub_date=year)
+        count = len(queryset)
+
+    queryset = {"results": queryset, "count": count}
+    return render(
+        request,
+        "papers/explorer.html",
+        {"queryset": queryset, "tags": get_search_tags()},
     )
-
-    # Filter to year, if defined
-    if year is not None:
-        queryset = queryset.filter(pub_date=year)
-
-    q = ""
-    if "q" in request.GET:
-        q = request.GET["q"].strip()
-        queryset = run_search_tag_query(q, return_instances=True)
-
-    # 50 results per page
-    paginator = Paginator(queryset, 50)
-    page = request.GET.get("page")
-
-    context = {
-        "tags": get_search_tags(),
-        "papers_list": paginator.get_page(page),
-        "q": q,
-    }
-
-    return render(request, "papers/explorer.html", context)
 
 
 class PaperDetailView(generic.DetailView, RatelimitMixin):
