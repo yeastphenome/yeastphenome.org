@@ -10,6 +10,11 @@ urlpatterns = [
     path("genes", views.gene_explorer, name="genes"),
     path("download/<str:systematic_name>/", views.download_all, name="download_gene"),
     path(
+        "observable/<str:observable_id>/",
+        views.download_observable_datasets,
+        name="download_observable_datasets",
+    ),
+    path(
         "gene/download/sims/<str:systematic_name>/",
         views.download_sims,
         name="download_sims",

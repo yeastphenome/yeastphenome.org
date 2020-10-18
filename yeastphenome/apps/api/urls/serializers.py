@@ -14,7 +14,7 @@ from yeastphenome.apps.conditions.search import (
 )
 
 # from yeastphenome.apps.conditions.models import ConditionSet, ConditionType
-# from yeastphenome.apps.phenotypes.models import Phenotype
+from yeastphenome.apps.phenotypes.models import Observable
 from yeastphenome.apps.datasets.models import Gene
 
 from .permissions import IsStaffOrSuperUser
@@ -26,6 +26,90 @@ from ratelimit.mixins import RatelimitMixin
 from rest_framework.response import Response
 from rest_framework.views import APIView
 import json
+
+
+# Observable Datasets
+class GetObservableDatasets(RatelimitMixin, APIView):
+    """Given an observable, serialize the datasets for a DataTable"""
+
+    ratelimit_key = "ip"
+    ratelimit_rate = settings.VIEW_RATE_LIMIT
+    ratelimit_block = settings.VIEW_RATE_LIMIT_BLOCK
+    ratelimit_method = "GET"
+    renderer_classes = (JSONRenderer,)
+
+    def get(self, request, observable_id):
+        print("GET GetObservableDatasets")
+
+        # Start and length to return
+        start = int(request.GET["start"])
+        length = int(request.GET["length"])
+        draw = int(request.GET["draw"])
+
+        # Empty datatable
+        data = {"draw": draw, "recordsTotal": 0, "recordsFiltered": 0, "data": []}
+
+        try:
+            observable = Observable.objects.get(id=observable_id)
+        except Observable.DoesNotExist:
+            return Response(status=200, data=data)
+
+        datasets = observable.datasets()
+        count = datasets.count()
+        if start > count:
+            start = count - start
+        end = start + length
+
+        # If we've gone too far
+        if end > count:
+            end = count - 1
+
+        datasets = datasets[start:end]
+        data["recordsTotal"] = count
+        data["recordsFiltered"] = count
+
+        # Since we have a small queryset (25) we can loop over without it being too slow
+        cart = getattr(request.session, "cart", [])
+        for dataset in datasets:
+
+            # Add to downloads checkbox on the left, disabled if not available
+            checkbox = '<input id="%s" type="checkbox" name="%s" class="dataset">'
+            if not dataset.has_data_in_db:
+                checkbox = (
+                    '<input id="%s" type="checkbox" name="%s" class="dataset" disabled>'
+                )
+
+            if dataset.id not in cart:
+                button = (
+                    '<button id="dataset-cart-%s" type="button" class="btn btn-primary btn-sm add-to-cart" style="width:120px" data-id="%s">Add</button>'
+                    % (dataset.id, dataset.id)
+                )
+            else:
+                button = (
+                    '<button id="dataset-cart-%s" type="button" class="btn btn-danger btn-sm remove-from-cart" data-id="%s" style="width:120px">Remove</button>'
+                    % (dataset.id, dataset.id)
+                )
+
+            print(checkbox)
+            data["data"].append(
+                [
+                    "<a href='/datasets/%s'>%s</a>" % (dataset.id, dataset.id),
+                    str(dataset.paper),
+                    getattr(dataset.phenotype.observable, "name", ""),
+                    dataset.phenotype.reporter or "",
+                    dataset.conditionset.display_name,
+                    getattr(dataset.medium, "display_name", ""),
+                    dataset.collection.shortname,
+                    str(dataset.data_available),
+                    button,
+                ]
+            )
+
+        # This would be alternative (fast) solution that is limited in customization
+        # data['data'] = list([list(x) for x in datasets.values_list('id', 'paper', 'phenotype__observable__name', 'phenotype__reporter', 'conditionset__display_name', 'medium__display_name', 'collection__shortname')])
+
+        # Must make model json serializable
+        return Response(status=200, data=data)
 
 
 # Genes

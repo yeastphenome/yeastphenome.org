@@ -14,6 +14,11 @@ urlpatterns = [
     path("genes/", views.GetGenes.as_view(), name="get_genes"),
     path("genes/<str:systematic_name>/similar", views.GetSimilarGenes.as_view()),
     path(
+        "observable/<int:observable_id>/datasets",
+        views.GetObservableDatasets.as_view(),
+        name="observable_datasets",
+    ),
+    path(
         "genes/<str:systematic_name>/<int:N>/similar", views.GetSimilarGenes.as_view()
     ),
     path(

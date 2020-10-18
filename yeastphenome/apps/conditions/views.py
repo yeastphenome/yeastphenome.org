@@ -1,8 +1,8 @@
 import re
 
+from django.db.models import Count, Q
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.db import models
 from django.shortcuts import render
 from django.views import generic
 from django.http import Http404
@@ -69,11 +69,17 @@ def index(request):
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def browse(request):
-    """This view is currently not used - it's not clear how to generate this ordered set"""
-    # conditions annotated with tag count sort highest on top
-    qs = Tag.objects.all().annotate(count=models.Count("conditiontype"))
-    qs = qs.order_by("-count")
-    context = {"data": qs}
+    """Browse dataest by condition names (and size by count)"""
+    qs = (
+        ConditionType.objects.exclude(
+            Q(
+                condition__conditionset__dataset__paper__latest_data_status__status__name="not relevant"
+            )
+        )
+        .annotate(number_of_datasets=Count("condition__conditionset__dataset"))
+        .order_by("-number_of_datasets")
+    )
+    context = {"data": qs[:100]}
     return render(request, "conditions/graphs/browse.html", context)
 
 

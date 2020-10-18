@@ -73,9 +73,13 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
             .values_list("gene__systematic_name", "gene__common_name", "value")
         )
 
-        context["datasets_top"] = queryset[:10]
-        context["datasets_bottom"] = queryset[len(queryset) - 10 :]
-        context["datasets_bottom"].reverse()
+        datasets_top = queryset[:10]
+        datasets_bottom = []
+        if queryset.count() >= 10:
+            datasets_bottom = queryset[len(queryset) - 10 :]
+            datasets_bottom.reverse()
+        context["datasets_top"] = datasets_top
+        context["datasets_bottom"] = datasets_bottom
         return context
 
 
@@ -401,6 +405,35 @@ def download_dataset_sims(request, dataset_id):
 
     df = pandas.DataFrame(sims)
     df.columns = ["dataset_similarity_id", "dataset1", "dataset2", "score", "pvalue"]
+    exported_file = os.path.join(tempfile.gettempdir(), filename)
+    if not os.path.exists(exported_file):
+        df.to_csv(exported_file, sep=",", index=None)
+    return send_file(exported_file)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def download_observable_datasets(request, observable_id):
+    """Download all datasets associated with an observable"""
+
+    try:
+        observable = Observable.objects.get(id=observable_id)
+    except Observable.DoesNotExist:
+        raise Http404
+
+    filename = "%s_observable_datasets_%s.txt" % (
+        settings.DOWNLOAD_PREFIX,
+        observable.name,
+    )
+
+    datasets = (
+        observable.datasets()
+        .select_related("paper__latest_tested_status__status")
+        .filter(paper__latest_data_status__status__name="loaded")
+        .values_list("id", "name", "paper__pmid", "paper__latest_tested_status")
+        .distinct()
+    )
+    df = pandas.DataFrame(datasets)
+    df.columns = ["id", "name", "pmid", "latest_tested_status"]
     exported_file = os.path.join(tempfile.gettempdir(), filename)
     if not os.path.exists(exported_file):
         df.to_csv(exported_file, sep=",", index=None)

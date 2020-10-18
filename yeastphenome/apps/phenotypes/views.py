@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.db import models
 from django.http import Http404
 
+# from django.views.decorators.cache import never_cache
 from yeastphenome.apps.phenotypes.models import Observable, Tag
 from yeastphenome.apps.phenotypes.search import get_search_tags, run_search_tag_query
 
@@ -35,7 +36,6 @@ def index(request):
                 continue
             taglist.append({"value": tag, "code": key})
 
-    print(taglist)
     if taglist:
         queryset = run_search_tag_query(query=None, taglist=taglist)
 
@@ -75,7 +75,6 @@ class ObservableDetailView(generic.DetailView):
         context = super(ObservableDetailView, self).get_context_data(**kwargs)
         context["DOWNLOAD_PREFIX"] = settings.DOWNLOAD_PREFIX
         context["USER_AUTH"] = self.request.user.is_authenticated
-        context["datasets"] = context["object"].datasets
 
         # most similar tags, sort highest on top
         qs = Observable.objects.all().annotate(count=models.Count("pk"))
