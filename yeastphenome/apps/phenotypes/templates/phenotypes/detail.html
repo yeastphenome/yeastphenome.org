@@ -28,19 +28,20 @@
 <hr>
 <div class="row">
     <div class="col-md-12">
-    {% include "datasets/datasets_table.html" with template='phenotype' %}
+    {% include "datasets/datasets_server_render_table.html" with template='phenotype' %}
+    <a href="{% url 'datasets:download_observable_datasets' object.id %}"><button id="dataset_download" type="button" class="btn btn-default">Download all datasets</button></a>
     </div>
 </div>
 {% endblock %}
 {% block scripts %}
-{% include "scripts/tablesorter.html" %}
-{% include "scripts/script_popup.html" %}
 <script>
-{% if datasets %}$(document).ready(function(){
-    $("#papersTable").dataTable({"pageLength": 10, "language": {"search": "Filter:"}});
-    $("#dataset_download").show();
-    add_to_cart()
-    remove_from_cart()
-});{% endif %}
+$(document).ready(function(){
+    $("#papersTable").dataTable({"pageLength": 25, "language": {"search": "Filter:"}, "processing": true, "serverSide": true, "ajax": "{% url 'api:observable_datasets' object.id %}", "lengthMenu": [[10,15,20,25,-1], [10,15,20,25,'All']],
+     "drawCallback": function( settings ) {
+        add_to_cart();
+        remove_from_cart();
+    }
+   });
+});
 </script>
 {% endblock %}

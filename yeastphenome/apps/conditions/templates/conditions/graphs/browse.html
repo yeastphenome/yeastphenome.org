@@ -1,6 +1,6 @@
 {% extends "base/wide.html" %}
 {% block title %}{{ object|capfirst }} / Experimental conditions / {{ SITE_NAME }}{% endblock %}
-{% block content %}
+{% block container %}
 <style>
 a, a:visited, a:active {
   color: #444;
@@ -27,10 +27,8 @@ a, a:visited, a:active {
 
 
 #vis {
-  width: 940px;
-  height: 600px;
   clear: both;
-  margin-bottom: 10px;
+  margin-bottom: 50px;
 }
 
 #toolbar {
@@ -71,11 +69,12 @@ a, a:visited, a:active {
   text-align: center;
 }
 </style>
-<div class="row">
-    <div class="col-md-12">
-        <h1>Browse Condition Tags</h1>
-        <div id="vis"></div>
-    </div>
+<div class="row" style="padding-left:30px; padding-bottom:30px">
+    <h1>Browse Conditions</h1>
+    <small>Top 100 By number of associated datasets</small>
+</div>
+<div id="vis"></div>
+<div class="row" style="padding-top:30px;">
 </div>
 {% endblock %}
 {% block scripts %}
@@ -178,8 +177,8 @@ function floatingTooltip(tooltipId, width) {
  */
 function bubbleChart() {
   // Constants for sizing
-  var width = 940;
-  var height = 600;
+  var width = document.body.clientWidth;
+  var height = 800;
 
   // tooltip for mouseover functionality
   var tooltip = floatingTooltip('gates_tooltip', 240);
@@ -253,7 +252,7 @@ function bubbleChart() {
     // @v4: new flattened scale names.
     var radiusScale = d3.scalePow()
       .exponent(0.5)
-      .range([10, 100])
+      .range([2, 50])
       .domain([0, maxAmount]);
 
     // Use map() to convert raw data into node data.
@@ -421,7 +420,7 @@ var myBubbleChart = bubbleChart();
  * Function called once data is loaded from CSV.
  * Calls bubble chart function to display inside #vis div.
  */
-data = [{% for entry in data %}{"id": {{entry.id}}, "name": "{{entry.name}}", "count": {{entry.count}} } {% if forloop.last %}{% else %},{% endif %}{% endfor %}]
+data = [{% for entry in data %}{"id": {{entry.id}}, "name": "{{entry.name}}", "count": {{entry.number_of_datasets}} } {% if forloop.last %}{% else %},{% endif %}{% endfor %}]
 myBubbleChart('#vis', data);
 
 
