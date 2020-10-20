@@ -25,6 +25,7 @@ from ratelimit.mixins import RatelimitMixin
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.db.models import Q
 import json
 
 
@@ -45,6 +46,7 @@ class GetObservableDatasets(RatelimitMixin, APIView):
         start = int(request.GET["start"])
         length = int(request.GET["length"])
         draw = int(request.GET["draw"])
+        query = request.GET["search[value]"]
 
         # Empty datatable
         data = {"draw": draw, "recordsTotal": 0, "recordsFiltered": 0, "data": []}
@@ -55,6 +57,22 @@ class GetObservableDatasets(RatelimitMixin, APIView):
             return Response(status=200, data=data)
 
         datasets = observable.datasets()
+
+        # If there is a filter
+        if query:
+            f = (
+                Q(name__icontains=query)
+                | Q(tags__name__icontains=query)
+                | Q(collection__shortname__icontains=query)
+                | Q(conditionset__display_name__icontains=query)
+                | Q(paper__first_author__icontains=query)
+                | Q(paper__last_author__icontains=query)
+                | Q(phenotype__name__icontains=query)
+                | Q(medium__display_name__icontains=query)
+                | Q(phenotype__reporter__icontains=query)
+            )
+            datasets = datasets.filter(f).distinct()
+
         count = datasets.count()
         if start > count:
             start = count - start
@@ -64,7 +82,7 @@ class GetObservableDatasets(RatelimitMixin, APIView):
         if end > count:
             end = count - 1
 
-        datasets = datasets[start:end]
+        datasets = datasets[start : end + 1]
         data["recordsTotal"] = count
         data["recordsFiltered"] = count
 
@@ -95,7 +113,7 @@ class GetObservableDatasets(RatelimitMixin, APIView):
                 [
                     "<a href='/datasets/%s'>%s</a>" % (dataset.id, dataset.id),
                     str(dataset.paper),
-                    getattr(dataset.phenotype.observable, "name", ""),
+                    getattr(dataset.phenotype, "name", ""),
                     dataset.phenotype.reporter or "",
                     dataset.conditionset.display_name,
                     getattr(dataset.medium, "display_name", ""),

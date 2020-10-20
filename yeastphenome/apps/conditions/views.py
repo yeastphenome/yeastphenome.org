@@ -1,6 +1,6 @@
 import re
 
-from django.db.models import Count, Q
+from django.db.models import Count
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.shortcuts import render
@@ -71,14 +71,11 @@ def index(request):
 def browse(request):
     """Browse dataest by condition names (and size by count)"""
     qs = (
-        ConditionType.objects.exclude(
-            Q(
-                condition__conditionset__dataset__paper__latest_data_status__status__name="not relevant"
-            )
-        )
+        ConditionType.objects.all()
         .annotate(number_of_datasets=Count("condition__conditionset__dataset"))
         .order_by("-number_of_datasets")
     )
+
     context = {"data": qs[:100]}
     return render(request, "conditions/graphs/browse.html", context)
 
