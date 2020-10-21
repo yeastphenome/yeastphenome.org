@@ -1,7 +1,7 @@
 from django.db.models import Q
 from django.shortcuts import render
 from django.http import HttpResponse, Http404
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, reverse
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.contrib import messages
@@ -73,6 +73,14 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
             .values_list("gene__systematic_name", "gene__common_name", "value")
         )
 
+        # Links should include the dataset detail page
+        links = [
+            {
+                "url": reverse("datasets:detail", args=[context["dataset"].id]),
+                "name": "Dataset %s" % context["dataset"].id,
+            }
+        ]
+
         datasets_top = queryset[:10]
         datasets_bottom = []
         if queryset.count() >= 10:
@@ -80,6 +88,7 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
             datasets_bottom.reverse()
         context["datasets_top"] = datasets_top
         context["datasets_bottom"] = datasets_bottom
+        context["links"] = links
         return context
 
 
@@ -95,9 +104,20 @@ def dataset_plot(request, dataset_id):
     except Dataset.DoesNotExist:
         raise Http404
 
+    links = [
+        {
+            "url": reverse("datasets:detail", args=[dataset.id]),
+            "name": "Dataset %s" % dataset.id,
+        },
+        {
+            "url": reverse("datasets:dataset_plot", args=[dataset.id]),
+            "name": "Phenotypic Scores",
+        },
+    ]
+
     # prepare list of genes, plus genes and aliases
     context = get_dataset_gene_table_context(dataset)
-    context.update({"dataset": dataset})
+    context.update({"dataset": dataset, "links": links})
     return render(request, "datasets/plot.html", context)
 
 
@@ -170,6 +190,15 @@ def gene_explorer(request):
                 Q(systematic_name__iexact=query) | Q(common_name__iexact=query)
             )
 
+            # Assemble links
+            links = [
+                {
+                    "url": "%s?q=%s"
+                    % (reverse("datasets:genes"), gene.systematic_name),
+                    "name": "Gene %s" % gene.systematic_name,
+                }
+            ]
+
             # If not found, try for an alias
             if not gene:
                 gene = GeneAlias.objects.get(name__iexact=query).gene_set.first()
@@ -194,6 +223,7 @@ def gene_explorer(request):
             context["datasets_top"] = queryset[:10]
             context["datasets_bottom"] = queryset[len(queryset) - 10 :]
             context["datasets_bottom"].reverse()
+            context["links"] = links
 
         except Gene.DoesNotExist:
             messages.warning(
@@ -220,10 +250,22 @@ def similar_genes(request, systematic_name):
         .order_by("-score")
         .distinct()
     )
+
+    links = [
+        {
+            "url": "%s?q=%s" % (reverse("datasets:genes"), gene.systematic_name),
+            "name": "Gene %s" % gene.systematic_name,
+        },
+        {
+            "url": reverse("datasets:similar_genes", args=[gene.systematic_name]),
+            "name": "Similar Genes",
+        },
+    ]
+
     total_sims = sims.count()
     ranks = [(1 - (idx / total_sims)) * 100 for idx, sim in enumerate(sims)]
     context = get_gene_names_context()
-    context.update({"gene": gene, "sims": sims, "ranks": ranks})
+    context.update({"gene": gene, "sims": sims, "ranks": ranks, "links": links})
     return render(request, "genes/similar_genes.html", context)
 
 
@@ -242,9 +284,19 @@ def similar_dataset_table(request, dataset_id):
         .distinct()
     )
 
+    links = [
+        {
+            "url": reverse("datasets:detail", args=[dataset.id]),
+            "name": "Dataset %s" % dataset.id,
+        },
+        {
+            "url": reverse("datasets:similar_dataset_table", args=[dataset.id]),
+            "name": "Similar Datasets",
+        },
+    ]
     total = sims.count()
     ranks = [(1 - (idx / total)) * 100 for idx, sim in enumerate(sims)]
-    context = {"dataset": dataset, "datasets": sims, "ranks": ranks}
+    context = {"dataset": dataset, "datasets": sims, "ranks": ranks, "links": links}
     return render(request, "datasets/dataset_similarity_explorer.html", context)
 
 
@@ -264,10 +316,21 @@ def gene_datasets(request, systematic_name):
         .exclude(Q(value=None) | Q(value=Decimal("NaN")))
         .order_by("-value")
     )
+    links = [
+        {
+            "url": "%s?q=%s" % (reverse("datasets:genes"), gene.systematic_name),
+            "name": "Gene %s" % gene.systematic_name,
+        },
+        {
+            "url": reverse("datasets:gene_datasets", args=[gene.systematic_name]),
+            "name": "Gene Datasets",
+        },
+    ]
+
     total = queryset.count()
     ranks = [(1 - (idx / total)) * 100 for idx, sim in enumerate(queryset)]
     context = get_gene_names_context()
-    context.update({"gene": gene, "datasets": queryset, "ranks": ranks})
+    context.update({"gene": gene, "datasets": queryset, "ranks": ranks, "links": links})
     return render(request, "genes/gene_datasets.html", context)
 
 

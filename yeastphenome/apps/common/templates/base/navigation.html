@@ -74,6 +74,9 @@
               <li><a href="{% url 'papers:all' %}">Papers</a></li>            
               <li><a href="{% url 'phenotypes:index' %}">Phenotypes</a></li>
               <li><a href="{% url 'conditions:index' %}">Conditions</a></li>
+              {% if links %}<li style="margin: 8px 0" role="separator" class="divider"></li>
+              {% for link in links %}<li><a href="{{ link.url }}">{{ link.name }}</a></li>{% endfor %}
+              {% endif %}
           </ul>
         {% if HELP_CONTACT_EMAIL %}<li class="visible-xs-block"><a href="mailto:{{ HELP_CONTACT_EMAIL }}"><i class="fas fa-envelope-open"></i> {{ HELP_CONTACT_EMAIL }}</a></li>{% endif %}
         {% if TWITTER_USERNAME %}<li class="visible-xs-block"><a href="https://twitter.com/{{ TWITTER_USERNAME }}" target="_blank" rel="noopener"><i class="fab fa-twitter"></i> @{{ TWITTER_USERNAME }}</a></li>{% endif %}
