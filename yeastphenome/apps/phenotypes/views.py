@@ -1,7 +1,7 @@
 from django.core.paginator import Paginator
 from django.conf import settings
 from django.views import generic
-from django.shortcuts import render
+from django.shortcuts import render, reverse
 from django.db import models
 from django.http import Http404
 
@@ -75,6 +75,12 @@ class ObservableDetailView(generic.DetailView):
         context = super(ObservableDetailView, self).get_context_data(**kwargs)
         context["DOWNLOAD_PREFIX"] = settings.DOWNLOAD_PREFIX
         context["USER_AUTH"] = self.request.user.is_authenticated
+        context["links"] = [
+            {
+                "url": reverse("phenotypes:detail", args=[context["object"].id]),
+                "name": "Phenotype %s" % context["object"].id,
+            }
+        ]
 
         # most similar tags, sort highest on top
         qs = Observable.objects.all().annotate(count=models.Count("pk"))

@@ -1,6 +1,6 @@
 from django.db.models import Q
 from django.views import generic
-from django.shortcuts import render
+from django.shortcuts import render, reverse
 from django.core.paginator import Paginator
 
 from django.views.decorators.cache import never_cache
@@ -85,6 +85,12 @@ class PaperDetailView(generic.DetailView, RatelimitMixin):
         context = super(PaperDetailView, self).get_context_data(**kwargs)
         paper = context["object"]
 
+        context["links"] = [
+            {
+                "url": reverse("papers:detail", args=[paper.id]),
+                "name": "Paper %s" % paper.id,
+            }
+        ]
         context["DOWNLOAD_PREFIX"] = settings.DOWNLOAD_PREFIX
         context["USER_AUTH"] = self.request.user.is_authenticated
 

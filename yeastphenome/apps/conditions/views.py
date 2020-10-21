@@ -3,7 +3,7 @@ import re
 from django.db.models import Count
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.shortcuts import render
+from django.shortcuts import reverse, render
 from django.views import generic
 from django.http import Http404
 
@@ -93,6 +93,12 @@ class ConditiontypeDetailView(generic.DetailView, RatelimitMixin):
         context["USER_AUTH"] = self.request.user.is_authenticated
         context["papers"] = context["object"].datasets
         context["id"] = context["object"].id
+        context["links"] = [
+            {
+                "url": reverse("conditions:detail", args=[context["object"].id]),
+                "name": "Condition (%s)" % context["object"].name,
+            }
+        ]
         return context
 
 
