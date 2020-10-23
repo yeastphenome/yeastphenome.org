@@ -23,6 +23,7 @@ from yeastphenome.settings import (
 # Core Pages
 
 
+@never_cache
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def index(request):
 
@@ -41,17 +42,20 @@ def index(request):
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def about(request):
-    return render(request, "main/about.html")
+    context = {"active": "about"}
+    return render(request, "main/about.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def faq(request):
-    return render(request, "main/faq.html")
+    context = {"active": "about"}
+    return render(request, "main/faq.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def stats(request):
     context = get_latest_stats()
+    context["active"] = "about"
     context["paper_counts"] = get_papers_by_year()
     context.update(get_phenotype_measurements(hide_legend=True))
     context.update(get_dataset_sources())
@@ -60,7 +64,8 @@ def stats(request):
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def contributors(request):
-    return render(request, "main/contributors.html")
+    context = {"active": "about"}
+    return render(request, "main/contributors.html", context)
 
 
 # Warmup requests (for app engine)
@@ -75,27 +80,32 @@ def warmup():
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def getting_started(request):
-    return render(request, "getting-started/getting-started.html")
+    context = {"active": "getting-started"}
+    return render(request, "getting-started/getting-started.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def background(request):
-    return render(request, "getting-started/background.html")
+    context = {"active": "getting-started"}
+    return render(request, "getting-started/background.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def advanced(request):
-    return render(request, "getting-started/advanced.html")
+    context = {"active": "getting-started"}
+    return render(request, "getting-started/advanced.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def tutorials(request):
-    return render(request, "getting-started/tutorials.html")
+    context = {"active": "getting-started"}
+    return render(request, "getting-started/tutorials.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def introduction(request):
-    return render(request, "getting-started/introduction.html")
+    context = {"active": "getting-started"}
+    return render(request, "getting-started/introduction.html", context)
 
 
 # Cart Operations
@@ -172,6 +182,5 @@ def clear_cart(request):
 def view_cart(request):
     """View all datasets in the cart, and provide a button to download."""
     cart = request.session.get("cart", [])
-    print(cart)
-    context = {"datasets": Dataset.objects.filter(id__in=cart)}
+    context = {"datasets": Dataset.objects.filter(id__in=cart), "active": "downloads"}
     return render(request, "cart/view_cart.html", context)

@@ -75,10 +75,11 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
 
         # Links should include the dataset detail page
         links = [
+            {"url": reverse("datasets:index"), "name": "Dataset Explorer"},
             {
                 "url": reverse("datasets:detail", args=[context["dataset"].id]),
                 "name": "Dataset %s" % context["dataset"].id,
-            }
+            },
         ]
 
         datasets_top = queryset[:10]
@@ -89,6 +90,7 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
         context["datasets_top"] = datasets_top
         context["datasets_bottom"] = datasets_bottom
         context["links"] = links
+        context["active"] = "explorer"
         return context
 
 
@@ -117,7 +119,7 @@ def dataset_plot(request, dataset_id):
 
     # prepare list of genes, plus genes and aliases
     context = get_dataset_gene_table_context(dataset)
-    context.update({"dataset": dataset, "links": links})
+    context.update({"dataset": dataset, "links": links, "active": "explorer"})
     return render(request, "datasets/plot.html", context)
 
 
@@ -171,6 +173,7 @@ def get_dataset_gene_table_context(dataset):
         .distinct()
     )
     context["dataset_genes"] = sorted(genes, key=lambda i: i["value"])
+    context["active"] = "explorer"
     return context
 
 
@@ -224,6 +227,7 @@ def gene_explorer(request):
             context["datasets_bottom"] = queryset[len(queryset) - 10 :]
             context["datasets_bottom"].reverse()
             context["links"] = links
+            context["active"] = "explorer"
 
         except Gene.DoesNotExist:
             messages.warning(
@@ -265,7 +269,15 @@ def similar_genes(request, systematic_name):
     total_sims = sims.count()
     ranks = [(1 - (idx / total_sims)) * 100 for idx, sim in enumerate(sims)]
     context = get_gene_names_context()
-    context.update({"gene": gene, "sims": sims, "ranks": ranks, "links": links})
+    context.update(
+        {
+            "gene": gene,
+            "sims": sims,
+            "ranks": ranks,
+            "links": links,
+            "active": "explorer",
+        }
+    )
     return render(request, "genes/similar_genes.html", context)
 
 
@@ -296,7 +308,13 @@ def similar_dataset_table(request, dataset_id):
     ]
     total = sims.count()
     ranks = [(1 - (idx / total)) * 100 for idx, sim in enumerate(sims)]
-    context = {"dataset": dataset, "datasets": sims, "ranks": ranks, "links": links}
+    context = {
+        "dataset": dataset,
+        "datasets": sims,
+        "ranks": ranks,
+        "links": links,
+        "active": "explorer",
+    }
     return render(request, "datasets/dataset_similarity_explorer.html", context)
 
 
@@ -330,7 +348,15 @@ def gene_datasets(request, systematic_name):
     total = queryset.count()
     ranks = [(1 - (idx / total)) * 100 for idx, sim in enumerate(queryset)]
     context = get_gene_names_context()
-    context.update({"gene": gene, "datasets": queryset, "ranks": ranks, "links": links})
+    context.update(
+        {
+            "gene": gene,
+            "datasets": queryset,
+            "ranks": ranks,
+            "links": links,
+            "active": "explorer",
+        }
+    )
     return render(request, "genes/gene_datasets.html", context)
 
 
@@ -374,7 +400,10 @@ def data_explorer(request, collection_id=None):
                 continue
             taglist.append({"value": tag, "code": key})
 
+    links = [{"url": reverse("datasets:index"), "name": "Dataset Explorer"}]
     context = {
+        "links": links,
+        "active": "explorer",
         "tags": get_search_tags(),
         "cart": request.session.get("cart", []),
         "DOWNLOAD_PREFIX": settings.DOWNLOAD_PREFIX,
@@ -409,10 +438,20 @@ def tag(request, id):
         .distinct()
     )
 
+    links = [
+        {"url": reverse("datasets:index"), "name": "Dataset Explorer"},
+        {
+            "url": reverse("datasets:tag", args=[t.id]),
+            "name": "Tag %s" % t.name,
+        },
+    ]
+
     return render(
         request,
         "datasets/tag.html",
         {
+            "links": links,
+            "active": "explorer",
             "tag": t,
             "datasets": datasets,
             "DOWNLOAD_PREFIX": settings.DOWNLOAD_PREFIX,
