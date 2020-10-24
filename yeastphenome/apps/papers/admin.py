@@ -78,7 +78,10 @@ class DatasetAdmin(ImprovedModelAdmin):
         "data_source",
         "tags",
     )
-    search_fields = ("name",)
+    search_fields = (
+        "name",
+        "tags__name",
+    )
     ordering = ("name",)
 
     save_as = True
@@ -234,7 +237,7 @@ class PaperAdmin(admin.ModelAdmin):
         "user",
         "__str__",
         "datasets_summary",
-        "latest_data_status_name",
+        "latest_data_status_name_date",
         "latest_tested_status_name",
     )
     list_filter = ["latest_data_status__status__name", "pub_date", "last_author"]

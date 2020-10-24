@@ -26,7 +26,16 @@ class TagAdmin(ImprovedModelAdmin):
     list_per_page = 50
     list_display = ["name", "description"]
     search_fields = ["name", "description"]
-    fields = ("name", "description")
+    fields = (
+        "name",
+        "description",
+        "conditiontypes_edit_link_list",
+        "conditions_edit_link_list",
+    )
+    readonly_fields = (
+        "conditiontypes_edit_link_list",
+        "conditions_edit_link_list",
+    )
     ordering = ["name"]
 
     def response_change(self, request, obj):
@@ -55,10 +64,22 @@ class ConditionAdminForm(forms.ModelForm):
 
 class ConditionAdmin(ImprovedModelAdmin):
     form = ConditionAdminForm
-    list_display = ("id", "type", "dose", "conditionsets_str_list", "media_str_list")
+    list_display = (
+        "id",
+        "type",
+        "dose",
+        "conditionsets_str_list",
+        "media_str_list",
+        "tags_edit_list",
+    )
     list_filter = ["type__name"]
     ordering = ("type__name", "dose")
-    fields = ["type", "dose", "description"]
+    fields = [
+        "type",
+        "dose",
+        "description",
+        "tags",
+    ]
     search_fields = (
         "type__name",
         "type__other_names",
@@ -67,8 +88,12 @@ class ConditionAdmin(ImprovedModelAdmin):
         "type__pubchem_id",
         "type__chebi_id",
         "dose",
+        "tags__name",
     )
-    raw_id_fields = ("type",)
+    raw_id_fields = (
+        "type",
+        "tags",
+    )
 
     def response_change(self, request, obj):
         if request.GET.get("_popup") == "1":
@@ -106,7 +131,13 @@ class ConditionInline(ImprovedTabularInline):
 
 
 class ConditionTypeAdmin(ImprovedModelAdmin):
-    list_display = ("name", "chebi_name", "pubchem_name", "conditions_edit_list")
+    list_display = (
+        "name",
+        "chebi_name",
+        "pubchem_name",
+        "conditions_edit_list",
+        "tags_edit_list",
+    )
     ordering = ("name",)
     search_fields = (
         "name",
@@ -213,7 +244,7 @@ class ConditionSetAdmin(ImprovedModelAdmin):
                 tags_order=Min("type__tags__order")
             )
             .order_by(
-                "tags_order", "type__chebi_name", "type__pubchem_name", "type__name"
+                "tags_order", "type__name", "type__chebi_name", "type__pubchem_name"
             )
             .all()
         ]
@@ -281,7 +312,7 @@ class MediumAdmin(ImprovedModelAdmin):
                 tags_order=Min("type__tags__order")
             )
             .order_by(
-                "tags_order", "type__chebi_name", "type__pubchem_name", "type__name"
+                "tags_order", "type__name", "type__chebi_name", "type__pubchem_name"
             )
             .all()
         ]

@@ -558,6 +558,7 @@ def download_all(request, systematic_name=None):
         datasets = (
             Dataset.objects.select_related("paper__latest_tested_status__status")
             .filter(paper__latest_data_status__status__name="loaded")
+            .filter(data_source__release=True)
             .values_list("id", "name", "paper__pmid", "paper__latest_tested_status")
             .distinct()
         )

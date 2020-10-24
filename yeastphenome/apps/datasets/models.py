@@ -277,8 +277,14 @@ class Dataset(models.Model):
     has_data_in_db.boolean = True
 
     def link_edit(self):
-        html = '<a href="%s">%s</a>' % (
+        style = ""
+        if self.paper.latest_data_status and (
+            self.paper.latest_data_status.status_id == 10
+        ):  # paper not relevant
+            style = ' style="color: gray;"'
+        html = '<a href="%s" %s>%s</a>' % (
             reverse("admin:datasets_dataset_change", args=(self.id,)),
+            style,
             self,
         )
         return html

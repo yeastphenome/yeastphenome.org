@@ -17,11 +17,37 @@ class Tag(models.Model):
     def __str__(self):
         return self.name
 
+    def link_edit(self):
+        return '<a href="%s">%s</a>' % (
+            reverse("admin:conditions_tag_change", args=(self.id,)),
+            self.name,
+        )
+
+    link_edit.allow_tags = True
+
+    def conditiontypes_edit_link_list(self):
+        conditiontypes = self.conditiontype_set.order_by("name").all()
+        html = "<ul>"
+        html = html + "<li>".join([c.link_edit() for c in conditiontypes[:50]])
+        html = html + "</ul>"
+        return html
+
+    conditiontypes_edit_link_list.allow_tags = True
+
+    def conditions_edit_link_list(self):
+        conditions = self.condition_set.order_by("name").all()
+        html = "<ul>"
+        html = html + "<li>".join([c.link_edit() for c in conditions[:50]])
+        html = html + "</ul>"
+        return html
+
+    conditions_edit_link_list.allow_tags = True
+
 
 class ConditionType(models.Model):
     """A ConditionType can be temperature, treatment, etc."""
 
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, verbose_name="common name for display")
     other_names = models.TextField(blank=True, null=True)
 
     pubchem_id = models.PositiveIntegerField(blank=True, null=True, unique=True)
@@ -34,10 +60,12 @@ class ConditionType(models.Model):
     tags = models.ManyToManyField(Tag, blank=True)
 
     class Meta:
-        ordering = ["chebi_name", "pubchem_name", "name", "other_names"]
+        ordering = ["name", "chebi_name", "pubchem_name", "other_names"]
 
     def __str__(self):
-        if self.chebi_name:
+        if self.name:
+            type_name = self.name
+        elif self.chebi_name:
             type_name = self.chebi_name
         elif self.pubchem_name:
             type_name = self.pubchem_name
@@ -117,6 +145,11 @@ class ConditionType(models.Model):
             .distinct()
         )
 
+    def tags_edit_list(self):
+        return ", ".join([t.link_edit() for t in self.tags.all()])
+
+    tags_edit_list.allow_tags = True
+
     def link_detail(self):
         return '<a href="%s">%s</a>' % (
             reverse("conditions:detail", args=(self.id,)),
@@ -125,12 +158,21 @@ class ConditionType(models.Model):
 
     link_detail.allow_tags = True
 
+    def link_edit(self):
+        return '<a href="%s">%s</a>' % (
+            reverse("admin:conditions_conditiontype_change", args=(self.id,)),
+            self,
+        )
+
+    link_edit.allow_tags = True
+
 
 class Condition(models.Model):
     type = models.ForeignKey(ConditionType, on_delete=models.DO_NOTHING)
     dose = models.CharField(max_length=200, null=False, blank=False)
     description = models.TextField(blank=True, null=True)
     modified_on = models.DateField(auto_now=True, null=True)
+    tags = models.ManyToManyField(Tag, blank=True)
 
     class Meta:
         get_latest_by = "modified_on"
@@ -174,6 +216,11 @@ class Condition(models.Model):
 
     link_edit.allow_tags = True
 
+    def tags_edit_list(self):
+        return ", ".join([t.link_edit() for t in self.tags.all()])
+
+    tags_edit_list.allow_tags = True
+
 
 class ConditionSet(models.Model):
 
@@ -213,27 +260,41 @@ class ConditionSet(models.Model):
             .distinct()
         )
 
+    def papers_all(self):
+        ps = (
+            apps.get_model("papers", "Paper")
+            .objects.filter(
+                Q(dataset__conditionset=self) | Q(dataset__control_conditionset=self)
+            )
+            .distinct()
+        )
+        return ps
+
     def papers_link_list(self):
         return ", ".join([p.link_detail() for p in self.papers()])
 
     papers_link_list.allow_tags = True
 
     def papers_edit_link_list(self):
-        return ", ".join([p.link_edit() for p in self.papers()])
+        return ", ".join([p.link_edit() for p in self.papers_all()])
 
     papers_edit_link_list.allow_tags = True
 
-    def datasets(self):
+    def datasets_all(self):
         return (
             apps.get_model("datasets", "Dataset")
             .objects.filter(conditionset=self)
-            .exclude(paper__latest_data_status__status__name="not relevant")
             .distinct()
+        )
+
+    def datasets(self):
+        return self.datasets_all().exclude(
+            papers__latest_data_status__status__name="not relevant"
         )
 
     def datasets_edit_link_list(self):
         str = "<ul>"
-        str = str + "<li>".join([d.link_edit() for d in self.datasets()])
+        str = str + "<li>".join([d.link_edit() for d in self.datasets_all()])
         str = str + "</ul>"
         return str
 
@@ -285,6 +346,14 @@ class Medium(models.Model):
             .distinct()
         )
 
+    def papers_all(self):
+        ps = (
+            apps.get_model("papers", "Paper")
+            .objects.filter(Q(dataset__medium=self) | Q(dataset__control_medium=self))
+            .distinct()
+        )
+        return ps
+
     def paper_str_list(self):
         return ", ".join([str(p) for p in self.papers()])
 
@@ -294,7 +363,7 @@ class Medium(models.Model):
     papers_link_list.allow_tags = True
 
     def papers_edit_link_list(self):
-        return ", ".join([p.link_edit() for p in self.papers()])
+        return ", ".join([p.link_edit() for p in self.papers_all()])
 
     papers_edit_link_list.allow_tags = True
 
@@ -309,8 +378,16 @@ class Medium(models.Model):
             qs = qs[:num]
         return qs
 
+    def datasets_all(self, num=None):
+        qs = (
+            apps.get_model("datasets", "Dataset").objects.filter(medium=self).distinct()
+        )
+        if num:
+            qs = qs[:num]
+        return qs
+
     def datasets_edit_link_list(self, num=None):
-        qs = self.datasets(num=num)
+        qs = self.datasets_all(num=num)
         str = "<ul>"
         str = str + "<li>".join([d.link_edit() for d in qs])
         str = str + "</ul>"

@@ -195,6 +195,17 @@ class Paper(models.Model):
 
     latest_data_status_name.admin_order_field = "latest_data_status__status__name"
 
+    def latest_data_status_name_date(self):
+        s = ""
+        if self.latest_data_status:
+            s = "%s (%s)" % (
+                self.latest_data_status.status.name,
+                self.latest_data_status.status_date,
+            )
+        return s
+
+    latest_data_status_name_date.admin_order_field = "latest_data_status__status__name"
+
     def latest_tested_status_name(self):
         if self.latest_tested_status:
             return self.latest_tested_status.status.name

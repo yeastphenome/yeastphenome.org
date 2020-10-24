@@ -15,7 +15,7 @@ class Command(BaseCommand):
             conditions_list = [
                 (u"%s" % condition)
                 for condition in medium.conditions.order_by(
-                    "type__group__order",
+                    "type__tags__order",
                     "type__chebi_name",
                     "type__pubchem_name",
                     "type__name",
