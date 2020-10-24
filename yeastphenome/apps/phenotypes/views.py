@@ -24,6 +24,7 @@ def index(request):
     queryset = []
     count = None
     taglist = []
+    links = [{"url": reverse("phenotypes:index"), "name": "Phenotype Explorer"}]
     for key in [
         "observable",
         "tag",
@@ -53,7 +54,7 @@ def index(request):
     return render(
         request,
         "phenotypes/explorer.html",
-        {"queryset": queryset, "tags": get_search_tags()},
+        {"queryset": queryset, "tags": get_search_tags(), "links": links},
     )
 
 
@@ -76,10 +77,11 @@ class ObservableDetailView(generic.DetailView):
         context["DOWNLOAD_PREFIX"] = settings.DOWNLOAD_PREFIX
         context["USER_AUTH"] = self.request.user.is_authenticated
         context["links"] = [
+            {"url": reverse("phenotypes:index"), "name": "Phenotype Explorer"},
             {
                 "url": reverse("phenotypes:detail", args=[context["object"].id]),
                 "name": "Phenotype %s" % context["object"].id,
-            }
+            },
         ]
 
         # most similar tags, sort highest on top

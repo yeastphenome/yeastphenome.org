@@ -36,6 +36,7 @@ def paper_explorer(request, year=None):
     queryset = []
     count = None
     taglist = []
+    links = [{"url": reverse("papers:all"), "name": "Paper Explorer"}]
     for key in [
         "conditionset",
         "phenotype",
@@ -70,7 +71,7 @@ def paper_explorer(request, year=None):
     return render(
         request,
         "papers/explorer.html",
-        {"queryset": queryset, "tags": get_search_tags()},
+        {"queryset": queryset, "tags": get_search_tags(), "links": links},
     )
 
 
@@ -86,11 +87,13 @@ class PaperDetailView(generic.DetailView, RatelimitMixin):
         paper = context["object"]
 
         context["links"] = [
+            {"url": reverse("papers:all"), "name": "Paper Explorer"},
             {
                 "url": reverse("papers:detail", args=[paper.id]),
                 "name": "Paper %s" % paper.id,
-            }
+            },
         ]
+
         context["DOWNLOAD_PREFIX"] = settings.DOWNLOAD_PREFIX
         context["USER_AUTH"] = self.request.user.is_authenticated
 
@@ -147,6 +150,12 @@ class ContributorsListView(generic.ListView, RatelimitMixin):
 
         # contributors names, lookup with paper id
         context["papers_list"] = papers_list
+        context["active"] = "about"
+        context["links"] = [
+            {"url": reverse("common:about"), "name": "About"},
+            {"url": reverse("papers:contributors"), "name": "Paper Contributors"},
+        ]
+
         return context
 
 
