@@ -113,10 +113,13 @@ def get_pubmed_paper_context(pmid, xml_data=None):
     if "Volume" in article["Journal"]["JournalIssue"].keys():
         vol = article["Journal"]["JournalIssue"]["Volume"]
 
+    jrn = ""
+    if "ISOAbbreviation" in article["Journal"].keys():
+        jrn = article["Journal"]["ISOAbbreviation"]
+
     return {
         "title": article["ArticleTitle"],
         "authors": authors_list,
         "abstract": article["Abstract"]["AbstractText"][0],
-        "citation": u"%s %s; %s:%s"
-        % (article["Journal"]["ISOAbbreviation"], pubdate, vol, pgn),
+        "citation": u"%s %s; %s:%s" % (jrn, pubdate, vol, pgn),
     }

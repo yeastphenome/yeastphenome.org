@@ -204,11 +204,21 @@ class Phenotype(models.Model):
 
     link_edit.allow_tags = True
 
+    def observable_name(self):
+        return self.observable.name
+
     def papers(self):
         return (
             apps.get_model("papers", "Paper")
             .objects.filter(dataset__phenotype=self)
             .exclude(latest_data_status__status__name="not relevant")
+            .distinct()
+        )
+
+    def papers_all(self):
+        return (
+            apps.get_model("papers", "Paper")
+            .objects.filter(dataset__phenotype=self)
             .distinct()
         )
 
@@ -218,7 +228,7 @@ class Phenotype(models.Model):
     papers.allow_tags = True
 
     def papers_edit_link_list(self):
-        return ", ".join([p.link_edit() for p in self.papers()])
+        return ", ".join([p.link_edit() for p in self.papers_all()])
 
     papers_edit_link_list.allow_tags = True
 
@@ -234,6 +244,15 @@ class Phenotype(models.Model):
         return html
 
     datasets_edit_link_list.allow_tags = True
+
+    def phenotype_siblings_edit_link_list(self):
+        siblings = self.observable.phenotype_set.exclude(pk=self.pk).all()
+        html = "<ul>"
+        html = html + "<li>".join([p.link_edit() for p in siblings[:50]])
+        html = html + "</ul>"
+        return html
+
+    phenotype_siblings_edit_link_list.allow_tags = True
 
 
 class MutantType(models.Model):
