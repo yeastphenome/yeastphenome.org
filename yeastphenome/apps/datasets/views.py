@@ -107,6 +107,7 @@ def dataset_plot(request, dataset_id):
         raise Http404
 
     links = [
+        {"url": reverse("datasets:index"), "name": "Dataset Explorer"},
         {
             "url": reverse("datasets:detail", args=[dataset.id]),
             "name": "Dataset %s" % dataset.id,
@@ -183,6 +184,11 @@ def gene_explorer(request):
     # prepare list of genes, plus genes and aliases
     context = get_gene_names_context()
 
+    # Assemble links assuming on root of page
+    links = [{"url": reverse("datasets:genes"), "name": "Gene Explorer"}]
+    context["links"] = links
+    context["active"] = "explorer"
+
     # A get request for a gene should display it to start
     if "q" in request.GET:
         query = request.GET["q"].strip()
@@ -192,15 +198,6 @@ def gene_explorer(request):
             gene = Gene.objects.get(
                 Q(systematic_name__iexact=query) | Q(common_name__iexact=query)
             )
-
-            # Assemble links
-            links = [
-                {
-                    "url": "%s?q=%s"
-                    % (reverse("datasets:genes"), gene.systematic_name),
-                    "name": "Gene %s" % gene.systematic_name,
-                }
-            ]
 
             # If not found, try for an alias
             if not gene:
@@ -222,12 +219,20 @@ def gene_explorer(request):
                 .order_by("-value")
             )
 
+            links = [
+                {"url": reverse("datasets:genes"), "name": "Gene Explorer"},
+                {
+                    "url": "%s?q=%s"
+                    % (reverse("datasets:genes"), gene.systematic_name),
+                    "name": "Gene %s" % gene.systematic_name,
+                },
+            ]
+
             # We just will show top and bottom 10
             context["datasets_top"] = queryset[:10]
             context["datasets_bottom"] = queryset[len(queryset) - 10 :]
             context["datasets_bottom"].reverse()
             context["links"] = links
-            context["active"] = "explorer"
 
         except Gene.DoesNotExist:
             messages.warning(
@@ -256,6 +261,7 @@ def similar_genes(request, systematic_name):
     )
 
     links = [
+        {"url": reverse("datasets:genes"), "name": "Gene Explorer"},
         {
             "url": "%s?q=%s" % (reverse("datasets:genes"), gene.systematic_name),
             "name": "Gene %s" % gene.systematic_name,
@@ -297,6 +303,7 @@ def similar_dataset_table(request, dataset_id):
     )
 
     links = [
+        {"url": reverse("datasets:index"), "name": "Dataset Explorer"},
         {
             "url": reverse("datasets:detail", args=[dataset.id]),
             "name": "Dataset %s" % dataset.id,
@@ -335,13 +342,14 @@ def gene_datasets(request, systematic_name):
         .order_by("-value")
     )
     links = [
+        {"url": reverse("datasets:genes"), "name": "Gene Explorer"},
         {
             "url": "%s?q=%s" % (reverse("datasets:genes"), gene.systematic_name),
             "name": "Gene %s" % gene.systematic_name,
         },
         {
             "url": reverse("datasets:gene_datasets", args=[gene.systematic_name]),
-            "name": "Gene Datasets",
+            "name": "Phenotypic Scores",
         },
     ]
 

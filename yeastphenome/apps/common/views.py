@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, reverse
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.cache import never_cache
@@ -42,13 +42,18 @@ def index(request):
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def about(request):
-    context = {"active": "about"}
+    links = [{"url": reverse("common:about"), "name": "About"}]
+    context = {"active": "about", "links": links}
     return render(request, "main/about.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def faq(request):
-    context = {"active": "about"}
+    links = [
+        {"url": reverse("common:about"), "name": "About"},
+        {"url": reverse("common:faq"), "name": "Frequently Asked Questions"},
+    ]
+    context = {"active": "about", "links": links}
     return render(request, "main/faq.html", context)
 
 
@@ -56,6 +61,11 @@ def faq(request):
 def stats(request):
     context = get_latest_stats()
     context["active"] = "about"
+    context["links"] = [
+        {"url": reverse("common:about"), "name": "About"},
+        {"url": reverse("common:stats"), "name": "Stats"},
+    ]
+
     context["paper_counts"] = get_papers_by_year()
     context.update(get_phenotype_measurements(hide_legend=True))
     context.update(get_dataset_sources())
@@ -64,7 +74,11 @@ def stats(request):
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def contributors(request):
-    context = {"active": "about"}
+    links = [
+        {"url": reverse("common:about"), "name": "About"},
+        {"url": reverse("common:contributors"), "name": "Contributors"},
+    ]
+    context = {"active": "about", "links": links}
     return render(request, "main/contributors.html", context)
 
 
@@ -80,31 +94,48 @@ def warmup():
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def getting_started(request):
-    context = {"active": "getting-started"}
+    links = [{"url": reverse("common:getting-started"), "name": "Getting Started"}]
+    context = {"active": "getting-started", "links": links}
     return render(request, "getting-started/getting-started.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def background(request):
-    context = {"active": "getting-started"}
+    links = [
+        {"url": reverse("common:getting-started"), "name": "Getting Started"},
+        {"url": reverse("common:background"), "name": "Background"},
+    ]
+    context = {"active": "getting-started", "links": links}
     return render(request, "getting-started/background.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def advanced(request):
-    context = {"active": "getting-started"}
+    links = [
+        {"url": reverse("common:getting-started"), "name": "Getting Started"},
+        {"url": reverse("common:advanced"), "name": "Advanced"},
+    ]
+    context = {"active": "getting-started", "links": links}
     return render(request, "getting-started/advanced.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def tutorials(request):
-    context = {"active": "getting-started"}
+    links = [
+        {"url": reverse("common:getting-started"), "name": "Getting Started"},
+        {"url": reverse("common:tutorials"), "name": "Tutorials"},
+    ]
+    context = {"active": "getting-started", "links": links}
     return render(request, "getting-started/tutorials.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def introduction(request):
-    context = {"active": "getting-started"}
+    links = [
+        {"url": reverse("common:getting-started"), "name": "Getting Started"},
+        {"url": reverse("common:introduction"), "name": "Introduction"},
+    ]
+    context = {"active": "getting-started", "links": links}
     return render(request, "getting-started/introduction.html", context)
 
 
