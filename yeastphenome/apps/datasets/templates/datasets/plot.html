@@ -4,11 +4,6 @@
 {% load humanize %}
 {% block title %}{{ object }} / Datasets / Papers / {{ SITE_NAME }}{% endblock %}
 {% block content %}
-<div class="row" style="padding-bottom:20px">
-    <div class="col-md-12">
-    <a href="/datasets/">Datasets</a> > <a href="{% url 'datasets:detail' dataset.id %}">{{ dataset.id }}</a> > Genes
-    </div>
-</div>
 <div class="row" style="padding-bottom:35px">
     <div class="col-md-12">
         <h1>Dataset #{{ dataset.id }}</h1>

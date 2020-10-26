@@ -1,2 +1,2 @@
 FROM postgres
-ADD ./yeastphenome_db.P.sql /docker-entrypoint-initdb.d
+ADD ./yeastphenome_db.P.sql /

@@ -71,7 +71,12 @@ def paper_explorer(request, year=None):
     return render(
         request,
         "papers/explorer.html",
-        {"queryset": queryset, "tags": get_search_tags(), "links": links},
+        {
+            "queryset": queryset,
+            "tags": get_search_tags(),
+            "links": links,
+            "active": "explorer",
+        },
     )
 
 
@@ -108,6 +113,7 @@ class PaperDetailView(generic.DetailView, RatelimitMixin):
         paginator = Paginator(dataset_list, 50)
         context["datasets"] = paginator.get_page(page)
         context["id"] = paper.id
+        context["active"] = "explorer"
 
         # Give credit if credit is due.
         names = paper.acknowledgements_str_list()
