@@ -64,7 +64,12 @@ def index(request):
     return render(
         request,
         "conditions/explorer.html",
-        {"queryset": queryset, "tags": get_search_tags(), "links": links},
+        {
+            "queryset": queryset,
+            "tags": get_search_tags(),
+            "links": links,
+            "active": "explorer",
+        },
     )
 
 
@@ -94,6 +99,7 @@ class ConditiontypeDetailView(generic.DetailView, RatelimitMixin):
         context["USER_AUTH"] = self.request.user.is_authenticated
         context["papers"] = context["object"].datasets
         context["id"] = context["object"].id
+        context["active"] = "explorer"
         context["links"] = [
             {"url": reverse("conditions:index"), "name": "Condition Explorer"},
             {

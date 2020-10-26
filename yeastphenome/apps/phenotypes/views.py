@@ -54,7 +54,12 @@ def index(request):
     return render(
         request,
         "phenotypes/explorer.html",
-        {"queryset": queryset, "tags": get_search_tags(), "links": links},
+        {
+            "queryset": queryset,
+            "tags": get_search_tags(),
+            "links": links,
+            "active": "explorer",
+        },
     )
 
 
@@ -88,6 +93,7 @@ class ObservableDetailView(generic.DetailView):
         qs = Observable.objects.all().annotate(count=models.Count("pk"))
         qs = qs.filter(tags__in=context["object"].tags.all())
         context["similar"] = qs.order_by("-count").filter(count__gte=3)
+        context["active"] = "explorer"
 
         # list of "sibling" phenotypes -- phenotypes that share the same observable
         context["siblings"] = (
