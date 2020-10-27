@@ -1,195 +1,287 @@
-{% extends "base/base.html" %}
-{% load static %}
-{% load my_filters %}
+{% extends "base/wide.html" %}
+{% load humanize %}
 {% block title %}Genes / {{ SITE_NAME }}{% endblock %}
 {% block content %}
+<link rel='stylesheet' href='https://unpkg.com/@yaireo/tagify/dist/tagify.css'>
+
 <style>
-#dataset-genes {
-  font: 10px sans-serif;
+
+.no-sort::after { display: none!important; }
+.no-sort { pointer-events: none!important; cursor: default!important; }
+
+.customSuggestionsList > div{
+  max-height: 300px;
+  border: 2px solid pink;
+  overflow: auto;
+}
+.tagify {
+  width: 100%;
+  max-width: 700px;
 }
 
-.search-wrapper {
-    display: flex;
+.tagify__tag, .tagify__input {
+  font-size: 14px;
 }
 
-.twitter-typeahead {
-    flex: 1 0 auto;
+.pen-intro{
 }
 
-.bar rect {
-  shape-rendering: crispEdges;
-  cursor: pointer;
+input{
+  order: 5;
 }
 
-.bar text {
-  fill: #999999;
+label[for='checkbox-tagify-show-input']{
+  position: absolute;
+  top: .85em;
+  left: 2.5em;
+
 }
 
-.axis path, .axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
+label[for='checkbox-tagify-show-input'] + input{
+  position: absolute;
+  top: 1em;
+  left: 1em;
+  transform: scale(1.4);
 }
-#scrollable-dropdown-menu .tt-menu {
-  max-height: 250px;
-  overflow-y: auto;
+
+label[for='checkbox-tagify-show-input'] + input:checked ~ input,
+label[for='checkbox-tagify-show-input'] + input:checked ~ textarea{
+  display: block !important;
+  width: 100%;
+  max-width: 700px;
+  margin-top: 1.5em;
+}
+
+label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
+    min-height: 11ch;
 }
 </style>
-{% include "style/typeahead.html" %}
-{% if gene %}{% include "style/sidenav.html" %}
-<div class="large-2 columns" id="sidenav">
-    <div>
-        <div class="yeast-navbar" style="position: fixed; top: 35.0rem; left:25.7rem;">
-            <ul class="nav side-nav">
-                <li id="nav-title"><span></span></li>
-                <li id="navbar_details"><a href="#">Overview</a></li>
-                {% if datasets_top or datasets_bottom %}<li id="navbar_datasets"><a href="#datasets">Datasets</a></li>{% endif %}
-                {% if sims.top or sims.bottom %}<li id="navbar_similar"><a href="#similar">Similar Genes</a></li>{% endif %}
-            </ul>
+    <div class="col-md-12">
+        <div class="row">
+            <div class="col-md-12 public-homepage-side-panel">
+                <h1>Genes</h1>
+                <div>
+                  <h3>Search</h3>
+                  <input name='tags' value="">
+                </div>
+            </div>
         </div>
-    </div>
-</div>{% endif %}
-<div class="row">
-    <div class="col-md-12">
-         <div class="search-wrapper">
-		<div id="scrollable-dropdown-menu">
-		  <input class="typeahead tt-query" placeholder="Systematic ORF name (YJL092W), common name (SRS2), or alias (RADH)" data-items="4" type="text" >
-		</div>
+        <div class="row">
+            <div class="col-md-12" style="padding-top:20px">
+                <form id="searchform" style="display:none">
+                {% csrf_token %}
+               <input type="text" name="q" class="form-control" placeholder="Systematic ORF name (YJL092W), common name (SRS2), or alias (RADH)" required="" id="id_q">
+                </form>
+            </div>
         </div>
+        <div class="row">
+            <div class="col-md-12" id="message" style="padding-bottom:5px">{% if results %}
+               {% if results.count == 0 %}
+                  <div class="alert alert-info">There were no relevant results for your search.</div>
+               {% endif %}{% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12" id="results" style="padding-bottom:30px">{% if results %}
+               {% if results.count != 0 %}
+                  {% include "genes/genes_table.html" with genes=results.results %}
+               {% endif %}
+            </div>{% endif %}
+        </div>
+
     </div>
-</div>
-{% if gene %}<hr>
-<div class="row" style="padding-top:20px">
-    <div class="col-md-12">
-        <h1>{{ gene.common_name }} / {{ gene.systematic_name }}</h1>
-        <table class="table">
-            <tr><th width="20%" scope="row">Standard Name:</th><td>{{ metadata.display_name }}</td></tr>
-            <tr><th width="20%" scope="row">Systematic name:</th><td>{{ gene.systematic_name }}</td></tr>
-            {% if metadata.sgdid %}<tr><th width="20%" scope="row">SGD ID:</th><td><a target="_blank" href="https://yeastgenome.org/locus/{{ metadata.sgdid }}" class="external">{{ metadata.sgdid }}</a></td></tr>{% endif %}
-            {% if metadata.aliases %}<tr><th width="20%" scope="row">Aliases:</th><td>{% for alias in metadata.aliases %}{% if alias.category == "Alias" %}{% if alias.link %}<a href="{{ alias.link }}" target="_blank">{% endif %} {{ alias.display_name }}{% if forloop.last %}{% else %},{% endif %} {% if alias.link %} </a>{% endif %} {% endif %}{% endfor %}</td></tr>{% endif %}
-            <tr><th width="20%" scope="row">Description</th><td>{% if gene.description %}{{ gene.description }}{% else %}{{ metadata.description }}{% endif %}</td></tr>
-            {% if metadata.name_description %}<tr><th width="20%" scope="row">Name Description</th><td>{{ metadata.name_description }}</td></tr>{% endif %}
-        </table>
-    </div>
-</div>{% endif %}
-
-{% if datasets_top or datasets_bottom %}<div class="row" style="padding-top:20px" id='datasets'>
-    <div class="col-md-12">
-    <h1 style="padding-bottom:20px">Phenotypic Scores</h1>
-    <ul class="nav nav-tabs">
-      {% if datasets_top %}<li class="active"><a data-toggle="tab" href="#datasets_top">Top 10</a></li>{% endif %}
-      {% if datasets_bottom %}<li><a data-toggle="tab" href="#datasets_bottom">Bottom 10</a></li>{% endif %}
-    </ul>
-
-    <div class="tab-content">
-      {% if datasets_top %}<div id="datasets_top" class="tab-pane fade in active" style="padding-top:20px">
-      {% include "datasets/data_table.html" with datasets=datasets_top table_id="datasets_top_table" %}
-      </div>{% endif %}
-      {% if datasets_bottom %}<div id="datasets_bottom" class="tab-pane fade" style="padding-top:20px">
-      {% include "datasets/data_table.html" with datasets=datasets_bottom table_id="datasets_bottom_table" %}
-      </div>{% endif %}
-    </div>
-  </div>
-</div>{% endif %}
-
-{% if sims.top or sims.bottom %}<div class="row" style="padding-top:20px" id='similar'>
-    <div class="col-md-12">
-    <h1 style="padding-bottom:20px">Phenotypic Similarities</h1>
-    <ul class="nav nav-tabs">
-      {% if sims.top %}<li class="active"><a data-toggle="tab" href="#top10">Top 10</a></li>{% endif %}
-      {% if sims.bottom %}<li><a data-toggle="tab" href="#bottom10">Bottom 10</a></li>{% endif %}
-    </ul>
-
-    <div class="tab-content">
-      {% if sims.top %}<div id="top10" class="tab-pane fade in active" style="padding-top:20px">
-      {% include "genes/similar_table.html" with scores=sims.top table_id="similarTable" %}
-      </div>{% endif %}
-      {% if sims.bottom %}<div id="bottom10" class="tab-pane fade" style="padding-top:20px">
-      {% include "genes/similar_table.html" with scores=sims.bottom table_id="nonsimilarTable" %}
-      </div>{% endif %}
-    </div>
-    <a><button class="dataset_similar_download btn btn-default" type="button">Download all</button></a>{% if gene %}<a href="{% url 'datasets:similar_genes' gene.systematic_name %}"><button type="button" class="btn btn-default">View all</button></a>{% endif %}
-  </div>
-</div>{% endif %}
-
+</div></div></div>
 {% endblock %}
 {% block scripts %}
-{% include "scripts/tablesorter.html" %}
-<script src="{% static 'js/typeahead.bundle.js' %}"></script>
+
+<script src='https://unpkg.com/@yaireo/tagify@3.17.7/dist/tagify.min.js'></script>
 <script>
-// Gene lookup, systematic name by metadata
-var gene_names = [{% for gene in genes %}"{{ gene }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %}{% if not aliases %}{% else %},{% endif %}{% for alias in aliases %}"{{ alias.1 }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %}{% if not common_names %}{% else %},{% endif %}{% for alias in common_names %}"{{ alias.1 }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
 
-// Alias lookup, alias index for gene
-var aliases = { {% for alias in aliases %}"{{ alias.1 }}":"{{ alias.0 }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %}{% if not common_names %}{% else %},{% endif %}{% for alias in common_names %}"{{ alias.1 }}":"{{ alias.0 }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %} }
+var tags = {{ tags | safe }}
 
-function run_search(gene) {
-   // Case 1: it's an alias, look up the gene
-   if (gene in aliases) {
-     document.location = "/datasets/genes?q=" + aliases[gene];
+var input = document.querySelector('input[name=tags]'),
+    tagify = new Tagify(input, {
+        pattern: /^.{0,200}$/,  // Validate typed tag(s) by Regex. Here maximum chars length is defined as "20"
+        delimiters: ",|;",      // add new tags when these characters are used
+        keepInvalidTags: false, // dont keep invalid tags
+        editTags: 1,            // single click to edit a tag
+        maxTags: 6,
+        blacklist: [],          // words to blacklist?
+        whitelist: tags,
+        transformTag: transformTag,
+        // backspace: "edit",
+        placeholder: "Systematic ORF name (YJL092W), common name (SRS2), or alias (RADH)",
+        dropdown : {
+            enabled: 1,            // show suggestion after 1 typed character
+            fuzzySearch: false,    // match only suggestions that starts with the typed characters
+            position: 'text',      // position suggestions list next to typed text
+            caseSensitive: true,   // allow adding duplicate items if their case is different
+        },
+        templates: {
+            dropdownItemNoMatch: function(data) {
+                return `<div class='${this.settings.classNames.dropdownItem}' tabindex="0" role="option">
+                    No suggestion found for: <strong>${data.value}</strong>
+                </div>`
+            },
+            tag : function(tagData){
+               console.log(tagData);
+               try {
+                    return `<tag title='${tagData.value}' contenteditable='false' spellcheck="false" class='tagify__tag ${tagData.class ? tagData.class : ""}' ${this.getAttributes(tagData)}>
+                        <x title='remove tag' class='tagify__tag__removeBtn'></x>
+                        <div style="font-size:14px">
+                            <span class='tagify__tag-text'>${tagData.value}</span>
+                        </div>
+                    </tag>`
+               }
+               catch(err){}
+            },
+            dropdownItem : function(tagData){
+                try {
+                    return `<div style="font-size:14px" class='tagify__dropdown__item ${tagData.class ? tagData.class : ""}' tagifySuggestionIdx="${tagData.tagifySuggestionIdx}">
+                            <span>${tagData.value}</span>
+                        </div>`
+                }
+                catch(err){}
+              }
+            }
+        })
 
-   // Case 2: return the gene
-   } else {
-     document.location = "/datasets/genes?q=" + gene;
-   }
-}
-
-// Selecting a gene from the typehead list
-$('input.typeahead').on('typeahead:selected', function(event, selection) {
-     $("#fade").show();
-     var gene = $(this).val();
-     run_search(gene)
-});
-
-
-// Pressing enter in the box
-$(document).on("keypress", "input.typeahead", function(e){
-    if(e.which == 13){
-        $("#fade").show();
-        var gene = $(this).val();
-        run_search(gene)
+// generate a random color (in HSL format)
+function getRandomColor(){
+    function rand(min, max) {
+        return min + Math.random() * (max - min);
     }
-});
 
-function download(url){
-    document.location = "#";
-    $("#fade").show()
-    frame = document.createElement("iframe");
-    frame.onload=function(){$("#fade").hide();}
-    frame.src=url;
-    document.body.appendChild(frame);
+    var h = rand(1, 360)|0,
+        s = rand(40, 70)|0,
+        l = rand(65, 72)|0;
+
+    return 'hsl(' + h + ',' + s + '%,' + l + '%)';
 }
 
-$(document).ready(function(){
- 
-    {% if gene %}$(".dataset_download_gene").click(function(){
-        document.location = "/datasets/download/{{ gene.systematic_name }}/"
-    })
+function transformTag(tagData){
 
-    $(".dataset_similar_download").click(function(){
-        document.location = "{% url 'datasets:download_sims' gene.systematic_name %}"
-    }){% endif %}
+    // If the term doesn't have an icon, it's a custom query
+    if (!("icon" in tagData)) {
+        tagData["icon"] = ""
+        tagData["code"] = ""
+        tagData.style = "--tag-bg:" + "white";
+    } else {
+        tagData.style = "--tag-bg:" + getRandomColor();
+    }
+}
 
-    // Constructing the suggestion engine
-    var genes = new Bloodhound({
-        datumTokenizer: Bloodhound.tokenizers.whitespace,
-        queryTokenizer: Bloodhound.tokenizers.whitespace,
-        local: gene_names
-    });
-    
-    // Initializing the typeahead
-    $('.typeahead').typeahead({      
-        highlight: true,
-        hint: true        
-      }, {
-      name: 'genes',
-      limit: 100,
-      source: genes
-    });
 
-    {% if gene %}$("#gene-name").val("{{ gene.systematic_name }}"){% endif %}
-
+tagify.on('remove', function(e){
+    update_placeholder()
+    doTagsSearch();
 });
 
+// Gets tags from url and add to box
+// Important - this must be called before we define the add listener, otherwise infinite loop
+
+function add_tags_by_key(key) {
+    var querytags = []
+
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    string = urlParams.get(key);
+
+    console.log(string);
+
+    if (string != undefined) {
+        $.each(string.split(','), function(i, e) {
+            querytags.push({"value": e,  "code": key})
+        })
+    }
+    tagify.addTags(querytags)
+}
+add_tags_by_key("query")
+add_tags_by_key("q")
+
+update_placeholder = function() {
+
+    // Remove placeholder if there are tags, otherwise reset
+    if ($('[name=tags]').val() == ""){
+        $(".tagify__input").attr("data-placeholder", "Systematic ORF name (YJL092W), common name (SRS2), or alias (RADH)");
+    } else {
+        $(".tagify__input").attr("data-placeholder", "");
+    }
+}
+
+update_placeholder()
+
+// After getting all from url, then define callback
+tagify.on('add', function(e){
+    update_placeholder()
+    doTagsSearch();
+});
+
+
+$('input[name=tags]').bind("keypress", {}, keypressSearch);
+
+function keypressSearch(e) {
+    var code = (e.keyCode ? e.keyCode : e.which);
+    if (code == 13) { //Enter keycode                
+        e.preventDefault();
+        doTagsSearch();
+    }
+};
+
+
+// Function to retrieve attributes and do search
+function doTagsSearch() {
+
+   $("#fade").show();
+   var promise = new Promise(function(resolve, reject) {
+        var tags = $('[name=tags]').val();
+        return resolve({"tags": tags});
+            
+   }).then(function(query){
+
+       // Don't run the search if we don't have tags or a query
+       if (query.tags.length == 0) {
+           $("#fade").hide();
+           $("#papersTable_wrapper").hide();
+           return
+       }
+
+       // Keep list of tags
+       tags = Object()
+       if (query.tags.length > 0) {
+           $.each(JSON.parse(query.tags), function(i, e){          
+              console.log(e)
+              if (!(e['code'] in tags)) {
+                  tags[e['code']] = e['value']
+              } else {
+                  tags[e['code']] += "," + e['value']  
+              }
+           })
+       }
+
+       // Add the query anyway (even if empty) as the first argument
+       url = "{{ DOMAIN }}/datasets/genes/"
+       count = 0       
+       $.each(tags, function(i, e){          
+           if (i == "") {
+               i = "query"
+           }
+           if (count == 0){
+               url = url + "?" + i + "=" + e 
+           } else {
+               url = url + "&" + i + "=" + e 
+           }
+           count+=1
+       })
+       document.location = url
+   })   
+
+}
+
+{% if results %}$(document).ready(function(){
+    $("#papersTable").DataTable({"pageLength": 10,  
+        "language": {"search": "Filter:"} 
+    });
+});{% endif %}
 </script>
 {% endblock %}

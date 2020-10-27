@@ -8,6 +8,8 @@ urlpatterns = [
         "collection/<int:collection_id>/", views.data_explorer, name="collection_detail"
     ),
     path("genes", views.gene_explorer, name="genes"),
+    path("genes/", views.gene_explorer, name="genes"),
+    path("genes/detail/<str:query>/", views.gene_detail, name="gene-detail"),
     path("download/<str:systematic_name>/", views.download_all, name="download_gene"),
     path(
         "observable/<str:observable_id>/",

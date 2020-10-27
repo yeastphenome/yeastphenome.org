@@ -19,7 +19,12 @@ from yeastphenome.apps.datasets.models import (
     GeneSimilarity,
     Collection,
 )
-from yeastphenome.apps.datasets.search import get_search_tags, run_search_tag_query
+from yeastphenome.apps.datasets.search import (
+    get_search_tags,
+    get_gene_search_tags,
+    run_search_tag_query,
+    run_gene_search_tag_query,
+)
 from yeastphenome.apps.datasets.utils import get_gene_metadata, send_file
 from yeastphenome.apps.conditions.models import ConditionType
 from yeastphenome.apps.phenotypes.models import Observable
@@ -181,65 +186,78 @@ def get_dataset_gene_table_context(dataset):
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def gene_explorer(request):
 
-    # prepare list of genes, plus genes and aliases
-    context = get_gene_names_context()
+    taglist = []
+    for key in [
+        "query",
+    ]:
+        for tag in request.GET.get(key, "").split(","):
+            if not tag:
+                continue
+            taglist.append(tag)
+
+    links = [{"url": reverse("datasets:genes"), "name": "Gene Explorer"}]
+    context = {"links": links, "active": "explorer", "tags": get_gene_search_tags()}
+
+    # Use same function above to update search results
+    queryset = []
+    if taglist:
+        queryset = run_gene_search_tag_query(taglist)
+
+        # 50 results per page
+        paginator = Paginator(queryset, 50)
+        page = request.GET.get("page")
+        context["results"] = {
+            "results": paginator.get_page(page),
+            "count": queryset.count(),
+        }
+
+    return render(request, "genes/index.html", context)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def gene_detail(request, query):
+
+    try:
+        gene = Gene.objects.get(
+            Q(systematic_name__iexact=query) | Q(common_name__iexact=query)
+        )
+    except Gene.DoesNotExist:
+        gene = GeneAlias.objects.get(name__iexact=query).gene_set.first()
+        # if not found, try for an alias
+        if not gene:
+            raise Http404
 
     # Assemble links assuming on root of page
-    links = [{"url": reverse("datasets:genes"), "name": "Gene Explorer"}]
+    links = [
+        {"url": reverse("datasets:genes"), "name": "Gene Explorer"},
+        {
+            "url": reverse("datasets:gene-detail", args=[gene.systematic_name]),
+            "name": "Gene %s" % gene.systematic_name,
+        },
+    ]
+    metadata = get_gene_metadata(gene.systematic_name)
+    context = {"links": links, "active": "explorer", "gene": gene, "metadata": metadata}
+
+    # Get top/bottom 10 most similar
+    sims = list(context["gene"].get_ranked_similar())
+    bottom = sims[len(sims) - 10 :]
+    bottom.reverse()
+
+    context["sims"] = {"top": sims[:10], "bottom": bottom}
+
+    # Filter to data with values defined, sorted greatest to smallest
+    queryset = (
+        Data.objects.exclude(Q(value=None) | Q(value=Decimal("NaN")))
+        .filter(gene=context["gene"])
+        .order_by("-value")
+    )
+
+    # We just will show top and bottom 10
+    context["datasets_top"] = queryset[:10]
+    context["datasets_bottom"] = queryset[len(queryset) - 10 :]
+    context["datasets_bottom"].reverse()
     context["links"] = links
-    context["active"] = "explorer"
-
-    # A get request for a gene should display it to start
-    if "q" in request.GET:
-        query = request.GET["q"].strip()
-
-        try:
-            # First look up based on systematic or common name
-            gene = Gene.objects.get(
-                Q(systematic_name__iexact=query) | Q(common_name__iexact=query)
-            )
-
-            # If not found, try for an alias
-            if not gene:
-                gene = GeneAlias.objects.get(name__iexact=query).gene_set.first()
-            context["gene"] = gene
-            context["metadata"] = get_gene_metadata(context["gene"].systematic_name)
-
-            # Get top/bottom 10 most similar
-            sims = list(context["gene"].get_ranked_similar())
-            bottom = sims[len(sims) - 10 :]
-            bottom.reverse()
-
-            context["sims"] = {"top": sims[:10], "bottom": bottom}
-
-            # Filter to data with values defined, sorted greatest to smallest
-            queryset = (
-                Data.objects.exclude(Q(value=None) | Q(value=Decimal("NaN")))
-                .filter(gene=context["gene"])
-                .order_by("-value")
-            )
-
-            links = [
-                {"url": reverse("datasets:genes"), "name": "Gene Explorer"},
-                {
-                    "url": "%s?q=%s"
-                    % (reverse("datasets:genes"), gene.systematic_name),
-                    "name": "Gene %s" % gene.systematic_name,
-                },
-            ]
-
-            # We just will show top and bottom 10
-            context["datasets_top"] = queryset[:10]
-            context["datasets_bottom"] = queryset[len(queryset) - 10 :]
-            context["datasets_bottom"].reverse()
-            context["links"] = links
-
-        except Gene.DoesNotExist:
-            messages.warning(
-                request,
-                "Gene with systematic name %s does not exist in the database." % query,
-            )
-    return render(request, "genes/index.html", context)
+    return render(request, "genes/detail.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)

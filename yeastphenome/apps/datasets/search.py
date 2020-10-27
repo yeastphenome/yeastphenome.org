@@ -2,9 +2,45 @@ from django.db.models import Q
 
 from yeastphenome.apps.phenotypes.models import Phenotype
 from yeastphenome.apps.conditions.models import Medium, Condition
-from yeastphenome.apps.datasets.models import Dataset, Datatype, Tag, Collection
+from yeastphenome.apps.datasets.models import (
+    Dataset,
+    Datatype,
+    Tag,
+    Collection,
+    Gene,
+    GeneAlias,
+)
 
 # Search functions
+
+
+def get_gene_search_tags():
+    """Return a list of gene search tags, which we do all as queries."""
+
+    # Systematic names
+    systematic_names = [
+        {"value": x, "icon": "🏷️", "code": "query"}
+        for x in Gene.objects.exclude(systematic_name=None)
+        .values_list("systematic_name", flat=True)
+        .distinct()
+    ]
+
+    # Common Names
+    common_names = [
+        {"value": x, "icon": "🏷️", "code": "query"}
+        for x in Gene.objects.exclude(common_name=None)
+        .values_list("common_name", flat=True)
+        .distinct()
+    ]
+
+    # Aliases
+    aliases = [
+        {"value": x, "icon": "🏷️", "code": "query"}
+        for x in GeneAlias.objects.exclude(name=None)
+        .values_list("name", flat=True)
+        .distinct()
+    ]
+    return systematic_names + common_names + aliases
 
 
 def get_search_tags():
@@ -52,7 +88,7 @@ def get_search_tags():
 
 def run_search_tag_query(query, taglist=None, return_instances=False, collection=None):
     """this function is called from the papers/views.py for the explorer function
-    It takes in a list of tags (and associated models) to build a query for papers.
+    It takes in a list of tags (and associated models) to build a query for datasets.
     """
     # First do a search based on the tags, assemble those of liked kind. A tag without
     # a code is part of the list of queries
@@ -156,3 +192,24 @@ def run_search_tag_query(query, taglist=None, return_instances=False, collection
         "count": results.count(),
         "datatypes": {x[0]: x[1] for x in Datatype.objects.values_list("id", "name")},
     }
+
+
+def run_gene_search_tag_query(query):
+    """The equivalent search for genes, however we don't have specific fields to search."""
+    queries = [] if not query else query
+    if not isinstance(queries, list):
+        queries = [queries]
+
+    # For genes, we do a single query wit
+    queryset = Gene.objects.all()
+
+    # Now filter down results more, search all fields for query if defined
+    queries = "(%s)" % "|".join(queries)
+    results = queryset.filter(
+        Q(systematic_name__iregex=queries)
+        | Q(common_name__iregex=queries)
+        | Q(primary_sgdid__iregex=queries)
+        | Q(aliases__name__iregex=queries)
+    ).distinct()
+
+    return results
