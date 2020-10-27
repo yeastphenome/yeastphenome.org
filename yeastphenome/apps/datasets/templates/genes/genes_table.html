@@ -1,0 +1,15 @@
+<table id="papersTable" class="table table-condensed table-hover" width="100%">
+        <thead>
+        <tr>
+            <th class="text-nowrap" width="30%">Gene</th>
+            <th width="30%">Aliases</th>
+            <th width="30%">SGDID</th>
+        </tr>
+        </thead>
+        <tbody>
+{% for gene in genes %}<tr>
+           <td><a href="/datasets/genes/detail/{{ gene.systematic_name }}">{{ gene.common_name }}/{{ gene.systematic_name }}</a></td>
+           <td>{% if gene.aliases.count > 0 %}{% for alias in gene.aliases.all %}{{ alias.name }}{% if forloop.last %}{% else %}, {% endif %}{% endfor %}{% endif %}</td>
+           <td>{{ gene.primary_sgdid }}</td>
+    </tr>{% endfor %}
+</table>
