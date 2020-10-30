@@ -8,7 +8,6 @@ docker/create_roles.sh
 .DS_Store
 .env
 __pycache__
-migrations/
 static/
 env/
 db.sqlite3
