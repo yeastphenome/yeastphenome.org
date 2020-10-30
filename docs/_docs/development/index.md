@@ -394,6 +394,40 @@ python manage.py makemigrations
 python manage.py migrate --fake
 ```
 
+For example, migrations might look like the following. We try to migrate
+between each command to figure out the next migration to fake, and run any migrations
+that will work.
+
+```bash
+python manage.py migrate conditions 0001 --fake
+python manage.py migrate
+python manage.py migrate conditions 0002_auto_20201024_1938 --fake
+python manage.py migrate
+python manage.py migrate phenotypes 0001 --fake
+python manage.py migrate
+python manage.py migrate papers 0001 --fake
+python manage.py migrate
+python manage.py migrate datasets 0001 --fake
+```
+```bash
+$ python manage.py migrate
+Operations to perform:
+  Apply all migrations: admin, auth, conditions, contenttypes, datasets, papers, phenotypes, sessions
+Running migrations:
+  Applying datasets.0002_gene... OK
+  Applying datasets.0003_data_gene... OK
+  Applying datasets.0004_datasetsimilarity_genesimilarity... OK
+  Applying datasets.0005_auto_20200903_2004... OK
+  Applying datasets.0006_auto_20200904_2323... OK
+  Applying datasets.0007_auto_20200912_1726... OK
+  Applying datasets.0008_auto_20200912_1854... OK
+  Applying datasets.0009_auto_20200913_0310... OK
+  Applying datasets.0010_auto_20200913_0312... OK
+  Applying datasets.0011_auto_20200921_2027... OK
+  Applying phenotypes.0002_remove_phenotype_observable2... OK
+  Applying phenotypes.0003_delete_observable2... OK
+```
+
 #### Legacy Export
 
 If we want to export just tables, we can do that with django `dumpdata.` This is useful to preserve the models
