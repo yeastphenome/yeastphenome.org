@@ -246,3 +246,32 @@ the genesim exports:
 ```bash
 split -l 20000000 datasim-export.tsv datasim-export-partial
 ```
+
+These files can be provided to the same management commands. For example:
+
+```bash
+# if you need to write the import temporary file, then the h5 file is required:
+python manage.py import_gene_similarities yp_rows_store.h5
+
+# if you have the export, then it's not
+python manage.py import_gene_similarities genesim-export.tsv
+```
+
+And importantly, since there are likely missing values, this is how you can
+clean the data first, because the copy on write won't work without doing so. 
+Also note that the first version of the data frame
+had the wrong label for values, and we needed to switch score with pvalue.
+
+
+```python
+import pandas
+df = pandas.read_csv('genesim-export.tsv', sep='\t', names=['gene1', 'gene2', 'pvalue', 'score'])
+updated = df[-df['score'].isnull()]
+updated = df[-df['pvalue'].isnull()]
+updated.to_csv("genesim-exports-nonan.tsv", sep="\t", header=None, index=None)
+```
+
+The best way to figure out the columns is to look at the min and max. The pvalue
+should between 0 and 1, and scores can easily go into negative territory.
+Whatever you figure out for the file, make sure that the data import 
+script matches it.
