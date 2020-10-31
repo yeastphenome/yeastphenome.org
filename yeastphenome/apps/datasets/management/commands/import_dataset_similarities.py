@@ -129,10 +129,6 @@ class Command(BaseCommand):
         #                out.write(line)
         #            line = stream.readline()
 
-        import IPython
-
-        IPython.embed()
-
         # aa,
         print("Creating similarties...")
         create_start = time.time()
