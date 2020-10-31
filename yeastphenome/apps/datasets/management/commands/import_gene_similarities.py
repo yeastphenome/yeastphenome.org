@@ -113,6 +113,7 @@ class Command(BaseCommand):
             file_path = write_import_file(file_path)
             sep = "\t"
 
+        ## IMPORTANT: double check the columns
         print("Creating similarties...")
         create_start = time.time()
         with open(file_path, "r") as stream:

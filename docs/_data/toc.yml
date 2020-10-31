@@ -17,6 +17,8 @@
           url: "docs/development#database"
         - title: Development
           url: "docs/development#development"
+        - title: Migration
+          url: "docs/development/migration"
     - title: "About"
       url: "about"
     - title: "News"
