@@ -4,6 +4,7 @@ from django.db import models
 from django.http import HttpResponse
 from django import forms
 from django.utils.http import urlencode
+from django.utils.safestring import mark_safe
 
 from yeastphenome.apps.papers.models import Paper, Status, Statusdata, Statustested
 from yeastphenome.apps.papers.forms import PaperModelForm
@@ -139,17 +140,16 @@ class DatasetInline(ImprovedTabularInline):
 
     def admin_change_link(self, obj):
         if obj.id:
-            return '<a href="%s?_popup=1" onclick="return showAddAnotherPopup(this);">%s</a>' % (
+            html = '<a href="%s?_popup=1" onclick="return showAddAnotherPopup(this);">%s</a>' % (
                 reverse("admin:datasets_dataset_change", args=(obj.id,)),
                 obj.admin_name(),
             )
         else:
-            return (
+            html = (
                 '<a href="%s?_popup=1&paper=%s" onclick="return showAddAnotherPopup(this);">Create new</a>'
                 % (reverse("admin:datasets_dataset_add"), self.parent_obj_id)
             )
-
-    admin_change_link.allow_tags = True
+        return mark_safe(html)
 
     def make_a_copy_link(self, obj):
         query_dict = {"_popup": 1}
@@ -166,12 +166,11 @@ class DatasetInline(ImprovedTabularInline):
                     # if f.name != 'id' and f_value != 'None':
                     query_dict[f.name] = f_value
         query_string = urlencode(query_dict)
-        return (
+        html = (
             '<a id="id_user" href="%s?%s" onclick="return showAddAnotherPopup(this);">Make a copy</a>'
             % (reverse("admin:datasets_dataset_add"), query_string)
         )
-
-    make_a_copy_link.allow_tags = True
+        return mark_safe(html)
 
 
 class DatasetInlineTested(DatasetInline):

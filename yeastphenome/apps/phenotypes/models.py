@@ -1,6 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from django.apps import apps
+from django.utils.safestring import mark_safe
 
 
 class Tag(models.Model):
@@ -11,21 +12,18 @@ class Tag(models.Model):
         return self.name
 
     def link_detail(self):
-        return '<a href="%s">%s</a>' % (
+        html = '<a href="%s">%s</a>' % (
             reverse("phenotypes:tag", args=(self.id,)),
             self,
         )
-
-    link_detail.allow_tags = True
+        return mark_safe(html)
 
     def link_edit(self):
         html = '<a href="%s">%s</a>' % (
             reverse("admin:phenotypes_tag_change", args=(self.id,)),
             self,
         )
-        return html
-
-    link_edit.allow_tags = True
+        return mark_safe(html)
 
     def observables(self):
         return (
@@ -42,9 +40,7 @@ class Tag(models.Model):
         html = "<ul>"
         html = html + "<li>".join([p.link_edit() for p in self.observables()])
         html = html + "</ul>"
-        return html
-
-    observables_edit_link_list.allow_tags = True
+        return mark_safe(html)
 
 
 class Observable(models.Model):
@@ -64,9 +60,7 @@ class Observable(models.Model):
             reverse("admin:phenotypes_observable_change", args=(self.id,)),
             self,
         )
-        return html
-
-    link_edit.allow_tags = True
+        return mark_safe(html)
 
     def get_tags(self):
         return self.tags.order_by("name").all()
@@ -78,9 +72,7 @@ class Observable(models.Model):
         html = "<ul>"
         html = html + "<li>".join([p.link_edit() for p in self.get_tags()])
         html = html + "</ul>"
-        return html
-
-    tags_edit_link_list.allow_tags = True
+        return mark_safe(html)
 
     def phenotypes(self):
         return (
@@ -96,9 +88,7 @@ class Observable(models.Model):
         html = "<ul>"
         html = html + "<li>".join([p.link_edit() for p in self.phenotypes()[:20]])
         html = html + "</ul>"
-        return html
-
-    phenotypes_edit_link_list.allow_tags = True
+        return mark_safe(html)
 
     def datasets(self):
         return (
@@ -111,17 +101,14 @@ class Observable(models.Model):
         html = "<ul>"
         html = html + "<li>".join([d.link_edit() for d in self.datasets()[:50]])
         html = html + "</ul>"
-        return html
-
-    datasets_edit_link_list.allow_tags = True
+        return mark_safe(html)
 
     def link_detail(self):
-        return '<a href="%s">%s</a>' % (
+        html = '<a href="%s">%s</a>' % (
             reverse("phenotypes:detail", args=(self.id,)),
             self,
         )
-
-    link_detail.allow_tags = True
+        return mark_safe(html)
 
     def conditiontypes(self):
         # Unusual specification of "not relevant" papers because, in the other way,
@@ -163,9 +150,7 @@ class Measurement(models.Model):
         html = "<ul>"
         html = html + "<li>".join([ph.link_edit() for ph in self.phenotypes()[:20]])
         html = html + "</ul>"
-        return html
-
-    phenotypes_edit_link_list.allow_tags = True
+        return mark_safe(html)
 
 
 class Phenotype(models.Model):
@@ -188,21 +173,18 @@ class Phenotype(models.Model):
             return u"%s" % self.observable
 
     def link_detail(self):
-        return '<a href="%s">%s</a>' % (
+        html = '<a href="%s">%s</a>' % (
             reverse("phenotypes:detail", args=(self.observable.id,)),
             self,
         )
-
-    link_detail.allow_tags = True
+        return mark_safe(html)
 
     def link_edit(self):
         html = '<a href="%s">%s</a>' % (
             reverse("admin:phenotypes_phenotype_change", args=(self.id,)),
             self,
         )
-        return html
-
-    link_edit.allow_tags = True
+        return mark_safe(html)
 
     def observable_name(self):
         return self.observable.name
@@ -223,14 +205,10 @@ class Phenotype(models.Model):
         )
 
     def papers_link_list(self):
-        return ", ".join([p.link_detail() for p in self.papers()])
-
-    papers.allow_tags = True
+        return mark_safe(", ".join([p.link_detail() for p in self.papers()]))
 
     def papers_edit_link_list(self):
-        return ", ".join([p.link_edit() for p in self.papers_all()])
-
-    papers_edit_link_list.allow_tags = True
+        return mark_safe(", ".join([p.link_edit() for p in self.papers_all()]))
 
     def datasets(self):
         return (
@@ -241,18 +219,14 @@ class Phenotype(models.Model):
         html = "<ul>"
         html = html + "<li>".join([d.link_edit() for d in self.datasets()[:50]])
         html = html + "</ul>"
-        return html
-
-    datasets_edit_link_list.allow_tags = True
+        return mark_safe(html)
 
     def phenotype_siblings_edit_link_list(self):
         siblings = self.observable.phenotype_set.exclude(pk=self.pk).all()
         html = "<ul>"
         html = html + "<li>".join([p.link_edit() for p in siblings[:50]])
         html = html + "</ul>"
-        return html
-
-    phenotype_siblings_edit_link_list.allow_tags = True
+        return mark_safe(html)
 
 
 class MutantType(models.Model):

@@ -3,6 +3,7 @@ from django.urls import reverse
 from django import forms
 from django.http import HttpResponse
 from django.db.models import Min
+from django.utils.safestring import mark_safe
 
 import re
 
@@ -117,17 +118,16 @@ class ConditionInline(ImprovedTabularInline):
 
     def admin_change_link(self, obj):
         if obj.id:
-            return '<a href="%s?_popup=1" onclick="return showAddAnotherPopup(this);">%s</a>' % (
+            html = '<a href="%s?_popup=1" onclick="return showAddAnotherPopup(this);">%s</a>' % (
                 reverse("admin:conditions_condition_change", args=(obj.id,)),
                 obj.dose,
             )
         else:
-            return (
+            html = (
                 '<a href="%s?_popup=1&type=%s" onclick="return showAddAnotherPopup(this);">Create new</a>'
                 % (reverse("admin:conditions_condition_add"), self.parent_obj_id)
             )
-
-    admin_change_link.allow_tags = True
+        return mark_safe(html)
 
 
 class ConditionTypeAdmin(ImprovedModelAdmin):

@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.db.models import Q
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.utils.safestring import mark_safe
 
 from yeastphenome.apps.phenotypes.models import Observable
 from yeastphenome.apps.conditions.models import ConditionType
@@ -94,8 +95,6 @@ class Paper(models.Model):
     def phenotypes_link_list(self):
         return ", ".join([p.link_detail() for p in self.phenotypes()])
 
-    phenotypes_link_list.allow_tags = True
-
     def conditiontypes(self):
         return ConditionType.objects.filter(
             condition__conditionset__dataset__paper=self
@@ -117,15 +116,13 @@ class Paper(models.Model):
             )
 
     def datasets_summary(self):
-        return (
+        return mark_safe(
             self.collections_str_list()
             + "<br>"
             + self.phenotypes_str_list()
             + "<br>"
             + self.conditiontypes_str_list()
         )
-
-    datasets_summary.allow_tags = True
 
     @property
     def datasets_number(self):
@@ -220,12 +217,10 @@ class Paper(models.Model):
         return {"data": queryset_data, "tested strains": queryset_tested}
 
     def link_detail(self):
-        return '<a href="%s">%s</a>' % (self.get_absolute_url(), self)
+        return mark_safe('<a href="%s">%s</a>' % (self.get_absolute_url(), self))
 
     def get_absolute_url(self):
         return reverse("papers:detail", args=(self.id,))
-
-    link_detail.allow_tags = True
 
     def link_edit(self):
         html = '<a href="%s">%s</a>' % (
@@ -239,9 +234,7 @@ class Paper(models.Model):
                 reverse("admin:papers_paper_change", args=(self.id,)),
                 self,
             )
-        return html
-
-    link_edit.allow_tags = True
+        return mark_safe(html)
 
 
 class Statusdata(models.Model):
