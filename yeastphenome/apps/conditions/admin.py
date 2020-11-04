@@ -130,7 +130,17 @@ class ConditionInline(ImprovedTabularInline):
         return mark_safe(html)
 
 
+class ConditionTypeAdminForm(forms.ModelForm):
+    class Meta:
+        widgets = {
+            "chebi_id": forms.TextInput,
+            "pubchem_id": forms.TextInput,
+        }
+        fields = "__all__"  # required for Django 3.x
+
+
 class ConditionTypeAdmin(ImprovedModelAdmin):
+    form = ConditionTypeAdminForm
     list_display = (
         "name",
         "chebi_name",

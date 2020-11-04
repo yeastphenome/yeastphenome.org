@@ -1,6 +1,6 @@
 import re
 
-from django.db.models import Count
+from django.db import models
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.shortcuts import reverse, render
@@ -78,7 +78,26 @@ def browse(request):
     """Browse dataest by condition names (and size by count)"""
     qs = (
         ConditionType.objects.all()
-        .annotate(number_of_datasets=Count("condition__conditionset__dataset"))
+        .annotate(
+            not_relevant_datasets=models.Count(
+                models.Case(
+                    models.When(
+                        condition__conditionset__dataset__paper__latest_data_status__status__name="not relevant",
+                        then=1,
+                    )
+                )
+            )
+        )
+        .annotate(total_datasets=models.Count("condition__conditionset__dataset"))
+        .annotate(
+            number_of_papers=models.Count(
+                "condition__conditionset__dataset__paper", distinct=True
+            )
+        )
+        .annotate(
+            number_of_datasets=models.F("total_datasets")
+            - models.F("not_relevant_datasets")
+        )
         .order_by("-number_of_datasets")
     )
 
