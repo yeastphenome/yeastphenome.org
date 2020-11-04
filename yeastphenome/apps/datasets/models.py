@@ -49,7 +49,7 @@ class Source(models.Model):
             return "%s" % self.sourcetype
 
     def html(self):
-        source_str = ''
+        source_str = ""
         if self.person:
             source_str = "%s" % self.person
         else:
@@ -102,7 +102,9 @@ class Tag(models.Model):
         return s
 
     def link_detail(self):
-        return mark_safe('<a href="%s">%s</a>' % (reverse("datasets:tag", args=(self.id,)), self))
+        return mark_safe(
+            '<a href="%s">%s</a>' % (reverse("datasets:tag", args=(self.id,)), self)
+        )
 
     def datasets(self):
         return (
