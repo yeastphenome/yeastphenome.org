@@ -77,30 +77,21 @@ def index(request):
 def browse(request):
     """Browse dataest by condition names (and size by count)"""
     qs = (
-        ConditionType.objects.all()
-        .annotate(
-            not_relevant_datasets=models.Count(
-                models.Case(
-                    models.When(
-                        condition__conditionset__dataset__paper__latest_data_status__status__name="not relevant",
-                        then=1,
-                    )
-                )
+        ConditionType.objects.annotate(
+            number_of_datasets=models.Count(
+                "condition__conditionset__dataset",
+                filter=~models.Q(
+                    condition__conditionset__dataset__paper__latest_data_status__status__name="not relevant"
+                ),
             )
         )
-        .annotate(total_datasets=models.Count("condition__conditionset__dataset"))
         .annotate(
             number_of_papers=models.Count(
                 "condition__conditionset__dataset__paper", distinct=True
             )
         )
-        .annotate(
-            number_of_datasets=models.F("total_datasets")
-            - models.F("not_relevant_datasets")
-        )
         .order_by("-number_of_datasets")
     )
-
     context = {"data": qs[:100]}
     return render(request, "conditions/graphs/browse.html", context)
 
