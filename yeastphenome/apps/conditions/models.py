@@ -33,7 +33,7 @@ class Tag(models.Model):
         return mark_safe(html)
 
     def conditions_edit_link_list(self):
-        conditions = self.condition_set.order_by("name").all()
+        conditions = self.condition_set.order_by("type__name").all()
         html = "<ul>"
         html = html + "<li>".join([c.link_edit() for c in conditions[:50]])
         html = html + "</ul>"
