@@ -107,9 +107,6 @@ class ConditionType(models.Model):
             | Q(dataset__medium__conditions__type=self)
         ).distinct()
 
-    def phenotypes_link_list(self):
-        return mark_safe(", ".join([p.link_detail() for p in self.phenotypes()]))
-
     def papers(self):
         return (
             apps.get_model("papers", "Paper")
@@ -120,9 +117,6 @@ class ConditionType(models.Model):
             .exclude(latest_data_status__status__name="not relevant")
             .distinct()
         )
-
-    def papers_link_list(self):
-        return mark_safe(", ".join([(u"%s" % p.link_detail()) for p in self.papers()]))
 
     def datasets(self):
         return (
@@ -248,9 +242,6 @@ class ConditionSet(models.Model):
         )
         return ps
 
-    def papers_link_list(self):
-        return mark_safe(", ".join([p.link_detail() for p in self.papers()]))
-
     def papers_edit_link_list(self):
         return mark_safe(", ".join([p.link_edit() for p in self.papers_all()]))
 
@@ -326,9 +317,6 @@ class Medium(models.Model):
 
     def paper_str_list(self):
         return ", ".join([str(p) for p in self.papers()])
-
-    def papers_link_list(self):
-        return mark_safe(", ".join([p.link_detail() for p in self.papers()]))
 
     def papers_edit_link_list(self):
         return mark_safe(", ".join([p.link_edit() for p in self.papers_all()]))

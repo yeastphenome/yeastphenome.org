@@ -92,9 +92,6 @@ class Paper(models.Model):
                 + " more"
             )
 
-    def phenotypes_link_list(self):
-        return ", ".join([p.link_detail() for p in self.phenotypes()])
-
     def conditiontypes(self):
         return ConditionType.objects.filter(
             condition__conditionset__dataset__paper=self

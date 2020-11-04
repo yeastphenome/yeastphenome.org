@@ -204,9 +204,6 @@ class Phenotype(models.Model):
             .distinct()
         )
 
-    def papers_link_list(self):
-        return mark_safe(", ".join([p.link_detail() for p in self.papers()]))
-
     def papers_edit_link_list(self):
         return mark_safe(", ".join([p.link_edit() for p in self.papers_all()]))
 
