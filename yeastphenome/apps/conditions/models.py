@@ -2,6 +2,7 @@ from django.db import models
 from django.urls import reverse
 from django.apps import apps
 from django.db.models import Q
+from django.utils.safestring import mark_safe
 
 import re
 
@@ -18,30 +19,25 @@ class Tag(models.Model):
         return self.name
 
     def link_edit(self):
-        return '<a href="%s">%s</a>' % (
+        html = '<a href="%s">%s</a>' % (
             reverse("admin:conditions_tag_change", args=(self.id,)),
             self.name,
         )
-
-    link_edit.allow_tags = True
+        return mark_safe(html)
 
     def conditiontypes_edit_link_list(self):
         conditiontypes = self.conditiontype_set.order_by("name").all()
         html = "<ul>"
         html = html + "<li>".join([c.link_edit() for c in conditiontypes[:50]])
         html = html + "</ul>"
-        return html
-
-    conditiontypes_edit_link_list.allow_tags = True
+        return mark_safe(html)
 
     def conditions_edit_link_list(self):
         conditions = self.condition_set.order_by("name").all()
         html = "<ul>"
         html = html + "<li>".join([c.link_edit() for c in conditions[:50]])
         html = html + "</ul>"
-        return html
-
-    conditions_edit_link_list.allow_tags = True
+        return mark_safe(html)
 
 
 class ConditionType(models.Model):
@@ -103,20 +99,13 @@ class ConditionType(models.Model):
         return ", ".join([p.dose for p in self.conditions()])
 
     def conditions_edit_list(self):
-        return ", ".join([p.link_edit() for p in self.conditions()])
-
-    conditions_edit_list.allow_tags = True
+        return mark_safe(", ".join([p.link_edit() for p in self.conditions()]))
 
     def phenotypes(self):
         return Phenotype.objects.filter(
             Q(dataset__conditionset__conditions__type=self)
             | Q(dataset__medium__conditions__type=self)
         ).distinct()
-
-    def phenotypes_link_list(self):
-        return ", ".join([p.link_detail() for p in self.phenotypes()])
-
-    phenotypes_link_list.allow_tags = True
 
     def papers(self):
         return (
@@ -128,11 +117,6 @@ class ConditionType(models.Model):
             .exclude(latest_data_status__status__name="not relevant")
             .distinct()
         )
-
-    def papers_link_list(self):
-        return ", ".join([(u"%s" % p.link_detail()) for p in self.papers()])
-
-    papers_link_list.allow_tags = True
 
     def datasets(self):
         return (
@@ -146,25 +130,21 @@ class ConditionType(models.Model):
         )
 
     def tags_edit_list(self):
-        return ", ".join([t.link_edit() for t in self.tags.all()])
-
-    tags_edit_list.allow_tags = True
+        return mark_safe(", ".join([t.link_edit() for t in self.tags.all()]))
 
     def link_detail(self):
-        return '<a href="%s">%s</a>' % (
+        html = '<a href="%s">%s</a>' % (
             reverse("conditions:detail", args=(self.id,)),
             self,
         )
-
-    link_detail.allow_tags = True
+        return mark_safe(html)
 
     def link_edit(self):
-        return '<a href="%s">%s</a>' % (
+        html = '<a href="%s">%s</a>' % (
             reverse("admin:conditions_conditiontype_change", args=(self.id,)),
             self,
         )
-
-    link_edit.allow_tags = True
+        return mark_safe(html)
 
 
 class Condition(models.Model):
@@ -191,35 +171,27 @@ class Condition(models.Model):
         return Medium.objects.filter(conditions=self).all()
 
     def conditionsets_str_list(self):
-        return ", ".join([p.link_edit() for p in self.conditionsets()])
-
-    conditionsets_str_list.allow_tags = True
+        return mark_safe(", ".join([p.link_edit() for p in self.conditionsets()]))
 
     def media_str_list(self):
-        return ", ".join([p.link_edit() for p in self.media()])
-
-    media_str_list.allow_tags = True
+        return mark_safe(", ".join([p.link_edit() for p in self.media()]))
 
     def link_detail(self):
-        return '<a href="%s">%s</a>' % (
+        html = '<a href="%s">%s</a>' % (
             reverse("conditions:detail", args=(self.type.id,)),
             self,
         )
-
-    link_detail.allow_tags = True
+        return mark_safe(html)
 
     def link_edit(self):
-        return '<a href="%s">%s</a>' % (
+        html = '<a href="%s">%s</a>' % (
             reverse("admin:conditions_condition_change", args=(self.id,)),
             self.dose,
         )
-
-    link_edit.allow_tags = True
+        return mark_safe(html)
 
     def tags_edit_list(self):
-        return ", ".join([t.link_edit() for t in self.tags.all()])
-
-    tags_edit_list.allow_tags = True
+        return mark_safe(", ".join([t.link_edit() for t in self.tags.all()]))
 
 
 class ConditionSet(models.Model):
@@ -270,15 +242,8 @@ class ConditionSet(models.Model):
         )
         return ps
 
-    def papers_link_list(self):
-        return ", ".join([p.link_detail() for p in self.papers()])
-
-    papers_link_list.allow_tags = True
-
     def papers_edit_link_list(self):
-        return ", ".join([p.link_edit() for p in self.papers_all()])
-
-    papers_edit_link_list.allow_tags = True
+        return mark_safe(", ".join([p.link_edit() for p in self.papers_all()]))
 
     def datasets_all(self):
         return (
@@ -293,31 +258,27 @@ class ConditionSet(models.Model):
         )
 
     def datasets_edit_link_list(self):
-        str = "<ul>"
-        str = str + "<li>".join([d.link_edit() for d in self.datasets_all()])
-        str = str + "</ul>"
-        return str
-
-    datasets_edit_link_list.allow_tags = True
+        html = "<ul>"
+        html = html + "<li>".join([d.link_edit() for d in self.datasets_all()])
+        html = html + "</ul>"
+        return mark_safe(html)
 
     def phenotypes(self):
         return Phenotype.objects.filter(dataset__conditionset=self).distinct()
 
     def link_detail(self):
-        return '<a href="%s">%s</a>' % (
+        html = '<a href="%s">%s</a>' % (
             reverse("conditions:conditionset_detail", args=(self.id,)),
             self,
         )
-
-    link_detail.allow_tags = True
+        return mark_safe(html)
 
     def link_edit(self):
-        return '{<a href="%s">%s</a>}' % (
+        html = '{<a href="%s">%s</a>}' % (
             reverse("admin:conditions_conditionset_change", args=(self.id,)),
             self,
         )
-
-    link_edit.allow_tags = True
+        return mark_safe(html)
 
 
 class Medium(models.Model):
@@ -357,15 +318,8 @@ class Medium(models.Model):
     def paper_str_list(self):
         return ", ".join([str(p) for p in self.papers()])
 
-    def papers_link_list(self):
-        return ", ".join([p.link_detail() for p in self.papers()])
-
-    papers_link_list.allow_tags = True
-
     def papers_edit_link_list(self):
-        return ", ".join([p.link_edit() for p in self.papers_all()])
-
-    papers_edit_link_list.allow_tags = True
+        return mark_safe(", ".join([p.link_edit() for p in self.papers_all()]))
 
     def datasets(self, num=None):
         qs = (
@@ -388,33 +342,27 @@ class Medium(models.Model):
 
     def datasets_edit_link_list(self, num=None):
         qs = self.datasets_all(num=num)
-        str = "<ul>"
-        str = str + "<li>".join([d.link_edit() for d in qs])
-        str = str + "</ul>"
-        return str
-
-    datasets_edit_link_list.allow_tags = True
+        html = "<ul>"
+        html = html + "<li>".join([d.link_edit() for d in qs])
+        html = html + "</ul>"
+        return mark_safe(html)
 
     def datasets_edit_link_list_top50(self):
-        return self.datasets_edit_link_list(num=50)
-
-    datasets_edit_link_list_top50.allow_tags = True
+        return mark_safe(self.datasets_edit_link_list(num=50))
 
     def phenotypes(self):
         return Phenotype.objects.filter(dataset__medium=self).distinct()
 
     def link_detail(self):
-        return '<a href="%s">%s</a>' % (
+        html = '<a href="%s">%s</a>' % (
             reverse("conditions:medium_detail", args=(self.id,)),
             self,
         )
-
-    link_detail.allow_tags = True
+        return mark_safe(html)
 
     def link_edit(self):
-        return '{<a href="%s">%s</a>}' % (
+        html = '{<a href="%s">%s</a>}' % (
             reverse("admin:conditions_medium_change", args=(self.id,)),
             self,
         )
-
-    link_edit.allow_tags = True
+        return mark_safe(html)

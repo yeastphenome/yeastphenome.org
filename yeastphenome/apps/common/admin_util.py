@@ -112,11 +112,15 @@ class ImprovedModelAdmin(admin.ModelAdmin):
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.name in self.raw_id_fields:
             kwargs.pop("request", None)
-            type = db_field.rel.__class__.__name__
+            type = db_field.remote_field.__class__.__name__
             if type == "ManyToOneRel":
-                kwargs["widget"] = VerboseForeignKeyRawIdWidget(db_field.rel, site)
+                kwargs["widget"] = VerboseForeignKeyRawIdWidget(
+                    db_field.remote_field, site
+                )
             elif type == "ManyToManyRel":
-                kwargs["widget"] = VerboseManyToManyRawIdWidget(db_field.rel, site)
+                kwargs["widget"] = VerboseManyToManyRawIdWidget(
+                    db_field.remote_field, site
+                )
             return db_field.formfield(**kwargs)
         return super(ImprovedModelAdmin, self).formfield_for_dbfield(db_field, **kwargs)
 

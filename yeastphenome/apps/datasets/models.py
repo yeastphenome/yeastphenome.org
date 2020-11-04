@@ -6,6 +6,7 @@ from django.db import models
 from django.apps import apps
 from django.contrib.humanize.templatetags.humanize import intcomma
 from django.urls import reverse
+from django.utils.safestring import mark_safe
 
 
 class Collection(models.Model):
@@ -48,18 +49,18 @@ class Source(models.Model):
             return "%s" % self.sourcetype
 
     def html(self):
+        source_str = ""
         if self.person:
-            return "%s" % self.person
+            source_str = "%s" % self.person
         else:
             if self.link:
-                return '<a class="external" href="%s">%s</a>' % (
+                source_str = '<a class="external" href="%s">%s</a>' % (
                     self.link,
                     self.sourcetype,
                 )
             else:
-                return "%s" % self.sourcetype
-
-    html.allow_tags = True
+                source_str = "%s" % self.sourcetype
+        return mark_safe(source_str)
 
     def link_or_person(self):
         if self.person:
@@ -101,9 +102,9 @@ class Tag(models.Model):
         return s
 
     def link_detail(self):
-        return '<a href="%s">%s</a>' % (reverse("datasets:tag", args=(self.id,)), self)
-
-    link_detail.allow_tags = True
+        return mark_safe(
+            '<a href="%s">%s</a>' % (reverse("datasets:tag", args=(self.id,)), self)
+        )
 
     def datasets(self):
         return (
@@ -118,12 +119,10 @@ class Tag(models.Model):
         return self.datasets().count()
 
     def datasets_edit_link_list(self):
-        s = "<ul>"
-        s = s + "<li>".join([d.link_edit() for d in self.datasets()])
-        s = s + "</ul>"
-        return s
-
-    datasets_edit_link_list.allow_tags = True
+        html = "<ul>"
+        html = html + "<li>".join([d.link_edit() for d in self.datasets()])
+        html = html + "</ul>"
+        return mark_safe(html)
 
 
 class Dataset(models.Model):
@@ -259,17 +258,13 @@ class Dataset(models.Model):
             )
         else:
             tested_space = "N/A"
-        return tested_space
-
-    tested_space.allow_tags = True
+        return mark_safe(tested_space)
 
     def phenotypes(self):
         return self.observable.name
 
     def tags_link_list(self):
-        return ", ".join([t.link_detail() for t in self.tags.all()])
-
-    tags_link_list.allow_tags = True
+        return mark_safe(", ".join([t.link_detail() for t in self.tags.all()]))
 
     def has_data_in_db(self):
         return self.data_set.exists()
@@ -287,9 +282,7 @@ class Dataset(models.Model):
             style,
             self,
         )
-        return html
-
-    link_edit.allow_tags = True
+        return mark_safe(html)
 
 
 class GeneAlias(models.Model):
