@@ -1,13 +1,15 @@
 from django.contrib import admin
 from django.contrib.admin.sites import site
-from django.contrib.admin.widgets import ManyToManyRawIdWidget, ForeignKeyRawIdWidget
+from django.contrib.admin.widgets import (
+    ManyToManyRawIdWidget,
+    ForeignKeyRawIdWidget,
+)
+
 from django.urls import reverse
 from django.utils.html import escape
 
 from django.urls.exceptions import NoReverseMatch
 from django.utils.text import Truncator
-
-from django.http import HttpResponse
 
 from django.forms.models import BaseInlineFormSet
 
@@ -109,36 +111,26 @@ class ImprovedTabularInline(admin.TabularInline):
 
 
 class ImprovedModelAdmin(admin.ModelAdmin):
-    def formfield_for_dbfield(self, db_field, **kwargs):
-        if db_field.name in self.raw_id_fields:
-            kwargs.pop("request", None)
-            type = db_field.remote_field.__class__.__name__
-            if type == "ManyToOneRel":
-                kwargs["widget"] = VerboseForeignKeyRawIdWidget(
-                    db_field.remote_field, site
-                )
-            elif type == "ManyToManyRel":
-                kwargs["widget"] = VerboseManyToManyRawIdWidget(
-                    db_field.remote_field, site
-                )
-            return db_field.formfield(**kwargs)
-        return super(ImprovedModelAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        """Get a form Field for a ManyToManyField.
+        https://github.com/django/django/blob/master/django/contrib/admin/options.py#L244
+        """
+        if not db_field.remote_field.through._meta.auto_created:
+            return None
+        db = kwargs.get("using")
 
-    def response_change(self, request, obj):
-        if request.GET.get("_popup") == "1":
-            return HttpResponse(
-                '<script type="text/javascript">window.opener.location.reload(); window.close();</script>'
+        # Replace all vertical / horizontal options with modified foreign key raw id widget
+        if "widget" not in kwargs:
+            kwargs["widget"] = VerboseManyToManyRawIdWidget(
+                db_field.remote_field, self.admin_site, using=db
             )
-        return super(ImprovedModelAdmin, self).response_change(request, obj)
 
-    def response_add(self, request, obj, post_url_continue=None):
-        if request.GET.get("_popup") == "1":
-            return HttpResponse(
-                '<script type="text/javascript">window.opener.location.reload(); window.close();</script>'
-            )
-        return super(ImprovedModelAdmin, self).response_add(
-            request, obj, post_url_continue
-        )
+        if "queryset" not in kwargs:
+            queryset = self.get_field_queryset(db, db_field, request)
+            if queryset is not None:
+                kwargs["queryset"] = queryset
+
+        return db_field.formfield(**kwargs)
 
 
 class LimitedInlineFormSet(BaseInlineFormSet):

@@ -8,6 +8,7 @@ from django.utils.safestring import mark_safe
 
 from yeastphenome.apps.datasets.models import Dataset, Collection, Source, Tag
 from yeastphenome.apps.common.admin_util import (
+    ImprovedModelAdmin,
     ImprovedTabularInline,
     LimitedInlineFormSet,
 )
@@ -49,10 +50,9 @@ class DatasetAdminForm(forms.ModelForm):
         }
 
 
-class DatasetAdmin(admin.ModelAdmin):
+class DatasetAdmin(ImprovedModelAdmin):
     model = Dataset
     form = DatasetAdminForm
-    filter_horizontal = ("tags",)
     fields = (
         "name",
         "tags",
