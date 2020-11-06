@@ -1,13 +1,13 @@
 from django.contrib import admin
 from django.urls import reverse
 from django.db import models
-from django.http import HttpResponse
 from django import forms
 from django.utils.http import urlencode
 from django.utils.safestring import mark_safe
 
 from yeastphenome.apps.datasets.models import Dataset, Collection, Source, Tag
 from yeastphenome.apps.common.admin_util import (
+    ImprovedModelAdmin,
     ImprovedTabularInline,
     LimitedInlineFormSet,
 )
@@ -49,13 +49,11 @@ class DatasetAdminForm(forms.ModelForm):
         }
 
 
-class DatasetAdmin(admin.ModelAdmin):
+class DatasetAdmin(ImprovedModelAdmin):
     model = Dataset
     form = DatasetAdminForm
-    filter_horizontal = ("tags",)
     fields = (
         "name",
-        "tags",
         "paper",
         "conditionset",
         "medium",
@@ -70,6 +68,7 @@ class DatasetAdmin(admin.ModelAdmin):
         "data_published",
         "data_available",
         "data_source",
+        "tags",
         "notes",
     )
     raw_id_fields = (
@@ -81,6 +80,7 @@ class DatasetAdmin(admin.ModelAdmin):
         "phenotype",
         "tested_source",
         "data_source",
+        "tags",
     )
     search_fields = (
         "name",
@@ -97,20 +97,6 @@ class DatasetAdmin(admin.ModelAdmin):
                 initial["tested_list_published"] == "True"
             )
         return initial
-
-    def response_change(self, request, obj):
-        if request.GET.get("_popup") == "1":
-            return HttpResponse(
-                '<script type="text/javascript">window.opener.location.reload(); window.close();</script>'
-            )
-        return super(DatasetAdmin, self).response_change(request, obj)
-
-    def response_add(self, request, obj, post_url_continue=None):
-        if request.GET.get("_popup") == "1":
-            return HttpResponse(
-                '<script type="text/javascript">window.opener.location.reload(); window.close();</script>'
-            )
-        return super(DatasetAdmin, self).response_add(request, obj, post_url_continue)
 
 
 class DatasetInline(ImprovedTabularInline):
@@ -188,18 +174,11 @@ class DatasetInlineData(DatasetInline):
     verbose_name_plural = "Datasets with data provided by this source"
 
 
-class SourceAdmin(admin.ModelAdmin):
+class SourceAdmin(ImprovedModelAdmin):
     model = Source
     list_display = ("id", "sourcetype", "link_or_person")
     fields = ("sourcetype", "link", "person", "date", "release", "acknowledge")
     inlines = [DatasetInlineTested, DatasetInlineData]
-
-    def response_change(self, request, obj):
-        if request.GET.get("_popup") == "1":
-            return HttpResponse(
-                '<script type="text/javascript">window.opener.location.reload(); window.close();</script>'
-            )
-        return super(SourceAdmin, self).response_change(request, obj)
 
 
 class CollectionForm(forms.ModelForm):
@@ -211,12 +190,12 @@ class CollectionForm(forms.ModelForm):
         }
 
 
-class CollectionAdmin(admin.ModelAdmin):
+class CollectionAdmin(ImprovedModelAdmin):
     form = CollectionForm
     list_display = ("__str__",)
 
 
-class TagAdmin(admin.ModelAdmin):
+class TagAdmin(ImprovedModelAdmin):
     model = Tag
     list_display = (
         "name",
@@ -231,7 +210,7 @@ class TagAdmin(admin.ModelAdmin):
     readonly_fields = ("datasets_edit_link_list",)
 
 
-class StatusAdmin(admin.ModelAdmin):
+class StatusAdmin(ImprovedModelAdmin):
     list_display = ("name",)
     ordering = ("name",)
 

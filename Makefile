@@ -17,3 +17,6 @@ migrate:
 
 run: 
 	python manage.py runserver
+
+deploy_dev:
+	gcloud app deploy app-dev.yaml
