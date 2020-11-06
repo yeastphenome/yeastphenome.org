@@ -1,9 +1,10 @@
 from django.contrib import admin
-from django.http import HttpResponse
 
 from yeastphenome.apps.papers.models import Paper, Status, Statusdata, Statustested
 from yeastphenome.apps.papers.forms import PaperModelForm
 from yeastphenome.apps.datasets.admin import DatasetInline
+
+from yeastphenome.apps.common.admin_util import ImprovedModelAdmin
 
 
 class StatusdataInline(admin.TabularInline):
@@ -16,7 +17,7 @@ class StatustestedInline(admin.TabularInline):
     extra = 0
 
 
-class PaperAdmin(admin.ModelAdmin):
+class PaperAdmin(ImprovedModelAdmin):
     list_per_page = 50
     list_display = (
         "pmid",
@@ -75,13 +76,6 @@ class PaperAdmin(admin.ModelAdmin):
         else:
             paper.latest_tested_status = None
         super(PaperAdmin, self).save_model(request, paper, form, change)
-
-    def response_change(self, request, obj):
-        if request.GET.get("_popup") == "1":
-            return HttpResponse(
-                '<script type="text/javascript">window.opener.location.reload(); window.close();</script>'
-            )
-        return super(PaperAdmin, self).response_change(request, obj)
 
     def change_view(self, request, object_id, form_url="", extra_context=None):
         extra_context = extra_context or {}
