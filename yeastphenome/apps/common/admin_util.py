@@ -1,128 +1,86 @@
 from django.contrib import admin
-from django.contrib.admin.sites import site
-from django.contrib.admin.widgets import ManyToManyRawIdWidget, ForeignKeyRawIdWidget
+from django.contrib.admin.widgets import ForeignKeyRawIdWidget, ManyToManyRawIdWidget
 from django.urls import reverse
-from django.utils.html import escape
-
-from django.urls.exceptions import NoReverseMatch
-from django.utils.text import Truncator
-
+from django.utils.html import escape, mark_safe
+from django.utils.encoding import smart_str
 from django.http import HttpResponse
-
 from django.forms.models import BaseInlineFormSet
 
 
 class VerboseForeignKeyRawIdWidget(ForeignKeyRawIdWidget):
+    """
+    A Widget that adds a "popup" to the url of the ForeignKey raw_id label
+    """
 
-    # Django 1.11
-    template_name = "admin/foreign_key_raw_id.html"
+    def __init__(self, remote_field, attrs=None, *args, **kwargs):
+        super().__init__(remote_field, attrs, *args, **kwargs)
 
-    # Django 1.10.5
-    def label_for_value(self, value):
-        key = self.rel.get_related_field().name
-        try:
-            obj = self.rel.to._default_manager.using(self.db).get(**{key: value})
-            change_url = reverse(
-                "admin:%s_%s_change"
-                % (obj._meta.app_label, obj._meta.object_name.lower()),
-                args=(obj.pk,),
-            )
-            return (
-                '&nbsp;<strong><a href="%s?_popup=1" onclick="return showAddAnotherPopup(this);"">%s</a></strong>'
-                % (change_url, escape(obj))
-            )
-        except (ValueError, self.rel.to.DoesNotExist):
-            return "???"
+    def label_and_url_for_value(self, value):
+        return label_and_url_for_value_general(self, [value])
 
 
 class VerboseManyToManyRawIdWidget(ManyToManyRawIdWidget):
+    """
+    A Widget that mimics the behavior of ForeignKey raw_id labels but for ManyToMany fields.
+    That is: labels + url + popup for all related objects
+    """
 
-    # Django 1.11
-    template_name = "admin/many_to_many_raw_id.html"
+    def __init__(self, remote_field, attrs=None, *args, **kwargs):
+        super().__init__(remote_field, attrs, *args, **kwargs)
 
-    # Django 1.10.5
-    def label_for_value(self, value):
-        values = value.split(",")
-        str_values = []
-        key = self.rel.get_related_field().name
-        for v in values:
-            try:
-                obj = self.rel.to._default_manager.using(self.db).get(**{key: v})
-                x = u"%s" % obj
-                change_url = reverse(
-                    "admin:%s_%s_change"
-                    % (obj._meta.app_label, obj._meta.object_name.lower()),
-                    args=(obj.pk,),
-                )
-                str_values += [
-                    '<strong><a href="%s?_popup=1" onclick="return showAddAnotherPopup(this);">%s</a></strong>'
-                    % (change_url, escape(x))
-                ]
-            except self.rel.to.DoesNotExist:
-                str_values += [u"???"]
-        return u", ".join(str_values)
-
-    # Django 1.11
     def label_and_url_for_value(self, value):
-        key = self.rel.get_related_field().name
+        return label_and_url_for_value_general(self, value)
 
-        link_label = []
-        link_url = []
-        for v in value:
-            try:
-                obj = self.rel.model._default_manager.using(self.db).get(**{key: v})
-            except (ValueError, self.rel.model.DoesNotExist):
-                return "", ""
 
-            try:
-                url = reverse(
-                    "%s:%s_%s_change"
-                    % (
-                        self.admin_site.name,
-                        obj._meta.app_label,
-                        obj._meta.object_name.lower(),
-                    ),
-                    args=(obj.pk,),
-                )
-            except NoReverseMatch:
-                url = ""  # Admin not registered for target model.
-
-            link_label.append(Truncator(obj).words(14, truncate="..."))
-            link_url.append(url)
-
-        return zip(link_label, link_url), ""
+def label_and_url_for_value_general(self, values):
+    str_values = []
+    key = self.rel.get_related_field().name
+    fk_model = self.rel.model
+    app_label = fk_model._meta.app_label
+    class_name = fk_model._meta.object_name.lower()
+    for the_value in values:
+        try:
+            obj = fk_model._default_manager.using(self.db).get(**{key: the_value})
+            url = reverse('admin:{0}_{1}_change'.format(app_label, class_name), args=[obj.id])
+            url += '?_popup=1'
+            label = escape(smart_str(obj))
+            elt = '<a href="{0}" {1}>{2}</a>'.format(
+                url,
+                'onclick="return showAddAnotherPopup(this);"',
+                label
+            )
+            str_values += [elt]
+        except fk_model.DoesNotExist:
+            str_values += [u'???']
+    return mark_safe(', '.join(str_values)), ''
 
 
 class ImprovedTabularInline(admin.TabularInline):
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.name in self.raw_id_fields:
-            kwargs.pop("request", None)
-            type = db_field.rel.__class__.__name__
-            if type == "ManyToOneRel":
-                kwargs["widget"] = VerboseForeignKeyRawIdWidget(db_field.rel, site)
-            elif type == "ManyToManyRel":
-                kwargs["widget"] = VerboseManyToManyRawIdWidget(db_field.rel, site)
-            return db_field.formfield(**kwargs)
-        return super(ImprovedTabularInline, self).formfield_for_dbfield(
-            db_field, **kwargs
-        )
+            field_type = db_field.remote_field.__class__.__name__
+            if field_type == 'ManyToOneRel':
+                kwargs['widget'] = VerboseForeignKeyRawIdWidget(db_field.remote_field, self.admin_site)
+            elif field_type == 'ManyToManyRel':
+                kwargs['widget'] = VerboseManyToManyRawIdWidget(db_field.remote_field, self.admin_site)
+        else:
+            return super().formfield_for_dbfield(db_field, **kwargs)
+        kwargs.pop('request')
+        return db_field.formfield(**kwargs)
 
 
 class ImprovedModelAdmin(admin.ModelAdmin):
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.name in self.raw_id_fields:
-            kwargs.pop("request", None)
-            type = db_field.remote_field.__class__.__name__
-            if type == "ManyToOneRel":
-                kwargs["widget"] = VerboseForeignKeyRawIdWidget(
-                    db_field.remote_field, site
-                )
-            elif type == "ManyToManyRel":
-                kwargs["widget"] = VerboseManyToManyRawIdWidget(
-                    db_field.remote_field, site
-                )
-            return db_field.formfield(**kwargs)
-        return super(ImprovedModelAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+            field_type = db_field.remote_field.__class__.__name__
+            if field_type == 'ManyToOneRel':
+                kwargs['widget'] = VerboseForeignKeyRawIdWidget(db_field.remote_field, self.admin_site)
+            elif field_type == 'ManyToManyRel':
+                kwargs['widget'] = VerboseManyToManyRawIdWidget(db_field.remote_field, self.admin_site)
+        else:
+            return super().formfield_for_dbfield(db_field, **kwargs)
+        kwargs.pop('request')
+        return db_field.formfield(**kwargs)
 
     def response_change(self, request, obj):
         if request.GET.get("_popup") == "1":
