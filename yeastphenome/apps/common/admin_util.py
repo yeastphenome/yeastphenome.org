@@ -41,31 +41,35 @@ def label_and_url_for_value_general(self, values):
     for the_value in values:
         try:
             obj = fk_model._default_manager.using(self.db).get(**{key: the_value})
-            url = reverse('admin:{0}_{1}_change'.format(app_label, class_name), args=[obj.id])
-            url += '?_popup=1'
+            url = reverse(
+                "admin:{0}_{1}_change".format(app_label, class_name), args=[obj.id]
+            )
+            url += "?_popup=1"
             label = escape(smart_str(obj))
             elt = '<a href="{0}" {1}>{2}</a>'.format(
-                url,
-                'onclick="return showAddAnotherPopup(this);"',
-                label
+                url, 'onclick="return showAddAnotherPopup(this);"', label
             )
             str_values += [elt]
         except fk_model.DoesNotExist:
-            str_values += [u'???']
-    return mark_safe(', '.join(str_values)), ''
+            str_values += [u"???"]
+    return mark_safe(", ".join(str_values)), ""
 
 
 class ImprovedTabularInline(admin.TabularInline):
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.name in self.raw_id_fields:
             field_type = db_field.remote_field.__class__.__name__
-            if field_type == 'ManyToOneRel':
-                kwargs['widget'] = VerboseForeignKeyRawIdWidget(db_field.remote_field, self.admin_site)
-            elif field_type == 'ManyToManyRel':
-                kwargs['widget'] = VerboseManyToManyRawIdWidget(db_field.remote_field, self.admin_site)
+            if field_type == "ManyToOneRel":
+                kwargs["widget"] = VerboseForeignKeyRawIdWidget(
+                    db_field.remote_field, self.admin_site
+                )
+            elif field_type == "ManyToManyRel":
+                kwargs["widget"] = VerboseManyToManyRawIdWidget(
+                    db_field.remote_field, self.admin_site
+                )
         else:
             return super().formfield_for_dbfield(db_field, **kwargs)
-        kwargs.pop('request')
+        kwargs.pop("request")
         return db_field.formfield(**kwargs)
 
 
@@ -73,13 +77,17 @@ class ImprovedModelAdmin(admin.ModelAdmin):
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.name in self.raw_id_fields:
             field_type = db_field.remote_field.__class__.__name__
-            if field_type == 'ManyToOneRel':
-                kwargs['widget'] = VerboseForeignKeyRawIdWidget(db_field.remote_field, self.admin_site)
-            elif field_type == 'ManyToManyRel':
-                kwargs['widget'] = VerboseManyToManyRawIdWidget(db_field.remote_field, self.admin_site)
+            if field_type == "ManyToOneRel":
+                kwargs["widget"] = VerboseForeignKeyRawIdWidget(
+                    db_field.remote_field, self.admin_site
+                )
+            elif field_type == "ManyToManyRel":
+                kwargs["widget"] = VerboseManyToManyRawIdWidget(
+                    db_field.remote_field, self.admin_site
+                )
         else:
             return super().formfield_for_dbfield(db_field, **kwargs)
-        kwargs.pop('request')
+        kwargs.pop("request")
         return db_field.formfield(**kwargs)
 
     def response_change(self, request, obj):
