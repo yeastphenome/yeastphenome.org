@@ -95,6 +95,7 @@ class ImprovedModelAdmin(admin.ModelAdmin):
             return HttpResponse(
                 '<script type="text/javascript">window.opener.location.reload(); window.close();</script>'
             )
+        return super().response_change(request, obj)
 
 
 class LimitedInlineFormSet(BaseInlineFormSet):

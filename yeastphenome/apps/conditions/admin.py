@@ -167,7 +167,12 @@ class ConditionTypeAdmin(ImprovedModelAdmin):
             obj.chebi_name = None
         if form.cleaned_data["pubchem_id"]:
             comp = Compound.from_cid(form.cleaned_data["pubchem_id"])
-            obj.pubchem_name = comp.synonyms[0]
+
+            # Not all compounds have synonyms, fall back to iupac_name
+            if comp.synonyms:
+                obj.pubchem_name = comp.synonyms[0]
+            else:
+                obj.pubchem_name = comp.iupac_name
         else:
             obj.pubchem_name = None
         obj.save()
