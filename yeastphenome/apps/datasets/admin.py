@@ -25,7 +25,7 @@ class DatasetAdminForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super(DatasetAdminForm, self).clean()
-        cleaned_data["name"] = u"%s | %s | %s | %s | %s" % (
+        cleaned_data["name"] = "%s | %s | %s | %s | %s" % (
             cleaned_data["collection"],
             cleaned_data["phenotype"],
             cleaned_data["conditionset"],
