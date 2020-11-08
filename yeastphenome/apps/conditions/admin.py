@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.urls import reverse
 from django import forms
-from django.http import HttpResponse
 from django.db.models import Min
 from django.utils.safestring import mark_safe
 
@@ -38,20 +37,6 @@ class TagAdmin(ImprovedModelAdmin):
         "conditions_edit_link_list",
     )
     ordering = ["name"]
-
-    def response_change(self, request, obj):
-        if request.GET.get("_popup") == "1":
-            return HttpResponse(
-                '<script type="text/javascript">window.opener.location.reload(); window.close();</script>'
-            )
-        return super(TagAdmin, self).response_change(request, obj)
-
-    def response_add(self, request, obj, post_url_continue=None):
-        if request.GET.get("_popup") == "1":
-            return HttpResponse(
-                '<script type="text/javascript">window.opener.location.reload(); window.close();</script>'
-            )
-        return super(TagAdmin, self).response_add(request, obj, post_url_continue)
 
 
 class ConditionAdminForm(forms.ModelForm):
@@ -95,13 +80,6 @@ class ConditionAdmin(ImprovedModelAdmin):
         "type",
         "tags",
     )
-
-    def response_change(self, request, obj):
-        if request.GET.get("_popup") == "1":
-            return HttpResponse(
-                '<script type="text/javascript">window.opener.location.reload(); window.close();</script>'
-            )
-        return super(ConditionAdmin, self).response_change(request, obj)
 
 
 class ConditionInline(ImprovedTabularInline):
@@ -189,17 +167,15 @@ class ConditionTypeAdmin(ImprovedModelAdmin):
             obj.chebi_name = None
         if form.cleaned_data["pubchem_id"]:
             comp = Compound.from_cid(form.cleaned_data["pubchem_id"])
-            obj.pubchem_name = comp.synonyms[0]
+
+            # Not all compounds have synonyms, fall back to iupac_name
+            if comp.synonyms:
+                obj.pubchem_name = comp.synonyms[0]
+            else:
+                obj.pubchem_name = comp.iupac_name
         else:
             obj.pubchem_name = None
         obj.save()
-
-    def response_change(self, request, obj):
-        if request.GET.get("_popup") == "1":
-            return HttpResponse(
-                '<script type="text/javascript">window.close();</script>'
-            )
-        return super(ConditionTypeAdmin, self).response_change(request, obj)
 
 
 class ConditionSetAdmin(ImprovedModelAdmin):
@@ -235,13 +211,6 @@ class ConditionSetAdmin(ImprovedModelAdmin):
         "display_name",
         "datasets_edit_link_list",
     )
-
-    def response_change(self, request, obj):
-        if request.GET.get("_popup") == "1":
-            return HttpResponse(
-                '<script type="text/javascript">window.opener.location.reload(); window.close();</script>'
-            )
-        return super(ConditionSetAdmin, self).response_change(request, obj)
 
     def save_model(self, request, obj, form, change):
 
@@ -303,13 +272,6 @@ class MediumAdmin(ImprovedModelAdmin):
         "display_name",
         "datasets_edit_link_list_top50",
     )
-
-    def response_change(self, request, obj):
-        if request.GET.get("_popup") == "1":
-            return HttpResponse(
-                '<script type="text/javascript">window.opener.location.reload(); window.close();</script>'
-            )
-        return super(MediumAdmin, self).response_change(request, obj)
 
     def save_model(self, request, obj, form, change):
 

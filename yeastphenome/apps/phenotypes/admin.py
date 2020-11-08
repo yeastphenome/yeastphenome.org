@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.http import HttpResponse
 
 from yeastphenome.apps.phenotypes.models import (
     MutantType,
@@ -29,22 +28,6 @@ class ObservableAdmin(ImprovedModelAdmin):
     raw_id_fields = ("tags",)
     ordering = ["name"]
 
-    def response_change(self, request, obj):
-        if request.GET.get("_popup") == "1":
-            return HttpResponse(
-                '<script type="text/javascript">window.opener.location.reload(); window.close();</script>'
-            )
-        return super(ObservableAdmin, self).response_change(request, obj)
-
-    def response_add(self, request, obj, post_url_continue=None):
-        if request.GET.get("_popup") == "1":
-            return HttpResponse(
-                '<script type="text/javascript">window.opener.location.reload(); window.close();</script>'
-            )
-        return super(ObservableAdmin, self).response_add(
-            request, obj, post_url_continue
-        )
-
 
 class TagAdmin(ImprovedModelAdmin):
     list_per_page = 50
@@ -54,20 +37,6 @@ class TagAdmin(ImprovedModelAdmin):
     readonly_fields = ("observables_edit_link_list",)
     ordering = ["name"]
 
-    def response_change(self, request, obj):
-        if request.GET.get("_popup") == "1":
-            return HttpResponse(
-                '<script type="text/javascript">window.opener.location.reload(); window.close();</script>'
-            )
-        return super(TagAdmin, self).response_change(request, obj)
-
-    def response_add(self, request, obj, post_url_continue=None):
-        if request.GET.get("_popup") == "1":
-            return HttpResponse(
-                '<script type="text/javascript">window.opener.location.reload(); window.close();</script>'
-            )
-        return super(TagAdmin, self).response_add(request, obj, post_url_continue)
-
 
 class MutantTypeAdmin(admin.ModelAdmin):
     list_filter = ["name"]
@@ -75,7 +44,7 @@ class MutantTypeAdmin(admin.ModelAdmin):
     ordering = ["name"]
 
 
-class PhenotypeAdmin(admin.ModelAdmin):
+class PhenotypeAdmin(ImprovedModelAdmin):
     list_per_page = 50
     list_display = ["name", "observable_name", "reporter", "papers_edit_link_list"]
     search_fields = [
@@ -99,15 +68,8 @@ class PhenotypeAdmin(admin.ModelAdmin):
     )
     readonly_fields = ("datasets_edit_link_list", "phenotype_siblings_edit_link_list")
 
-    def response_change(self, request, obj):
-        if request.GET.get("_popup") == "1":
-            return HttpResponse(
-                '<script type="text/javascript">window.opener.location.reload(); window.close();</script>'
-            )
-        return super(PhenotypeAdmin, self).response_change(request, obj)
 
-
-class MeasurementAdmin(admin.ModelAdmin):
+class MeasurementAdmin(ImprovedModelAdmin):
     list_display = ["id", "name", "description"]
     ordering = ["id"]
     fields = ("name", "description", "phenotypes_edit_link_list")
