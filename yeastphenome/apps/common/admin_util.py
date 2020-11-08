@@ -97,6 +97,13 @@ class ImprovedModelAdmin(admin.ModelAdmin):
             )
         return super().response_change(request, obj)
 
+    def response_add(self, request, obj, post_url_continue=None):
+        if request.GET.get('_popup') == '1':
+            return HttpResponse(
+                '<script type="text/javascript">window.opener.location.reload(); window.close();</script>'
+            )
+        return super().response_add(request, obj, post_url_continue)
+
 
 class LimitedInlineFormSet(BaseInlineFormSet):
     def get_queryset(self):
