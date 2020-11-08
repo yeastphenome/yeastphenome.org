@@ -151,8 +151,11 @@ class DatasetInline(ImprovedTabularInline):
                 f_value = str(getattr(obj, f_name, "None"))
 
                 # Hacky solution to prevent crash (to solve more permanently)
-                if f.name != "id" and f_value != "None" and f.name != "tags":
-                    # if f.name != 'id' and f_value != 'None':
+                if (
+                    f.name
+                    not in ["id", "tags", "dataset_similarity1", "dataset_similarity2"]
+                    and f_value != "None"
+                ):
                     query_dict[f.name] = f_value
         query_string = urlencode(query_dict)
         html = (

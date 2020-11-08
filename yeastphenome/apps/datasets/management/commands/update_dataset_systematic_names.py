@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.db import IntegrityError
 
-from datasets.models import Dataset
+from yeastphenome.apps.datasets.models import Dataset
 from tqdm import tqdm
 
 
