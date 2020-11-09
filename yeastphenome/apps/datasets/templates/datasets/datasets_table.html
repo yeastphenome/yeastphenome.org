@@ -8,10 +8,6 @@
     cursor: default;
 }
 </style>
-{% if template == 'paper' %}
-<a href="/{{ template }}s/{{ object.id }}/{{ DOWNLOAD_PREFIX }}_{{ object.pmid }}_datasets_list.txt">Download the list of datasets</a>
-{% endif %}
-
 <form action="{% url 'datasets:download' %}" method="get">
     {% csrf_token %}
     <table id="papersTable" class="tablesorter table table-condensed table-hover" width="100%" {% if datasets %}{% else %}style="display:none"{% endif %}>
