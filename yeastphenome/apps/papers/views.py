@@ -194,7 +194,7 @@ def download_zip(request, paper_id, paper_pmid):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def paper_datasets(request, paper_id):
+def paper_datasets(request, paper_id, pmid):
     p = get_object_or_404(Paper, pk=paper_id)
 
     txt = "\n".join([(u"%s\t%s" % (d.id, d.name)) for d in p.dataset_set.all()])

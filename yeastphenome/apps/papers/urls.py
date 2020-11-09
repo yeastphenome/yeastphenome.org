@@ -15,7 +15,7 @@ urlpatterns = [
         name="download_zip",
     ),
     path(
-        "<int:paper_id>/%s_(\d+)_datasets_list.txt" % settings.DOWNLOAD_PREFIX,
+        "<int:paper_id>/%s_<int:pmid>_datasets_list.txt" % settings.DOWNLOAD_PREFIX,
         views.paper_datasets,
         name="paper_datasets",
     ),
