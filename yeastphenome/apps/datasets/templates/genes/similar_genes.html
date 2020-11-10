@@ -8,14 +8,6 @@
   font: 10px sans-serif;
 }
 
-.search-wrapper {
-    display: flex;
-}
-
-.twitter-typeahead {
-    flex: 1 0 auto;
-}
-
 .bar rect {
   shape-rendering: crispEdges;
   cursor: pointer;
@@ -30,81 +22,7 @@
   stroke: #000;
   shape-rendering: crispEdges;
 }
-
-
-.typeahead, .tt-query, .tt-hint {
-  border: 2px solid #CCCCCC;
-  font-size: 14px;
-  line-height: 14px;
-  outline: medium none;
-  padding: 8px 12px;
-  width: 800px;
-  max-height: 150px;
-  overflow-y: auto;
-}
-.typeahead {
-  background-color: #FFFFFF;
-}
-.typeahead:focus {
-  border: 2px solid #0097CF;
-}
-.tt-query {
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
-}
-.tt-hint {
-  color: #999999;
-}
-.tt-dropdown-menu {
-  background-color: red !important;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  margin-top: 12px;
-  padding: 8px 0;
-  width: 350px;
-}
-.tt-suggestion {
-  background-color: white !important;
-  font-size: 14px;
-  line-height: 14px;
-  padding: 3px 20px;
-}
-
-.tt-cursor {
-  background-color: #0097cf !important
-}
-
-.tt-suggestion p {
-  margin: 0;
-}
-
-.tt-suggestion:hover .tt-cursor:hover {
-    cursor: pointer;
-    color: black;
-    background-color: #0097cf !important;
-}
-.tt-dropdown-menu .tt-suggestion.tt-cursor {
-  text-decoration: none;
-  background-color: yellow !important;
-  outline: 0;
-  color: #111;
-}
-
-#scrollable-dropdown-menu .tt-menu {
-  max-height: 250px;
-  overflow-y: auto;
-}
-
 </style>
-<div class="row">
-    <div class="col-md-12">
-         <div class="search-wrapper">
-		<div id="scrollable-dropdown-menu">
-		  <input class="typeahead tt-query" placeholder="Systematic ORF name (YJL092W), common name (SRS2), or alias (RADH)" data-items="4" type="text" >
-		</div>
-        </div>
-    </div>
-</div>
-
 {% if sims %}<div class="row" style="padding-top:20px" id='similar'>
     <div class="col-md-12">
       <h1>Similar Genes to {{ gene.common_name }}/{{ gene.systematic_name }}</h1>
@@ -118,7 +36,7 @@
         </tr>
         </thead>
         <tbody>
-{% for sim in sims %}<tr><td><a href="/datasets/genes?q={{ sim.0 }}">{{ sim.1 }}/{{ sim.0 }}</a></td><td>{{ sim.2 }}</td><td>{{ sim.3|stringformat:".2e" }}</td><td>{{ ranks|lookup:forloop.counter0|floatformat:1 }}%</td></tr>{% endfor %}
+{% for sim in sims %}<tr><td><a href="/genes/detail/{{ sim.0 }}">{{ sim.1 }}/{{ sim.0 }}</a></td><td>{{ sim.2 }}</td><td>{{ sim.3|stringformat:".2e" }}</td><td>{{ ranks|lookup:forloop.counter0|floatformat:1 }}%</td></tr>{% endfor %}
       </table>
     </div>
     <button class="dataset_similar_download btn btn-default" type="button">Download all</button>
@@ -128,43 +46,7 @@
 {% endblock %}
 {% block scripts %}
 {% include "scripts/tablesorter.html" %}
-<script src="{% static 'js/typeahead.bundle.js' %}"></script>
 <script>
-
-// Gene lookup, systematic name by metadata
-var gene_names = [{% for gene in genes %}"{{ gene }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %}{% if not aliases %}{% else %},{% endif %}{% for alias in aliases %}"{{ alias.1 }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %}{% if not common_names %}{% else %},{% endif %}{% for alias in common_names %}"{{ alias.1 }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
-
-// Alias lookup, alias index for gene
-var aliases = { {% for alias in aliases %}"{{ alias.1 }}":"{{ alias.0 }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %}{% if not common_names %}{% else %},{% endif %}{% for alias in common_names %}"{{ alias.1 }}":"{{ alias.0 }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %} }
-
-function run_search(gene) {
-   // Case 1: it's an alias, look up the gene
-   if (gene in aliases) {
-     document.location = "/datasets/gene/similar/" + aliases[gene];
-
-   // Case 2: return the gene
-   } else {
-     document.location = "/datasets/gene/similar/" + gene;
-   }
-}
-
-// Selecting a gene from the typehead list
-$('input.typeahead').on('typeahead:selected', function(event, selection) {
-     $("#fade").show();
-     var gene = $(this).val();
-     run_search(gene)
-});
-
-
-// Pressing enter in the box
-$(document).on("keypress", "input.typeahead", function(e){
-    if(e.which == 13){
-        $("#fade").show();
-        var gene = $(this).val();
-        run_search(gene)
-    }
-});
-
 function download(url){
     document.location = "#";
     $("#fade").show()
@@ -177,26 +59,8 @@ function download(url){
 $(document).ready(function(){
  
     $(".dataset_similar_download").click(function(){
-        download("{% url 'datasets:download_sims' gene.systematic_name %}")
+        download("{% url 'genes:download_sims' gene.systematic_name %}")
     })
-
-    // Constructing the suggestion engine
-    var genes = new Bloodhound({
-        datumTokenizer: Bloodhound.tokenizers.whitespace,
-        queryTokenizer: Bloodhound.tokenizers.whitespace,
-        local: gene_names
-    });
-    
-    // Initializing the typeahead
-    $('.typeahead').typeahead({      
-        highlight: true,
-        hint: true        
-      }, {
-      name: 'genes',
-      limit: 100,
-      source: genes
-    });
-
     {% if gene %}$("#gene-name").val("{{ gene.systematic_name }}")
     $("#similar_table").DataTable({"pageLength": 100,  "order": [[ 2, "asc" ]], "language": {"search": "Filter:"}});{% endif %}
 });

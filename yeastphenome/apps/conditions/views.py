@@ -33,7 +33,10 @@ def index(request):
     queryset = []
     count = None
     taglist = []
-    links = [{"url": reverse("conditions:index"), "name": "Condition Explorer"}]
+    links = [
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("conditions:index"), "name": "Conditions"},
+    ]
     for key in [
         "pubchem_name",
         "other_name",
@@ -111,7 +114,8 @@ class ConditiontypeDetailView(generic.DetailView, RatelimitMixin):
         context["id"] = context["object"].id
         context["active"] = "explorer"
         context["links"] = [
-            {"url": reverse("conditions:index"), "name": "Condition Explorer"},
+            {"url": reverse("common:explorer"), "name": "Explore data"},
+            {"url": reverse("conditions:index"), "name": "Conditions"},
             {
                 "url": reverse("conditions:detail", args=[context["object"].id]),
                 "name": "Condition (%s)" % context["object"].name,

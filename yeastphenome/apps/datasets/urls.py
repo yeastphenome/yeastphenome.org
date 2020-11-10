@@ -7,27 +7,10 @@ urlpatterns = [
     path(
         "collection/<int:collection_id>/", views.data_explorer, name="collection_detail"
     ),
-    path("genes", views.gene_explorer, name="genes"),
-    path("genes/", views.gene_explorer, name="genes"),
-    path("genes/detail/<str:query>/", views.gene_detail, name="gene-detail"),
-    path("download/<str:systematic_name>/", views.download_all, name="download_gene"),
     path(
         "observable/<str:observable_id>/",
         views.download_observable_datasets,
         name="download_observable_datasets",
-    ),
-    path(
-        "gene/download/sims/<str:systematic_name>/",
-        views.download_sims,
-        name="download_sims",
-    ),
-    path(
-        "gene/similar/<str:systematic_name>/", views.similar_genes, name="similar_genes"
-    ),
-    path(
-        "gene/datasets/<str:systematic_name>/",
-        views.gene_datasets,
-        name="gene_datasets",
     ),
     path(
         "table/<int:dataset_id>/scores/",

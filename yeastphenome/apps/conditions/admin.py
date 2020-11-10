@@ -6,7 +6,6 @@ from django.utils.safestring import mark_safe
 
 import re
 
-from pubchempy import Compound
 from libchebipy import ChebiEntity
 
 from yeastphenome.apps.conditions.models import (
@@ -153,6 +152,9 @@ class ConditionTypeAdmin(ImprovedModelAdmin):
     inlines = (ConditionInline,)
 
     def save_model(self, request, obj, form, change):
+        # Moved from global import, causes multiple warnings / errors per worker
+        from pubchempy import Compound
+
         if form.cleaned_data["chebi_id"]:
             chebi_id = form.cleaned_data["chebi_id"]
             chebi_comb = ChebiEntity("CHEBI:" + str(chebi_id))

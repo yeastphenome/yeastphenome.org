@@ -26,6 +26,7 @@
    text-decoration: none !important;
 }
 
+
 .dropdown-toggle {
     font-weight: 600;
 }
@@ -80,7 +81,7 @@
         <li class="dropdown">
           <a {% if active == "explorer"%}style="background-color:rgb(177, 103, 24)"{% endif %} role="button" aria-haspopup="true" data-toggle="dropdown" aria-expanded="false">Explore Data <i class="fas fa-caret-down" aria-hidden="true"></i></a>
           <ul class="dropdown-menu dropdown-menu-left">
-              <li><a href="{% url 'datasets:genes' %}">Genes</a></li>
+              <li><a href="{% url 'genes:index' %}">Genes</a></li>
               <li><a href="{% url 'datasets:index' %}">Datasets</a></li>
               <li><a href="{% url 'papers:all' %}">Papers</a></li>            
               <li><a href="{% url 'phenotypes:index' %}">Phenotypes</a></li>
@@ -117,7 +118,7 @@
         </li>
       </ul>
       {% if links %}<ul class="nav navbar-nav navbar-left global-navbar second-navbar">
-        {% for link in links %}<li {% if forloop.first %}style="padding-left:110px"{% endif %}><a href="{% if forloop.last %}{% else %}{{ link.url }}{% endif %}" {% if forloop.last %}class="nav-link waves-effect second-nav-link" style="text-decoration:none; cursor: default;"{% else %}class="nav-link waves-effect second-nav-link" style="text-decoration:none"{% endif %}>{{ link.name }}{% if forloop.last %}{% else %}<span style="padding-left:20px"> <i class="fas fa-chevron-right"></i> {% endif %}</span>
+        {% for link in links %}<li {% if forloop.first %}style="padding-left:110px"{% endif %}><a href="{% if forloop.last %}{% else %}{{ link.url }}{% endif %}" {% if forloop.last %}class="nav-link waves-effect second-nav-link" style="text-decoration:none; cursor: default;"{% else %}class="nav-link waves-effect" style="text-decoration:none"{% endif %}>{{ link.name }}{% if forloop.last %}{% else %}<img style="padding-left:25px" height="20px" src="{% static 'images/icons/right-arrow.png' %}">{% endif %}</span>
               <span class="clearfix d-none d-sm-inline-block"></span></a>
         </li>{% endfor %}
       </ul>{% endif %}

@@ -24,7 +24,10 @@ def index(request):
     queryset = []
     count = None
     taglist = []
-    links = [{"url": reverse("phenotypes:index"), "name": "Phenotype Explorer"}]
+    links = [
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("phenotypes:index"), "name": "Phenotypes"},
+    ]
     for key in [
         "observable",
         "tag",
@@ -69,8 +72,16 @@ def phenotypes_by_tag(request, tag_id):
         tag = Tag.objects.get(id=tag_id)
     except Tag.DoesNotExist:
         raise Http404
-
-    return render(request, "phenotypes/tag.html", {"tag": tag})
+    links = [
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("phenotypes:index"), "name": "Phenotypes"},
+        {
+            "url": reverse("phenotypes:tag", args=[tag.id]),
+            "name": "Tag: %s" % tag.name,
+        },
+    ]
+    context = {"tag": tag, "links": links}
+    return render(request, "phenotypes/tag.html", context)
 
 
 class ObservableDetailView(generic.DetailView):
@@ -82,10 +93,11 @@ class ObservableDetailView(generic.DetailView):
         context["DOWNLOAD_PREFIX"] = settings.DOWNLOAD_PREFIX
         context["USER_AUTH"] = self.request.user.is_authenticated
         context["links"] = [
-            {"url": reverse("phenotypes:index"), "name": "Phenotype Explorer"},
+            {"url": reverse("common:explorer"), "name": "Explore data"},
+            {"url": reverse("phenotypes:index"), "name": "Phenotypes"},
             {
                 "url": reverse("phenotypes:detail", args=[context["object"].id]),
-                "name": "Phenotype %s" % context["object"].id,
+                "name": "Mitophagy",
             },
         ]
 

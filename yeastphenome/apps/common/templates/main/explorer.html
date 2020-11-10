@@ -1,0 +1,52 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+{% block content %}
+    <div class="col-md-12">
+        <div class="row">
+            <h1>Explore data</h1>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="box" style="height:200px">
+                    <p><a class="box-title" href="{% url 'datasets:index' %}">Datasets</a></p>
+                    <p>Search across more than 16K datasets to find data based on paper, phenotype, medium, or condition metrics. You can add one or more datasets to your <a href="{% url 'common:view_cart' %}">download cart</a> to generate a custom download, or navigate to papers to download entire sets. For eat dataset, you can then view dataset metadata, similar datasets, along with phenotypic scores.</p>
+                </div>
+                <hr>
+                <div class="box" style="height:200px">
+                    <p><a class="box-title" href="{% url 'genes:index' %}">Genes</a></p>
+                    <p>Search across over 6K yeast genes, either by a name, alias, or other identifier. For each gene, 
+                       you can then view metadata, most and least similar genes based on other datasets, and phenotypic scores.</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="box" style="height:200px">
+                    <p><a class="box-title" href="{% url 'phenotypes:index' %}">Phenotypes</a></p>
+                    <p>Search almost 7K phenotypes described by over 500 observable features. Query based on conditions, reporters used, and papers that published them.</p>
+                </div>
+                <hr>
+                <div class="box" style="height:200px">
+                    <p><a class="box-title" href="{% url 'conditions:index' %}">Conditions</a></p>
+                    <p>A condition can encompass everything from temperature to growth phase, and we encourage you to use the <a href="{% url 'conditions:browse'%}">conditions browser</a> to interactively explore condition counts across papers or datasets. For a search query, you can again search across phenotypes, tags, doses, and names.</p></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="box" style="height:200px">
+                    <p><a class="box-title" href="{% url 'papers:all' %}">Papers</a></p>
+                    <p>Finally, you might just be interested in browsing literature first. The paper search queries across author names, phenotypes, and conditions to give you a list of matching papers to explore. From the detail view of a paper you can find the abstract, other paper metadata, and associated datasets.</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="box" style="height:200px">
+                    <p><a class="box-title" href="{% url 'common:stats' %}">Statistics</a></p>
+                    <p>Curious about the overall contents of the database? You might be interested to browse the statistics page, which covers everything from counts for different entities to graphs for papers, phenotypes, environments, and datasets.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div></div></div>
+{% endblock %}

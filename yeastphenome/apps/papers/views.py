@@ -36,7 +36,10 @@ def paper_explorer(request, year=None):
     queryset = []
     count = None
     taglist = []
-    links = [{"url": reverse("papers:all"), "name": "Paper Explorer"}]
+    links = [
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("papers:all"), "name": "Papers"},
+    ]
     for key in [
         "conditionset",
         "phenotype",
@@ -92,7 +95,8 @@ class PaperDetailView(generic.DetailView, RatelimitMixin):
         paper = context["object"]
 
         context["links"] = [
-            {"url": reverse("papers:all"), "name": "Paper Explorer"},
+            {"url": reverse("common:explorer"), "name": "Explore data"},
+            {"url": reverse("papers:all"), "name": "Papers"},
             {
                 "url": reverse("papers:detail", args=[paper.id]),
                 "name": "Paper %s" % paper.id,

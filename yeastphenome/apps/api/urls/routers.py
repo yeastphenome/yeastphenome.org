@@ -19,6 +19,11 @@ urlpatterns = [
         name="observable_datasets",
     ),
     path(
+        "genes/datasets/<str:systematic_name>/",
+        views.GetGeneDatasets.as_view(),
+        name="gene_datasets",
+    ),
+    path(
         "genes/<str:systematic_name>/<int:N>/similar", views.GetSimilarGenes.as_view()
     ),
     path(

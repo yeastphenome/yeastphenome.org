@@ -8,6 +8,7 @@ urlpatterns = [
     path("about/", views.about, name="about"),
     path("stats/", views.stats, name="stats"),
     path("faq/", views.faq, name="faq"),
+    path("explorer/", views.explorer, name="explorer"),
     path("contributors/", views.contributors, name="contributors"),
     path("cart/", views.view_cart, name="view_cart"),
     path("cart/add/<str:dataset_id>/", views.add_to_cart, name="add_to_cart"),
