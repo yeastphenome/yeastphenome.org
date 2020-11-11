@@ -12,7 +12,7 @@
             </tr>{% endif %}
             {% if object.tags.count > 0 %}<tr>
                 <th scope="row">Tags</th>
-                <td>{% for tag in object.tags.all %}<a href="{% url 'phenotypes:tag' tag.id %}">{{ tag.name }}</a>{% if forloop.last %}{% else %}, {% endif %}{% endfor %}</td>
+                <td><a href="{% url 'phenotypes:tags' object.id %}">all</a>, {% for tag in object.tags.all %}<a href="{% url 'phenotypes:tag' tag.id %}">{{ tag.name }}</a>{% if forloop.last %}{% else %}, {% endif %}{% endfor %}</td>
             </tr>{% endif %}
             {% if similar.count > 0 %}<tr>
                 <th scope="row">Similar Phenotypes (sharing >=3 tags)</th>

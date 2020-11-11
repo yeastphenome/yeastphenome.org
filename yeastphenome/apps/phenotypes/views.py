@@ -84,6 +84,34 @@ def phenotypes_by_tag(request, tag_id):
     return render(request, "phenotypes/tag.html", context)
 
 
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def phenotypes_by_tags(request, phenotype_id):
+    """phenotypes by tags looks up an observable, and returns all phenotypes that
+    have all tags
+    """
+    try:
+        pheno = Observable.objects.get(id=phenotype_id)
+    except Observable.DoesNotExist:
+        raise Http404
+    tag_names = ",".join([x.name for x in pheno.tags.all()])
+
+    # Filter down observables to those with all tags
+    queryset = Observable.objects.all()
+    for tag in pheno.tags.all():
+        queryset = queryset.filter(tags__name=tag.name)
+
+    links = [
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("phenotypes:index"), "name": "Phenotypes"},
+        {
+            "url": reverse("phenotypes:tag", args=[tag.id]),
+            "name": "Tags: %s" % tag_names,
+        },
+    ]
+    context = {"links": links, "names": tag_names, "observables": queryset}
+    return render(request, "phenotypes/tags.html", context)
+
+
 class ObservableDetailView(generic.DetailView):
     model = Observable
     template_name = "phenotypes/detail.html"
