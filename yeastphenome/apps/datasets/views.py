@@ -556,7 +556,7 @@ def download_observable_datasets(request, observable_id):
     except Observable.DoesNotExist:
         raise Http404
 
-    filename = "%s_observable_datasets_%s.txt" % (
+    filename = "%s_observable_datasets_list_%s.txt" % (
         settings.DOWNLOAD_PREFIX,
         observable.name,
     )
@@ -617,7 +617,6 @@ def download_all(request, systematic_name=None):
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download(request):
-
     file_header = ""
 
     # View passes: ?papersTable_length=10&14=on&26=on

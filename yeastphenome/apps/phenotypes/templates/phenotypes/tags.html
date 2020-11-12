@@ -1,0 +1,40 @@
+{% extends "base/wide.html" %}
+{% load static %}
+{% block title %}{{ class_name|capfirst }} / Datasets / {{ SITE_NAME }}{% endblock %}
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-xs-12">
+            <h1>Phenotype tags: {{ names }}</h1>
+	    <table style="padding-top:20px" id="papersTable" class="table table-condensed table-hover" width="100%">
+		<thead><tr>
+		    <th>Name</th>
+		    <th>Phenotypes</th>
+		    <th>Papers</th>
+                </tr>
+		</thead>
+		<tbody id="papersTableBody">
+		{% for observable in observables %}<tr>
+		    <td>{{ observable.name }}</a></td>
+		    <td>{% for p in observable.phenotypes %}<a href="{% url 'phenotypes:detail' p.id %}">{{ p }}</a>{% if forloop.last %}{% else %}, {% endif %}{% endfor %}</td>
+		    <td>{% for p in observable.papers %}<a href="{% url 'papers:detail' p.id %}">{{ p }}</a>{% if forloop.last %}{% else %}, {% endif %}{% endfor %}</td>
+          	</tr>{% endfor %}
+		</tbody>
+	    </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+$(document).ready(function(){
+  $("#papersTable").DataTable({"pageLength": 10,  
+        "language": {"search": "Filter:"} 
+  });
+  $('#papersTable').DataTable().order([4, 'desc']).draw();
+
+  $(".dataTables_length").html("<label>Show <select name=\"papersTable_length\" aria-controls=\"papersTable\" class=\"form-control input-sm\"><option value=\"10\">10</option><option value=\"25\">25</option><option value=\"50\">50</option><option value=\"100\">100</option></select> entries out of {{ tag.conditiontype.count }} </label>")
+});
+</script>
+{% endblock %}

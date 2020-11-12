@@ -67,6 +67,7 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
             <div class="col-md-2">
                 <h1></h1>
                 <a href="{% url 'conditions:browse' %}"><button class="btn btn-default" type="button">Browse</button></a>
+                <a href="{% url 'conditions:tags' %}"><button class="btn btn-default" type="button">Tags</button></a>
             </div>
         </div>
         <div class="row">
@@ -115,9 +116,9 @@ var input = document.querySelector('input[name=tags]'),
         placeholder: "hydroxyurea, growth, temperature",
         dropdown : {
             enabled: 1,            // show suggestion after 1 typed character
-            fuzzySearch: false,    // match only suggestions that starts with the typed characters
+            fuzzySearch: true,    // match only suggestions that starts with the typed characters
             position: 'text',      // position suggestions list next to typed text
-            caseSensitive: true,   // allow adding duplicate items if their case is different
+            caseSensitive: false,   // allow adding duplicate items if their case is different
         },
         templates: {
             dropdownItemNoMatch: function(data) {

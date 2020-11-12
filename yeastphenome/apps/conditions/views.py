@@ -3,7 +3,7 @@ import re
 from django.db import models
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.shortcuts import reverse, render
+from django.shortcuts import reverse, render, redirect
 from django.views import generic
 from django.http import Http404
 
@@ -74,6 +74,18 @@ def index(request):
             "active": "explorer",
         },
     )
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def redirect_index(request):
+    return redirect("conditions:index")
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def tag_browser(request):
+    """View a listing of tags"""
+    tags = Tag.objects.all()
+    return render(request, "conditions/tag_browser.html", {"tags": tags})
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)

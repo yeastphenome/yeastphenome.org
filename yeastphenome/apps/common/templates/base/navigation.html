@@ -24,8 +24,11 @@
 
 .second-nav-link {
    text-decoration: none !important;
+   color: white;
+   font-weight: 600;
+   padding-top: 15px;
+   padding-bottom: 15px;
 }
-
 
 .dropdown-toggle {
     font-weight: 600;
@@ -118,9 +121,10 @@
         </li>
       </ul>
       {% if links %}<ul class="nav navbar-nav navbar-left global-navbar second-navbar">
-        {% for link in links %}<li {% if forloop.first %}style="padding-left:110px"{% endif %}><a href="{% if forloop.last %}{% else %}{{ link.url }}{% endif %}" {% if forloop.last %}class="nav-link waves-effect second-nav-link" style="text-decoration:none; cursor: default;"{% else %}class="nav-link waves-effect" style="text-decoration:none"{% endif %}>{{ link.name }}{% if forloop.last %}{% else %}<img style="padding-left:25px" height="20px" src="{% static 'images/icons/right-arrow.png' %}">{% endif %}</span>
-              <span class="clearfix d-none d-sm-inline-block"></span></a>
-        </li>{% endfor %}
+        {% for link in links %}{% if forloop.first %}<li style="padding-left:110px"><a href="{{ link.url }}" class="nav-link waves-effect" style="text-decoration:none">{{ link.name }}<img style="padding-left:25px" src="{% static 'images/icons/right-arrow.png' %}" height="20px"><span class="clearfix d-none d-sm-inline-block"></span></a></li>
+        {% elif forloop.last %}<li class="nav-link waves-effect second-nav-link" style="text-decoration:none; cursor: default;">{{ link.name }}<span class="clearfix d-none d-sm-inline-block"></span></li>
+      {% else %}<li><a href="{{ link.url }}" class="nav-link waves-effect" style="text-decoration:none">{{ link.name }}<img style="padding-left:25px" src="{% static 'images/icons/right-arrow.png' %}" height="20px"><span class="clearfix d-none d-sm-inline-block"></span></a></li>{% endif %}
+      {% endfor %}
       </ul>{% endif %}
     </div>
   </div>

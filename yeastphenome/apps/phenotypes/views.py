@@ -1,7 +1,7 @@
 from django.core.paginator import Paginator
 from django.conf import settings
 from django.views import generic
-from django.shortcuts import render, reverse
+from django.shortcuts import render, reverse, redirect
 from django.db import models
 from django.http import Http404
 
@@ -15,6 +15,11 @@ from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
     VIEW_RATE_LIMIT_BLOCK as rl_block,
 )
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def redirect_index(request):
+    return redirect("phenotypes:index")
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)

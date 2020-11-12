@@ -99,7 +99,7 @@ class PaperDetailView(generic.DetailView, RatelimitMixin):
             {"url": reverse("papers:all"), "name": "Papers"},
             {
                 "url": reverse("papers:detail", args=[paper.id]),
-                "name": "Paper %s" % paper.id,
+                "name": str(paper),
             },
         ]
 

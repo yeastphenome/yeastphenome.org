@@ -115,9 +115,9 @@ var input = document.querySelector('input[name=tags]'),
         placeholder: "E.g.: mitophagy, mitochondria, GFP",
         dropdown : {
             enabled: 1,            // show suggestion after 1 typed character
-            fuzzySearch: false,    // match only suggestions that starts with the typed characters
+            fuzzySearch: true,    // match only suggestions that starts with the typed characters
             position: 'text',      // position suggestions list next to typed text
-            caseSensitive: true,   // allow adding duplicate items if their case is different
+            caseSensitive: false,   // allow adding duplicate items if their case is different
         },
         templates: {
             dropdownItemNoMatch: function(data) {
