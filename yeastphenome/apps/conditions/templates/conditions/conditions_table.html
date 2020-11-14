@@ -28,10 +28,6 @@
 		    <a href="?page={{ queryset.previous_page_number }}">previous</a>
 		{% endif %}
 
-		<span class="current" style="margin-right:30px; margin-left:30px">
-		    Page {{ queryset.number }} of {{ queryset.paginator.num_pages }}.
-		</span>
-
 		{% if queryset.has_next %}<span style="float:right">
 		    <a href="?page={{ queryset.next_page_number }}">next</a>
 		    <a href="?page={{ queryset.paginator.num_pages }}">last &raquo;</a>

@@ -18,9 +18,9 @@
         <thead>
         <!--<td id="first_column" class="no-sort" style="text-align: left;"><input type="checkbox" onClick="toggle(this)"></td>-->
         <th>Dataset</th>
-        <th>Paper</th>
-        <th>Phenotype</th>
-        <th>Condition</th>
+        {% if module == "papers" %}{% else %}<th>Paper</th>{% endif %}
+        {% if module == "phenotypes" %}{% else %}<th>Phenotype</th>{% endif %}
+        {% if module == "conditions" %}{% else %}<th>Condition</th>{% endif %}
         <th>Medium</th>
         <th>Collection</th>
         <th>Data</th>

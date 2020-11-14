@@ -50,7 +50,7 @@ tr.highlight {
 {% else %}
 <div class="row">
     <div class="col-md-12">
-      <h1>Phenotypic Scores</h1>
+      {% if hide_title == "yes" %}{% else %}<h1>Phenotypic Scores</h1>{% endif %}
     <table id="scores_table" class="tablesorter table table-striped" width="100%">
         <thead>
         <tr>

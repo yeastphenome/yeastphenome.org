@@ -32,7 +32,10 @@ import json
 
 # Observable Datasets
 class GetObservableDatasets(RatelimitMixin, APIView):
-    """Given an observable, serialize the datasets for a DataTable"""
+    """Given an observable, serialize the datasets for a DataTable. This
+    is a server side rendering of the datasets table, customized for a phenotype
+    to not include the phenotype column.
+    """
 
     ratelimit_key = "ip"
     ratelimit_rate = settings.VIEW_RATE_LIMIT
@@ -114,7 +117,6 @@ class GetObservableDatasets(RatelimitMixin, APIView):
                 [
                     "<a href='/datasets/%s'>%s</a>" % (dataset.id, dataset.id),
                     str(dataset.paper),
-                    getattr(dataset.phenotype, "name", ""),
                     dataset.phenotype.reporter or "",
                     dataset.conditionset.display_name,
                     getattr(dataset.medium, "display_name", ""),

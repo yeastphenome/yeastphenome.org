@@ -85,7 +85,7 @@ def phenotypes_by_tag(request, tag_id):
             "name": "Tag: %s" % tag.name,
         },
     ]
-    context = {"tag": tag, "links": links}
+    context = {"tag": tag, "links": links, "module": "phenotypes"}
     return render(request, "phenotypes/tag.html", context)
 
 
@@ -125,6 +125,7 @@ class ObservableDetailView(generic.DetailView):
         context = super(ObservableDetailView, self).get_context_data(**kwargs)
         context["DOWNLOAD_PREFIX"] = settings.DOWNLOAD_PREFIX
         context["USER_AUTH"] = self.request.user.is_authenticated
+        context["module"] = "phenotypes"
         context["links"] = [
             {"url": reverse("common:explorer"), "name": "Explore data"},
             {"url": reverse("phenotypes:index"), "name": "Phenotypes"},

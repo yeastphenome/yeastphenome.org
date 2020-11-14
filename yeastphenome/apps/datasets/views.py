@@ -1,5 +1,5 @@
 from django.db.models import Q
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, reverse
 from django.conf import settings
@@ -25,7 +25,11 @@ from yeastphenome.apps.datasets.search import (
     run_search_tag_query,
     run_gene_search_tag_query,
 )
-from yeastphenome.apps.datasets.utils import get_gene_metadata, send_file
+from yeastphenome.apps.datasets.utils import (
+    get_gene_metadata,
+    send_file,
+    prepare_dataset_download,
+)
 from yeastphenome.apps.conditions.models import ConditionType
 from yeastphenome.apps.phenotypes.models import Observable
 
@@ -83,7 +87,7 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
             {"url": reverse("datasets:index"), "name": "Datasets"},
             {
                 "url": reverse("datasets:detail", args=[context["dataset"].id]),
-                "name": "Dataset %s" % context["dataset"].id,
+                "name": context["dataset"].name,
             },
         ]
 
@@ -116,7 +120,7 @@ def dataset_plot(request, dataset_id):
         {"url": reverse("datasets:index"), "name": "Datasets"},
         {
             "url": reverse("datasets:detail", args=[dataset.id]),
-            "name": "Dataset %s" % dataset.id,
+            "name": dataset.name,
         },
         {
             "url": reverse("datasets:dataset_plot", args=[dataset.id]),
@@ -331,7 +335,7 @@ def similar_dataset_table(request, dataset_id):
         {"url": reverse("datasets:index"), "name": "Datasets"},
         {
             "url": reverse("datasets:detail", args=[dataset.id]),
-            "name": "Dataset %s" % dataset.id,
+            "name": dataset.name,
         },
         {
             "url": reverse("datasets:similar_dataset_table", args=[dataset.id]),
@@ -386,6 +390,10 @@ def gene_datasets(request, systematic_name):
 
 
 # Datasets Explorer (also the datasets index)
+@never_cache
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def data_explorer_redirect(request, query):
+    return redirect("%s?query=%s" % (reverse("datasets:index"), query))
 
 
 @never_cache
@@ -547,7 +555,7 @@ def download_dataset_sims(request, dataset_id):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def download_observable_datasets(request, observable_id):
+def download_observable_datasets_list(request, observable_id):
     """Download all datasets associated with an observable"""
     import pandas
 
@@ -604,7 +612,7 @@ def download_all(request, systematic_name=None):
     filename = (
         "%s_datasets_%s.txt" % (settings.DOWNLOAD_PREFIX, systematic_name)
         if systematic_name
-        else "%s_datasets_%s.txt" % settings.DOWNLOAD_PREFIX
+        else "%s_datasets.txt" % settings.DOWNLOAD_PREFIX
     )
 
     df = pandas.DataFrame(datasets)
@@ -670,6 +678,30 @@ def download(request):
     )
 
     return response
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def download_observable_datasets(request, observable_id):
+    """Download all datasets associated with an observable"""
+
+    try:
+        observable = Observable.objects.get(id=observable_id)
+    except Observable.DoesNotExist:
+        raise Http404
+
+    filename = "%s_observable_datasets_%s.txt" % (
+        settings.DOWNLOAD_PREFIX,
+        observable.name,
+    )
+
+    # Returns a pandas dataframe to download from list of dataset ids
+    df = prepare_dataset_download(
+        observable.datasets().filter(data_source__release=True)
+    )
+    exported_file = os.path.join(tempfile.gettempdir(), filename)
+    if not os.path.exists(exported_file):
+        df.to_csv(exported_file, sep="\t", index=None)
+    return send_file(exported_file)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)

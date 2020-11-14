@@ -10,11 +10,6 @@ urlpatterns = [
     path("contributors/", views.ContributorsListView.as_view(), name="contributors"),
     # Data
     path(
-        "<int:paper_id>/%s_<int:paper_pmid>.zip" % settings.DOWNLOAD_PREFIX,
-        views.download_zip,
-        name="download_zip",
-    ),
-    path(
         "<int:paper_id>/%s_<int:pmid>_datasets_list.txt" % settings.DOWNLOAD_PREFIX,
         views.paper_datasets,
         name="paper_datasets",

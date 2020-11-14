@@ -31,18 +31,18 @@ urlpatterns = [
         views.GetSimilarGenes.as_view(),
     ),
     path(
-        "search/datasets/explorer",
+        "search/datasets/explore",
         views.DatasetsSearch.as_view(),
         name="datasets_search",
     ),
     path(
-        "search/conditions/explorer",
+        "search/conditions/explorr",
         views.ConditionsSearch.as_view(),
         name="conditions_search",
     ),
-    path("search/papers/explorer", views.PapersSearch.as_view(), name="papers_search"),
+    path("search/papers/explore", views.PapersSearch.as_view(), name="papers_search"),
     path(
-        "search/phenotypes/explorer",
+        "search/phenotypes/explore",
         views.PhenotypesSearch.as_view(),
         name="phenotypes_search",
     ),

@@ -185,4 +185,4 @@ def run_search_tag_query(query=None, taglist=None):
             | Q(dataset__conditionset__systematic_name__iregex=queries)
         )
 
-    return queryset
+    return queryset.distinct()
