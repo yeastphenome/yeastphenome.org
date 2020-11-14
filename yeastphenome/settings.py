@@ -216,8 +216,8 @@ STATIC_URL = "/static/"
 MEDIA_ROOT = "data"
 MEDIA_URL = "/data/"
 
-# Download prefix for libChEBIpy
-DOWNLOAD_PREFIX = os.environ.get("YEASTPHENOME_DOWNLOAD_PREFIX", MEDIA_ROOT)
+# Download prefix for filenames
+DOWNLOAD_PREFIX = os.environ.get("YEASTPHENOME_DOWNLOAD_PREFIX", "YeastPhenome")
 
 # Rate Limiting
 

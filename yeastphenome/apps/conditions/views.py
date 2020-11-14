@@ -3,7 +3,7 @@ import re
 from django.db import models
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.shortcuts import reverse, render
+from django.shortcuts import reverse, render, redirect
 from django.views import generic
 from django.http import Http404
 
@@ -33,7 +33,10 @@ def index(request):
     queryset = []
     count = None
     taglist = []
-    links = [{"url": reverse("conditions:index"), "name": "Condition Explorer"}]
+    links = [
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("conditions:index"), "name": "Conditions"},
+    ]
     for key in [
         "pubchem_name",
         "other_name",
@@ -74,6 +77,25 @@ def index(request):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def redirect_index(request):
+    return redirect("conditions:index")
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def tag_browser(request):
+    """View a listing of tags"""
+    tags = Tag.objects.all()
+    links = [
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("conditions:index"), "name": "Conditions"},
+        {"url": reverse("conditions:index"), "name": "Tags"},
+    ]
+    return render(
+        request, "conditions/tag_browser.html", {"tags": tags, "links": links}
+    )
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def browse(request):
     """Browse dataest by condition names (and size by count)"""
     qs = (
@@ -110,11 +132,13 @@ class ConditiontypeDetailView(generic.DetailView, RatelimitMixin):
         context["papers"] = context["object"].datasets
         context["id"] = context["object"].id
         context["active"] = "explorer"
+        context["module"] = "conditions"
         context["links"] = [
-            {"url": reverse("conditions:index"), "name": "Condition Explorer"},
+            {"url": reverse("common:explorer"), "name": "Explore data"},
+            {"url": reverse("conditions:index"), "name": "Conditions"},
             {
                 "url": reverse("conditions:detail", args=[context["object"].id]),
-                "name": "Condition (%s)" % context["object"].name,
+                "name": context["object"].name,
             },
         ]
         return context
@@ -143,6 +167,7 @@ def conditionclass(request, class_id):
         "conditions/class.html",
         {
             "id": class_id,
+            "module": "conditions",
             "class_name": class_name,
             "conditiontypes": conditiontypes,
             "papers": datasets,
@@ -175,6 +200,7 @@ class MediumDetailView(generic.DetailView, RatelimitMixin):
         context["USER_AUTH"] = self.request.user.is_authenticated
         context["papers"] = context["object"].datasets
         context["id"] = context["object"].id
+        context["module"] = "conditions"
         return context
 
 

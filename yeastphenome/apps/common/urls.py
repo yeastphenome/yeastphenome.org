@@ -1,4 +1,6 @@
+from django.views.generic.base import TemplateView
 from django.urls import path
+from django.conf.urls import url
 
 from . import views
 from . import graphs
@@ -8,6 +10,7 @@ urlpatterns = [
     path("about/", views.about, name="about"),
     path("stats/", views.stats, name="stats"),
     path("faq/", views.faq, name="faq"),
+    path("explore/", views.explorer, name="explorer"),
     path("contributors/", views.contributors, name="contributors"),
     path("cart/", views.view_cart, name="view_cart"),
     path("cart/add/<str:dataset_id>/", views.add_to_cart, name="add_to_cart"),
@@ -30,6 +33,12 @@ urlpatterns = [
     path("getting-started/advanced/", views.advanced, name="advanced"),
     path("getting-started/tutorials/", views.tutorials, name="tutorials"),
     path("_ah/warmup/", views.warmup, name="warmup"),
+    url(
+        r"^robots\.txt/$",
+        TemplateView.as_view(
+            template_name="base/robots.txt", content_type="text/plain"
+        ),
+    ),
 ]
 
 # Graphs

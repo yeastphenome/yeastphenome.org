@@ -8,6 +8,7 @@ from yeastphenome.apps.common import urls as common_urls
 from yeastphenome.apps.phenotypes import urls as phenotypes_urls
 from yeastphenome.apps.conditions import urls as conditions_urls
 from yeastphenome.apps.datasets import urls as datasets_urls
+from yeastphenome.apps.datasets import gene_urls
 from yeastphenome.apps.api import urls as api_urls
 
 admin.autodiscover()
@@ -20,6 +21,7 @@ urlpatterns = [
     url(r"^phenotypes/", include(phenotypes_urls, namespace="phenotypes")),
     url(r"^conditions/", include(conditions_urls, namespace="conditions")),
     url(r"^datasets/", include(datasets_urls, namespace="datasets")),
+    url(r"^genes/", include(gene_urls, namespace="genes")),
     # This one papers view should not be nested under papers/ prefix
     url(
         r"^contributors/",

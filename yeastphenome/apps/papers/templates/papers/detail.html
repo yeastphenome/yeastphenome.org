@@ -35,7 +35,7 @@
             </tr>
             <tr>
                 <th scope="row">Authors</th>
-                <td>{{ authors|join_and_more:1000 }}</td>
+                <td>{% for author in authors %}{% if forloop.first %}<a href="/papers/?authors={{ object.first_author }}">{% elif forloop.last %}<a href="/papers/?authors={{ object.last_author }}">{% endif %}{{ author }}{% if forloop.first or forloop.last %}</a>{% endif %}{% if forloop.last %}{% else %}, {% endif %}{% endfor %}</td>
             </tr>
             <tr>
                 <th scope="row">Abstract</th>
@@ -55,8 +55,11 @@
                 <th scope="row">Notes</th>
                 <td>{{ object.notes }}</td>
             </tr>{% endif %}
+            <tr>
+                <th scope="row">Raw data & curation code</th>
+                <td><a target="_blank" title="This repository is private and will soon be made public." href="https://github.com/baryshnikova-lab/yeastphenome-data/tree/master/Datasets/17785683">Dataset on GitHub</a> (<i>Coming soon!</i>)</td>
+            </tr>
         </table>
-        <div class="pull-right">{% include "papers/zip.html" %}</div>
     </div>
 </div>
 <hr>

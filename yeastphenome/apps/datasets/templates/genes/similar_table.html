@@ -7,5 +7,5 @@
         </tr>
         </thead>
         <tbody>
-{% for sim in scores %}<tr><td><a href="/datasets/genes?q={% if sim.gene1 == gene %}{{ sim.gene2.systematic_name }}{% else %}{{ sim.gene1.systematic_name }}{% endif %}">{% if sim.gene1 == gene %}{{ sim.gene2.common_name }}/{{ sim.gene2.systematic_name }}{% else %}{{ sim.gene1.common_name }}/{{ sim.gene1.systematic_name }}{% endif %}</a></td><td>{{ sim.score }}</td><td>{{ sim.pvalue|stringformat:".2e" }}</td></tr>{% endfor %}
+{% for sim in scores %}<tr><td><a href="/genes/{% if sim.gene1 == gene %}{{ sim.gene2.systematic_name }}{% else %}{{ sim.gene1.systematic_name }}{% endif %}/">{% if sim.gene1 == gene %}{{ sim.gene2.common_name }}/{{ sim.gene2.systematic_name }}{% else %}{{ sim.gene1.common_name }}/{{ sim.gene1.systematic_name }}{% endif %}</a></td><td>{{ sim.score }}</td><td>{{ sim.pvalue|stringformat:".2e" }}</td></tr>{% endfor %}
       </table>

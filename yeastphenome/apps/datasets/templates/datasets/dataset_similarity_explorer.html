@@ -1,4 +1,4 @@
-{% extends "base/base.html" %}
+{% extends "base/wide.html" %}
 {% load static %}
 {% load my_filters %}
 {% block title %}Dataset Exporer {{ dataset.id }} / {{ SITE_NAME }}{% endblock %}
@@ -97,6 +97,7 @@
 
 <div class="row">
     <div class="col-md-12">
+        <h1>{{ dataset.name }} -- Similar Datasets</h1>
         <div id="dataset_plot"></div>
     </div>
 </div>
@@ -104,7 +105,6 @@
 
 {% if datasets %}<div class="row" style="padding-top:20px" id='similar'>
     <div class="col-md-12">
-      <h1>Similar Datasets to Dataset {{ dataset.id }}</h1>
     <table id="dataset_table" class="tablesorter table table-striped" width="100%">
         <thead>
         <tr>

@@ -24,6 +24,10 @@
 
 .second-nav-link {
    text-decoration: none !important;
+   color: white;
+   font-weight: 600;
+   padding-top: 15px;
+   padding-bottom: 15px;
 }
 
 .dropdown-toggle {
@@ -78,13 +82,13 @@
           </ul>
         </li>
         <li class="dropdown">
-          <a {% if active == "explorer"%}style="background-color:rgb(177, 103, 24)"{% endif %} role="button" aria-haspopup="true" data-toggle="dropdown" aria-expanded="false">Explore Data <i class="fas fa-caret-down" aria-hidden="true"></i></a>
+          <a data-target="{% url 'common:explorer' %}"  href="{% url 'common:explorer' %}" {% if active == "explorer"%}style="background-color:rgb(177, 103, 24)"{% endif %} role="button" aria-haspopup="true" data-toggle="dropdown" aria-expanded="false">Explore Data <i class="fas fa-caret-down" aria-hidden="true"></i></a>
           <ul class="dropdown-menu dropdown-menu-left">
-              <li><a href="{% url 'datasets:genes' %}">Genes</a></li>
+              <li><a href="{% url 'papers:all' %}">Papers</a></li>
               <li><a href="{% url 'datasets:index' %}">Datasets</a></li>
-              <li><a href="{% url 'papers:all' %}">Papers</a></li>            
               <li><a href="{% url 'phenotypes:index' %}">Phenotypes</a></li>
               <li><a href="{% url 'conditions:index' %}">Conditions</a></li>
+              <li><a href="{% url 'genes:index' %}">Genes</a></li>
           </ul>
         {% if HELP_CONTACT_EMAIL %}<li class="visible-xs-block"><a href="mailto:{{ HELP_CONTACT_EMAIL }}"><i class="fas fa-envelope-open"></i> {{ HELP_CONTACT_EMAIL }}</a></li>{% endif %}
         {% if TWITTER_USERNAME %}<li class="visible-xs-block"><a href="https://twitter.com/{{ TWITTER_USERNAME }}" target="_blank" rel="noopener"><i class="fab fa-twitter"></i> @{{ TWITTER_USERNAME }}</a></li>{% endif %}
@@ -116,11 +120,12 @@
           </div>
         </li>
       </ul>
-      {% if links %}<ul class="nav navbar-nav navbar-left global-navbar second-navbar">
-        {% for link in links %}<li {% if forloop.first %}style="padding-left:110px"{% endif %}><a href="{% if forloop.last %}{% else %}{{ link.url }}{% endif %}" {% if forloop.last %}class="nav-link waves-effect second-nav-link" style="text-decoration:none; cursor: default;"{% else %}class="nav-link waves-effect second-nav-link" style="text-decoration:none"{% endif %}>{{ link.name }}{% if forloop.last %}{% else %}<span style="padding-left:20px"> <i class="fas fa-chevron-right"></i> {% endif %}</span>
-              <span class="clearfix d-none d-sm-inline-block"></span></a>
-        </li>{% endfor %}
-      </ul>{% endif %}
+      {% if links %}{% with links_length=links|length %}<ul class="nav navbar-nav navbar-left global-navbar second-navbar">
+        {% if links_length > 1 %}{% for link in links %}{% if forloop.first %}<li style="padding-left:110px"><a href="{{ link.url }}" class="nav-link waves-effect" style="text-decoration:none">{{ link.name }}<img style="padding-left:25px" src="{% static 'images/icons/right-arrow.png' %}" height="20px"><span class="clearfix d-none d-sm-inline-block"></span></a></li>
+        {% elif forloop.last %}<li class="nav-link waves-effect second-nav-link" style="text-decoration:none; cursor: default;">{{ link.name }}<span class="clearfix d-none d-sm-inline-block"></span></li>
+      {% else %}<li><a href="{{ link.url }}" class="nav-link waves-effect" style="text-decoration:none">{{ link.name }}<img style="padding-left:25px" src="{% static 'images/icons/right-arrow.png' %}" height="20px"><span class="clearfix d-none d-sm-inline-block"></span></a></li>{% endif %}
+      {% endfor %}{% endif %}
+      </ul>{% endwith %}{% endif %}
     </div>
   </div>
 </nav>

@@ -6,8 +6,7 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-xs-12">
-            <h1>Phenotype tag: {{ tag.name }}</h1>
-            {% if tag.description %}<p>Description: {{ tag.description }}</p>{% endif %}
+            <h1>Phenotype tags: {{ names }}</h1>
 	    <table style="padding-top:20px" id="papersTable" class="table table-condensed table-hover" width="100%">
 		<thead><tr>
 		    <th>Name</th>
@@ -16,7 +15,7 @@
                 </tr>
 		</thead>
 		<tbody id="papersTableBody">
-		{% for observable in tag.observables %}<tr>
+		{% for observable in observables %}<tr>
 		    <td>{{ observable.name }}</a></td>
 		    <td>{% for p in observable.phenotypes %}<a href="{% url 'phenotypes:detail' p.id %}">{{ p }}</a>{% if forloop.last %}{% else %}, {% endif %}{% endfor %}</td>
 		    <td>{% for p in observable.papers %}<a href="{% url 'papers:detail' p.id %}">{{ p }}</a>{% if forloop.last %}{% else %}, {% endif %}{% endfor %}</td>

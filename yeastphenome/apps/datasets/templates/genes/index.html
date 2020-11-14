@@ -70,7 +70,7 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
             <div class="col-md-12" style="padding-top:20px">
                 <form id="searchform" style="display:none">
                 {% csrf_token %}
-               <input type="text" name="q" class="form-control" placeholder="Systematic ORF name (YJL092W), common name (SRS2), or alias (RADH)" required="" id="id_q">
+               <input type="text" name="q" class="form-control" placeholder="E.g.: YJLR092W, SRS2, RADH" required="" id="id_q">
                 </form>
             </div>
         </div>
@@ -110,12 +110,12 @@ var input = document.querySelector('input[name=tags]'),
         whitelist: tags,
         transformTag: transformTag,
         // backspace: "edit",
-        placeholder: "Systematic ORF name (YJL092W), common name (SRS2), or alias (RADH)",
+        placeholder: "E.g.: YJLR092W, SRS2, RADH",
         dropdown : {
             enabled: 1,            // show suggestion after 1 typed character
-            fuzzySearch: false,    // match only suggestions that starts with the typed characters
+            fuzzySearch: true,     // match only suggestions that starts with the typed characters
             position: 'text',      // position suggestions list next to typed text
-            caseSensitive: true,   // allow adding duplicate items if their case is different
+            caseSensitive: false,   // allow adding duplicate items if their case is different
         },
         templates: {
             dropdownItemNoMatch: function(data) {
@@ -203,7 +203,7 @@ update_placeholder = function() {
 
     // Remove placeholder if there are tags, otherwise reset
     if ($('[name=tags]').val() == ""){
-        $(".tagify__input").attr("data-placeholder", "Systematic ORF name (YJL092W), common name (SRS2), or alias (RADH)");
+        $(".tagify__input").attr("data-placeholder", "E.g.: YJLR092W, SRS2, RADH");
     } else {
         $(".tagify__input").attr("data-placeholder", "");
     }
@@ -260,7 +260,7 @@ function doTagsSearch() {
        }
 
        // Add the query anyway (even if empty) as the first argument
-       url = "{{ DOMAIN }}/datasets/genes/"
+       url = "{{ DOMAIN }}/genes/"
        count = 0       
        $.each(tags, function(i, e){          
            if (i == "") {

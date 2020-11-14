@@ -4,23 +4,19 @@
 {% block content %}
 <div class="row">
     <div class="col-md-12">
-        <h1>Phenotype #{{ object.id }}</h1>
+        <h1>{{ object.name }}</h1>
         <table class="table">
-            <tr>
-                <th width="20%" scope="row" class="first">Name</th>
-                <td class="first">{{ object.name }}</td>
-            </tr>
             {% if siblings %}<tr>
                 <th scope="row">Sibling Phenotypes</th>
                 <td>{% for sibling in siblings %}{% if sibling.observable.id != object.id %}<a href="{% url 'phenotypes:detail' sibling.observable.id %}">{{ sibling.name }}</a>{% endif %}{% if forloop.last %}{% else %}, {% endif %}{% endfor %}</td>
             </tr>{% endif %}
-            <tr>
+            {% if object.tags.count > 0 %}<tr>
                 <th scope="row">Tags</th>
-                <td>{% for tag in object.tags.all %}<a href="{% url 'phenotypes:tag' tag.id %}">{{ tag.name }}</a>{% if forloop.last %}{% else %}, {% endif %}{% endfor %}</td>
-            </tr>
+                <td>{% for tag in object.tags.all %}<a href="{% url 'phenotypes:tag' tag.id %}">{{ tag.name }}</a>{% if forloop.last %}{% else %}, {% endif %}{% endfor %}{% if object.tags.count > 1 %}<span style="padding-left:8px; padding-right:5px">|</span> <a href="{% url 'phenotypes:tags' object.id %}">all</a>{% endif %}</td>
+            </tr>{% endif %}
             {% if similar.count > 0 %}<tr>
                 <th scope="row">Similar Phenotypes (sharing >=3 tags)</th>
-                <td>{% for p in similar.all %}<a href="{% url 'phenotypes:detail' p.id %}">{{ p.name }}</a>{% if forloop.last %}{% else %}, {% endif %}{% endfor %}</td>
+                <td>{% for p in similar.all %}{% if p.id != object.id %}<a href="{% url 'phenotypes:detail' p.id %}">{{ p.name }}</a>{% if forloop.last %}{% else %}, {% endif %}{% endif %}{% endfor %}</td>
             </tr>{% endif %}
         </table>
     </div>
@@ -29,7 +25,7 @@
 <div class="row">
     <div class="col-md-12">
     {% include "datasets/datasets_server_render_table.html" with template='phenotype' %}
-    <a href="{% url 'datasets:download_observable_datasets' object.id %}"><button id="dataset_download" type="button" class="btn btn-default">Download all datasets</button></a>
+    <a href="{% url 'datasets:download_observable_datasets' object.id %}"><button id="dataset_download" type="button" class="btn btn-default">Download all data</button></a>
     </div>
 </div>
 {% endblock %}

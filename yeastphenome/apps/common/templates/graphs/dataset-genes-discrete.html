@@ -158,14 +158,14 @@ svg.selectAll(".bar")
            if (e in common_names) {
                $.each(common_names[e], function(ii,ee){
                    gene_value = gene_values_lookup[e]
-                   content = content + "<li value=" + e + "><a href='/datasets/genes?q="+ e + "'>" + e + " / " + ee + "</a>: " + gene_value + "</li>"
+                   content = content + "<li value=" + e + "><a href='/genes?q="+ e + "'>" + e + " / " + ee + "</a>: " + gene_value + "</li>"
                })
                has_aliases = true
            }
 
            // Only add the gene if it doesn't have aliases
            if (!has_aliases){
-               content = content + "<li value=" + e + "><a href='/datasets/genes?q="+ e + "'>" + e + " / " + ee + "</a>: " + gene_value + "</li>"
+               content = content + "<li value=" + e + "><a href='/genes?q="+ e + "'>" + e + " / " + ee + "</a>: " + gene_value + "</li>"
            }
 
        })
@@ -221,7 +221,7 @@ function doSearch() {
       bar.attr("fill", "red");
 
       // Tell the user in case they can't see it
-      $("#gene-detail").html("Gene <a href='/datasets/genes?q=" + gene_name + "'>" + gene_name + "</a> has value: " + bar_value + ".")
+      $("#gene-detail").html("Gene <a href='/genes?q=" + gene_name + "'>" + gene_name + "</a> has value: " + bar_value + ".")
 
   } else {
       $("#gene-detail").html("Gene "+ gene_name + " is not in this dataset.")

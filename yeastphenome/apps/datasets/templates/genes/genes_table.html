@@ -8,7 +8,7 @@
         </thead>
         <tbody>
 {% for gene in genes %}<tr>
-           <td><a href="/datasets/genes/detail/{{ gene.systematic_name }}">{{ gene.common_name }}/{{ gene.systematic_name }}</a></td>
+           <td><a href="{% url 'genes:detail' gene.systematic_name %}">{{ gene.common_name }}/{{ gene.systematic_name }}</a></td>
            <td>{% if gene.aliases.count > 0 %}{% for alias in gene.aliases.all %}{{ alias.name }}{% if forloop.last %}{% else %}, {% endif %}{% endfor %}{% endif %}</td>
            <td>{{ gene.primary_sgdid }}</td>
     </tr>{% endfor %}

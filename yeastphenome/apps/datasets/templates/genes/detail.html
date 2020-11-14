@@ -89,7 +89,7 @@
       {% include "genes/similar_table.html" with scores=sims.bottom table_id="nonsimilarTable" %}
       </div>{% endif %}
     </div>
-    <a><button class="dataset_similar_download btn btn-default" type="button">Download all</button></a>{% if gene %}<a href="{% url 'datasets:similar_genes' gene.systematic_name %}"><button type="button" class="btn btn-default">View all</button></a>{% endif %}
+    <a><button class="dataset_similar_download btn btn-default" type="button">Download all</button></a>{% if gene %}<a href="{% url 'genes:similar_genes' gene.systematic_name %}"><button type="button" class="btn btn-default">View all</button></a>{% endif %}
   </div>
 </div>{% endif %}
 
@@ -108,11 +108,11 @@ function download(url){
 $(document).ready(function(){
  
     $(".dataset_download_gene").click(function(){
-        document.location = "/datasets/download/{{ gene.systematic_name }}/"
+        document.location = "/download/{{ gene.systematic_name }}/"
     })
 
     $(".dataset_similar_download").click(function(){
-        document.location = "{% url 'datasets:download_sims' gene.systematic_name %}"
+        document.location = "{% url 'genes:download_sims' gene.systematic_name %}"
     })
 });
 

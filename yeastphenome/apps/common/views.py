@@ -7,7 +7,6 @@ from yeastphenome.apps.common.forms import SearchForm
 from yeastphenome.apps.common.utils import (
     get_dataset_sources,
     get_latest_stats,
-    select_random_graph,
     get_papers_by_year,
     get_phenotype_measurements,
 )
@@ -36,7 +35,6 @@ def index(request):
     context["form"] = form
 
     # Select a random graph to add to the context
-    context.update(select_random_graph())
     return render(request, "main/index.html", context)
 
 
@@ -87,6 +85,16 @@ def contributors(request):
 
 def warmup():
     return HttpResponse(status=200)
+
+
+# Explorer Home
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def explorer(request):
+    links = [{"url": reverse("common:explorer"), "name": "Explore data"}]
+    context = {"active": "explorer", "links": links}
+    return render(request, "main/explorer.html", context)
 
 
 # Getting Started Pages

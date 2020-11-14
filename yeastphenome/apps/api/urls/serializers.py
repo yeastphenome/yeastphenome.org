@@ -1,4 +1,5 @@
 from django.conf import settings
+from decimal import Decimal
 
 from yeastphenome.apps.papers.models import Paper
 
@@ -15,7 +16,7 @@ from yeastphenome.apps.conditions.search import (
 
 # from yeastphenome.apps.conditions.models import ConditionSet, ConditionType
 from yeastphenome.apps.phenotypes.models import Observable
-from yeastphenome.apps.datasets.models import Gene
+from yeastphenome.apps.datasets.models import Gene, Data
 
 from .permissions import IsStaffOrSuperUser
 
@@ -31,7 +32,10 @@ import json
 
 # Observable Datasets
 class GetObservableDatasets(RatelimitMixin, APIView):
-    """Given an observable, serialize the datasets for a DataTable"""
+    """Given an observable, serialize the datasets for a DataTable. This
+    is a server side rendering of the datasets table, customized for a phenotype
+    to not include the phenotype column.
+    """
 
     ratelimit_key = "ip"
     ratelimit_rate = settings.VIEW_RATE_LIMIT
@@ -113,7 +117,6 @@ class GetObservableDatasets(RatelimitMixin, APIView):
                 [
                     "<a href='/datasets/%s'>%s</a>" % (dataset.id, dataset.id),
                     str(dataset.paper),
-                    getattr(dataset.phenotype, "name", ""),
                     dataset.phenotype.reporter or "",
                     dataset.conditionset.display_name,
                     getattr(dataset.medium, "display_name", ""),
@@ -131,6 +134,76 @@ class GetObservableDatasets(RatelimitMixin, APIView):
 
 
 # Genes
+
+
+class GetGeneDatasets(RatelimitMixin, APIView):
+    """Given a gene serialize the datasets for a DataTable"""
+
+    ratelimit_key = "ip"
+    ratelimit_rate = settings.VIEW_RATE_LIMIT
+    ratelimit_block = settings.VIEW_RATE_LIMIT_BLOCK
+    ratelimit_method = "GET"
+    renderer_classes = (JSONRenderer,)
+
+    def get(self, request, systematic_name):
+        print("GET GetGeneDatasets")
+
+        # Start and length to return
+        start = int(request.GET["start"])
+        length = int(request.GET["length"])
+        draw = int(request.GET["draw"])
+        query = request.GET["search[value]"]
+
+        # Empty datatable
+        data = {"draw": draw, "recordsTotal": 0, "recordsFiltered": 0, "data": []}
+
+        try:
+            gene = Gene.objects.get(
+                Q(systematic_name__iexact=systematic_name)
+                | Q(common_name__iexact=systematic_name)
+            )
+        except Gene.DoesNotExist:
+            return Response(status=200, data=data)
+
+        datasets = (
+            Data.objects.filter(gene=gene)
+            .exclude(Q(value=None) | Q(value=Decimal("NaN")))
+            .order_by("-value")
+        )
+
+        # If there is a filter
+        if query:
+            f = Q(dataset__name__icontains=query)
+            datasets = datasets.filter(f).distinct()
+
+        count = datasets.count()
+        ranks = [(1 - (idx / count)) * 100 for idx, sim in enumerate(datasets)]
+        if start > count:
+            start = count - start
+        end = start + length
+
+        # If we've gone too far
+        if end > count:
+            end = count - 1
+
+        datasets = datasets[start : end + 1]
+        ranks = ranks[start : end + 1]
+        data["recordsTotal"] = count
+        data["recordsFiltered"] = count
+
+        # Since we have a small queryset (25) we can loop over without it being too slow
+        for i, dataset in enumerate(datasets):
+            data["data"].append(
+                [
+                    "<a href='/datasets/%s'>%s</a>"
+                    % (dataset.dataset.id, dataset.dataset.name),
+                    round(dataset.value, 1),
+                    round(ranks[i], 1),
+                ]
+            )
+
+        # Must make model json serializable
+        return Response(status=200, data=data)
 
 
 class GetSimilarGenes(RatelimitMixin, APIView):

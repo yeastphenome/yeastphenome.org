@@ -135,14 +135,14 @@ update_plot = function(d, i) {
         if (e in common_names) {
             $.each(common_names[e], function(ii, ee){
                 gene_value = gene_values_lookup[e]
-                content += "<tr><td id='td-" + ee + "'><a href='/datasets/genes?q="+ e + "'>" + e + " / " + ee + "</a></td><td>" + gene_value + "</td><td>" + gene_rank + "</td></tr>\n"
+                content += "<tr><td id='td-" + ee + "'><a href='/genes?q="+ e + "'>" + e + " / " + ee + "</a></td><td>" + gene_value + "</td><td>" + gene_rank + "</td></tr>\n"
             })
            has_aliases = true
         }
 
         // Only add the gene if it doesn't have aliases
         if (!has_aliases){
-            content += "<tr><td id='td-" + e + "'><a href='/datasets/genes?q="+ e + "'>" + e + " / " + e + "</a></td><td>" + gene_value + "</td><td>" + gene_rank + "</td></tr>\n"
+            content += "<tr><td id='td-" + e + "'><a href='/genes?q="+ e + "'>" + e + " / " + e + "</a></td><td>" + gene_value + "</td><td>" + gene_rank + "</td></tr>\n"
         }
     })
 

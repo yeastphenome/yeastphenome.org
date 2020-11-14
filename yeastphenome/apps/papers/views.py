@@ -12,8 +12,6 @@ from .utils import (
     get_paper_references_context,
 )
 
-import os
-
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.conf import settings
@@ -36,7 +34,10 @@ def paper_explorer(request, year=None):
     queryset = []
     count = None
     taglist = []
-    links = [{"url": reverse("papers:all"), "name": "Paper Explorer"}]
+    links = [
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("papers:all"), "name": "Papers"},
+    ]
     for key in [
         "conditionset",
         "phenotype",
@@ -92,15 +93,17 @@ class PaperDetailView(generic.DetailView, RatelimitMixin):
         paper = context["object"]
 
         context["links"] = [
-            {"url": reverse("papers:all"), "name": "Paper Explorer"},
+            {"url": reverse("common:explorer"), "name": "Explore data"},
+            {"url": reverse("papers:all"), "name": "Papers"},
             {
                 "url": reverse("papers:detail", args=[paper.id]),
-                "name": "Paper %s" % paper.id,
+                "name": str(paper),
             },
         ]
 
         context["DOWNLOAD_PREFIX"] = settings.DOWNLOAD_PREFIX
         context["USER_AUTH"] = self.request.user.is_authenticated
+        context["module"] = "papers"
 
         # Define dataset_set
         dataset_list = (
@@ -163,34 +166,6 @@ class ContributorsListView(generic.ListView, RatelimitMixin):
         ]
 
         return context
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def download_zip(request, paper_id, paper_pmid):
-
-    p = get_object_or_404(Paper, pk=paper_id)
-
-    # Check data & tested strains permission status
-    permissions_data = list(
-        set(p.dataset_set.all().values_list("data_source__release", flat=True))
-    )
-    permissions_tested = list(
-        set(p.dataset_set.all().values_list("tested_source__release", flat=True))
-    )
-
-    if all(permissions_data) & all(permissions_tested):
-        file_name = os.path.join(settings.DATA_DIR, "%d.zip" % p.pmid)
-    else:
-        file_name = os.path.join(settings.DATA_DIR, "na.zip")
-
-    file_path = os.path.join(settings.STATIC_ROOT, file_name)
-
-    response = HttpResponse(open(file_path, "rb"), content_type="application/zip")
-    response["Content-Disposition"] = 'attachment; filename="%s_%d.zip"' % (
-        settings.DOWNLOAD_PREFIX,
-        p.pmid,
-    )
-    return response
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)

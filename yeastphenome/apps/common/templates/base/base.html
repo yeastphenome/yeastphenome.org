@@ -54,7 +54,7 @@
     <div id="wrap">        
     <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
     {% include "base/navigation.html" %}
-    {% block container %}<div {% if wide %}class="container-wide" style="padding:80px 200px 200px 200px;" {% else %}class="container" style="padding-top:80px; padding-bottom:200px"{% endif %}>{% endblock %}
+    {% block container %}<div {% if wide %}class="container-wide" style="padding:80px 100px 200px 100px;" {% else %}class="container" style="padding-top:80px; padding-bottom:200px"{% endif %}>{% endblock %}
     {% include "messages/message.html" %}
     {% block content %}{% endblock %}
     </div>

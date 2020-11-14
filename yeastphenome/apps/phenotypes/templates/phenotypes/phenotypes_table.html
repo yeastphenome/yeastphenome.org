@@ -26,10 +26,6 @@
 		    <a href="?page={{ observables.previous_page_number }}">previous</a>
 		{% endif %}
 
-		<span class="current" style="margin-right:30px; margin-left:30px">
-		    Page {{ observables.number }} of {{ observables.paginator.num_pages }}.
-		</span>
-
 		{% if observables.has_next %}<span style="float:right">
 		    <a href="?page={{ observables.next_page_number }}">next</a>
 		    <a href="?page={{ observables.paginator.num_pages }}">last &raquo;</a>

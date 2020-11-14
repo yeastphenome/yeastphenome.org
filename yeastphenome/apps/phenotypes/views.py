@@ -1,7 +1,7 @@
 from django.core.paginator import Paginator
 from django.conf import settings
 from django.views import generic
-from django.shortcuts import render, reverse
+from django.shortcuts import render, reverse, redirect
 from django.db import models
 from django.http import Http404
 
@@ -18,13 +18,21 @@ from yeastphenome.settings import (
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def redirect_index(request):
+    return redirect("phenotypes:index")
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def index(request):
 
     # Count == 0 indicates a search, no search is set to None
     queryset = []
     count = None
     taglist = []
-    links = [{"url": reverse("phenotypes:index"), "name": "Phenotype Explorer"}]
+    links = [
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("phenotypes:index"), "name": "Phenotypes"},
+    ]
     for key in [
         "observable",
         "tag",
@@ -69,8 +77,44 @@ def phenotypes_by_tag(request, tag_id):
         tag = Tag.objects.get(id=tag_id)
     except Tag.DoesNotExist:
         raise Http404
+    links = [
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("phenotypes:index"), "name": "Phenotypes"},
+        {
+            "url": reverse("phenotypes:tag", args=[tag.id]),
+            "name": "Tag: %s" % tag.name,
+        },
+    ]
+    context = {"tag": tag, "links": links, "module": "phenotypes"}
+    return render(request, "phenotypes/tag.html", context)
 
-    return render(request, "phenotypes/tag.html", {"tag": tag})
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def phenotypes_by_tags(request, phenotype_id):
+    """phenotypes by tags looks up an observable, and returns all phenotypes that
+    have all tags
+    """
+    try:
+        pheno = Observable.objects.get(id=phenotype_id)
+    except Observable.DoesNotExist:
+        raise Http404
+    tag_names = ",".join([x.name for x in pheno.tags.all()])
+
+    # Filter down observables to those with all tags
+    queryset = Observable.objects.all()
+    for tag in pheno.tags.all():
+        queryset = queryset.filter(tags__name=tag.name)
+
+    links = [
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("phenotypes:index"), "name": "Phenotypes"},
+        {
+            "url": reverse("phenotypes:tag", args=[tag.id]),
+            "name": "Tags: %s" % tag_names,
+        },
+    ]
+    context = {"links": links, "names": tag_names, "observables": queryset}
+    return render(request, "phenotypes/tags.html", context)
 
 
 class ObservableDetailView(generic.DetailView):
@@ -81,11 +125,13 @@ class ObservableDetailView(generic.DetailView):
         context = super(ObservableDetailView, self).get_context_data(**kwargs)
         context["DOWNLOAD_PREFIX"] = settings.DOWNLOAD_PREFIX
         context["USER_AUTH"] = self.request.user.is_authenticated
+        context["module"] = "phenotypes"
         context["links"] = [
-            {"url": reverse("phenotypes:index"), "name": "Phenotype Explorer"},
+            {"url": reverse("common:explorer"), "name": "Explore data"},
+            {"url": reverse("phenotypes:index"), "name": "Phenotypes"},
             {
                 "url": reverse("phenotypes:detail", args=[context["object"].id]),
-                "name": "Phenotype %s" % context["object"].id,
+                "name": "Mitophagy",
             },
         ]
 
