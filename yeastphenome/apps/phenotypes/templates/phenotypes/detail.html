@@ -12,7 +12,7 @@
             </tr>{% endif %}
             {% if object.tags.count > 0 %}<tr>
                 <th scope="row">Tags</th>
-                <td>{% for tag in object.tags.all %}<a href="{% url 'phenotypes:tag' tag.id %}">{{ tag.name }}</a>{% if forloop.last %}{% else %}, {% endif %}{% endfor %}{% if object.tags.count > 1 %}<span style="padding-left:8px; padding-right:5px">|</span> <a href="{% url 'phenotypes:tags' object.id %}">all</a>{% endif %}</td>
+                <td>{% for tag in object.tags.all %}<a href="{% url 'phenotypes:index'%}?query={{ tag.name }}">{{ tag.name }}</a>{% if forloop.last %}{% else %}, {% endif %}{% endfor %}{% if object.tags.count > 1 %}<span style="padding-left:8px; padding-right:5px">|</span> <a href="{% url 'phenotypes:index' %}?query={% for tag in object.tags.all %}{{ tag.name }}{% if forloop.last %}{% else %},{% endif %}{% endfor %}">all</a>{% endif %}</td>
             </tr>{% endif %}
             {% if similar.count > 0 %}<tr>
                 <th scope="row">Similar Phenotypes (sharing >=3 tags)</th>
@@ -24,8 +24,10 @@
 <hr>
 <div class="row">
     <div class="col-md-12">
+    <h2>Datasets</h2>
     {% include "datasets/datasets_server_render_table.html" with template='phenotype' %}
-    <a href="{% url 'datasets:download_observable_datasets' object.id %}"><button id="dataset_download" type="button" class="btn btn-default">Download all data</button></a>
+    <a href="{% url 'datasets:download_observable_datasets' object.id %}"><button id="dataset_download" type="button" class="btn btn-default">Download all data</button></a><a href="{% url 'common:add_to_cart_by_observable' object.id %}?next={{ request.path }}"><button type="button" class="btn btn-default">Add all to cart</button></a>
+
     </div>
 </div>
 {% endblock %}

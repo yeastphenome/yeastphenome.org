@@ -16,6 +16,16 @@ urlpatterns = [
     path("cart/add/<str:dataset_id>/", views.add_to_cart, name="add_to_cart"),
     path("cart/add/<str:dataset_id>/<str:next>", views.add_to_cart, name="add_to_cart"),
     path(
+        "cart/add/conditiontype/<str:conditiontype_id>/datasets/",
+        views.add_to_cart_by_conditiontype,
+        name="add_to_cart_by_conditiontype",
+    ),
+    path(
+        "cart/add/observable/<str:observable_id>/datasets/",
+        views.add_to_cart_by_observable,
+        name="add_to_cart_by_observable",
+    ),
+    path(
         "cart/remove/<str:dataset_id>/",
         views.remove_from_cart,
         name="remove_from_cart",

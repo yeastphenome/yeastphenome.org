@@ -19,6 +19,16 @@ urlpatterns = [
         name="observable_datasets",
     ),
     path(
+        "tag/<int:tag_id>/conditiontypes",
+        views.GetTagConditionTypes.as_view(),
+        name="tag_condition_types",
+    ),
+    path(
+        "conditiontype/<int:conditiontype_id>/datasets/",
+        views.GetConditionTypeDatasets.as_view(),
+        name="conditiontype_datasets",
+    ),
+    path(
         "genes/datasets/<str:systematic_name>/",
         views.GetGeneDatasets.as_view(),
         name="gene_datasets",

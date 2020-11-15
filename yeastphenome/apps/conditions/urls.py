@@ -7,12 +7,11 @@ urlpatterns = [
     url(r"^sets/$", views.redirect_index, name="redirect_index"),
     url(r"^media/$", views.redirect_index, name="redirect_index"),
     url(r"^chebi/$", views.redirect_index, name="redirect_index"),
-    url(r"^tag/$", views.tag_browser, name="tags"),
     url(r"^tags/$", views.tag_browser, name="tags"),
     url(r"^browse/$", views.browse, name="browse"),
     url(r"^(?P<pk>\d+)/$", views.ConditiontypeDetailView.as_view(), name="detail"),
     url(r"^chebi/(?P<class_id>\d+)/$", views.conditionclass, name="class"),
-    url(r"^tag/(?P<tag_id>\d+)/$", views.conditions_by_tag, name="tag"),
+    url(r"^tags/(?P<tag_id>\d+)/$", views.conditions_by_tag, name="tag"),
     url(
         r"^media/(?P<pk>\d+)/$", views.MediumDetailView.as_view(), name="medium_detail"
     ),

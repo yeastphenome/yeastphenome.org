@@ -13,7 +13,6 @@
     <table id="papersTable" class="tablesorter table table-condensed table-hover" width="100%" {% if datasets %}{% else %}style="display:none"{% endif %}>
 
         <thead>
-        <td id="first_column" class="no-sort" style="text-align: left;"><input type="checkbox" onClick="toggle(this)"></td>
         <th>Dataset</th>
         {% if module == "papers" %}{% else %}<th>Paper</th>{% endif %}
         {% if module == "phenotypes" %}{% else %}<th>Phenotype</th>{% endif %}
@@ -21,12 +20,11 @@
         <th>Medium</th>
         <th>Collection</th>
         <th>Data</th>
-        <th>Downloads</th>
+        <th>Download</th>
         </thead>
 
         <tbody id="papersTableBody">
         {% for dataset in datasets %}<tr>
-            <td><input id="{{ dataset.id }}" type="checkbox" name="{{ dataset.id }}" class="dataset" {# {% if not dataset.has_data_in_db %}disabled{% endif %} #}></td>
             <td class="col-md-1"><a href="/datasets/{{ dataset.id }}/">{{ dataset.id }}</a></td>
             {% if module == "papers" %}{% else %}<td class="col-md-2">{{ dataset.paper }}</td>{% endif %}
             {% if module == "phenotypes" %}{% else %}<td class="col-md-2">{% if dataset.phenotype.observable %}{{ dataset.phenotype.observable.name }} {% if dataset.phenotype.reporter %} ({{ dataset.phenotype.reporter }}) {% endif %}{% endif %}</td>{% endif %}
@@ -45,49 +43,11 @@
         </tr>{% endfor %}
         </tbody>
     </table>
-
-    {% if datasets.has_other_pages %}
-    <ul class="pagination pagination-element">
-        {% if datasets.has_previous %}
-        <li><a href="{{ request.get_full_path }}&page={{ datasets.previous_page_number }}">&laquo;</a></li>
-        {% else %}
-        <li class="disabled"><span>&laquo;</span></li>
-        {% endif %}
-        {% if datasets.has_next %}
-        <li><a href="{{ request.get_full_path }}&page={{ datasets.next_page_number }}">&raquo;</a></li>
-        {% else %}
-        <li class="disabled"><span>&raquo;</span></li>
-        {% endif %}
-    </ul>
-    <span class="current pagination-element" style="margin-right:30px; margin-left:30px; position: absolute; margin-top:28px">
-        Page {{ datasets.number }} of {{ datasets.paginator.num_pages }}.
-    </span>
-    {% endif %}
     <br>
-    <button id="dataset_download" type="submit" class="btn btn-default" disabled="true" style="display:none">Download selected datasets</button>
 
 </form>
 
 <script language="JavaScript">
-function toggle(source) {
-  checkboxes = document.getElementsByClassName('dataset');
-  for(var i=0, n=checkboxes.length;i<n;i++) {
-    if(!checkboxes[i].disabled) {
-        checkboxes[i].checked = source.checked;
-    }
-  }
-  btn = document.getElementById('dataset_download');
-  btn.disabled = !source.checked;
-}
-
-var chkbxs = $('tbody .dataset');
-
-$("#first_column").removeClass("no-sort sorting_asc");
-chkbxs.change(function () {
-    $('#dataset_download').prop('disabled', chkbxs.filter(':checked').length < 1);
-});
-chkbxs.change();
-
 // If we click a link to add or remove from cart
 function add_to_cart() {
   $(".add-to-cart").click(function(event){
@@ -142,22 +102,4 @@ function remove_from_cart() {
        });
   })
 }
-
-
-function update_checkboxes() {
-    var chkbxs = $('tbody .dataset');
-    chkbxs.change(function () {
-       $('#dataset_download').prop('disabled', chkbxs.filter(':checked').length < 1);
-    });
-    chkbxs.change();
-}
-
-$("#add-to-cart-all").click(function(event){
-     $("#fade").show();
-     ids = ""
-     $.each($("[type=checkbox].dataset:checked"), function(i, e){
-        ids = ids + "," + $(e).attr("name")
-     })
-     document.location = "/cart/add/" + ids + "/datasets:index"
-})
 </script>

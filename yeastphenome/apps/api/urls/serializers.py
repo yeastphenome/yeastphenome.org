@@ -17,6 +17,7 @@ from yeastphenome.apps.conditions.search import (
 # from yeastphenome.apps.conditions.models import ConditionSet, ConditionType
 from yeastphenome.apps.phenotypes.models import Observable
 from yeastphenome.apps.datasets.models import Gene, Data
+from yeastphenome.apps.conditions.models import Tag as ConditionTag, ConditionType
 
 from .permissions import IsStaffOrSuperUser
 
@@ -30,7 +31,184 @@ from django.db.models import Q
 import json
 
 
+# Helper Function to generate Dataset Cart buttons
+def generate_datasets_cart(request, data, datasets, query=None):
+    """A shared view to take a request, and the started data, and generate
+    the listing (with button having status add/remove to cart. We return
+    the same data object to return to the view
+    """
+    # Start and length to return
+    start = int(request.GET["start"])
+    length = int(request.GET["length"])
+    query = request.GET["search[value]"]
+
+    # If there is a filter
+    if query:
+        f = (
+            Q(name__icontains=query)
+            | Q(tags__name__icontains=query)
+            | Q(collection__shortname__icontains=query)
+            | Q(conditionset__display_name__icontains=query)
+            | Q(paper__first_author__icontains=query)
+            | Q(paper__last_author__icontains=query)
+            | Q(phenotype__name__icontains=query)
+            | Q(medium__display_name__icontains=query)
+            | Q(phenotype__reporter__icontains=query)
+        )
+        datasets = datasets.filter(f).distinct()
+
+    count = datasets.count()
+    if start > count:
+        start = count - start
+    end = start + length
+
+    # If we've gone too far
+    if end > count:
+        end = count - 1
+
+    datasets = datasets[start : end + 1]
+    data["recordsTotal"] = count
+    data["recordsFiltered"] = count
+
+    cart = getattr(request.session, "cart", [])
+
+    # Since we have a small queryset (25) we can loop over without it being too slow
+    for dataset in datasets:
+
+        if dataset.id not in cart:
+            button = (
+                '<button id="dataset-cart-%s" type="button" class="btn btn-primary btn-sm add-to-cart" style="width:120px" data-id="%s">Add</button>'
+                % (dataset.id, dataset.id)
+            )
+        else:
+            button = (
+                '<button id="dataset-cart-%s" type="button" class="btn btn-danger btn-sm remove-from-cart" data-id="%s" style="width:120px">Remove</button>'
+                % (dataset.id, dataset.id)
+            )
+
+        data["data"].append(
+            [
+                "<a href='/datasets/%s'>%s</a>" % (dataset.id, dataset.id),
+                str(dataset.paper),
+                dataset.conditionset.display_name,
+                getattr(dataset.medium, "display_name", ""),
+                dataset.collection.shortname,
+                str(dataset.data_available),
+                button,
+            ]
+        )
+
+    return data
+
+
+# Tag Condition Types
+
+
+class GetTagConditionTypes(RatelimitMixin, APIView):
+    """Given a tag, serialize the associated condition types into a DataTable."""
+
+    ratelimit_key = "ip"
+    ratelimit_rate = settings.VIEW_RATE_LIMIT
+    ratelimit_block = settings.VIEW_RATE_LIMIT_BLOCK
+    ratelimit_method = "GET"
+    renderer_classes = (JSONRenderer,)
+
+    def get(self, request, tag_id):
+        print("GET GetTagConditionTypes")
+
+        # Start and length to return
+        start = int(request.GET["start"])
+        length = int(request.GET["length"])
+        draw = int(request.GET["draw"])
+        query = request.GET["search[value]"]
+
+        # Empty datatable
+        data = {"draw": draw, "recordsTotal": 0, "recordsFiltered": 0, "data": []}
+
+        try:
+            tag = ConditionTag.objects.get(id=tag_id)
+        except ConditionTag.DoesNotExist:
+            return Response(status=200, data=data)
+
+        queryset = tag.conditiontype_set.all()
+
+        # If there is a filter
+        if query:
+            f = (
+                Q(name__icontains=query)
+                | Q(conditiontype__name__icontains=query)
+                | Q(conditiontype__other_names__icontains=query)
+            )
+            queryset = queryset.filter(f).distinct()
+
+        count = queryset.count()
+        if start > count:
+            start = count - start
+        end = start + length
+
+        # If we've gone too far
+        if end > count:
+            end = count - 1
+
+        queryset = queryset[start : end + 1]
+        data["recordsTotal"] = count
+        data["recordsFiltered"] = count
+
+        for ct in queryset:
+            data["data"].append(
+                [
+                    "<a href='/conditions/%s'>%s</a>" % (ct.id, ct.name),
+                    ct.other_names or "",
+                    ct.datasets().count(),
+                ]
+            )
+
+        # Sort data by datasets count
+        def sort_by_count(elem):
+            return elem[2]
+
+        data["data"].sort(key=sort_by_count, reverse=True)
+
+        # Must make model json serializable
+        return Response(status=200, data=data)
+
+
+# Condition Type Datasets
+
+
+class GetConditionTypeDatasets(RatelimitMixin, APIView):
+    """Given a condition type, serialize the datasets for a DataTable."""
+
+    ratelimit_key = "ip"
+    ratelimit_rate = settings.VIEW_RATE_LIMIT
+    ratelimit_block = settings.VIEW_RATE_LIMIT_BLOCK
+    ratelimit_method = "GET"
+    renderer_classes = (JSONRenderer,)
+
+    def get(self, request, conditiontype_id):
+        print("GET GetConditionTypeDatasets")
+
+        # Start and length to return
+        draw = int(request.GET["draw"])
+
+        # Empty datatable
+        data = {"draw": draw, "recordsTotal": 0, "recordsFiltered": 0, "data": []}
+
+        try:
+            ct = ConditionType.objects.get(id=conditiontype_id)
+        except ConditionType.DoesNotExist:
+            return Response(status=200, data=data)
+
+        datasets = ct.datasets()
+        data = generate_datasets_cart(request, data, datasets)
+
+        # Must make model json serializable
+        return Response(status=200, data=data)
+
+
 # Observable Datasets
+
+
 class GetObservableDatasets(RatelimitMixin, APIView):
     """Given an observable, serialize the datasets for a DataTable. This
     is a server side rendering of the datasets table, customized for a phenotype
@@ -47,10 +225,7 @@ class GetObservableDatasets(RatelimitMixin, APIView):
         print("GET GetObservableDatasets")
 
         # Start and length to return
-        start = int(request.GET["start"])
-        length = int(request.GET["length"])
         draw = int(request.GET["draw"])
-        query = request.GET["search[value]"]
 
         # Empty datatable
         data = {"draw": draw, "recordsTotal": 0, "recordsFiltered": 0, "data": []}
@@ -61,73 +236,7 @@ class GetObservableDatasets(RatelimitMixin, APIView):
             return Response(status=200, data=data)
 
         datasets = observable.datasets()
-
-        # If there is a filter
-        if query:
-            f = (
-                Q(name__icontains=query)
-                | Q(tags__name__icontains=query)
-                | Q(collection__shortname__icontains=query)
-                | Q(conditionset__display_name__icontains=query)
-                | Q(paper__first_author__icontains=query)
-                | Q(paper__last_author__icontains=query)
-                | Q(phenotype__name__icontains=query)
-                | Q(medium__display_name__icontains=query)
-                | Q(phenotype__reporter__icontains=query)
-            )
-            datasets = datasets.filter(f).distinct()
-
-        count = datasets.count()
-        if start > count:
-            start = count - start
-        end = start + length
-
-        # If we've gone too far
-        if end > count:
-            end = count - 1
-
-        datasets = datasets[start : end + 1]
-        data["recordsTotal"] = count
-        data["recordsFiltered"] = count
-
-        # Since we have a small queryset (25) we can loop over without it being too slow
-        cart = getattr(request.session, "cart", [])
-        for dataset in datasets:
-
-            # Add to downloads checkbox on the left, disabled if not available
-            checkbox = '<input id="%s" type="checkbox" name="%s" class="dataset">'
-            if not dataset.has_data_in_db:
-                checkbox = (
-                    '<input id="%s" type="checkbox" name="%s" class="dataset" disabled>'
-                )
-
-            if dataset.id not in cart:
-                button = (
-                    '<button id="dataset-cart-%s" type="button" class="btn btn-primary btn-sm add-to-cart" style="width:120px" data-id="%s">Add</button>'
-                    % (dataset.id, dataset.id)
-                )
-            else:
-                button = (
-                    '<button id="dataset-cart-%s" type="button" class="btn btn-danger btn-sm remove-from-cart" data-id="%s" style="width:120px">Remove</button>'
-                    % (dataset.id, dataset.id)
-                )
-
-            print(checkbox)
-            data["data"].append(
-                [
-                    "<a href='/datasets/%s'>%s</a>" % (dataset.id, dataset.id),
-                    str(dataset.paper),
-                    dataset.phenotype.reporter or "",
-                    dataset.conditionset.display_name,
-                    getattr(dataset.medium, "display_name", ""),
-                    dataset.collection.shortname,
-                    str(dataset.data_available),
-                    button,
-                ]
-            )
-
-        # This would be alternative (fast) solution that is limited in customization
-        # data['data'] = list([list(x) for x in datasets.values_list('id', 'paper', 'phenotype__observable__name', 'phenotype__reporter', 'conditionset__display_name', 'medium__display_name', 'collection__shortname')])
+        data = generate_datasets_cart(request, data, datasets)
 
         # Must make model json serializable
         return Response(status=200, data=data)

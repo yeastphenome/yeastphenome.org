@@ -119,9 +119,9 @@
         </li>
       </ul>
       {% if links %}{% with links_length=links|length %}<ul class="nav navbar-nav navbar-left global-navbar second-navbar">
-        {% if links_length > 1 %}{% for link in links %}{% if forloop.first %}<li style="padding-left:110px"><a href="{{ link.url }}" class="nav-link waves-effect" style="text-decoration:none">{{ link.name }}<img style="padding-left:25px" src="{% static 'images/icons/right-arrow.png' %}" height="20px"><span class="clearfix d-none d-sm-inline-block"></span></a></li>
-        {% elif forloop.last %}<li class="nav-link waves-effect second-nav-link" style="text-decoration:none; cursor: default;">{{ link.name }}<span class="clearfix d-none d-sm-inline-block"></span></li>
-      {% else %}<li><a href="{{ link.url }}" class="nav-link waves-effect" style="text-decoration:none">{{ link.name }}<img style="padding-left:25px" src="{% static 'images/icons/right-arrow.png' %}" height="20px"><span class="clearfix d-none d-sm-inline-block"></span></a></li>{% endif %}
+        {% if links_length > 1 %}{% for link in links %}{% if forloop.first %}<li style="padding-left:110px"><a href="{{ link.url }}" class="nav-link waves-effect" style="text-decoration:none">{% with link_length=link.name|length %}{% if link_length > 150 %}{{ link.name|truncatechars:97 }}{% else %}{{ link.name }}{% endif %}{% endwith %}<img style="padding-left:25px" src="{% static 'images/icons/right-arrow.png' %}" height="20px"><span class="clearfix d-none d-sm-inline-block"></span></a></li>
+        {% elif forloop.last %}<li class="nav-link waves-effect second-nav-link" style="text-decoration:none; cursor: default;">{% with link_length=link.name|length %}{% if link_length > 150 %}{{ link.name|truncatechars:97 }}{% else %}{{ link.name }}{% endif %}{% endwith %}<span class="clearfix d-none d-sm-inline-block"></span></li>
+      {% else %}<li><a href="{{ link.url }}" class="nav-link waves-effect" style="text-decoration:none">{% with link_length=link.name|length %}{% if link_length > 150 %}{{ link.name|truncatechars:97 }}{% else %}{{ link.name }}{% endif %}{% endwith %}<img style="padding-left:25px" src="{% static 'images/icons/right-arrow.png' %}" height="20px"><span class="clearfix d-none d-sm-inline-block"></span></a></li>{% endif %}
       {% endfor %}{% endif %}
       </ul>{% endwith %}{% endif %}
     </div>

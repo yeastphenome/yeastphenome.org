@@ -6,7 +6,7 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-xs-12">
-            <h1>Tag: {{ tag.name }} Condition Types</h1>
+            <h1>{{ tag.name }} -- Condition Types</h1>
             {% if tag.description %}<p>Description: {{ tag.description }}</p>{% endif %}
 	    <table style="padding-top:20px" id="papersTable" class="table table-condensed table-hover" width="100%">
 		<thead><tr>
@@ -15,13 +15,6 @@
 		    <th>Datasets</th>
                 </tr>
 		</thead>
-		<tbody id="papersTableBody">
-		{% for ct in tag.conditiontype_set.all %}<tr>
-		    <td><a href="/conditions/{{ ct.id }}">{{ ct.name }}</a></td>
-		    <td>{% if ct.other_names %}{{ ct.other_names }}{% endif %}</td>
-		    <td>{{ ct.datasets.count }}</td>
-          	</tr>{% endfor %}
-		</tbody>
 	    </table>
         </div>
     </div>
@@ -30,10 +23,7 @@
 {% block scripts %}
 <script>
 $(document).ready(function(){
-  $("#papersTable").DataTable({"pageLength": 10,  
-        "language": {"search": "Filter:"} 
-  });
-  $('#papersTable').DataTable().order([4, 'desc']).draw();
+    $("#papersTable").dataTable({"pageLength": 25,"language": {"search": "Filter:"}, "processing": true, "serverSide": true, "ajax": "{% url 'api:tag_condition_types' tag.id %}", "lengthMenu": [[10,15,20,25], [10,15,20,25]]});
 });
 </script>
 {% endblock %}

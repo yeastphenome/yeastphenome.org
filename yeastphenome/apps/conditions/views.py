@@ -184,7 +184,13 @@ def conditions_by_tag(request, tag_id):
     except Tag.DoesNotExist:
         raise Http404
 
-    return render(request, "conditions/tag.html", {"tag": tag})
+    links = [
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("conditions:index"), "name": "Conditions"},
+        {"url": reverse("conditions:tags"), "name": "Tags"},
+        {"url": reverse("conditions:tag", args=[tag.id]), "name": tag.name},
+    ]
+    return render(request, "conditions/tag.html", {"tag": tag, "links": links})
 
 
 class MediumDetailView(generic.DetailView, RatelimitMixin):
