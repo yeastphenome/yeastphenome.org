@@ -12,7 +12,7 @@
             </tr>{% endif %}
             {% if object.tags.count > 0 %}<tr>
                 <th scope="row">Tags</th>
-                <td>{% for tag in object.tags.all %}<a href="{% url 'phenotypes:index'%}?query={{ tag.name }}">{{ tag.name }}</a>{% if forloop.last %}{% else %}, {% endif %}{% endfor %}{% if object.tags.count > 1 %}<span style="padding-left:8px; padding-right:5px">|</span> <a href="{% url 'phenotypes:index' %}?query={% for tag in object.tags.all %}{{ tag.name }}{% if forloop.last %}{% else %},{% endif %}{% endfor %}">all</a>{% endif %}</td>
+                <td>{% for tag in object.tags.all %}<a href="{% url 'phenotypes:index'%}?tag={{ tag.name }}">{{ tag.name }}</a>{% if forloop.last %}{% else %}, {% endif %}{% endfor %}{% if object.tags.count > 1 %}<span style="padding-left:8px; padding-right:5px">|</span> <a href="{% url 'phenotypes:index' %}?tag={% for tag in object.tags.all %}{{ tag.name }}{% if forloop.last %}{% else %},{% endif %}{% endfor %}">all</a>{% endif %}</td>
             </tr>{% endif %}
             {% if similar.count > 0 %}<tr>
                 <th scope="row">Similar Phenotypes (sharing >=3 tags)</th>
