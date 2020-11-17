@@ -31,6 +31,10 @@ $.each(_common_names, function(i, alias){
 
 var values = gene_values.map(function(d){return d.value;})
 
+// Get min and max
+max_value = d3.max(values)
+min_value = d3.min(values)
+
 // A formatter for counts.
 var formatCount = d3.format(",.0f");
 
@@ -116,6 +120,18 @@ update_plot = function(d, i) {
     var genes = gene_values.filter(function(record){ return d.x <= record.value && record.value < d.x + d.dx; });
     var names = genes.map(function(record){return record.label; });
 
+    var distance_max = Math.abs(max_value - d.x)
+    var distance_min = Math.abs(min_value - d.x)
+
+    // Boundaries, max then min
+    if ((genes.length == 0) && (distance_max > distance_min) && (distance_min <= d.dx)) {
+        var genes = gene_values.filter(function(record){ return d.x > record.value; });
+        var names = genes.map(function(record){return record.label; });
+    } else if ((genes.length == 0) && (distance_min > distance_max)) {
+        var genes = gene_values.filter(function(record){ return d.x <= record.value });
+        var names = genes.map(function(record){return record.label; });
+    }
+
     value_range = " | Value range: " + (d.x).toFixed(2) + "-" + (d.x + d.dx).toFixed(2) + ". <a style='cursor:pointer' onclick=restore_original()>Reset filter</a>."
 
     // Clear original content
@@ -123,7 +139,7 @@ update_plot = function(d, i) {
     $("#scores_table").DataTable().destroy();
 
     content = ""
-    $.each(names, function(i,e){
+    $.each(names, function(i, e){
 
         // Grab the value and pvalue
         gene_value = gene_values_lookup[e] || ""

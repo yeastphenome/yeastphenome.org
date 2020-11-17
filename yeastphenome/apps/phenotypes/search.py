@@ -23,7 +23,7 @@ def get_search_tags():
 
     # Tags
     tags = [
-        {"value": x[0], "icon": "🏷️", "code": "tag"}
+        {"value": x[0], "icon": "🏷️", "code": "tags"}
         for x in Tag.objects.values_list("name").distinct()
     ]
 
@@ -57,12 +57,11 @@ def run_search_tag_query(query=None, taglist=None):
     measurement_query = Q()
     tag_query = Q()
 
-    print(queryset.count())
     if "observable" in tags:
         observables_query = Q(name__in=tags["observable"])
 
-    if "tag" in tags:
-        tag_query = Q(tags__name__iregex="(" + "$|^".join(tags["tag"]) + ")")
+    if "tags" in tags:
+        tag_query = Q(tags__name__iregex="(" + "$|^".join(tags["tags"]) + ")")
 
     if "phenotype" in tags:
         phenotype_query = Q(phenotype__name__in=tags["phenotype"])

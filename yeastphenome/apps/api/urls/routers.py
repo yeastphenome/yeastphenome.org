@@ -19,6 +19,11 @@ urlpatterns = [
         name="observable_datasets",
     ),
     path(
+        "medium/<int:medium_id>/datasets",
+        views.GetMediumDatasets.as_view(),
+        name="medium_datasets",
+    ),
+    path(
         "tag/<int:tag_id>/conditiontypes",
         views.GetTagConditionTypes.as_view(),
         name="tag_condition_types",

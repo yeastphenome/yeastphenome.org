@@ -14,12 +14,17 @@ urlpatterns = [
         name="download_observable_datasets",
     ),
     path(
-        "table/<int:dataset_id>/scores/",
+        "medium/<str:medium_id>/",
+        views.download_medium_datasets,
+        name="download_medium_datasets",
+    ),
+    path(
+        "<int:dataset_id>/scores/",
         views.dataset_plot,
         name="dataset_plot",
     ),
     path(
-        "table/<int:dataset_id>/similar/",
+        "<int:dataset_id>/similar/",
         views.similar_dataset_table,
         name="similar_dataset_table",
     ),

@@ -30,7 +30,7 @@ from yeastphenome.apps.datasets.utils import (
     send_file,
     prepare_dataset_download,
 )
-from yeastphenome.apps.conditions.models import ConditionType
+from yeastphenome.apps.conditions.models import ConditionType, Medium
 from yeastphenome.apps.phenotypes.models import Observable
 
 from decimal import Decimal
@@ -421,7 +421,7 @@ def data_explorer(request, collection_id=None):
     taglist = []
     for key in [
         "datatype",
-        "tag",
+        "tags",
         "medium",
         "conditions",
         "collection",
@@ -478,7 +478,7 @@ def tag(request, id):
         {"url": reverse("common:explorer"), "name": "Explore data"},
         {"url": reverse("datasets:index"), "name": "Datasets"},
         {
-            "url": reverse("datasets:tag", args=[t.id]),
+            "url": "%s?tags=%s" % (reverse("datasets:index"), t.name),
             "name": "Tag %s" % t.name,
         },
     ]
@@ -698,6 +698,28 @@ def download_observable_datasets(request, observable_id):
     df = prepare_dataset_download(
         observable.datasets().filter(data_source__release=True)
     )
+    exported_file = os.path.join(tempfile.gettempdir(), filename)
+    if not os.path.exists(exported_file):
+        df.to_csv(exported_file, sep="\t", index=None)
+    return send_file(exported_file)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def download_medium_datasets(request, medium_id):
+    """Download all datasets associated with a medium"""
+
+    try:
+        medium = Medium.objects.get(id=medium_id)
+    except Medium.DoesNotExist:
+        raise Http404
+
+    filename = "%s_medium_datasets_%s.txt" % (
+        settings.DOWNLOAD_PREFIX,
+        medium.display_name,
+    )
+
+    # Returns a pandas dataframe to download from list of dataset ids
+    df = prepare_dataset_download(medium.datasets().filter(data_source__release=True))
     exported_file = os.path.join(tempfile.gettempdir(), filename)
     if not os.path.exists(exported_file):
         df.to_csv(exported_file, sep="\t", index=None)

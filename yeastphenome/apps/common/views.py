@@ -12,7 +12,7 @@ from yeastphenome.apps.common.utils import (
 )
 from yeastphenome.apps.datasets.models import Dataset
 from yeastphenome.apps.papers.models import Paper
-from yeastphenome.apps.conditions.models import ConditionType
+from yeastphenome.apps.conditions.models import ConditionType, Medium
 from yeastphenome.apps.phenotypes.models import Observable
 
 from ratelimit.decorators import ratelimit
@@ -183,6 +183,19 @@ def add_to_cart_by_conditiontype(request, conditiontype_id):
         raise Http404
 
     add_bulk_datasets(request, ct.datasets())
+    return redirect(next)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def add_to_cart_by_medium(request, medium_id):
+    """Add datasets to the cart based on a medium id"""
+    next = request.GET.get("next")
+    try:
+        medium = Medium.objects.get(id=medium_id)
+    except Medium.DoesNotExist:
+        raise Http404
+
+    add_bulk_datasets(request, medium.datasets())
     return redirect(next)
 
 

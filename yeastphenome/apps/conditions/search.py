@@ -21,7 +21,7 @@ def get_search_tags():
 
     # Tags
     tags = [
-        {"value": x, "icon": "🏷️", "code": "tag"}
+        {"value": x, "icon": "🏷️", "code": "tags"}
         for x in Tag.objects.values_list("name", flat=True).distinct()
         if x not in [None, ""] and not_seen(x)
     ]
@@ -76,8 +76,8 @@ def run_search_tag_query(query, taglist=None):
     other_name_query = Q()
     pubchem_name_query = Q()
 
-    if "tag" in tags:
-        tag_query = Q(tags__name__iregex="(" + "$|^".join(tags["tag"]) + ")")
+    if "tags" in tags:
+        tag_query = Q(tags__name__iregex="(" + "$|^".join(tags["tags"]) + ")")
 
     if "name" in tags:
         name_query = Q(name__iregex="(" + "$|^".join(tags["name"]) + ")")

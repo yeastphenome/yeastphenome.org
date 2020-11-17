@@ -60,7 +60,6 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
             <div class="col-md-10 public-homepage-side-panel">
                 <h1>Conditions</h1>
                 <div>
-                  <h3>Search</h3>
                   <input name='tags' value="">
                 </div>
             </div>
@@ -74,7 +73,7 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
             <div class="col-md-12" style="padding-top:20px">
                 <form id="searchform" style="display:none">
                 {% csrf_token %}
-               <input type="text" name="q" class="form-control" placeholder="Search (press enter to search only using filters)" required="" id="id_q">
+               <input type="text" name="q" class="form-control" placeholder="Search: e.g., hydroxyurea, growth, temperature" required="" id="id_q">
                 </form>
             </div>
         </div>
@@ -113,7 +112,7 @@ var input = document.querySelector('input[name=tags]'),
         whitelist: tags,
         transformTag: transformTag,
         // backspace: "edit",
-        placeholder: "hydroxyurea, growth, temperature",
+        placeholder: "Search: e.g., hydroxyurea, growth, temperature",
         dropdown : {
             enabled: 1,            // show suggestion after 1 typed character
             fuzzySearch: true,    // match only suggestions that starts with the typed characters
@@ -196,7 +195,7 @@ function add_tags_by_key(key) {
     }
     tagify.addTags(querytags)
 }
-add_tags_by_key("tag")
+add_tags_by_key("tags")
 add_tags_by_key("pubchem_name")
 add_tags_by_key("other_name")
 add_tags_by_key("chebi_name")
@@ -208,7 +207,7 @@ update_placeholder = function() {
 
     // Remove placeholder if there are tags, otherwise reset
     if ($('[name=tags]').val() == ""){
-        $(".tagify__input").attr("data-placeholder", "hydroxyurea, growth, temperature");
+        $(".tagify__input").attr("data-placeholder", "Search: e.g., hydroxyurea, growth, temperature");
     } else {
         $(".tagify__input").attr("data-placeholder", "");
     }

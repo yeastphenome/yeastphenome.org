@@ -55,7 +55,7 @@ def get_search_tags():
 
     # Tags
     tags = [
-        {"value": x[0], "icon": "🏷️", "code": "tag"}
+        {"value": x[0], "icon": "🏷️", "code": "tags"}
         for x in Tag.objects.values_list("name").distinct()
     ]
 
@@ -118,8 +118,8 @@ def run_search_tag_query(query, taglist=None, return_instances=False, collection
     phenotype_query = Q()
     conditions_query = Q()
 
-    if "tag" in tags:
-        tag_query = Q(tags__name__in=tags["tag"])
+    if "tags" in tags:
+        tag_query = Q(tags__name__in=tags["tags"])
 
     if "collection" in tags:
         collection_query = Q(collection__name__in=tags["collection"])

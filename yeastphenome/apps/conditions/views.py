@@ -42,7 +42,7 @@ def index(request):
         "other_name",
         "chebi_name",
         "name",
-        "tag",
+        "tags",
         "query",
     ]:
         for tag in request.GET.get(key, "").split(","):
@@ -195,7 +195,7 @@ def conditions_by_tag(request, tag_id):
 
 class MediumDetailView(generic.DetailView, RatelimitMixin):
     model = Medium
-    template_name = "conditions/conditionset_medium_detail.html"
+    template_name = "conditions/medium_detail.html"
     ratelimit_key = "ip"
     ratelimit_rate = rl_rate
     ratelimit_block = rl_block
@@ -204,15 +204,15 @@ class MediumDetailView(generic.DetailView, RatelimitMixin):
         context = super(MediumDetailView, self).get_context_data(**kwargs)
         context["DOWNLOAD_PREFIX"] = settings.DOWNLOAD_PREFIX
         context["USER_AUTH"] = self.request.user.is_authenticated
-        context["papers"] = context["object"].datasets
+        context["datasets"] = context["object"].datasets
         context["id"] = context["object"].id
-        context["module"] = "conditions"
+        context["template"] = "medium"
         return context
 
 
 class ConditionSetDetailView(generic.DetailView, RatelimitMixin):
     model = ConditionSet
-    template_name = "conditions/conditionset_medium_detail.html"
+    template_name = "conditions/conditionset_detail.html"
     ratelimit_key = "ip"
     ratelimit_rate = rl_rate
     ratelimit_block = rl_block
@@ -221,6 +221,6 @@ class ConditionSetDetailView(generic.DetailView, RatelimitMixin):
         context = super(ConditionSetDetailView, self).get_context_data(**kwargs)
         context["DOWNLOAD_PREFIX"] = settings.DOWNLOAD_PREFIX
         context["USER_AUTH"] = self.request.user.is_authenticated
-        context["papers"] = context["object"].datasets
+        context["datasets"] = context["object"].datasets
         context["id"] = context["object"].id
         return context

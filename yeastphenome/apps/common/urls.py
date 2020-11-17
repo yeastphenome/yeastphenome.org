@@ -21,6 +21,11 @@ urlpatterns = [
         name="add_to_cart_by_conditiontype",
     ),
     path(
+        "cart/add/medium/<str:medium_id>/datasets/",
+        views.add_to_cart_by_medium,
+        name="add_to_cart_by_medium",
+    ),
+    path(
         "cart/add/observable/<str:observable_id>/datasets/",
         views.add_to_cart_by_observable,
         name="add_to_cart_by_observable",
