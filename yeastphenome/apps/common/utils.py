@@ -14,10 +14,10 @@ from yeastphenome.apps.datasets.models import Dataset, Sourcetype
 import collections
 import random
 
-# Cart
+# Dowloads
 
 
-def check_cart_space(request, datasets):
+def check_download_space(request, datasets):
     """The browser can only serialize 4096 bytes of cookies, so we cannot allow
     the cart to exceed this number. We have some wiggle room because the session
     is compressed, so we calculated 500 datasets (the list of ids) can go right
@@ -29,7 +29,7 @@ def check_cart_space(request, datasets):
         messages.info(
             request,
             (
-                f"You already have {datasets_in_cart} datasets in your cart and are attempting to"
+                f"You already have {datasets_in_cart} datasets in Downloads and are attempting to"
                 f" add an additional {len(datasets)} which will go over the 500 limit."
             ),
         )
@@ -245,7 +245,6 @@ def get_latest_stats():
     datasets_nr = datasets_qs.filter(f).distinct().count()
 
     # --- Conditions ---
-    conditiontypes_qs = ConditionType.objects.all()
     top_conditiontypes = (
         conditiontypes_qs.annotate(
             nr_papers=Count("condition__conditionset__dataset__paper", distinct=True)

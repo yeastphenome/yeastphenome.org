@@ -265,7 +265,7 @@ class GetCartDatasets(RatelimitMixin, APIView):
     renderer_classes = (JSONRenderer,)
 
     def get(self, request):
-        print("GET GetMediumDatasets")
+        print("GET GetCartDatasets")
 
         # Start and length to return
         draw = int(request.GET["draw"])
@@ -274,6 +274,44 @@ class GetCartDatasets(RatelimitMixin, APIView):
         data = {"draw": draw, "recordsTotal": 0, "recordsFiltered": 0, "data": []}
         cart = request.session.get("cart", [])
         datasets = Dataset.objects.filter(id__in=cart)
+        data = generate_datasets(request, data, datasets)
+
+        # Must make model json serializable
+        return Response(status=200, data=data)
+
+
+# Paper Datasets
+
+
+class GetPaperDatasets(RatelimitMixin, APIView):
+    """Given a paper, serialize the datasets."""
+
+    ratelimit_key = "ip"
+    ratelimit_rate = settings.VIEW_RATE_LIMIT
+    ratelimit_block = settings.VIEW_RATE_LIMIT_BLOCK
+    ratelimit_method = "GET"
+    renderer_classes = (JSONRenderer,)
+
+    def get(self, request, paper_id):
+        print("GET GetPaperatasets")
+
+        # Start and length to return
+        draw = int(request.GET["draw"])
+
+        # Empty datatable
+        data = {"draw": draw, "recordsTotal": 0, "recordsFiltered": 0, "data": []}
+
+        try:
+            paper = Paper.objects.get(id=paper_id)
+        except Paper.DoesNotExist:
+            return Response(status=200, data=data)
+        datasets = (
+            paper.dataset_set.select_related("phenotype__observable")
+            .select_related("collection")
+            .select_related("conditionset")
+            .all()
+        )
+
         data = generate_datasets(request, data, datasets)
 
         # Must make model json serializable

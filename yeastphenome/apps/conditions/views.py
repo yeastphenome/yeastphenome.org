@@ -1,6 +1,5 @@
 import re
 
-from django.db import models
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.shortcuts import reverse, render, redirect
@@ -12,6 +11,7 @@ from yeastphenome.apps.conditions.models import ConditionType, ConditionSet, Med
 from yeastphenome.apps.datasets.models import Dataset
 
 from yeastphenome.apps.conditions.search import (
+    get_conditiontypes,
     get_search_tags,
     run_search_tag_query,
 )
@@ -98,22 +98,8 @@ def tag_browser(request):
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def browse(request):
     """Browse dataest by condition names (and size by count)"""
-    qs = (
-        ConditionType.objects.annotate(
-            number_of_datasets=models.Count(
-                "condition__conditionset__dataset",
-                filter=~models.Q(
-                    condition__conditionset__dataset__paper__latest_data_status__status__name="not relevant"
-                ),
-            )
-        )
-        .annotate(
-            number_of_papers=models.Count(
-                "condition__conditionset__dataset__paper", distinct=True
-            )
-        )
-        .order_by("-number_of_datasets")
-    )
+    # With >=1 dataset, sorted by datasets
+    qs = get_conditiontypes()
     context = {"data": qs[:100]}
     return render(request, "conditions/graphs/browse.html", context)
 
@@ -156,7 +142,7 @@ def conditionclass(request, class_id):
             tid = int(tid.group(0))
             children.append(tid)
 
-    conditiontypes = ConditionType.objects.filter(chebi_id__in=children)
+    conditiontypes = get_conditiontypes().filter(chebi_id__in=children)
     datasets = (
         Dataset.objects.filter(conditionset__conditions__type__in=conditiontypes)
         .exclude(paper__latest_data_status__status__name="not relevant")
@@ -223,4 +209,14 @@ class ConditionSetDetailView(generic.DetailView, RatelimitMixin):
         context["USER_AUTH"] = self.request.user.is_authenticated
         context["datasets"] = context["object"].datasets
         context["id"] = context["object"].id
+        context["links"] = [
+            {"url": reverse("common:explorer"), "name": "Explore data"},
+            {"url": reverse("conditions:index"), "name": "Condition Sets"},
+            {
+                "url": reverse(
+                    "conditions:conditionset_detail", args=[context["object"].id]
+                ),
+                "name": context["object"].systematic_name,
+            },
+        ]
         return context

@@ -79,7 +79,7 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
         </div>
         <div class="row">
             <div class="col-md-12" id="message" style="padding-bottom:5px">{% if queryset.count == 0 %}
-                  <div class="alert alert-info">There were no relevant results for your search.</div>
+                  <div id="no-results" class="alert alert-info">There were no relevant results for your search.</div>
                {% endif %}
             </div>
         </div>
@@ -208,6 +208,9 @@ update_placeholder = function() {
     // Remove placeholder if there are tags, otherwise reset
     if ($('[name=tags]').val() == ""){
         $(".tagify__input").attr("data-placeholder", "Search: e.g., hydroxyurea, growth, temperature");
+
+        // Remove the message of no results
+        $("#no-results").remove()
     } else {
         $(".tagify__input").attr("data-placeholder", "");
     }

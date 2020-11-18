@@ -12,7 +12,7 @@ urlpatterns = [
     ),
     path("<str:systematic_name>/similar/", views.similar_genes, name="similar_genes"),
     path(
-        "<str:systematic_name>/datasets/",
+        "<str:systematic_name>/scores/",
         views.gene_datasets,
         name="datasets",
     ),

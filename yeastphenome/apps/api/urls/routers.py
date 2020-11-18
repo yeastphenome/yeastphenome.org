@@ -24,6 +24,11 @@ urlpatterns = [
         name="medium_datasets",
     ),
     path(
+        "paper/<int:paper_id>/datasets",
+        views.GetPaperDatasets.as_view(),
+        name="paper_datasets",
+    ),
+    path(
         "cart/datasets",
         views.GetCartDatasets.as_view(),
         name="cart_datasets",

@@ -104,17 +104,6 @@ class PaperDetailView(generic.DetailView, RatelimitMixin):
         context["DOWNLOAD_PREFIX"] = settings.DOWNLOAD_PREFIX
         context["USER_AUTH"] = self.request.user.is_authenticated
         context["module"] = "papers"
-
-        # Define dataset_set
-        dataset_list = (
-            paper.dataset_set.select_related("phenotype__observable")
-            .select_related("collection")
-            .select_related("conditionset")
-            .all()
-        )
-        page = self.request.GET.get("page", 1)
-        paginator = Paginator(dataset_list, 50)
-        context["datasets"] = paginator.get_page(page)
         context["id"] = paper.id
         context["active"] = "explorer"
 

@@ -90,6 +90,14 @@ class Observable(models.Model):
         html = html + "</ul>"
         return mark_safe(html)
 
+    def reporters(self):
+        return (
+            apps.get_model("phenotypes", "Phenotype")
+            .objects.exclude(reporter=None)
+            .distinct()
+            .values_list("reporter")
+        )
+
     def datasets(self):
         return (
             apps.get_model("datasets", "Dataset")

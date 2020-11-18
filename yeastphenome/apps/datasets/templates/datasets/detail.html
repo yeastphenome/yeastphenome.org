@@ -98,7 +98,7 @@
       {% include "datasets/similar_table.html" with scores=sims.bottom table_id="nonsimilarTable" %}
       </div>{% endif %}
     </div>
-    <a href="/datasets/download/similar/{{ dataset.id }}/"><button class="btn btn-default" type="button">Download all</button></a><a href="{% url 'datasets:similar_dataset_table' dataset.id %}"><button type="button" class="btn btn-default">View all</button></a>
+    <a style="padding-right:5px" href="/datasets/download/similar/{{ dataset.id }}/"><button class="btn btn-info" type="button">Download all</button></a><a href="{% url 'datasets:similar_dataset_table' dataset.id %}"><button type="button" class="btn btn-default">View all</button></a>
   </div>
 </div>{% endif %}
 

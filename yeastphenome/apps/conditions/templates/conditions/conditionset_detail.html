@@ -15,7 +15,7 @@
             <tr>
                 <th width="20%" scope="row">Conditions:</th>
                 <td>{% for condition in object.conditions.all %}
-                       <a href="/conditions/{{ condition.type.id }}/">{{ condition.type.name }}</a>: {{ condition.dose }}{% if forloop.last %}{% else %},{% endif %}
+                       <a href="/conditions/{{ condition.type.id }}/">{{ condition.type.name }}</a> {{ condition.dose }}{% if forloop.last %}{% else %},{% endif %}
                     {% endfor %}
                 </td>
             </tr>

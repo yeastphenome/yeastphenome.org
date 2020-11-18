@@ -67,7 +67,7 @@
 <div class="row" style="padding-top:30px" id="datasets">
     <div class="col-xs-12">
         <h2>Datasets</h2>
-        {% include "datasets/datasets_table.html" with notitle='true' %}
+        {% include "datasets/datasets_server_render_table.html" %}
      </div>
 </div>
 <div class="row" style="padding-top:30px" id="curation">
@@ -89,10 +89,12 @@
 {% endblock %}
 {% block scripts %}
 <script>
-{% if datasets %}$(document).ready(function(){
-    $("#papersTable").dataTable({"pageLength": 10, "language": {"search": "Filter:"}});
-    $("#dataset_download").show();
-    add_to_cart()
-    remove_from_cart()
-});{% endif %}</script>
+$(document).ready(function(){
+    $("#papersTable").dataTable({"pageLength": 10, "language": {"search": "Filter:"}, "processing": true, "serverSide": true, "ajax": "{% url 'api:paper_datasets' object.id %}", "lengthMenu": [[10,15,20,25], [10,15,20,25]],
+     "drawCallback": function( settings ) {
+        add_to_cart();
+        remove_from_cart();
+    }
+   });
+});</script>
 {% endblock %}

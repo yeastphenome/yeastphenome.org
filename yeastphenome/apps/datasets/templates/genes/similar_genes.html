@@ -39,7 +39,7 @@
 {% for sim in sims %}<tr><td><a href="/genes/{{ sim.0 }}/">{{ sim.1 }}/{{ sim.0 }}</a></td><td>{{ sim.2 }}</td><td>{{ sim.3|stringformat:".2e" }}</td><td>{{ ranks|lookup:forloop.counter0|floatformat:1 }}%</td></tr>{% endfor %}
       </table>
     </div>
-    <button class="dataset_similar_download btn btn-default" type="button">Download all</button>
+    <button class="dataset_similar_download btn btn-info" type="button">Download all</button>
   </div>
 </div>{% endif %}
 

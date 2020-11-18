@@ -13,7 +13,7 @@
         {% for observable in observables %}<tr>
             <td class="col-md-3">{{ observable.link_detail|safe }}</td>
             <td class="col-md-3">{{ observable.conditiontypes|join_and_more:7|safe }}</td>
-            <td class="col-md-3">{% for phenotype in observable.phenotype_set.all %}{% if phenotype.reporter %}{{ phenotype.reporter }}{% endif %}{% if forloop.last %}{% else %}, {% endif %}{% endfor %}</td> 
+            <td class="col-md-3">{{ observable.reporters|join_and_more:7|safe }}</td> 
             <td class="col-md-3">{{ observable.papers|join_and_more:7|safe }}</td>
         </tr>{% endfor %}
         </tbody>

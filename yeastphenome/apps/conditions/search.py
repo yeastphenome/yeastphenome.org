@@ -1,6 +1,30 @@
-from django.db.models import Q
+from django.db.models import Q, Count
 
 from yeastphenome.apps.conditions.models import ConditionType, Tag
+
+
+def get_conditiontypes():
+    """Shared function to return a list of conditiontypes with a valid paper and
+    at least one dataset. We order by the number of datasets.
+    """
+    return (
+        ConditionType.objects.annotate(
+            number_of_datasets=Count(
+                "condition__conditionset__dataset",
+                filter=~Q(
+                    condition__conditionset__dataset__paper__latest_data_status__status__name="not relevant"
+                ),
+            )
+        )
+        .annotate(
+            number_of_papers=Count(
+                "condition__conditionset__dataset__paper", distinct=True
+            )
+        )
+        .filter(number_of_datasets__gte=1)
+        .order_by("-number_of_datasets")
+    )
+
 
 # Search functions
 
@@ -9,7 +33,7 @@ def get_search_tags():
     """Return a list of tags, each with a name and icon, to return to the
     conditions explorer tag search
     """
-    queryset = ConditionType.objects.all()
+    queryset = get_conditiontypes()
     seen = set()
 
     # Names have duplicates
@@ -66,8 +90,8 @@ def run_search_tag_query(query, taglist=None):
                 tags[tag["code"]] = []
             tags[tag["code"]].append(tag["value"])
 
-    # We want to search through condition types
-    queryset = ConditionType.objects.all()
+    # We want to search through condition types that have a valid paper and > 0 datasets
+    queryset = get_conditiontypes()
 
     # Filter querysets
     tag_query = Q()

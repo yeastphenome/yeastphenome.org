@@ -5,7 +5,7 @@ from django.views.decorators.cache import never_cache
 
 from yeastphenome.apps.common.forms import SearchForm
 from yeastphenome.apps.common.utils import (
-    check_cart_space,
+    check_download_space,
     get_dataset_sources,
     get_latest_stats,
     get_papers_by_year,
@@ -150,19 +150,19 @@ def introduction(request):
     return render(request, "getting-started/introduction.html", context)
 
 
-# Cart Operations
+# Download Operations
 
 
 def add_bulk_datasets(request, datasets, return_message=False):
-    """A shared function to retrieve the cart from a request, and add bulk
+    """A shared function to retrieve the downloads from a request, and add bulk
     datasets to it
     """
     if "cart" not in request.session:
         request.session["cart"] = []
 
-    if not check_cart_space(request, datasets):
+    if not check_download_space(request, datasets):
         if return_message:
-            return "You are limited to adding no more than 500 datasets to your cart."
+            return "You are limited to adding no more than 500 datasets to download."
         return
 
     added_count = 0
@@ -173,9 +173,9 @@ def add_bulk_datasets(request, datasets, return_message=False):
             added_count += 1
 
     if added_count == 1:
-        message = "1 dataset was added to your cart."
+        message = "1 dataset was added to Downloads."
     else:
-        message = "%s datasets were added to your cart." % added_count
+        message = "%s datasets were added to Downloads." % added_count
 
     if return_message:
         return message
