@@ -14,9 +14,9 @@
 
         <thead>
         <th>Dataset</th>
-        {% if module == "papers" %}{% else %}<th>Paper</th>{% endif %}
-        {% if module == "phenotypes" %}{% else %}<th>Phenotype</th>{% endif %}
-        {% if module == "conditions" %}{% else %}<th>Condition</th>{% endif %}
+        <th>Paper</th>
+        <th>Phenotype</th>
+        <th>Condition</th>
         <th>Medium</th>
         <th>Collection</th>
         <th>Data</th>
@@ -26,9 +26,9 @@
         <tbody id="papersTableBody">
         {% for dataset in datasets %}<tr>
             <td class="col-md-1"><a href="/datasets/{{ dataset.id }}/">{{ dataset.id }}</a></td>
-            {% if module == "papers" %}{% else %}<td class="col-md-2">{{ dataset.paper }}</td>{% endif %}
-            {% if module == "phenotypes" %}{% else %}<td class="col-md-2">{% if dataset.phenotype.observable %}{{ dataset.phenotype.observable.name }} {% if dataset.phenotype.reporter %} ({{ dataset.phenotype.reporter }}) {% endif %}{% endif %}</td>{% endif %}
-            {% if module == "conditions" %}{% else %}<td class="col-md-2">{{ dataset.conditionset.display_name }}</td>{% endif %}
+            <td class="col-md-2">{{ dataset.paper }}</td>
+            <td class="col-md-2">{% if dataset.phenotype.observable %}{{ dataset.phenotype.observable.name }} {% if dataset.phenotype.reporter %} ({{ dataset.phenotype.reporter }}) {% endif %}{% endif %}</td>
+            <td class="col-md-2">{{ dataset.conditionset.display_name }}</td>
             <td class="col-md-2">{% if dataset.medium %}{{ dataset.medium.display_name }}{% endif %}</td>
             <td class="col-md-2">{{ dataset.collection.shortname }}</td>
             <td class="col-md-1">

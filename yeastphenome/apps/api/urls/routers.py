@@ -24,6 +24,11 @@ urlpatterns = [
         name="medium_datasets",
     ),
     path(
+        "cart/datasets",
+        views.GetCartDatasets.as_view(),
+        name="cart_datasets",
+    ),
+    path(
         "tag/<int:tag_id>/conditiontypes",
         views.GetTagConditionTypes.as_view(),
         name="tag_condition_types",

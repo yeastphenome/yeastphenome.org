@@ -6,18 +6,12 @@
         <h1>{{ object }}</h1>
 
         <table class="table">
-            <tr>
-                <th width="20%" scope="row">Systematic name:</th>
-                <td>
-                    {{ object.systematic_name }}
-                </td>
-            </tr>
-            <tr>
+            {% if object.common_name %}<tr>
                 <th width="20%" scope="row">Common name:</th>
                 <td>
                     {{ object.common_name }}
                 </td>
-            </tr>
+            </tr>{% endif %}
             <tr>
                 <th width="20%" scope="row">Conditions:</th>
                 <td>{% for condition in object.conditions.all %}

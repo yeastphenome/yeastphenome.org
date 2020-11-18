@@ -5,6 +5,7 @@ from django.views.decorators.cache import never_cache
 
 from yeastphenome.apps.common.forms import SearchForm
 from yeastphenome.apps.common.utils import (
+    check_cart_space,
     get_dataset_sources,
     get_latest_stats,
     get_papers_by_year,
@@ -152,12 +153,17 @@ def introduction(request):
 # Cart Operations
 
 
-def add_bulk_datasets(request, datasets):
+def add_bulk_datasets(request, datasets, return_message=False):
     """A shared function to retrieve the cart from a request, and add bulk
     datasets to it
     """
     if "cart" not in request.session:
         request.session["cart"] = []
+
+    if not check_cart_space(request, datasets):
+        if return_message:
+            return "You are limited to adding no more than 500 datasets to your cart."
+        return
 
     added_count = 0
     for dataset in datasets:
@@ -170,6 +176,9 @@ def add_bulk_datasets(request, datasets):
         message = "1 dataset was added to your cart."
     else:
         message = "%s datasets were added to your cart." % added_count
+
+    if return_message:
+        return message
     messages.success(request, message)
 
 
@@ -222,18 +231,8 @@ def add_to_cart(request, dataset_id, next=None):
     if "cart" not in request.session:
         request.session["cart"] = []
 
-    added_count = 0
-    for d_id in dataset_id.split(","):
-        dataset = Dataset.objects.get(id=d_id)
-        if dataset.id not in request.session["cart"]:
-            request.session["cart"].append(dataset.id)
-            request.session.modified = True
-            added_count += 1
-
-    if added_count == 1:
-        message = "1 dataset was added to your cart."
-    else:
-        message = "%s datasets were added to your cart." % added_count
+    datasets = Dataset.objects.filter(id__in=dataset_id.split(","))
+    message = add_bulk_datasets(request, datasets, return_message=True)
 
     # Return to the same page the user was browsing
     if request.method == "POST":

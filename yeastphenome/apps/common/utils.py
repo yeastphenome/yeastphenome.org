@@ -1,6 +1,7 @@
 from django.db.models import Q, F, Count, Sum, Case, When
 from django.db import models
 from django.urls import reverse
+from django.contrib import messages
 
 import numpy as np
 
@@ -12,6 +13,29 @@ from yeastphenome.apps.datasets.models import Dataset, Sourcetype
 
 import collections
 import random
+
+# Cart
+
+
+def check_cart_space(request, datasets):
+    """The browser can only serialize 4096 bytes of cookies, so we cannot allow
+    the cart to exceed this number. We have some wiggle room because the session
+    is compressed, so we calculated 500 datasets (the list of ids) can go right
+    up to the limit. If other session data is added, this would need to be
+    decreased. Returns False if the cart cannot be added to, True otherwise
+    """
+    datasets_in_cart = len(request.session["cart"])
+    if datasets_in_cart + len(datasets) >= 500:
+        messages.info(
+            request,
+            (
+                f"You already have {datasets_in_cart} datasets in your cart and are attempting to"
+                f" add an additional {len(datasets)} which will go over the 500 limit."
+            ),
+        )
+        return False
+    return True
+
 
 # Graphs
 

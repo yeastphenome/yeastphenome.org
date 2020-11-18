@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from yeastphenome.apps.papers.models import Paper
 
-# from yeastphenome.apps.datasets.models import DataType
+from yeastphenome.apps.datasets.models import Dataset
 from yeastphenome.apps.papers.utils import get_paper_references_context
 from yeastphenome.apps.papers.search import run_search_tag_query as papers_search
 from yeastphenome.apps.datasets.search import run_search_tag_query as dataset_search
@@ -31,12 +31,12 @@ from ratelimit.mixins import RatelimitMixin
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.db.models import Q
+from django.db.models import Q, Count
 import json
 
 
 # Helper Function to generate Dataset Cart buttons
-def generate_datasets(request, data, datasets, query=None, view_name=None):
+def generate_datasets(request, data, datasets, query=None):
     """A shared view to take a request, and the started data, and generate
     the listing.
     """
@@ -44,7 +44,7 @@ def generate_datasets(request, data, datasets, query=None, view_name=None):
     start = int(request.GET["start"])
     length = int(request.GET["length"])
     query = request.GET["search[value]"]
-    cart = set(request.GET.get("cart", []))
+    cart = request.session.get("cart", [])
 
     # If there is a filter
     if query:
@@ -78,6 +78,38 @@ def generate_datasets(request, data, datasets, query=None, view_name=None):
             )
             datasets = datasets.filter(f).distinct()
 
+    order = request.GET["order[0][column]"]
+    direction = request.GET["order[0][dir]"]  # asc or desc
+    order_lookup = {
+        "0asc": "id",
+        "0desc": "-id",
+        "1asc": "paper__first_author",
+        "1desc": "-paper__first_author",
+        "2asc": "phenotype__name",
+        "2desc": "-phenotype__name",
+        "3asc": "conditionset__display_name",
+        "3desc": "-conditionset__display_name",
+        "4asc": "medium__display_name",
+        "4desc": "-medium__display_name",
+        "5asc": "collection__shortname",
+        "5desc": "-collection__shortname",
+        "6asc": "data_available",
+        "6desc": "-data_available",
+    }
+
+    order_by = "%s%s" % (order, direction)
+    if order_by in order_lookup:
+        print(f"Ordering by {order_by}")
+
+        # Some datasets don't have a conditionset, or medium will issue an error
+        if order_by in ["3asc", "3desc"]:
+            datasets = datasets.exclude(conditionset=None)
+        elif order_by in ["4asc", "4desc"]:
+            datasets = datasets.exclude(medium=None)
+        elif order_by in ["5asc", "5desc"]:
+            datasets = datasets.exclude(collection=None)
+        datasets = datasets.order_by(order_lookup[order_by])
+
     count = datasets.count()
     if start > count:
         start = count - start
@@ -105,43 +137,19 @@ def generate_datasets(request, data, datasets, query=None, view_name=None):
                 % (dataset.id, dataset.id)
             )
 
-        if view_name == "phenotypes":
-            data["data"].append(
-                [
-                    "<a href='/datasets/%s'>%s</a>" % (dataset.id, dataset.id),
-                    str(dataset.paper),
-                    getattr(dataset.conditionset, "display_name", ""),
-                    getattr(dataset.medium, "display_name", ""),
-                    getattr(dataset.collection, "shortname", ""),
-                    str(dataset.data_available or ""),
-                    button,
-                ]
-            )
-        elif view_name == "medium":
-            data["data"].append(
-                [
-                    "<a href='/datasets/%s'>%s</a>" % (dataset.id, dataset.id),
-                    str(dataset.paper),
-                    dataset.phenotype.name,
-                    getattr(dataset.conditionset, "display_name", ""),
-                    getattr(dataset.collection, "shortname", ""),
-                    str(dataset.data_available or ""),
-                    button,
-                ]
-            )
-        else:
-            data["data"].append(
-                [
-                    "<a href='/datasets/%s'>%s</a>" % (dataset.id, dataset.id),
-                    str(dataset.paper),
-                    dataset.phenotype.name,
-                    getattr(dataset.conditionset, "display_name", ""),
-                    getattr(dataset.medium, "display_name", ""),
-                    getattr(dataset.collection, "shortname", ""),
-                    str(dataset.data_available or ""),
-                    button,
-                ]
-            )
+        data["data"].append(
+            [
+                "<input id='%s' type='hidden' name='%s'><a id='%s' href='/datasets/%s'>%s</a>"
+                % (dataset.id, dataset.id, dataset.id, dataset.id, dataset.id),
+                str(dataset.paper),
+                dataset.phenotype.name,
+                getattr(dataset.conditionset, "display_name", ""),
+                getattr(dataset.medium, "display_name", ""),
+                getattr(dataset.collection, "shortname", ""),
+                str(dataset.data_available or ""),
+                button,
+            ]
+        )
 
     return data
 
@@ -175,6 +183,8 @@ class GetTagConditionTypes(RatelimitMixin, APIView):
             "0desc": "-name",
             "1asc": "other_names",
             "1desc": "-other_names",
+            "2asc": "datasets_count",
+            "2desc": "-datasets_count",
         }
 
         # Empty datatable
@@ -185,7 +195,13 @@ class GetTagConditionTypes(RatelimitMixin, APIView):
         except ConditionTag.DoesNotExist:
             return Response(status=200, data=data)
 
-        queryset = tag.conditiontype_set.all()
+        # Annotate with datasets count for filtering, and to those with > 0 datasets
+        queryset = (
+            tag.conditiontype_set.all()
+            .annotate(datasets_count=Count("condition__conditionset__dataset"))
+            .filter(datasets_count__gte=0)
+        )
+
         order_by = "%s%s" % (order, direction)
         ordered = False
         if order_by in order_lookup:
@@ -216,14 +232,13 @@ class GetTagConditionTypes(RatelimitMixin, APIView):
         data["recordsFiltered"] = count
 
         for ct in queryset:
-            if ct.datasets().count() > 0:
-                data["data"].append(
-                    [
-                        "<a href='/conditions/%s'>%s</a>" % (ct.id, ct.name),
-                        ct.other_names or "",
-                        ct.datasets().count(),
-                    ]
-                )
+            data["data"].append(
+                [
+                    "<a href='/conditions/%s'>%s</a>" % (ct.id, ct.name),
+                    ct.other_names or "",
+                    ct.datasets_count,
+                ]
+            )
 
         # Sort data by datasets count
         def sort_by_count(elem):
@@ -232,6 +247,34 @@ class GetTagConditionTypes(RatelimitMixin, APIView):
         # Default ordering to sort by count, if not ordered
         if not ordered:
             data["data"].sort(key=sort_by_count, reverse=True)
+
+        # Must make model json serializable
+        return Response(status=200, data=data)
+
+
+# Datasets in Cart
+
+
+class GetCartDatasets(RatelimitMixin, APIView):
+    """Given a medium, serialize the datasets for a DataTable."""
+
+    ratelimit_key = "ip"
+    ratelimit_rate = settings.VIEW_RATE_LIMIT
+    ratelimit_block = settings.VIEW_RATE_LIMIT_BLOCK
+    ratelimit_method = "GET"
+    renderer_classes = (JSONRenderer,)
+
+    def get(self, request):
+        print("GET GetMediumDatasets")
+
+        # Start and length to return
+        draw = int(request.GET["draw"])
+
+        # Empty datatable
+        data = {"draw": draw, "recordsTotal": 0, "recordsFiltered": 0, "data": []}
+        cart = request.session.get("cart", [])
+        datasets = Dataset.objects.filter(id__in=cart)
+        data = generate_datasets(request, data, datasets)
 
         # Must make model json serializable
         return Response(status=200, data=data)
@@ -264,37 +307,7 @@ class GetMediumDatasets(RatelimitMixin, APIView):
             return Response(status=200, data=data)
 
         datasets = medium.datasets()
-
-        # ConditionType includes all columns
-        order = request.GET["order[0][column]"]
-        direction = request.GET["order[0][dir]"]  # asc or desc
-        order_lookup = {
-            "0asc": "id",
-            "0desc": "-id",
-            "1asc": "paper__first_author",
-            "1desc": "-paper__first_author",
-            "2asc": "phenotype__name",
-            "2desc": "-phenotype__name",
-            "3asc": "conditionset__display_name",
-            "3desc": "-conditionset__display_name",
-            "4asc": "collection__shortname",
-            "4desc": "-collection__shortname",
-            "5asc": "data_available",
-            "5desc": "-data_available",
-        }
-
-        order_by = "%s%s" % (order, direction)
-        if order_by in order_lookup:
-            print(f"Ordering by {order_by}")
-
-            # Some datasets don't have a conditionset, or medium will issue an error
-            if order_by in ["3asc", "3desc"]:
-                datasets = datasets.exclude(conditionset=None)
-            elif order_by in ["4asc", "4desc"]:
-                datasets = datasets.exclude(collection=None)
-            datasets = datasets.order_by(order_lookup[order_by])
-
-        data = generate_datasets(request, data, datasets, view_name="medium")
+        data = generate_datasets(request, data, datasets)
 
         # Must make model json serializable
         return Response(status=200, data=data)
@@ -327,40 +340,6 @@ class GetConditionTypeDatasets(RatelimitMixin, APIView):
             return Response(status=200, data=data)
 
         datasets = ct.datasets()
-
-        # ConditionType includes all columns
-        order = request.GET["order[0][column]"]
-        direction = request.GET["order[0][dir]"]  # asc or desc
-        order_lookup = {
-            "0asc": "id",
-            "0desc": "-id",
-            "1asc": "paper__first_author",
-            "1desc": "-paper__first_author",
-            "2asc": "phenotype__name",
-            "2desc": "-phenotype__name",
-            "3asc": "conditionset__display_name",
-            "3desc": "-conditionset__display_name",
-            "4asc": "medium__display_name",
-            "4desc": "-medium__display_name",
-            "5asc": "collection__shortname",
-            "5desc": "-collection__shortname",
-            "6asc": "data_available",
-            "6desc": "-data_available",
-        }
-
-        order_by = "%s%s" % (order, direction)
-        if order_by in order_lookup:
-            print(f"Ordering by {order_by}")
-
-            # Some datasets don't have a conditionset, or medium will issue an error
-            if order_by in ["3asc", "3desc"]:
-                datasets = datasets.exclude(conditionset=None)
-            elif order_by in ["4asc", "4desc"]:
-                datasets = datasets.exclude(medium=None)
-            elif order_by in ["5asc", "5desc"]:
-                datasets = datasets.exclude(collection=None)
-            datasets = datasets.order_by(order_lookup[order_by])
-
         data = generate_datasets(request, data, datasets)
 
         # Must make model json serializable
@@ -397,42 +376,7 @@ class GetObservableDatasets(RatelimitMixin, APIView):
             return Response(status=200, data=data)
 
         datasets = observable.datasets()
-
-        # Observable doesn't include phenotype column
-        order = request.GET["order[0][column]"]
-        direction = request.GET["order[0][dir]"]  # asc or desc
-        order_lookup = {
-            "0asc": "id",
-            "0desc": "-id",
-            "1asc": "paper__first_author",
-            "1desc": "-paper__first_author",
-            "2asc": "conditionset__display_name",
-            "2desc": "-conditionset__display_name",
-            "3asc": "medium__display_name",
-            "3desc": "-medium__display_name",
-            "4asc": "collection__shortname",
-            "4desc": "-collection__shortname",
-            "5asc": "data_available",
-            "5desc": "-data_available",
-        }
-
-        cart = getattr(request.session, "cart", [])
-        print(cart)
-
-        order_by = "%s%s" % (order, direction)
-        if order_by in order_lookup:
-            print(f"Ordering by {order_by}")
-
-            # Some datasets don't have a conditionset, or medium will issue an error
-            if order_by in ["2asc", "2desc"]:
-                datasets = datasets.exclude(conditionset=None)
-            elif order_by in ["3asc", "3desc"]:
-                datasets = datasets.exclude(medium=None)
-            elif order_by in ["4asc", "4desc"]:
-                datasets = datasets.exclude(collection=None)
-            datasets = datasets.order_by(order_lookup[order_by])
-
-        data = generate_datasets(request, data, datasets, view_name="phenotypes")
+        data = generate_datasets(request, data, datasets)
 
         # Must make model json serializable
         return Response(status=200, data=data)
