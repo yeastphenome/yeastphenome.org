@@ -227,7 +227,9 @@ def gene_detail(request, query):
 
     try:
         gene = Gene.objects.get(
-            Q(systematic_name__iexact=query) | Q(common_name__iexact=query)
+            Q(systematic_name__iexact=query)
+            | Q(common_name__iexact=query)
+            | Q(id__iexact=query)
         )
     except Gene.DoesNotExist:
         gene = GeneAlias.objects.get(name__iexact=query).gene_set.first()
@@ -270,19 +272,22 @@ def gene_detail(request, query):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def similar_genes(request, systematic_name):
+def similar_genes(request, gene_id):
 
     try:
-        gene = Gene.objects.get(
-            Q(systematic_name__iexact=systematic_name)
-            | Q(common_name__iexact=systematic_name)
-        )
+        gene = Gene.objects.get(id=gene_id)
     except Gene.DoesNotExist:
         raise Http404
 
     sims = (
         GeneSimilarity.objects.filter(gene1=gene)
-        .values_list("gene2__systematic_name", "gene2__common_name", "score", "pvalue")
+        .values_list(
+            "gene2__systematic_name",
+            "gene2__common_name",
+            "score",
+            "pvalue",
+            "gene2__id",
+        )
         .order_by("-score")
         .distinct()
     )
@@ -355,13 +360,11 @@ def similar_dataset_table(request, dataset_id):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def gene_datasets(request, systematic_name):
+def gene_datasets(request, gene_id):
+    import numpy as np
 
     try:
-        gene = Gene.objects.get(
-            Q(systematic_name__iexact=systematic_name)
-            | Q(common_name__iexact=systematic_name)
-        )
+        gene = Gene.objects.get(id=gene_id)
     except Gene.DoesNotExist:
         raise Http404
 
@@ -378,12 +381,26 @@ def gene_datasets(request, systematic_name):
         },
     ]
 
+    # Derive datasets bins here
+    datapoints = (
+        Data.objects.filter(gene=gene)
+        .exclude(Q(value=None) | Q(value=Decimal("NaN")))
+        .order_by("-value")
+        .values_list("value")
+    )
+    count, division = np.histogram([float(x[0]) for x in datapoints])
+    counts = []
+    for i, number in enumerate(count):
+        counts.append({"count": number, "value": division[i + 1]})
+
     context = get_gene_names_context()
     context.update(
         {
             "gene": gene,
             "links": links,
             "active": "explorer",
+            "counts": counts,
+            "division": division,
         }
     )
     return render(request, "genes/gene_datasets.html", context)
@@ -498,12 +515,12 @@ def tag(request, id):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def download_sims(request, systematic_name):
+def download_sims(request, gene_id):
     """Download all GeneSimilary values (based on a gene)"""
     import pandas
 
     try:
-        gene = Gene.objects.get(systematic_name=systematic_name)
+        gene = Gene.objects.get(id=gene_id)
     except Gene.DoesNotExist:
         raise Http404
 
@@ -513,7 +530,7 @@ def download_sims(request, systematic_name):
 
     filename = "%s_gene_similarities_%s.txt" % (
         settings.DOWNLOAD_PREFIX,
-        systematic_name,
+        gene.systematic_name,
     )
 
     df = pandas.DataFrame(sims)
@@ -585,11 +602,11 @@ def download_observable_datasets_list(request, observable_id):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def download_all(request, systematic_name=None):
+def download_all(request, gene_id=None):
     """Download all datasets. If a gene name is provided, filter to those"""
     import pandas
 
-    if systematic_name in ["all", None]:
+    if gene_id in ["all", None]:
         datasets = (
             Dataset.objects.select_related("paper__latest_tested_status__status")
             .filter(paper__latest_data_status__status__name="loaded")
@@ -600,7 +617,7 @@ def download_all(request, systematic_name=None):
 
     else:
         datasets = (
-            Dataset.objects.filter(data__gene__systematic_name=systematic_name)
+            Dataset.objects.filter(data__gene__id=gene_id)
             .select_related("paper__latest_tested_status__status")
             .filter(
                 paper__latest_data_status__status__name="loaded",
@@ -610,8 +627,8 @@ def download_all(request, systematic_name=None):
         )
 
     filename = (
-        "%s_datasets_%s.txt" % (settings.DOWNLOAD_PREFIX, systematic_name)
-        if systematic_name
+        "%s_datasets_%s.txt" % (settings.DOWNLOAD_PREFIX, gene_id)
+        if gene_id
         else "%s_datasets.txt" % settings.DOWNLOAD_PREFIX
     )
 

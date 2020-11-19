@@ -45,7 +45,7 @@ def paper_explorer(request, year=None):
         "datatype",
         "collection",
         "gene",
-        "tag",
+        "tags",
         "year",
         "authors",
         "query",

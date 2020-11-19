@@ -211,7 +211,7 @@ class ConditionSetDetailView(generic.DetailView, RatelimitMixin):
         context["id"] = context["object"].id
         context["links"] = [
             {"url": reverse("common:explorer"), "name": "Explore data"},
-            {"url": reverse("conditions:index"), "name": "Condition Sets"},
+            {"url": reverse("conditions:index"), "name": "Conditions"},
             {
                 "url": reverse(
                     "conditions:conditionset_detail", args=[context["object"].id]

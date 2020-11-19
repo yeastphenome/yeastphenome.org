@@ -36,7 +36,7 @@
         </tr>
         </thead>
         <tbody>
-{% for sim in sims %}<tr><td><a href="/genes/{{ sim.0 }}/">{{ sim.1 }}/{{ sim.0 }}</a></td><td>{{ sim.2 }}</td><td>{{ sim.3|stringformat:".2e" }}</td><td>{{ ranks|lookup:forloop.counter0|floatformat:1 }}%</td></tr>{% endfor %}
+{% for sim in sims %}<tr><td><a href="/genes/{{ sim.4 }}/">{{ sim.1 }}/{{ sim.0 }}</a></td><td>{{ sim.2 }}</td><td>{{ sim.3|stringformat:".2e" }}</td><td>{{ ranks|lookup:forloop.counter0|floatformat:1 }}%</td></tr>{% endfor %}
       </table>
     </div>
     <button class="dataset_similar_download btn btn-info" type="button">Download all</button>
@@ -59,7 +59,7 @@ function download(url){
 $(document).ready(function(){
  
     $(".dataset_similar_download").click(function(){
-        download("{% url 'genes:download_sims' gene.systematic_name %}")
+        download("{% url 'genes:download_sims' gene.id %}")
     })
     {% if gene %}$("#gene-name").val("{{ gene.systematic_name }}")
     $("#similar_table").DataTable({"pageLength": 100,  "order": [[ 2, "asc" ]], "language": {"search": "Filter:"}});{% endif %}

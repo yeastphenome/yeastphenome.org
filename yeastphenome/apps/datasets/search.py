@@ -111,44 +111,36 @@ def run_search_tag_query(query, taglist=None, return_instances=False, collection
         queryset = queryset.filter(collection=collection)
 
     # Prepare querysets
-    tag_query = Q()
-    collection_query = Q()
-    datatype_query = Q()
-    medium_query = Q()
-    phenotype_query = Q()
-    conditions_query = Q()
 
+    all_queries = Q()
     if "tags" in tags:
-        tag_query = Q(tags__name__in=tags["tags"])
+        for tag in tags["tags"]:
+            all_queries = all_queries & Q(tags__name__iregex=tag)
 
     if "collection" in tags:
-        collection_query = Q(collection__name__in=tags["collection"])
+        for tag in tags["collection"]:
+            all_queries = all_queries & Q(collection__name__iregex=tag)
 
     # Only query for data available, data_published / data_measured not useful
     if "datatype" in tags:
-        datatype_query = Q(data_available__name__in=tags["datatype"])
+        for tag in tags["datatype"]:
+            all_queries = all_queries & Q(data_available__name__iregex=tag)
 
     if "medium" in tags:
-        medium_query = Q(medium__display_name__in=tags["medium"])
+        for tag in tags["medium"]:
+            all_queries = all_queries & Q(medium__display_name__iregex=tag)
 
     if "phenotype" in tags:
-        phenotype_query = Q(phenotype__name__in=tags["phenotype"])
+        for tag in tags["phenotype"]:
+            all_queries = all_queries & Q(phenotype__name__iregex=tag)
 
     if "conditions" in tags:
-        print(tags)
-        conditions_query = Q(
-            conditionset__conditions__type__name__iregex="(%s)"
-            % "|".join(tags["conditions"])
-        )
+        for tag in tags["conditions"]:
+            all_queries = all_queries & Q(
+                conditionset__conditions__type__name__iregex=tag
+            )
 
-    results = queryset.filter(
-        tag_query,
-        collection_query,
-        datatype_query,
-        medium_query,
-        phenotype_query,
-        conditions_query,
-    )
+    results = queryset.filter(all_queries)
 
     # Now filter down results more, search all fields for query if defined
     if queries:

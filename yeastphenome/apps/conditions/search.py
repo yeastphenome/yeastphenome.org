@@ -94,34 +94,28 @@ def run_search_tag_query(query, taglist=None):
     queryset = get_conditiontypes()
 
     # Filter querysets
-    tag_query = Q()
-    name_query = Q()
-    chebi_query = Q()
-    other_name_query = Q()
-    pubchem_name_query = Q()
-
+    all_queries = Q()
     if "tags" in tags:
-        tag_query = Q(tags__name__iregex="(" + "$|^".join(tags["tags"]) + ")")
+        for tag in tags["tags"]:
+            all_queries = all_queries & Q(tags__name__iregex=tag)
 
     if "name" in tags:
-        name_query = Q(name__iregex="(" + "$|^".join(tags["name"]) + ")")
+        for tag in tags["name"]:
+            all_queries = all_queries & Q(name__iregex=tag)
 
     if "chebi_name" in tags:
-        chebi_query = Q(chebi_name__iregex="(" + "$|^".join(tags["chebi_name"]) + ")")
+        for tag in tags["chebi_name"]:
+            all_queries = all_queries & Q(chebi_name__iregex=tag)
 
     if "other_name" in tags:
-        other_name_query = Q(
-            other_names__iregex="(" + "$|^".join(tags["other_name"]) + ")"
-        )
+        for tag in tags["other_name"]:
+            all_queries = all_queries & Q(other_name__iregex=tag)
 
     if "pubchem_name" in tags:
-        pubchem_name_query = Q(
-            pubchem_name__iregex="(" + "$|^".join(tags["pubchem_name"]) + ")"
-        )
+        for tag in tags["pubchem_name"]:
+            all_queries = all_queries & Q(pubchem_name__iregex=tag)
 
-    queryset = queryset.filter(
-        tag_query, name_query, chebi_query, other_name_query, pubchem_name_query
-    )
+    queryset = queryset.filter(all_queries)
 
     # Now filter down results more, search all fields for query if defined
     if queries:
