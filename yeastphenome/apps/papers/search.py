@@ -128,10 +128,6 @@ def run_search_tag_query(query=None, taglist=None):
         for tag in tags["year"]:
             all_queries = all_queries & Q(pub_date__iregex=tag)
 
-    if "tags" in tags:
-        for tag in tags["tags"]:
-            all_queries = all_queries & Q(dataset__tags__name__iregex=tag)
-
     if "gene" in tags:
         for tag in tags["tags"]:
             all_queries = all_queries & Q(
@@ -162,6 +158,9 @@ def run_search_tag_query(query=None, taglist=None):
             )
 
     queryset = queryset.filter(all_queries)
+    if "tags" in tags:
+        for tag in tags["tags"]:
+            queryset = queryset.filter(dataset__tags__name__iregex=tag)
 
     # Now filter down results more, search all fields for query if defined
     if queries:

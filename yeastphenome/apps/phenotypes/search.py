@@ -58,10 +58,6 @@ def run_search_tag_query(query=None, taglist=None):
         for tag in tags["observable"]:
             all_queries = all_queries & Q(name__iregex=tag)
 
-    if "tags" in tags:
-        for tag in tags["tags"]:
-            all_queries = all_queries & Q(tags__name__iregex=tag)
-
     if "phenotype" in tags:
         for tag in tags["phenotype"]:
             all_queries = all_queries & Q(phenotype__name__iregex=tag)
@@ -83,4 +79,9 @@ def run_search_tag_query(query=None, taglist=None):
             | Q(phenotype__reporter__iregex=queries)
         )
         queryset = queryset.filter(f).distinct()
+
+    if "tags" in tags:
+        for tag in tags["tags"]:
+            queryset = queryset.filter(tags__name__iregex=tag)
+
     return queryset

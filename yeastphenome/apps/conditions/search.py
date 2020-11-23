@@ -95,9 +95,6 @@ def run_search_tag_query(query, taglist=None):
 
     # Filter querysets
     all_queries = Q()
-    if "tags" in tags:
-        for tag in tags["tags"]:
-            all_queries = all_queries & Q(tags__name__iregex=tag)
 
     if "name" in tags:
         for tag in tags["name"]:
@@ -130,6 +127,12 @@ def run_search_tag_query(query, taglist=None):
         )
 
         queryset = queryset.filter(f).distinct()
+
+    # Tags requires a filter each time to work - the AND assumes the same tag name
+    # has all names (not what we want)
+    if "tags" in tags:
+        for tag in tags["tags"]:
+            queryset = queryset.filter(tags__name__iregex=tag)
 
     # Return the queryset
     return queryset
