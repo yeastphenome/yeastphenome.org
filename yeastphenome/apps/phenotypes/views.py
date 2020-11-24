@@ -35,7 +35,7 @@ def index(request):
     ]
     for key in [
         "observable",
-        "tag",
+        "tags",
         "phenotype",
         "measurement",
         "query",
@@ -131,7 +131,7 @@ class ObservableDetailView(generic.DetailView):
             {"url": reverse("phenotypes:index"), "name": "Phenotypes"},
             {
                 "url": reverse("phenotypes:detail", args=[context["object"].id]),
-                "name": "Mitophagy",
+                "name": context["object"].name,
             },
         ]
 

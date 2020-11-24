@@ -254,7 +254,7 @@ class ConditionSet(models.Model):
 
     def datasets(self):
         return self.datasets_all().exclude(
-            papers__latest_data_status__status__name="not relevant"
+            paper__latest_data_status__status__name="not relevant"
         )
 
     def datasets_edit_link_list(self):

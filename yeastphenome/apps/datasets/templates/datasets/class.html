@@ -11,10 +11,12 @@
 </div>
 {% endblock %}
 {% block scripts %}
-{% include "scripts/tablesorter.html" %}
 <script>
-    $(document).ready(function(){
-        $("#papersTable").tablesorter();
-    });
+  $("#papersTable").DataTable({"pageLength": 10,  
+        "language": {"search": "Filter:"} 
+  });
+  $("#dataset_download").show();
+  add_to_cart()
+  remove_from_cart()
 </script>
 {% endblock %}

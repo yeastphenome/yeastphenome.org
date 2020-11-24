@@ -19,6 +19,31 @@ urlpatterns = [
         name="observable_datasets",
     ),
     path(
+        "medium/<int:medium_id>/datasets",
+        views.GetMediumDatasets.as_view(),
+        name="medium_datasets",
+    ),
+    path(
+        "paper/<int:paper_id>/datasets",
+        views.GetPaperDatasets.as_view(),
+        name="paper_datasets",
+    ),
+    path(
+        "cart/datasets",
+        views.GetCartDatasets.as_view(),
+        name="cart_datasets",
+    ),
+    path(
+        "tag/<int:tag_id>/conditiontypes",
+        views.GetTagConditionTypes.as_view(),
+        name="tag_condition_types",
+    ),
+    path(
+        "conditiontype/<int:conditiontype_id>/datasets/",
+        views.GetConditionTypeDatasets.as_view(),
+        name="conditiontype_datasets",
+    ),
+    path(
         "genes/datasets/<str:systematic_name>/",
         views.GetGeneDatasets.as_view(),
         name="gene_datasets",

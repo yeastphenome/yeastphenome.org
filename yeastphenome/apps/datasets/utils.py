@@ -49,6 +49,10 @@ def prepare_dataset_download(datasets):
     # Load the data into a pandas dataframe
     df = pd.DataFrame.from_records(data.values())
 
+    # If no datasets, return empty
+    if df.empty:
+        return df
+
     # Make sure values are numeric
     df["value"] = df["value"].astype(float)
 

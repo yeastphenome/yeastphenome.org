@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect, reverse
 from django.contrib import messages
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, Http404
 from django.views.decorators.cache import never_cache
 
 from yeastphenome.apps.common.forms import SearchForm
 from yeastphenome.apps.common.utils import (
+    check_download_space,
     get_dataset_sources,
     get_latest_stats,
     get_papers_by_year,
@@ -12,6 +13,8 @@ from yeastphenome.apps.common.utils import (
 )
 from yeastphenome.apps.datasets.models import Dataset
 from yeastphenome.apps.papers.models import Paper
+from yeastphenome.apps.conditions.models import ConditionType, Medium
+from yeastphenome.apps.phenotypes.models import Observable
 
 from ratelimit.decorators import ratelimit
 from yeastphenome.settings import (
@@ -147,7 +150,75 @@ def introduction(request):
     return render(request, "getting-started/introduction.html", context)
 
 
-# Cart Operations
+# Download Operations
+
+
+def add_bulk_datasets(request, datasets, return_message=False):
+    """A shared function to retrieve the downloads from a request, and add bulk
+    datasets to it
+    """
+    if "cart" not in request.session:
+        request.session["cart"] = []
+
+    if not check_download_space(request, datasets):
+        if return_message:
+            return "You are limited to adding no more than 500 datasets to download."
+        return
+
+    added_count = 0
+    for dataset in datasets:
+        if dataset.id not in request.session["cart"]:
+            request.session["cart"].append(dataset.id)
+            request.session.modified = True
+            added_count += 1
+
+    if added_count == 1:
+        message = "1 dataset was added to Downloads."
+    else:
+        message = "%s datasets were added to Downloads." % added_count
+
+    if return_message:
+        return message
+    messages.success(request, message)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def add_to_cart_by_conditiontype(request, conditiontype_id):
+    """Add datasets to the cart based on a conditiontype id"""
+    next = request.GET.get("next")
+    try:
+        ct = ConditionType.objects.get(id=conditiontype_id)
+    except ConditionType.DoesNotExist:
+        raise Http404
+
+    add_bulk_datasets(request, ct.datasets())
+    return redirect(next)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def add_to_cart_by_medium(request, medium_id):
+    """Add datasets to the cart based on a medium id"""
+    next = request.GET.get("next")
+    try:
+        medium = Medium.objects.get(id=medium_id)
+    except Medium.DoesNotExist:
+        raise Http404
+
+    add_bulk_datasets(request, medium.datasets())
+    return redirect(next)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def add_to_cart_by_observable(request, observable_id):
+    """Add datasets to the cart based on a phenotype (observable) id"""
+    next = request.GET.get("next")
+    try:
+        observable = Observable.objects.get(id=observable_id)
+    except Observable.DoesNotExist:
+        raise Http404
+
+    add_bulk_datasets(request, observable.datasets())
+    return redirect(next)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
@@ -160,18 +231,8 @@ def add_to_cart(request, dataset_id, next=None):
     if "cart" not in request.session:
         request.session["cart"] = []
 
-    added_count = 0
-    for d_id in dataset_id.split(","):
-        dataset = Dataset.objects.get(id=d_id)
-        if dataset.id not in request.session["cart"]:
-            request.session["cart"].append(dataset.id)
-            request.session.modified = True
-            added_count += 1
-
-    if added_count == 1:
-        message = "1 dataset was added to your cart."
-    else:
-        message = "%s datasets were added to your cart." % added_count
+    datasets = Dataset.objects.filter(id__in=dataset_id.split(","))
+    message = add_bulk_datasets(request, datasets, return_message=True)
 
     # Return to the same page the user was browsing
     if request.method == "POST":

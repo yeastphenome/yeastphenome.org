@@ -23,7 +23,7 @@ def get_search_tags():
 
     # Tags
     tags = [
-        {"value": x[0], "icon": "🏷️", "code": "tag"}
+        {"value": x[0], "icon": "🏷️", "code": "tags"}
         for x in Tag.objects.values_list("name").distinct()
     ]
 
@@ -52,30 +52,21 @@ def run_search_tag_query(query=None, taglist=None):
     queryset = Observable.objects.order_by("name").all()
 
     # Prepare querysets
-    observables_query = Q()
-    phenotype_query = Q()
-    measurement_query = Q()
-    tag_query = Q()
+    all_queries = Q()
 
-    print(queryset.count())
     if "observable" in tags:
-        observables_query = Q(name__in=tags["observable"])
-
-    if "tag" in tags:
-        tag_query = Q(tags__name__iregex="(" + "$|^".join(tags["tag"]) + ")")
+        for tag in tags["observable"]:
+            all_queries = all_queries & Q(name__iregex=tag)
 
     if "phenotype" in tags:
-        phenotype_query = Q(phenotype__name__in=tags["phenotype"])
+        for tag in tags["phenotype"]:
+            all_queries = all_queries & Q(phenotype__name__iregex=tag)
 
     if "measurement" in tags:
-        measurement_query = Q(phenotype__measurement__name__in=tags["measurement"])
+        for tag in tags["measurement"]:
+            all_queries = all_queries & Q(phenotype__measurement__name__iregex=tag)
 
-    queryset = queryset.filter(
-        observables_query,
-        tag_query,
-        phenotype_query,
-        measurement_query,
-    )
+    queryset = queryset.filter(all_queries)
 
     if queries:
         queries = "(%s)" % "|".join(queries)
@@ -88,4 +79,9 @@ def run_search_tag_query(query=None, taglist=None):
             | Q(phenotype__reporter__iregex=queries)
         )
         queryset = queryset.filter(f).distinct()
+
+    if "tags" in tags:
+        for tag in tags["tags"]:
+            queryset = queryset.filter(tags__name__iregex=tag)
+
     return queryset

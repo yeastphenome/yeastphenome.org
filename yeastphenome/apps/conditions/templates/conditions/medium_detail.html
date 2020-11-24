@@ -1,0 +1,50 @@
+{% extends "base/wide.html" %}
+{% block title %}{{ object|capfirst }} / Experimental conditions / {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-xs-12">
+        <h1>{{ object }}</h1>
+
+        <table class="table">
+            <tr>
+                <th width="20%" scope="row">Systematic name:</th>
+                <td>
+                    {{ object.systematic_name }}
+                </td>
+            </tr>
+            <tr>
+                <th width="20%" scope="row">Common name:</th>
+                <td>
+                    {{ object.common_name }}
+                </td>
+            </tr>
+            <tr>
+                <th width="20%" scope="row">Conditions:</th>
+                <td>{% for condition in object.conditions.all %}
+                       <a href="/conditions/{{ condition.type.id }}/">{{ condition.type.name }}</a>: {{ condition.dose }}{% if forloop.last %}{% else %},{% endif %}
+                    {% endfor %}
+                </td>
+            </tr>
+
+            {% if object.description %}<tr>
+                <th width="20%" scope="row">Description</th>
+                <td>{{ object.description }}</td>
+            </tr>{% endif %}
+        </table>
+        {% include "datasets/datasets_server_render_table.html" with template="medium" %}
+    <a style="padding-right:5px" href="{% url 'datasets:download_medium_datasets' object.id %}"><button id="dataset_download" type="button" class="btn btn-info">Download all</button></a><a href="{% url 'common:add_to_cart_by_medium' object.id %}?next={{ request.path }}"><button type="button" class="btn btn-primary">Add All to Download Later</button></a>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+$(document).ready(function(){
+    $("#papersTable").dataTable({"pageLength": 10, "language": {"search": "Filter:"}, "processing": true, "serverSide": true, "ajax": "{% url 'api:medium_datasets' object.id %}", "lengthMenu": [[10,15,20,25], [10,15,20,25]],
+     "drawCallback": function( settings ) {
+        add_to_cart();
+        remove_from_cart();
+    }
+  });
+});
+</script>
+{% endblock %}

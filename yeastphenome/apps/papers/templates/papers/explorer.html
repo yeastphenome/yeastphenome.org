@@ -58,33 +58,28 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
     <div class="col-md-12">
         <div class="row">
             <div class="col-md-12 public-homepage-side-panel">
-                <h1>Papers</h1>
+                <h1 style="padding-bottom:25px">Papers</h1>
                 <div>
-                  <h3>Search</h3>
                   <input name='tags' value="">
                 </div>
             </div>
-            <!--<div class="col-md-2">
-                <h1></h1>
-                <a href="{% url 'conditions:browse' %}"><button class="btn btn-default" type="button">Browse</button></a>
-            </div>-->
         </div>
         <div class="row">
             <div class="col-md-12" style="padding-top:20px">
                 <form id="searchform" style="display:none">
                 {% csrf_token %}
-               <input type="text" name="q" class="form-control" placeholder="Search (press enter to search only using filters)" required="" id="id_q">
+               <input type="text" name="q" class="form-control" placeholder="Search: e.g., 12482937, Brown GW, MMS, growth" required="" id="id_q">
                 </form>
             </div>
         </div>
         <div class="row">
             <div class="col-md-12" id="message" style="padding-bottom:5px">{% if queryset.count == 0 %}
-                  <div class="alert alert-info">There were no relevant results for your search.</div>
+                  <div id="no-results" class="alert alert-info">There were no relevant results for your search.</div>
                {% endif %}
             </div>
         </div>
         <div class="row">
-            <div class="col-md-12" id="results" style="padding-bottom:30px">{% if queryset.results %}
+            <div class="col-md-12" id="results" style="padding-bottom:30px; padding-top:15px">{% if queryset.results %}
                   {% if queryset.count > 0 %}
                   {% include "papers/papers_table.html" with papers_list=queryset.results %}
             {% endif %}{% endif %}</div>
@@ -112,7 +107,7 @@ var input = document.querySelector('input[name=tags]'),
         whitelist: tags,
         transformTag: transformTag,
         // backspace: "edit",
-        placeholder: "growth, standard, transport",
+        placeholder: "Search: e.g., 12482937, Brown GW, MMS, growth",
         dropdown : {
             enabled: 1,            // show suggestion after 1 typed character
             fuzzySearch: true,    // match only suggestions that starts with the typed characters
@@ -213,7 +208,10 @@ update_placeholder = function() {
 
     // Remove placeholder if there are tags, otherwise reset
     if ($('[name=tags]').val() == ""){
-        $(".tagify__input").attr("data-placeholder", "growth, standard, transport");
+        $(".tagify__input").attr("data-placeholder", "Search: e.g., 12482937, Brown GW, MMS, growth");
+
+        // Remove the message of no results
+        $("#no-results").remove()
     } else {
         $(".tagify__input").attr("data-placeholder", "");
     }

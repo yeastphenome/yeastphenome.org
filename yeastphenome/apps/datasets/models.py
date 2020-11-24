@@ -103,7 +103,7 @@ class Tag(models.Model):
 
     def link_detail(self):
         return mark_safe(
-            '<a href="%s">%s</a>' % (reverse("datasets:tag", args=(self.id,)), self)
+            '<a href="%s?tags=%s">%s</a>' % (reverse("datasets:index"), self.name, self)
         )
 
     def datasets(self):
