@@ -72,22 +72,16 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
                 </form>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-12" id="message" style="padding-bottom:5px">{% if results %}
-               {% if results.count == 0 %}
+        {% if tagslist %}<div class="row">
+            <div class="col-md-12" id="message" style="padding-bottom:5px; display: none">
                   <div id="no-results" class="alert alert-info">There were no relevant results for your search.</div>
-               {% endif %}{% endif %}
             </div>
         </div>
         <div class="row">
-            <div class="col-md-12" id="results" style="padding-bottom:30px">{% if results %}
-               {% if results.count != 0 %}
-                  {% include "datasets/datasets_table.html" with datasets=results.results %}
-               {% endif %}{% else %}
-                  {% include "datasets/datasets_table.html" %}
-            </div>{% endif %}
-        </div>
-
+            <div class="col-md-12" id="results" style="padding-bottom:30px">
+                  {% include "datasets/datasets_server_render_table.html" %}
+            </div>
+        </div>{% endif %}
     </div>
 </div></div></div>
 {% endblock %}
@@ -291,13 +285,21 @@ function doTagsSearch() {
 
 }
 
-{% if datasets or results %}$(document).ready(function(){
-    $("#papersTable").DataTable({"pageLength": 10,  
-        "language": {"search": "Filter:"} 
-    });
-    $("#dataset_download").show();
-    add_to_cart()
-    remove_from_cart()
-});{% endif %}
+$(document).ready(function(){
+    $("#papersTable").dataTable({"pageLength": 10,"language": {"search": "Filter:"}, "processing": true, "serverSide": true, "ajax": "{% if collection_id %}{% url 'api:datasets_query' collection_id %}{% else %}{% url 'api:datasets_query' %}{% endif %}{% for tag in taglist %}{% if forloop.first %}?{% else %}&{% endif %}{{ tag.code }}={{ tag.value }}{% endfor %}", "lengthMenu": [[10,15,20,25], [10,15,20,25]],
+    "drawCallback": function( settings ) {
+       if (settings.aoData.length == 0){
+          $("#message").show();
+          $("#papersTable_wrapper").hide();
+       } else {
+          $("#message").hide();
+          $("#papersTable_wrapper").show();
+       }
+       $("#dataset_download").show();
+       add_to_cart()
+       remove_from_cart()
+    }
+  });
+});
 </script>
 {% endblock %}

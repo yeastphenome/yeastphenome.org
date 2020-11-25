@@ -1,7 +1,7 @@
 {% load my_filters %}
 <div class="row">
     <div class="col-md-12">
-    {% if queryset %}<table id="papersTable" class="tablesorter table table-striped" width="100%">
+    <table id="papersTable" class="tablesorter table table-striped" width="100%">
         <thead id="papersTableHead">
         <tr>
             <th width="25%">Name</th>
@@ -21,18 +21,6 @@
         </tr>{% endfor %}
         </tbody>
     </table>
-	<div class="pagination">
-	    <div class="step-links">
-		{% if queryset.has_previous %}
-		    <a href="?page=1">&laquo; first</a>
-		    <a href="?page={{ queryset.previous_page_number }}">previous</a>
-		{% endif %}
-
-		{% if queryset.has_next %}<span style="float:right">
-		    <a href="?page={{ queryset.next_page_number }}">next</a>
-		    <a href="?page={{ queryset.paginator.num_pages }}">last &raquo;</a>
-		</span>{% endif %}
-	    </div>
-	</div>{% endif %}
+	</div>
     </div>
 </div>

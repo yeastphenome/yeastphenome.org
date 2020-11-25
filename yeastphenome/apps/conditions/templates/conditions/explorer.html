@@ -77,18 +77,16 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
                 </form>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-12" id="message" style="padding-bottom:5px">{% if queryset.count == 0 %}
+        {% if taglist %}<div class="row">
+            <div class="col-md-12" id="message" style="padding-bottom:5px; display:none">
                   <div id="no-results" class="alert alert-info">There were no relevant results for your search.</div>
-               {% endif %}
             </div>
         </div>
         <div class="row">
-            <div class="col-md-12" id="results" style="padding-bottom:30px">{% if queryset.results %}
-                  {% if queryset.count > 0 %}
-                  {% include "conditions/conditions_table.html" with queryset=queryset.results %}
-            {% endif %}{% endif %}</div>
-        </div>
+            <div class="col-md-12" id="results" style="padding-bottom:30px" id="the-table">
+                  {% include "conditions/conditions_table.html" %}
+            </div>
+        </div>{% endif %}
 
     </div>
 </div></div></div>
@@ -201,6 +199,7 @@ add_tags_by_key("other_name")
 add_tags_by_key("chebi_name")
 add_tags_by_key("name")
 add_tags_by_key("query")
+add_tags_by_key("medium")
 add_tags_by_key("q")
 
 update_placeholder = function() {
@@ -284,11 +283,20 @@ function doTagsSearch() {
    })   
 
 }
-
-{% if queryset %}$(document).ready(function(){
-    $("#papersTable").DataTable({"pageLength": 10,  
-        "language": {"search": "Filter:"} 
-    });
-});{% endif %}
+$(document).ready(function(){
+    $("#papersTable").dataTable({"pageLength": 10,"language": {"search": "Filter:"}, "processing": true, "serverSide": true, "ajax": "{% url 'api:conditions_query' %}{% for tag in taglist %}{% if forloop.first %}?{% else %}&{% endif %}{{ tag.code }}={{ tag.value }}{% endfor %}", "lengthMenu": [[10,15,20,25], [10,15,20,25]],
+    "drawCallback": function( settings ) {
+       if (settings.aoData.length == 0){
+          console.log("NO DATA")
+          $("#message").show();
+          $("#papersTable_wrapper").hide();
+       } else {
+          console.log("DATA")
+          $("#message").hide();
+          $("#papersTable_wrapper").show();
+       }
+    }
+  });
+});
 </script>
 {% endblock %}

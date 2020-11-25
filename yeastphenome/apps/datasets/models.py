@@ -314,6 +314,14 @@ class Gene(models.Model):
     # TODO: additional mutations resulting from perturbing gene
     # genome_alterations, acquired_secondary_alterations
 
+    def link_detail(self):
+        """Return the link for the gene detail"""
+        return '<a href="%s">%s/%s</a>' % (
+            reverse("genes:detail", args=[self.id]),
+            self.common_name,
+            self.systematic_name,
+        )
+
     def get_ranked_similar(self, reverse=False):
         """Given a gene, get a sorted listed from the most to least similar.
         Assume each gene represented twice.

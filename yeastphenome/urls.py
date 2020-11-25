@@ -2,7 +2,6 @@ from django.conf.urls import include, url
 from django.contrib import admin
 from django.views.generic.base import TemplateView
 
-from yeastphenome.apps import papers
 from yeastphenome.apps.papers import urls as papers_urls
 from yeastphenome.apps.common import urls as common_urls
 from yeastphenome.apps.phenotypes import urls as phenotypes_urls
@@ -22,12 +21,6 @@ urlpatterns = [
     url(r"^conditions/", include(conditions_urls, namespace="conditions")),
     url(r"^datasets/", include(datasets_urls, namespace="datasets")),
     url(r"^genes/", include(gene_urls, namespace="genes")),
-    # This one papers view should not be nested under papers/ prefix
-    url(
-        r"^contributors/",
-        papers.views.ContributorsListView.as_view(),
-        name="contributors",
-    ),
     url(
         r"^robots\.txt?/$",
         TemplateView.as_view(

@@ -203,5 +203,4 @@ def run_gene_search_tag_query(query):
         | Q(primary_sgdid__iregex=queries)
         | Q(aliases__name__iregex=queries)
     ).distinct()
-
     return results

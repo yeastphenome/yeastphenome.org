@@ -72,18 +72,16 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
                 </form>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-12" id="message" style="padding-bottom:5px">{% if queryset.count == 0 %}
+        {% if taglist %}<div class="row">
+            <div class="col-md-12" id="message" style="padding-bottom:5px;display:none">
                   <div id="no-results" class="alert alert-info">There were no relevant results for your search.</div>
-               {% endif %}
             </div>
         </div>
         <div class="row">
-            <div class="col-md-12" id="results" style="padding-bottom:30px; padding-top:15px">{% if queryset.results %}
-                  {% if queryset.count > 0 %}
-                  {% include "papers/papers_table.html" with papers_list=queryset.results %}
-            {% endif %}{% endif %}</div>
-        </div>
+            <div class="col-md-12" id="results" style="padding-bottom:30px; padding-top:15px">
+                  {% include "papers/papers_table.html" %}
+            </div>
+        </div>{% endif %}
 
     </div>
 </div></div></div>
@@ -286,10 +284,18 @@ function doTagsSearch() {
 
 }
 
-{% if queryset %}$(document).ready(function(){
-    $("#papersTable").DataTable({"pageLength": 10,  
-        "language": {"search": "Filter:"} 
-    });
-});{% endif %}
+$(document).ready(function(){
+    $("#papersTable").dataTable({"pageLength": 10,"language": {"search": "Filter:"}, "processing": true, "serverSide": true, "ajax": "{% if year %}{% url 'api:papers_query' year %}{% else %}{% url 'api:papers_query' %}{% endif %}{% for tag in taglist %}{% if forloop.first %}?{% else %}&{% endif %}{{ tag.code }}={{ tag.value }}{% endfor %}", "lengthMenu": [[10,15,20,25], [10,15,20,25]],
+    "drawCallback": function( settings ) {
+       if (settings.aoData.length == 0){
+          $("#message").show();
+          $("#papersTable_wrapper").hide();
+       } else {
+          $("#message").hide();
+          $("#papersTable_wrapper").show();
+       }
+    }
+  });
+});
 </script>
 {% endblock %}

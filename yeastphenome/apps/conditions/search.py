@@ -75,7 +75,14 @@ def get_search_tags():
         if x not in [None, ""] and not_seen(x)
     ]
 
-    return tags + chebi_names + other_names + names + pubchem_names
+    mediums = [
+        {"value": x, "icon": "📛", "code": "medium"}
+        for x in queryset.values_list(
+            "condition__medium__display_name", flat=True
+        ).distinct()
+        if x not in [None, ""] and not_seen(x)
+    ]
+    return tags + chebi_names + other_names + names + pubchem_names + mediums
 
 
 def run_search_tag_query(query, taglist=None):
@@ -99,6 +106,10 @@ def run_search_tag_query(query, taglist=None):
     if "name" in tags:
         for tag in tags["name"]:
             all_queries = all_queries & Q(name__iregex=tag)
+
+    if "medium" in tags:
+        for tag in tags["medium"]:
+            all_queries = all_queries & Q(condition__medium__display_name__iregex=tag)
 
     if "chebi_name" in tags:
         for tag in tags["chebi_name"]:
@@ -124,6 +135,7 @@ def run_search_tag_query(query, taglist=None):
             | Q(other_names__iregex=queries)
             | Q(pubchem_name__iregex=queries)
             | Q(chebi_name__iregex=queries)
+            | Q(condition__medium__display_name__iregex=queries)
         )
 
         queryset = queryset.filter(f).distinct()

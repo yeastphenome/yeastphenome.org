@@ -1,14 +1,11 @@
-from django.core.paginator import Paginator
 from django.conf import settings
 from django.views import generic
 from django.shortcuts import render, reverse, redirect
 from django.db import models
 from django.http import Http404
 
-# from django.views.decorators.cache import never_cache
 from yeastphenome.apps.phenotypes.models import Observable, Tag
-from yeastphenome.apps.phenotypes.search import get_search_tags, run_search_tag_query
-
+from yeastphenome.apps.phenotypes.search import get_search_tags
 from ratelimit.decorators import ratelimit
 
 from yeastphenome.settings import (
@@ -25,9 +22,6 @@ def redirect_index(request):
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def index(request):
 
-    # Count == 0 indicates a search, no search is set to None
-    queryset = []
-    count = None
     taglist = []
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
@@ -45,25 +39,11 @@ def index(request):
                 continue
             taglist.append({"value": tag, "code": key})
 
-    if taglist:
-        queryset = run_search_tag_query(query=None, taglist=taglist)
-
-        # 50 results per page
-        paginator = Paginator(queryset, 50)
-        page = request.GET.get("page")
-        queryset = paginator.get_page(page)
-        count = len(queryset)
-
-    queryset = {
-        "results": queryset,
-        "count": count,
-    }
-
     return render(
         request,
         "phenotypes/explorer.html",
         {
-            "queryset": queryset,
+            "taglist": taglist,
             "tags": get_search_tags(),
             "links": links,
             "active": "explorer",

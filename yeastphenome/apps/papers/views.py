@@ -1,7 +1,5 @@
-from django.db.models import Q
 from django.views import generic
 from django.shortcuts import render, reverse
-from django.core.paginator import Paginator
 
 from django.views.decorators.cache import never_cache
 
@@ -18,7 +16,7 @@ from django.conf import settings
 
 from ratelimit.mixins import RatelimitMixin
 from ratelimit.decorators import ratelimit
-from yeastphenome.apps.papers.search import get_search_tags, run_search_tag_query
+from yeastphenome.apps.papers.search import get_search_tags
 
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
@@ -30,9 +28,6 @@ from yeastphenome.settings import (
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def paper_explorer(request, year=None):
     """Return a paginated list of papers with the data explorer."""
-    # Count == 0 indicates a search, no search is set to None
-    queryset = []
-    count = None
     taglist = []
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
@@ -55,25 +50,12 @@ def paper_explorer(request, year=None):
                 continue
             taglist.append({"value": tag, "code": key})
 
-    if taglist:
-        queryset = run_search_tag_query(query=None, taglist=taglist)
-
-        # 50 results per page
-        paginator = Paginator(queryset, 50)
-        page = request.GET.get("page")
-        queryset = paginator.get_page(page)
-
-        # Filter to year, if defined
-        if year is not None:
-            queryset = queryset.filter(pub_date=year)
-        count = len(queryset)
-
-    queryset = {"results": queryset, "count": count}
     return render(
         request,
         "papers/explorer.html",
         {
-            "queryset": queryset,
+            "year": year,
+            "taglist": taglist,
             "tags": get_search_tags(),
             "links": links,
             "active": "explorer",
@@ -129,31 +111,6 @@ class PaperDetailView(generic.DetailView, RatelimitMixin):
             xml_data = get_pubmed_paper(paper.pmid)
             context.update(get_pubmed_paper_context(paper.pmid, xml_data))
             context.update(get_paper_references_context(paper, xml_data))
-        return context
-
-
-class ContributorsListView(generic.ListView, RatelimitMixin):
-    model = Paper
-    template_name = "papers/contributors.html"
-    ratelimit_key = "ip"
-    ratelimit_rate = rl_rate
-    ratelimit_block = rl_block
-
-    def get_context_data(self, **kwargs):
-        context = super(ContributorsListView, self).get_context_data(**kwargs)
-        papers_list = Paper.objects.filter(
-            Q(dataset__data_source__acknowledge=True)
-            | Q(dataset__tested_source__acknowledge=True)
-        ).distinct()
-
-        # contributors names, lookup with paper id
-        context["papers_list"] = papers_list
-        context["active"] = "about"
-        context["links"] = [
-            {"url": reverse("common:about"), "name": "About"},
-            {"url": reverse("papers:contributors"), "name": "Paper Contributors"},
-        ]
-
         return context
 
 

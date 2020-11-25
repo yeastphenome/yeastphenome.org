@@ -1,7 +1,6 @@
 import re
 
 from django.conf import settings
-from django.core.paginator import Paginator
 from django.shortcuts import reverse, render, redirect
 from django.views import generic
 from django.http import Http404
@@ -13,7 +12,6 @@ from yeastphenome.apps.datasets.models import Dataset
 from yeastphenome.apps.conditions.search import (
     get_conditiontypes,
     get_search_tags,
-    run_search_tag_query,
 )
 
 from libchebipy import ChebiEntity
@@ -28,10 +26,9 @@ from yeastphenome.settings import (
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def index(request):
-
-    # Count == 0 indicates a search, no search is set to None
-    queryset = []
-    count = None
+    """the conditions explorer uses a server side rendered table, which we
+    generate by passing along a taglist to the view
+    """
     taglist = []
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
@@ -41,6 +38,7 @@ def index(request):
         "pubchem_name",
         "other_name",
         "chebi_name",
+        "medium",
         "name",
         "tags",
         "query",
@@ -50,25 +48,11 @@ def index(request):
                 continue
             taglist.append({"value": tag, "code": key})
 
-    if taglist:
-        queryset = run_search_tag_query(query=None, taglist=taglist)
-
-        # 50 results per page
-        paginator = Paginator(queryset, 50)
-        page = request.GET.get("page")
-        queryset = paginator.get_page(page)
-        count = len(queryset)
-
-    queryset = {
-        "results": queryset,
-        "count": count,
-    }
-
     return render(
         request,
         "conditions/explorer.html",
         {
-            "queryset": queryset,
+            "taglist": taglist,
             "tags": get_search_tags(),
             "links": links,
             "active": "explorer",
@@ -191,8 +175,22 @@ class MediumDetailView(generic.DetailView, RatelimitMixin):
         context["DOWNLOAD_PREFIX"] = settings.DOWNLOAD_PREFIX
         context["USER_AUTH"] = self.request.user.is_authenticated
         context["datasets"] = context["object"].datasets
+        context["active"] = "explorer"
         context["id"] = context["object"].id
         context["template"] = "medium"
+        context["links"] = [
+            {"url": reverse("common:explorer"), "name": "Explore data"},
+            {"url": reverse("conditions:index"), "name": "Conditions"},
+            {
+                "url": "%s?medium=%s"
+                % (reverse("conditions:index"), context["object"].display_name),
+                "name": "Medium",
+            },
+            {
+                "url": reverse("conditions:medium_detail", args=[context["object"].id]),
+                "name": context["object"].display_name,
+            },
+        ]
         return context
 
 
@@ -208,6 +206,7 @@ class ConditionSetDetailView(generic.DetailView, RatelimitMixin):
         context["DOWNLOAD_PREFIX"] = settings.DOWNLOAD_PREFIX
         context["USER_AUTH"] = self.request.user.is_authenticated
         context["datasets"] = context["object"].datasets
+        context["active"] = "explorer"
         context["id"] = context["object"].id
         context["links"] = [
             {"url": reverse("common:explorer"), "name": "Explore data"},
