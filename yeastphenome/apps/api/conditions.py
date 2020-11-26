@@ -3,7 +3,7 @@ from django.conf import settings
 from yeastphenome.apps.papers.templatetags.my_filters import join_and_more
 from yeastphenome.apps.conditions.search import run_search_tag_query as conditions_query
 
-# from yeastphenome.apps.conditions.models import ConditionSet, ConditionType
+from yeastphenome.apps.common.utils import GroupConcat
 from yeastphenome.apps.conditions.models import (
     Tag as ConditionTag,
     ConditionType,
@@ -40,8 +40,6 @@ class RunConditionsQuery(RatelimitMixin, APIView):
         draw = int(request.GET["draw"])
         query = request.GET["search[value]"]
 
-        # Order column and direction
-        # Important: columns 2 (phenotypes) and 3 (papers) doesn't have a simple filter solution
         order = request.GET["order[0][column]"]
         direction = request.GET["order[0][dir]"]  # asc or desc
         order_lookup = {
@@ -49,6 +47,10 @@ class RunConditionsQuery(RatelimitMixin, APIView):
             "0desc": "-name",
             "1asc": "condition__dose",
             "1desc": "-condition_dose",
+            "2asc": "phenotype_list",
+            "2desc": "-phenotype_list",
+            "3asc": "paper_list",
+            "3desc": "-paper_list",
         }
 
         # Empty datatable
@@ -74,6 +76,19 @@ class RunConditionsQuery(RatelimitMixin, APIView):
         if taglist:
             queryset = conditions_query(query=None, taglist=taglist)
             count = len(queryset)
+
+        # Create field to sort phenotypes (2) and conditions (3)
+        if queryset:
+            queryset = queryset.annotate(
+                phenotype_list=GroupConcat(
+                    "condition__conditionset__dataset__phenotype__name", ", "
+                )
+            ).distinct()
+            queryset = queryset.annotate(
+                paper_list=GroupConcat(
+                    "condition__conditionset__dataset__paper__first_author", ", "
+                )
+            ).distinct()
 
         order_by = "%s%s" % (order, direction)
         if order_by in order_lookup and queryset:

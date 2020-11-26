@@ -1,12 +1,13 @@
 from django.conf import settings
 from django.db.models import Q
 
-# from yeastphenome.apps.conditions.models import ConditionSet, ConditionType
 from yeastphenome.apps.phenotypes.models import Observable
 from yeastphenome.apps.papers.templatetags.my_filters import join_and_more
 
 from rest_framework.renderers import JSONRenderer
 from ratelimit.mixins import RatelimitMixin
+from yeastphenome.apps.common.utils import GroupConcat
+
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -82,10 +83,12 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
         order_lookup = {
             "0asc": "name",
             "0desc": "-name",
+            "1asc": "condition_list",
+            "1desc": "-condition_list",
             "2asc": "phenotype__reporter",
             "2desc": "-phenotype__reporter",
-            "3asc": "phenotype__dataset__paper__first_author",
-            "3desc": "-phenotype__dataset__paper__first_author",
+            "3asc": "paper_list",
+            "3desc": "-paper_list",
         }
 
         # Empty datatable
@@ -109,6 +112,17 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
         if taglist:
             queryset = phenotypes_search(query=None, taglist=taglist)
             count = len(queryset)
+
+        # Create field to conditions (1) and papers (4) - this is not distinct
+        if queryset:
+            queryset = queryset.annotate(
+                condition_list=GroupConcat(
+                    "phenotype__dataset__conditionset__conditions__type__name", ", "
+                )
+            ).distinct()
+            queryset = queryset.annotate(
+                paper_list=GroupConcat("phenotype__dataset__paper__first_author", ", ")
+            ).distinct()
 
         order_by = "%s%s" % (order, direction)
         if order_by in order_lookup and queryset:
