@@ -95,6 +95,7 @@ class Observable(models.Model):
             apps.get_model("phenotypes", "Phenotype")
             .objects.exclude(reporter=None)
             .distinct()
+            .order_by("reporter")
             .values_list("reporter")
         )
 
@@ -127,6 +128,7 @@ class Observable(models.Model):
                 condition__conditionset__dataset__phenotype__observable=self,
                 condition__conditionset__dataset__paper__latest_data_status__status__lt=10,
             )
+            .order_by("name")
             .distinct()
         )
 
@@ -135,6 +137,7 @@ class Observable(models.Model):
             apps.get_model("papers", "Paper")
             .objects.filter(dataset__phenotype__observable=self)
             .exclude(latest_data_status__status__name="not relevant")
+            .order_by("first_author")
             .distinct()
         )
 

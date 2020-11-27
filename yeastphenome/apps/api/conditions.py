@@ -1,9 +1,9 @@
 from django.conf import settings
+from django.contrib.postgres.aggregates.general import StringAgg
 
 from yeastphenome.apps.papers.templatetags.my_filters import join_and_more
 from yeastphenome.apps.conditions.search import run_search_tag_query as conditions_query
 
-from yeastphenome.apps.common.utils import GroupConcat
 from yeastphenome.apps.conditions.models import (
     Tag as ConditionTag,
     ConditionType,
@@ -51,6 +51,8 @@ class RunConditionsQuery(RatelimitMixin, APIView):
             "2desc": "-phenotype_list",
             "3asc": "paper_list",
             "3desc": "-paper_list",
+            "4asc": "tag_list",
+            "4desc": "-tag_list",
         }
 
         # Empty datatable
@@ -77,19 +79,28 @@ class RunConditionsQuery(RatelimitMixin, APIView):
             queryset = conditions_query(query=None, taglist=taglist)
             count = len(queryset)
 
-        # Create field to sort phenotypes (2) and conditions (3)
+        # Create field to sort phenotypes (2), conditions (3), and tags (4)
         if queryset:
+            agg_field = "condition__conditionset__dataset__paper__first_author"
             queryset = queryset.annotate(
-                phenotype_list=GroupConcat(
-                    "condition__conditionset__dataset__phenotype__name", ", "
+                paper_list=StringAgg(
+                    agg_field, delimiter=", ", distinct=True, ordering=agg_field
                 )
-            ).distinct()
+            )
+            agg_field = "condition__conditionset__dataset__phenotype__observable__name"
             queryset = queryset.annotate(
-                paper_list=GroupConcat(
-                    "condition__conditionset__dataset__paper__first_author", ", "
+                phenotype_list=StringAgg(
+                    agg_field, delimiter=", ", distinct=True, ordering=agg_field
                 )
-            ).distinct()
+            )
+            agg_field = "tags__name"
+            queryset = queryset.annotate(
+                tag_list=StringAgg(
+                    agg_field, delimiter=", ", distinct=True, ordering=agg_field
+                )
+            )
 
+        print(queryset.first().paper_list)
         order_by = "%s%s" % (order, direction)
         if order_by in order_lookup and queryset:
             print(f"Ordering by {order_by}")

@@ -2,7 +2,6 @@ from django.db.models import Q, F, Count, Sum, Case, When
 from django.db import models
 from django.urls import reverse
 from django.contrib import messages
-from django.db.models import Aggregate, CharField, Value
 
 import numpy as np
 
@@ -14,28 +13,6 @@ from yeastphenome.apps.datasets.models import Dataset, Sourcetype
 
 import collections
 import random
-
-# Aggregate
-
-
-class GroupConcat(Aggregate):
-    """A custom function to concatenate a group. This code comes from
-    https://stackoverflow.com/questions/38017076/annotate-a-comma-separated-list-of-related-items-onto-django-queryset
-    """
-
-    function = "GROUP_CONCAT"
-    template = "%(function)s(%(expressions)s)"
-
-    def __init__(self, expression, delimiter, **extra):
-        output_field = extra.pop("output_field", CharField())
-        delimiter = Value(delimiter)
-        super(GroupConcat, self).__init__(
-            expression, delimiter, output_field=output_field, **extra
-        )
-
-    def as_postgresql(self, compiler, connection):
-        self.function = "STRING_AGG"
-        return super(GroupConcat, self).as_sql(compiler, connection)
 
 
 # Dowloads

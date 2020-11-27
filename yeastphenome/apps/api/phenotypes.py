@@ -6,8 +6,7 @@ from yeastphenome.apps.papers.templatetags.my_filters import join_and_more
 
 from rest_framework.renderers import JSONRenderer
 from ratelimit.mixins import RatelimitMixin
-from yeastphenome.apps.common.utils import GroupConcat
-
+from django.contrib.postgres.aggregates.general import StringAgg
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -115,14 +114,18 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
 
         # Create field to conditions (1) and papers (4) - this is not distinct
         if queryset:
+            agg_field = "phenotype__dataset__paper__first_author"
             queryset = queryset.annotate(
-                condition_list=GroupConcat(
-                    "phenotype__dataset__conditionset__conditions__type__name", ", "
+                paper_list=StringAgg(
+                    agg_field, delimiter=", ", distinct=True, ordering=agg_field
                 )
-            ).distinct()
+            )
+            agg_field = "phenotype__dataset__conditionset__conditions__type__name"
             queryset = queryset.annotate(
-                paper_list=GroupConcat("phenotype__dataset__paper__first_author", ", ")
-            ).distinct()
+                condition_list=StringAgg(
+                    agg_field, delimiter=", ", distinct=True, ordering=agg_field
+                )
+            )
 
         order_by = "%s%s" % (order, direction)
         if order_by in order_lookup and queryset:
