@@ -6,6 +6,9 @@ from yeastphenome.apps.conditions.models import ConditionSet, Medium
 from yeastphenome.apps.datasets.models import Datatype, Gene, Tag, Collection
 from yeastphenome.apps.papers.models import Paper
 
+from yeastphenome.apps.common.utils import escape_regex
+
+
 # Search functions
 
 
@@ -108,7 +111,8 @@ def run_search_tag_query(query=None, taglist=None):
         else:
             if tag["code"] not in tags:
                 tags[tag["code"]] = []
-            tags[tag["code"]].append(tag["value"])
+            value = escape_regex(tag["value"])
+            tags[tag["code"]].append(value)
 
     # Exclude the papers marked as "not relevant"
     queryset = Paper.objects.exclude(
@@ -121,7 +125,7 @@ def run_search_tag_query(query=None, taglist=None):
     if "authors" in tags:
         for tag in tags["authors"]:
             all_queries = all_queries & (
-                Q(first_author__iregex=tag) | Q(last_author__iregex=tag)
+                Q(first_author__icontains=tag) | Q(last_author__iregex=tag)
             )
 
     if "year" in tags:

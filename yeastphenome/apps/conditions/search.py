@@ -1,6 +1,7 @@
 from django.db.models import Q, Count
 
 from yeastphenome.apps.conditions.models import ConditionType, Tag
+from yeastphenome.apps.common.utils import escape_regex
 
 
 def get_conditiontypes():
@@ -95,7 +96,9 @@ def run_search_tag_query(query, taglist=None):
         else:
             if tag["code"] not in tags:
                 tags[tag["code"]] = []
-            tags[tag["code"]].append(tag["value"])
+
+            value = escape_regex(tag["value"])
+            tags[tag["code"]].append(value)
 
     # We want to search through condition types that have a valid paper and > 0 datasets
     queryset = get_conditiontypes()

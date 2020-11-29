@@ -98,7 +98,7 @@ ul.nav li.dropdown:hover ul.dropdown-menu {
         <li class="dropdown">
           <a href="{% url 'common:about' %}" {% if active == "about"%}style="background-color:rgb(177, 103, 24)"{% endif %} role="button" aria-haspopup="true" aria-expanded="false">About <i class="fas fa-caret-down" aria-hidden="true"></i></a>
           <ul class="dropdown-menu dropdown-menu-left">
-            <li><a href="{% url 'common:about' %}">Project</a></li>
+            <li><a href="{% url 'common:project' %}">Project</a></li>
             <li><a href="{% url 'common:contributors' %}">Authors</a></li>
             <li><a href="{% url 'common:data_contributors' %}">Data Contributors</a></li>
             <li><a href="{% url 'common:stats' %}">Stats</a></li>

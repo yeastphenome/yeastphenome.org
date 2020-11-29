@@ -15,7 +15,20 @@ import collections
 import random
 
 
-# Dowloads
+# Search
+
+
+def escape_regex(value):
+    """To use iregex in a search, if regular expression characters are included,
+    we need to search for them verbatim. This function should replace them with
+    an escape character.
+    """
+    for char in ["(", ")", "[", "]", "?"]:
+        value = value.replace(char, "\%s" % char)
+    return value
+
+
+# Downloads
 
 
 def check_download_space(request, datasets):
