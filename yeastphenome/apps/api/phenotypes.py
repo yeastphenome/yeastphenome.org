@@ -160,10 +160,15 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
         data["recordsFiltered"] = count
 
         for observable in queryset:
+            if hasattr(observable, "condition_list"):
+                condition_list = observable.condition_list
+            else:
+                condition_list = join_and_more(observable.conditiontypes(), 7)
+
             data["data"].append(
                 [
                     observable.link_detail(),
-                    join_and_more(observable.conditiontypes(), 7),
+                    condition_list,
                     join_and_more(observable.reporters(), 7),
                     join_and_more(observable.papers(), 7),
                 ]
