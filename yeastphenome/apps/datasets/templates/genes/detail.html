@@ -27,19 +27,6 @@
   overflow-y: auto;
 }
 </style>
-{% if gene %}{% include "style/sidenav.html" %}
-<div class="large-2 columns" id="sidenav">
-    <div>
-        <div class="yeast-navbar" style="position: fixed; top: 35.0rem; left:25.7rem;">
-            <ul class="nav side-nav">
-                <li id="nav-title"><span></span></li>
-                <li id="navbar_details"><a href="#">Overview</a></li>
-                {% if datasets_top or datasets_bottom %}<li id="navbar_datasets"><a href="#datasets">Datasets</a></li>{% endif %}
-                {% if sims.top or sims.bottom %}<li id="navbar_similar"><a href="#similar">Similar Genes</a></li>{% endif %}
-            </ul>
-        </div>
-    </div>
-</div>{% endif %}
 <div class="row" style="padding-top:20px">
     <div class="col-md-12">
         <h1>{{ gene.common_name }} / {{ gene.systematic_name }}</h1>

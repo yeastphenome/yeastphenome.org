@@ -91,12 +91,8 @@ class Observable(models.Model):
         return mark_safe(html)
 
     def reporters(self):
-        return (
-            apps.get_model("phenotypes", "Phenotype")
-            .objects.exclude(reporter=None)
-            .order_by("reporter")
-            .distinct()
-            .values_list("reporter")
+        return self.phenotype_set.exclude(reporter=None).values_list(
+            "reporter", flat=True
         )
 
     def datasets(self):

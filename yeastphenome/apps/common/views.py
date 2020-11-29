@@ -48,10 +48,19 @@ def index(request):
 def about(request):
     links = [
         {"url": reverse("common:about"), "name": "About"},
-        {"url": reverse("common:about"), "name": "Project"},
     ]
     context = {"active": "about", "links": links}
     return render(request, "main/about.html", context)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def project(request):
+    links = [
+        {"url": reverse("common:about"), "name": "About"},
+        {"url": reverse("common:about"), "name": "Project"},
+    ]
+    context = {"active": "about", "links": links}
+    return render(request, "main/project.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)

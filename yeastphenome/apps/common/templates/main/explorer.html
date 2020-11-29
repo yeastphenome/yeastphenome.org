@@ -3,47 +3,37 @@
 {% block content %}
     <div class="col-md-12">
         <div class="row">
-            <h1>Explore data</h1>
-        </div>
-    </div>
-    <div class="col-md-12">
-        <div class="row">
             <div class="col-md-6">
-                <div class="box" style="height:200px">
-                    <p><a class="box-title" href="{% url 'datasets:index' %}">Datasets</a></p>
-                    <p>Search across more than 16K datasets to find data based on paper, phenotype, medium, or condition metrics. You can add one or more datasets to your <a href="{% url 'common:view_cart' %}">download cart</a> to generate a custom download, or navigate to papers to download entire sets. For eat dataset, you can then view dataset metadata, similar datasets, along with phenotypic scores.</p>
-                </div>
-                <hr>
-                <div class="box" style="height:200px">
-                    <p><a class="box-title" href="{% url 'genes:index' %}">Genes</a></p>
-                    <p>Search across over 6K yeast genes, either by a name, alias, or other identifier. For each gene, 
-                       you can then view metadata, most and least similar genes based on other datasets, and phenotypic scores.</p>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="box" style="height:200px">
-                    <p><a class="box-title" href="{% url 'phenotypes:index' %}">Phenotypes</a></p>
-                    <p>Search almost 7K phenotypes described by over 500 observable features. Query based on conditions, reporters used, and papers that published them.</p>
-                </div>
-                <hr>
-                <div class="box" style="height:200px">
-                    <p><a class="box-title" href="{% url 'conditions:index' %}">Conditions</a></p>
-                    <p>A condition can encompass everything from temperature to growth phase, and we encourage you to use the <a href="{% url 'conditions:browse'%}">conditions browser</a> to interactively explore condition counts across papers or datasets. For a search query, you can again search across phenotypes, tags, doses, and names.</p></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-12">
-        <div class="row">
-            <div class="col-md-6">
-                <div class="box" style="height:200px">
+
+                <div class="box" style="height:150px">
                     <p><a class="box-title" href="{% url 'papers:all' %}">Papers</a></p>
-                    <p>Finally, you might just be interested in browsing literature first. The paper search queries across author names, phenotypes, and conditions to give you a list of matching papers to explore. From the detail view of a paper you can find the abstract, other paper metadata, and associated datasets.</p>
+                    <p>The complete list of publications that report at least one genome-scale screen of the yeast knock-out collection. Criteria for inclusion are explained at <a href="{% url 'common:project'%}">Project</a>.</p>
+                </div>
+                <hr>
+                <div class="box" style="height:150px">
+                    <p><a class="box-title" href="{% url 'phenotypes:index' %}">Phenotypes</a></p>
+                    <p>Quantitative (e.g., growth) or discrete (e.g., shape) traits that have been measured or observed across all knock-out mutants in any given screen.</p>
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="box" style="height:200px">
-                    <p><a class="box-title" href="{% url 'common:stats' %}">Statistics</a></p>
-                    <p>Curious about the overall contents of the database? You might be interested to browse the statistics page, which covers everything from counts for different entities to graphs for papers, phenotypes, environments, and datasets.</p>
+
+                <div class="box" style="height:150px">
+                    <p><a class="box-title" href="{% url 'datasets:index' %}">Datasets</a></p>
+                    <p>Each screen of the collection is a dataset that includes a set of tested genes, an experimental condition and an array of quantitative or discrete values describing the phenotype of each gene.</p>
+                </div>
+                <hr>
+                <div class="box" style="height:150px">
+                    <p><a class="box-title" href="{% url 'conditions:index' %}">Conditions</a></p>
+                    <p>Natural environments (e.g., nutrient availability, temperature shifts) and artificial perturbations (e.g., chemical compounds, expression of exogenous proteins) that act as stressors and reveal phenotypes.</p></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="box" style="height:150px">
+                    <p><a class="box-title" href="{% url 'genes:index' %}">Genes</a></p>
+                    <p>All yeast ORFs (verified, uncharacterized and dubious) that have been associated with phenotypes across all datasets.</p>
                 </div>
             </div>
         </div>

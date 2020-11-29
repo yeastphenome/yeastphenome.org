@@ -118,7 +118,8 @@ class ObservableDetailView(generic.DetailView):
         # most similar tags, sort highest on top
         qs = Observable.objects.all().annotate(count=models.Count("pk"))
         qs = qs.filter(tags__in=context["object"].tags.all())
-        context["similar"] = qs.order_by("-count").filter(count__gte=3)
+        context["similar"] = qs.order_by("-count").filter(count__gte=3).order_by("name")
+        context["sorted_tags"] = context["object"].tags.all().order_by("name")
         context["active"] = "explorer"
 
         # list of "sibling" phenotypes -- phenotypes that share the same observable

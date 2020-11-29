@@ -216,6 +216,7 @@ class RunDatasetsQuery(RatelimitMixin, APIView):
                     continue
                 taglist.append({"value": tag, "code": key})
 
+        print(taglist)
         if taglist:
             queryset = datasets_search(
                 query=None,

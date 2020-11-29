@@ -72,7 +72,7 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
                 </form>
             </div>
         </div>
-        {% if tagslist %}<div class="row">
+        {% if taglist %}<div class="row">
             <div class="col-md-12" id="message" style="padding-bottom:5px; display: none">
                   <div id="no-results" class="alert alert-info">There were no relevant results for your search.</div>
             </div>
@@ -289,9 +289,11 @@ $(document).ready(function(){
     $("#papersTable").dataTable({"pageLength": 10,"language": {"search": "Filter:"}, "processing": true, "serverSide": true, "ajax": "{% if collection_id %}{% url 'api:datasets_query' collection_id %}{% else %}{% url 'api:datasets_query' %}{% endif %}{% for tag in taglist %}{% if forloop.first %}?{% else %}&{% endif %}{{ tag.code }}={{ tag.value }}{% endfor %}", "lengthMenu": [[10,15,20,25], [10,15,20,25]],
     "drawCallback": function( settings ) {
        if (settings.aoData.length == 0){
+          console.log('NO RESULT') 
           $("#message").show();
           $("#papersTable_wrapper").hide();
        } else {
+          console.log('RESULT') 
           $("#message").hide();
           $("#papersTable_wrapper").show();
        }
