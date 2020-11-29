@@ -94,8 +94,8 @@ class Observable(models.Model):
         return (
             apps.get_model("phenotypes", "Phenotype")
             .objects.exclude(reporter=None)
-            .distinct()
             .order_by("reporter")
+            .distinct()
             .values_list("reporter")
         )
 
@@ -120,16 +120,16 @@ class Observable(models.Model):
         return mark_safe(html)
 
     def conditiontypes(self):
-        # Unusual specification of "not relevant" papers because, in the other way,
-        # conditiontypes were being filtered out if they were associated with a "not relevant" paper at least once
         return (
             apps.get_model("conditions", "ConditionType")
             .objects.filter(
-                condition__conditionset__dataset__phenotype__observable=self,
-                condition__conditionset__dataset__paper__latest_data_status__status__lt=10,
+                condition__conditionset__dataset__phenotype__observable=self
             )
-            .order_by("name")
+            .exclude(
+                condition__conditionset__dataset__paper__latest_data_status__status__name="not relevant"
+            )
             .distinct()
+            .order_by("name")
         )
 
     def papers(self):
@@ -137,8 +137,8 @@ class Observable(models.Model):
             apps.get_model("papers", "Paper")
             .objects.filter(dataset__phenotype__observable=self)
             .exclude(latest_data_status__status__name="not relevant")
-            .order_by("first_author")
             .distinct()
+            .order_by("first_author")
         )
 
     def papers_str_list(self):

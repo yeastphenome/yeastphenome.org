@@ -127,12 +127,6 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
                 )
             )
 
-        order_by = "%s%s" % (order, direction)
-        if order_by in order_lookup and queryset:
-            print(f"Ordering by {order_by}")
-            queryset = queryset.order_by(order_lookup[order_by])
-            count = queryset.count()
-
         # If there is a filter
         if query and queryset:
             f = (
@@ -144,6 +138,12 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
                 | Q(phenotype__reporter__iregex=query)
             )
             queryset = queryset.filter(f).distinct()
+            count = queryset.count()
+
+        order_by = "%s%s" % (order, direction)
+        if order_by in order_lookup and queryset:
+            print(f"Ordering by {order_by}")
+            queryset = queryset.order_by(order_lookup[order_by])
             count = queryset.count()
 
         if start > count:

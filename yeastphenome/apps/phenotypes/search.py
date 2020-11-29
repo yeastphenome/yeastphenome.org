@@ -49,7 +49,13 @@ def run_search_tag_query(query=None, taglist=None):
             tags[tag["code"]].append(tag["value"])
 
     # A phenotype search actually returns observables
-    queryset = Observable.objects.order_by("name").all()
+    queryset = (
+        Observable.objects.exclude(
+            phenotype__dataset__paper__latest_data_status__status__name="not relevant"
+        )
+        .order_by("name")
+        .all()
+    )
 
     # Prepare querysets
     all_queries = Q()

@@ -107,8 +107,8 @@ class ConditionType(models.Model):
                 Q(dataset__conditionset__conditions__type=self)
                 | Q(dataset__medium__conditions__type=self)
             )
-            .order_by("observable__name")
             .distinct()
+            .order_by("observable__name")
         )
 
     def papers(self):
@@ -119,8 +119,8 @@ class ConditionType(models.Model):
                 | Q(dataset__medium__conditions__type=self)
             )
             .exclude(latest_data_status__status__name="not relevant")
-            .order_by("first_author")
             .distinct()
+            .order_by("first_author")
         )
 
     def datasets(self):
