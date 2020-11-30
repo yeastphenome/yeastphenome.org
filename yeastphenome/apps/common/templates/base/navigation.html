@@ -74,7 +74,7 @@ ul.nav li.dropdown:hover ul.dropdown-menu {
     <!-- Navigation -->
     <div class="collapse navbar-collapse global-navbar" id="global-navbar">
       <ul class="nav navbar-nav navbar-right">
-        <li class="dropdown">
+        <!--<li class="dropdown">
           <a href="{% url 'common:getting-started' %}" {% if active == "getting-started" %}style="background-color:rgb(177, 103, 24)"{% endif %} role="button" aria-haspopup="true" aria-expanded="false">Getting Started <i class="fas fa-caret-down" aria-hidden="true"></i></a>
           <ul class="dropdown-menu dropdown-menu-left">
             <li><a href="{% url 'common:introduction' %}">Introduction</a></li>
@@ -82,7 +82,7 @@ ul.nav li.dropdown:hover ul.dropdown-menu {
             <li><a href="{% url 'common:tutorials' %}">Tutorials</a></li>
             <li><a href="{% url 'common:advanced' %}">Advanced</a></li>
           </ul>
-        </li>
+        </li>-->
         <li class="dropdown">
           <a href="{% url 'common:explorer' %}" {% if active == "explorer" %}style="background-color:rgb(177, 103, 24)"{% endif %} role="button" aria-haspopup="true" aria-expanded="false">Explore Data <i class="fas fa-caret-down" aria-hidden="true"></i></a>
           <ul class="dropdown-menu dropdown-menu-left">
@@ -96,14 +96,13 @@ ul.nav li.dropdown:hover ul.dropdown-menu {
         {% if TWITTER_USERNAME %}<li class="visible-xs-block"><a href="https://twitter.com/{{ TWITTER_USERNAME }}" target="_blank" rel="noopener"><i class="fab fa-twitter"></i> @{{ TWITTER_USERNAME }}</a></li>{% endif %}
         </li>
         <li class="dropdown">
-          <a {% if active == "about"%}style="background-color:rgb(177, 103, 24)"{% endif %} role="button" aria-haspopup="true" data-toggle="dropdown" aria-expanded="false">About <i class="fas fa-caret-down" aria-hidden="true"></i></a>
+          <a href="{% url 'common:about' %}" {% if active == "about"%}style="background-color:rgb(177, 103, 24)"{% endif %} role="button" aria-haspopup="true" aria-expanded="false">About <i class="fas fa-caret-down" aria-hidden="true"></i></a>
           <ul class="dropdown-menu dropdown-menu-left">
-            <li><a href="{% url 'common:about' %}">About</a></li>
-            <li style="margin: 8px 0" role="separator" class="divider"></li>
-            <li><a href="{% url 'papers:contributors' %}">Paper Contributors</a></li>
-            <li><a href="{% url 'common:contributors' %}">Contributors</a></li>
-            <li><a href="{% url 'common:faq' %}">Frequently Asked Questions</a></li>
+            <li><a href="{% url 'common:project' %}">Project</a></li>
+            <li><a href="{% url 'common:contributors' %}">Authors</a></li>
+            <li><a href="{% url 'common:data_contributors' %}">Data Contributors</a></li>
             <li><a href="{% url 'common:stats' %}">Stats</a></li>
+            <li><a href="{% url 'common:faq' %}">Frequently Asked Questions</a></li>
           </ul>
         </li>
        {% if GITHUB_REPOSITORY %}<li><a href="{{ GITHUB_REPOSITORY }}/issues" target="_blank" rel="noopener"><i class="fas fa-comments visible-xs-inline"></i> Support</a></li>{% endif %}
@@ -123,8 +122,9 @@ ul.nav li.dropdown:hover ul.dropdown-menu {
         </li>
       </ul>
       {% if links %}{% with links_length=links|length %}<ul class="nav navbar-nav navbar-left global-navbar second-navbar">
-        {% if links_length > 1 %}{% for link in links %}{% if forloop.first %}<li style="padding-left:100px"><a href="{{ link.url }}" class="nav-link waves-effect" style="text-decoration:none">{% with link_length=link.name|length %}{% if link_length > 150 %}{{ link.name|truncatechars:97 }}{% else %}{{ link.name }}{% endif %}{% endwith %}<img style="padding-left:25px" src="{% static 'images/icons/right-arrow.png' %}" height="20px"><span class="clearfix d-none d-sm-inline-block"></span></a></li>
-        {% elif forloop.last %}<li class="nav-link waves-effect second-nav-link" style="text-decoration:none; cursor: default;">{% with link_length=link.name|length %}{% if link_length > 150 %}{{ link.name|truncatechars:97 }}{% else %}{{ link.name }}{% endif %}{% endwith %}<span class="clearfix d-none d-sm-inline-block"></span></li>
+        {% if links_length == 1 %}<li class="nav-link waves-effect second-nav-link" style="text-decoration:none; cursor: default; padding-left:100px">{% with link_length=links.0.name|length %}{% if link_length > 150 %}{{ links.0.name|truncatechars:97 }}{% else %}{{ links.0.name }}{% endif %}{% endwith %}<span class="clearfix d-none d-sm-inline-block"></span></li>
+        {% elif links_length > 1 %}{% for link in links %}{% if forloop.first %}<li style="padding-left:100px"><a href="{{ link.url }}" class="nav-link waves-effect" style="text-decoration:none">{% with link_length=link.name|length %}{% if link_length > 150 %}{{ link.name|truncatechars:97 }}{% else %}{{ link.name }}{% endif %}{% endwith %}<img style="padding-left:25px" src="{% static 'images/icons/right-arrow.png' %}" height="20px"><span class="clearfix d-none d-sm-inline-block"></span></a></li>
+         {% elif forloop.last %}<li class="nav-link waves-effect second-nav-link" style="text-decoration:none; cursor: default;">{% with link_length=link.name|length %}{% if link_length > 150 %}{{ link.name|truncatechars:97 }}{% else %}{{ link.name }}{% endif %}{% endwith %}<span class="clearfix d-none d-sm-inline-block"></span></li>
       {% else %}<li><a href="{{ link.url }}" class="nav-link waves-effect" style="text-decoration:none">{% with link_length=link.name|length %}{% if link_length > 150 %}{{ link.name|truncatechars:97 }}{% else %}{{ link.name }}{% endif %}{% endwith %}<img style="padding-left:25px" src="{% static 'images/icons/right-arrow.png' %}" height="20px"><span class="clearfix d-none d-sm-inline-block"></span></a></li>{% endif %}
       {% endfor %}{% endif %}
       </ul>{% endwith %}{% endif %}

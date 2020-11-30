@@ -1,6 +1,7 @@
 from django.db.models import Q
 
 from yeastphenome.apps.phenotypes.models import Phenotype, Observable, Tag, Measurement
+from yeastphenome.apps.common.utils import escape_regex
 
 # Search functions
 
@@ -46,10 +47,11 @@ def run_search_tag_query(query=None, taglist=None):
         else:
             if tag["code"] not in tags:
                 tags[tag["code"]] = []
-            tags[tag["code"]].append(tag["value"])
+            value = escape_regex(tag["value"])
+            tags[tag["code"]].append(value)
 
     # A phenotype search actually returns observables
-    queryset = Observable.objects.order_by("name").all()
+    queryset = Observable.objects.all().order_by("name")
 
     # Prepare querysets
     all_queries = Q()
@@ -71,7 +73,7 @@ def run_search_tag_query(query=None, taglist=None):
     if queries:
         queries = "(%s)" % "|".join(queries)
         f = (
-            Q(name__icontains=queries)
+            Q(name__iregex=queries)
             | Q(tags__name__iregex=queries)
             | Q(phenotype__name__iregex=queries)
             | Q(phenotype__description__iregex=queries)

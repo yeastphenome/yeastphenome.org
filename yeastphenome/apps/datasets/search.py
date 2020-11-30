@@ -1,5 +1,6 @@
 from django.db.models import Q
 
+from yeastphenome.apps.common.utils import escape_regex
 from yeastphenome.apps.phenotypes.models import Phenotype
 from yeastphenome.apps.conditions.models import Medium, Condition
 from yeastphenome.apps.datasets.models import (
@@ -100,7 +101,8 @@ def run_search_tag_query(query, taglist=None, return_instances=False, collection
         else:
             if tag["code"] not in tags:
                 tags[tag["code"]] = []
-            tags[tag["code"]].append(tag["value"])
+            value = escape_regex(tag["value"])
+            tags[tag["code"]].append(value)
 
     queryset = Dataset.objects.exclude(
         paper__latest_data_status__status__name="not relevant"
@@ -203,5 +205,4 @@ def run_gene_search_tag_query(query):
         | Q(primary_sgdid__iregex=queries)
         | Q(aliases__name__iregex=queries)
     ).distinct()
-
     return results

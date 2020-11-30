@@ -3,8 +3,6 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, reverse
 from django.conf import settings
-from django.core.paginator import Paginator
-from django.contrib import messages
 from django.views import generic
 
 from django.views.decorators.cache import never_cache
@@ -17,13 +15,10 @@ from yeastphenome.apps.datasets.models import (
     Gene,
     GeneAlias,
     GeneSimilarity,
-    Collection,
 )
 from yeastphenome.apps.datasets.search import (
     get_search_tags,
     get_gene_search_tags,
-    run_search_tag_query,
-    run_gene_search_tag_query,
 )
 from yeastphenome.apps.datasets.utils import (
     get_gene_metadata,
@@ -168,7 +163,13 @@ def get_dataset_gene_table_context(dataset):
 
     gene_ids = [gene[2] for gene in genes]
     genes = [
-        {"label": x[0], "value": float(x[1]), "name": x[3], "rank": round(ranks[i], 3)}
+        {
+            "label": x[0],
+            "gene_id": x[2],
+            "value": float(x[1]),
+            "name": x[3],
+            "rank": round(ranks[i], 3),
+        }
         for i, x in enumerate(genes)
         if x[3]
     ]
@@ -200,25 +201,17 @@ def gene_explorer(request):
                 continue
             taglist.append(tag)
 
+    print(taglist)
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
         {"url": reverse("genes:index"), "name": "Genes"},
     ]
-    context = {"links": links, "active": "explorer", "tags": get_gene_search_tags()}
-
-    # Use same function above to update search results
-    queryset = []
-    if taglist:
-        queryset = run_gene_search_tag_query(taglist)
-
-        # 50 results per page
-        paginator = Paginator(queryset, 50)
-        page = request.GET.get("page")
-        context["results"] = {
-            "results": paginator.get_page(page),
-            "count": queryset.count(),
-        }
-
+    context = {
+        "links": links,
+        "active": "explorer",
+        "tags": get_gene_search_tags(),
+        "taglist": taglist,
+    }
     return render(request, "genes/index.html", context)
 
 
@@ -420,21 +413,7 @@ def data_explorer(request, collection_id=None):
     parameters to derive tags and a query. This will enable users to copy
     a particular search and share it with colleagues.
     """
-    # The user can optionally be searching by a collection
-    collection = None
-    if collection_id:
-        try:
-            collection = Collection.objects.get(id=collection_id)
-            messages.info(
-                request,
-                "Datasets shown are for collection %s (%s)"
-                % (collection.name, collection.shortname),
-            )
-        except Collection.DoesNotExist:
-            messages.warning(
-                request, "We could not find collection with id %s" % collection_id
-            )
-
+    # Table will be rendered server side, and we pass query parameters
     taglist = []
     for key in [
         "datatype",
@@ -455,28 +434,14 @@ def data_explorer(request, collection_id=None):
         {"url": reverse("datasets:index"), "name": "Datasets"},
     ]
     context = {
+        "taglist": taglist,
+        "collection_id": collection_id,
         "links": links,
         "active": "explorer",
         "tags": get_search_tags(),
         "cart": request.session.get("cart", []),
         "DOWNLOAD_PREFIX": settings.DOWNLOAD_PREFIX,
     }
-
-    # Use same function above to update search results
-    queryset = []
-    if taglist:
-        queryset = run_search_tag_query(
-            query=None, taglist=taglist, return_instances=True, collection=collection
-        )
-
-        # 50 results per page
-        paginator = Paginator(queryset, 50)
-        page = request.GET.get("page")
-        context["results"] = {
-            "results": paginator.get_page(page),
-            "count": queryset.count(),
-        }
-
     return render(request, "datasets/explorer.html", context)
 
 

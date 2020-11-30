@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect, reverse
+from django.views import generic
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse, Http404
 from django.views.decorators.cache import never_cache
+from django.db.models import Q
 
 from yeastphenome.apps.common.forms import SearchForm
 from yeastphenome.apps.common.utils import (
@@ -17,6 +19,7 @@ from yeastphenome.apps.conditions.models import ConditionType, Medium
 from yeastphenome.apps.phenotypes.models import Observable
 
 from ratelimit.decorators import ratelimit
+from ratelimit.mixins import RatelimitMixin
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
     VIEW_RATE_LIMIT_BLOCK as rl_block,
@@ -43,9 +46,21 @@ def index(request):
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def about(request):
-    links = [{"url": reverse("common:about"), "name": "About"}]
+    links = [
+        {"url": reverse("common:about"), "name": "About"},
+    ]
     context = {"active": "about", "links": links}
     return render(request, "main/about.html", context)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def project(request):
+    links = [
+        {"url": reverse("common:about"), "name": "About"},
+        {"url": reverse("common:about"), "name": "Project"},
+    ]
+    context = {"active": "about", "links": links}
+    return render(request, "main/project.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
@@ -73,14 +88,41 @@ def stats(request):
     return render(request, "main/stats.html", context)
 
 
+# Contributors
+
+
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def contributors(request):
     links = [
         {"url": reverse("common:about"), "name": "About"},
-        {"url": reverse("common:contributors"), "name": "Contributors"},
+        {"url": reverse("common:contributors"), "name": "Authors"},
     ]
     context = {"active": "about", "links": links}
     return render(request, "main/contributors.html", context)
+
+
+class ContributorsListView(generic.ListView, RatelimitMixin):
+    model = Paper
+    template_name = "papers/contributors.html"
+    ratelimit_key = "ip"
+    ratelimit_rate = rl_rate
+    ratelimit_block = rl_block
+
+    def get_context_data(self, **kwargs):
+        context = super(ContributorsListView, self).get_context_data(**kwargs)
+        papers_list = Paper.objects.filter(
+            Q(dataset__data_source__acknowledge=True)
+            | Q(dataset__tested_source__acknowledge=True)
+        ).distinct()
+
+        # contributors names, lookup with paper id
+        context["papers_list"] = papers_list
+        context["active"] = "about"
+        context["links"] = [
+            {"url": reverse("common:about"), "name": "About"},
+            {"url": reverse("common:data_contributors"), "name": "Data Contributors"},
+        ]
+        return context
 
 
 # Warmup requests (for app engine)

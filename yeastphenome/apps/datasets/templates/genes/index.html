@@ -74,20 +74,15 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
             </div>
         </div>
         <div class="row">
-            <div class="col-md-12" id="message" style="padding-bottom:5px">{% if results %}
-               {% if results.count == 0 %}
+            <div class="col-md-12" id="message" style="padding-bottom:5px; display:none">
                   <div id="no-results" class="alert alert-info">There were no relevant results for your search.</div>
-               {% endif %}{% endif %}
             </div>
         </div>
         <div class="row">
-            <div class="col-md-12" id="results" style="padding-bottom:30px">{% if results %}
-               {% if results.count != 0 %}
-                  {% include "genes/genes_table.html" with genes=results.results %}
-               {% endif %}
-            </div>{% endif %}
+            <div class="col-md-12" id="results" style="padding-bottom:30px">
+                  {% include "genes/genes_table.html" %}
+            </div>
         </div>
-
     </div>
 </div></div></div>
 {% endblock %}
@@ -280,10 +275,18 @@ function doTagsSearch() {
 
 }
 
-{% if results %}$(document).ready(function(){
-    $("#papersTable").DataTable({"pageLength": 10,  
-        "language": {"search": "Filter:"} 
-    });
-});{% endif %}
+$(document).ready(function(){
+    $("#papersTable").dataTable({"pageLength": 10,"language": {"search": "Filter:"}, "processing": true, "serverSide": true, "ajax": "{% url 'api:genes_query' %}{% for tag in taglist %}{% if forloop.first %}?{% else %}&{% endif %}query={{ tag }}{% endfor %}", "lengthMenu": [[10,15,20,25], [10,15,20,25]],
+    "drawCallback": function( settings ) {
+       if (settings.aoData.length == 0){
+          $("#message").show();
+          $("#papersTable_wrapper").hide();
+       } else {
+          $("#message").hide();
+          $("#papersTable_wrapper").show();
+       }
+    }
+  });
+});
 </script>
 {% endblock %}

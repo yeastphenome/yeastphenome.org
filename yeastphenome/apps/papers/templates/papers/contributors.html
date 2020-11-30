@@ -5,7 +5,7 @@
 <div class="row">
     <div class="col-md-12">
          {{ author_lookup }}
-        <h1>Contributors <span style='float:right'>🗒️</span></h1>
+        <h1>Contributors</h1>
         {% if papers_list.count != 0 %}<p>A special thanks goes to the authors of these <strong>{{ papers_list.count }} publications</strong> who have provided unpublished versions of their datasets, including raw quantitative data and/or lists of tested genes.</p>{% endif %}
         {% if papers_list %}
         <table id="papersTable" class="tablesorter table table-condensed" width="100%">
@@ -20,8 +20,8 @@
             {% for paper in papers_list %}<tr>
               <td>{{ paper.acknowledgements_str_list }}</td>
               <td>{{ paper.link_detail|safe }}</td>
-              <td>{{ paper.acknowledge_data|yesno:'<span class="yes">yes</span>,<span class="no">no</span>,'|safe }}</td>
-              <td>{{ paper.acknowledge_tested|yesno:'<span class="yes">yes</span>,<span class="no">no</span>,'|safe }}</td>
+              <td>{{ paper.acknowledge_data|yesno:'<span class="yes">✔️</span>,<span class="no"></span>,'|safe }}</td>
+              <td>{{ paper.acknowledge_tested|yesno:'<span class="yes">✔️</span>,<span class="no"></span>,'|safe }}</td>
             </tr>{% endfor %}
           </tbody>
         </table>
@@ -30,10 +30,9 @@
 </div>
 {% endblock %}
 {% block scripts %}
-{% include "scripts/tablesorter.html" %}
 <script>
 $(document).ready(function(){
- $("#papersTable").tablesorter();
+ $("#papersTable").DataTable({"language": {"search": "Filter:"}});
 });
 </script>
 {% endblock %}

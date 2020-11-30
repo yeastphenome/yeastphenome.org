@@ -7,27 +7,13 @@
         <h1>{{ object }}</h1>
     </div>
 </div>
-{% include "style/sidenav.html" %}
-<div class="large-2 columns" id="sidenav">
-    <div>
-        <div class="yeast-navbar" style="position: fixed; top: 25.0rem; left:25.7rem;">
-            <ul class="nav side-nav">
-                <li id="nav-title"><span></span></li>
-                <li id="navbar_details"><a href="#">Overview</a></li>
-                <li id="navbar_datasets"><a href="#datasets">Datasets</a></li>
-                <li id="navbar_curation"><a href="#curation">Curation</a></li>
-                <li id="navbar_citations"><a href="#citations">Citations</a></li>
-            </ul>
-        </div>
-    </div>
-</div>
 
 {% if object.pmid != 0 %}<div class="row">
     <div class="col-md-12">
         <table class="table">
             <tr>
                 <th width="20%" scope="row" class="first">Pubmed ID</th>
-                <td class="first"><a class="external" href="https://www.ncbi.nlm.nih.gov/pubmed/{{ object.pmid }}/">{{ object.pmid }}</a></td>
+                <td class="first"><a target="_blank" class="external" href="https://www.ncbi.nlm.nih.gov/pubmed/{{ object.pmid }}/">{{ object.pmid }}</a></td>
             </tr>
             <tr>
                 <th scope="row">Title</th>
@@ -57,7 +43,7 @@
             </tr>{% endif %}
             <tr>
                 <th scope="row">Raw data & curation code</th>
-                <td><a target="_blank" title="This repository is private and will soon be made public." href="https://github.com/baryshnikova-lab/yeastphenome-data/tree/master/Datasets/17785683">Dataset on GitHub</a> (<i>Coming soon!</i>)</td>
+                <td><a class="inactive external" target="_blank" title="This repository is private and will soon be made public." href="https://github.com/baryshnikova-lab/yeastphenome-data/tree/master/Datasets/{{ object.pmid }}" onclick="return false;" disabled>Dataset on GitHub</a> (<i>Coming soon!</i>)</td>
             </tr>
         </table>
     </div>
