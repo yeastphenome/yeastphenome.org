@@ -39,6 +39,7 @@ def index(request):
                 continue
             taglist.append({"value": tag, "code": key})
 
+    print(taglist)
     return render(
         request,
         "phenotypes/explorer.html",

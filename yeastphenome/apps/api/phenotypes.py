@@ -161,7 +161,7 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
 
         for observable in queryset:
             if hasattr(observable, "condition_list"):
-                condition_list = observable.condition_list
+                condition_list = join_and_more(observable.condition_list.split(","), 7)
             else:
                 condition_list = join_and_more(observable.conditiontypes(), 7)
 

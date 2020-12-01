@@ -1,12 +1,17 @@
-{% extends "base/base.html" %}
+{% extends "base/wide.html" %}
 {% load static %}
 {% load humanize %}
 {% block content %}
 <style>
 </style>
-<div class="col-xs-8 left-content">
 <div class="row">
-    <div class="col-md-12 box">
+    <div class="col-md-12">
+      <h1>Project</h1>
+    </div>
+</div>
+<div class="col-xs-12" style="margin-bottom: 50px;">
+<div class="row">
+    <div class="col-xs-12 box">
         <h3 id="about">About</h3>
         <p>YeastPhenome.org is a collaborative project that builds and maintains the compendium of systematic loss-of-function <a href="{% url 'phenotypes:index' %}">phenotypes</a> for budding yeast <span style="text-decoration:italic">Saccharomyces cerevisiae.</span></p>
         <p>As part of this project, we track, collect and annotate all published phenotypic screens that involve the yeast knock-out collection [ref]. We extract the data, standardize their format and structure and make them available for search, download and analysis. Our main goal is to enable ourselves and others to answer the following questions:
@@ -86,38 +91,6 @@
         <p style="margin-top:30px"><code style="padding:20px;">The YeastPhenome.org Database, www.yeastphenome.org, accessed on XXXX-XX-XX.</code></p>
     </div>
 </div>
-</div>
-
-<!-- Right sidebar, goes away for small screens -->
-<div class="col-xs-3 right-sidebar sidebar-fixed" style="padding:0px; padding-top:20px">
-    <div class="mini-submenu">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-    </div>
-    <div class="list-group">
-        <span href="#" class="list-group-item active">
-            What do you want to know?
-        </span>
-        <a href="#" onclick="topFunction()" class="list-group-item">
-            About
-        </a>
-        <a href="#criteria" class="list-group-item">
-            Criteria for inclusion
-        </a>
-        <a href="#datasources" class="list-group-item">
-            Data sources
-        </a>
-        <a href="#datahandling" class="list-group-item">
-            Data handling
-        </a>
-        <a href="#dataphilosophy" class="list-group-item">
-            General philosophy about data collection
-        </a>
-        <a href="#citation" class="list-group-item">
-            Data usage and citation policy
-        </a>
-    </div>
 </div>
 {% endblock %}
 {% block scripts %}

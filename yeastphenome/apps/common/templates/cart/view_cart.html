@@ -3,21 +3,10 @@
 {% block content %}
 <div class="row">
     <div class="col-md-8 mb-4">
-        <h1>Datasets Downloads</h1>
+        <h1>Download Cart</h1>
         {% if datasets %}
 	<form action="{% url 'datasets:download' %}" method="GET" class="card-body">
-        <table id="papersTable" class="table table-condensed table-hover" width="100%">
-        <thead>
-        <th>ID</th>
-        <th>Paper</th>
-        <th>Phenotype</th>
-        <th>Condition</th>
-        <th>Medium</th>
-        <th>Collection</th>
-        <th>Data</th>
-        <th>Download</th>
-        </thead>
-    </table>
+                  {% include "datasets/datasets_server_render_table.html" %}
         <hr class="mb-4">
         <button class="btn btn-primary btn-lg btn-block" type="submit">Download</button>
         </form>
@@ -47,7 +36,11 @@
 {% block scripts %}
 <script>
 $(document).ready(function(){
-    $("#papersTable").dataTable({"pageLength": 10,"language": {"search": "Filter:"}, "processing": true, "serverSide": true, "ajax": "{% url 'api:cart_datasets' %}", "lengthMenu": [[10,15,20,25], [10,15,20,25]]});
+    $("#papersTable").dataTable({"pageLength": 10,"language": {"search": "Filter:"}, "processing": true, "serverSide": true, "ajax": "{% url 'api:cart_datasets' %}", "lengthMenu": [[10,15,20,25], [10,15,20,25]],
+    "drawCallback": function( settings ) {
+       add_to_cart()
+       remove_from_cart()
+    }});
 });
 
 $("form").submit(function( event ) {

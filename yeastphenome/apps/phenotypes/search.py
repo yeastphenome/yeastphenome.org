@@ -12,25 +12,25 @@ def get_search_tags():
     """
     # Observables
     observables = [
-        {"value": x[0], "icon": "👁️", "code": "observable"}
+        {"value": x[0].replace(",", ""), "icon": "👁️", "code": "observable"}
         for x in Observable.objects.values_list("name").distinct()
     ]
 
     # Phenotypes
     phenotypes = [
-        {"value": x[0], "icon": "🐶", "code": "phenotype"}
+        {"value": x[0].replace(",", ""), "icon": "🐶", "code": "phenotype"}
         for x in Phenotype.objects.values_list("name").distinct()
     ]
 
     # Tags
     tags = [
-        {"value": x[0], "icon": "🏷️", "code": "tags"}
+        {"value": x[0].replace(",", ""), "icon": "🏷️", "code": "tags"}
         for x in Tag.objects.values_list("name").distinct()
     ]
 
     # Measurements
     measurements = [
-        {"value": x[0], "icon": "🌡️", "code": "measurement"}
+        {"value": x[0].replace(",", ""), "icon": "🌡️", "code": "measurement"}
         for x in Measurement.objects.values_list("name").distinct()
     ]
 
@@ -86,4 +86,4 @@ def run_search_tag_query(query=None, taglist=None):
         for tag in tags["tags"]:
             queryset = queryset.filter(tags__name__iregex=tag)
 
-    return queryset
+    return queryset.distinct()

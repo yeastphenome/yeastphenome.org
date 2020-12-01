@@ -45,6 +45,15 @@ def index(request):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def support(request):
+    links = [
+        {"url": reverse("common:support"), "name": "Support"},
+    ]
+    context = {"links": links, "active": "support"}
+    return render(request, "main/support.html", context)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def about(request):
     links = [
         {"url": reverse("common:about"), "name": "About"},
@@ -92,7 +101,7 @@ def stats(request):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def contributors(request):
+def authors(request):
     links = [
         {"url": reverse("common:about"), "name": "About"},
         {"url": reverse("common:contributors"), "name": "Authors"},
@@ -321,8 +330,26 @@ def clear_cart(request):
 
 @never_cache
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def download_bundles(request):
+    """A page with pre-prepared archives to download"""
+    links = [
+        {"url": reverse("common:download_bundles"), "name": "Bundle Downloads"},
+    ]
+    context = {"active": "downloads", "links": links}
+    return render(request, "cart/bundles.html", context)
+
+
+@never_cache
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def view_cart(request):
     """View all datasets in the cart, and provide a button to download."""
+    links = [
+        {"url": reverse("common:view_cart"), "name": "View Cart"},
+    ]
     cart = request.session.get("cart", [])
-    context = {"datasets": Dataset.objects.filter(id__in=cart), "active": "downloads"}
+    context = {
+        "datasets": Dataset.objects.filter(id__in=cart),
+        "active": "downloads",
+        "links": links,
+    }
     return render(request, "cart/view_cart.html", context)

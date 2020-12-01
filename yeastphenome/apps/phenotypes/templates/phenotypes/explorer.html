@@ -55,7 +55,6 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
     min-height: 11ch;
 }
 </style>
-    <div class="col-md-12">
         <div class="row">
             <div class="col-md-12 public-homepage-side-panel">
                 <h1>Phenotypes</h1>
@@ -88,7 +87,7 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
         </div>{% endif %}
 
     </div>
-</div></div></div>
+</div></div>
 {% endblock %}
 {% block scripts %}
 
@@ -255,10 +254,11 @@ function doTagsSearch() {
        if (query.tags.length > 0) {
            $.each(JSON.parse(query.tags), function(i, e){          
               console.log(e)
+              // commas in tag need to be preserved
               if (!(e['code'] in tags)) {
                   tags[e['code']] = e['value']
               } else {
-                  tags[e['code']] += "," + e['value']  
+                  tags[e['code']] += "," + e['value']
               }
            })
        }

@@ -1,7 +1,12 @@
-{% extends "base/base.html" %}
+{% extends "base/wide.html" %}
 {% load humanize %}
 {% block content %}
-<div class="col-xs-8 left-content">
+<div class="row">
+    <div class="col-md-12">
+      <h1>Stats</h1>
+    </div>
+</div>
+<div class="col-xs-12">
 <div class="row">
     <div class="col-md-12 box">
         <h3>Summary stats ({% now "M. d, Y" %})</h3>
@@ -143,39 +148,5 @@
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-12 box">
-        <h3 id="datasets">Datasets</h3>
-           {% include "graphs/dataset-sources.html" %}
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-12 box">
-        <h3 id="phenotypes">Phenotypes</h3>
-            {% include "graphs/phenotype-measurements.html" %}
-    </div>
-</div>
-
-</div>
-
-<!-- Right sidebar, goes away for small screens -->
-<div class="col-xs-2 right-sidebar sidebar-fixed" style="padding:0px; padding-top:20px">
-    <div class="mini-submenu">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-    </div>
-    <div class="list-group">
-        <span href="#" class="list-group-item active">
-            Publications
-        </span>
-        <a href="#phenotypes" class="list-group-item">
-            Phenotypes
-        </a>
-        <a href="#datasets" class="list-group-item">
-            Datasets
-        </a>
-    </div>
 </div>
 {% endblock %}

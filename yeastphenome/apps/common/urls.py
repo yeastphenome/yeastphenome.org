@@ -8,17 +8,19 @@ from . import graphs
 urlpatterns = [
     path("", views.index, name="index"),
     path("about/", views.about, name="about"),
+    path("support/", views.support, name="support"),
     path("about/project", views.project, name="project"),
     path("about/stats/", views.stats, name="stats"),
     path("about/faq/", views.faq, name="faq"),
     path("explore/", views.explorer, name="explorer"),
-    path("about/contributors/", views.contributors, name="contributors"),
+    path("about/authors/", views.authors, name="contributors"),
     path(
         "about/data_contributors/",
         views.ContributorsListView.as_view(),
         name="data_contributors",
     ),
     path("cart/", views.view_cart, name="view_cart"),
+    path("cart/bundles/", views.download_bundles, name="download_bundles"),
     path("cart/add/<str:dataset_id>/", views.add_to_cart, name="add_to_cart"),
     path("cart/add/<str:dataset_id>/<str:next>", views.add_to_cart, name="add_to_cart"),
     path(

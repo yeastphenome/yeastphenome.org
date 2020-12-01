@@ -23,7 +23,7 @@ var myChart = new Chart(ctx, {
     datasets: [{
       label: "Phenotype Measurement Counts",
       data: [{% for name, count in phenotype_measurements.items %}{{ count }}{% if forloop.last %}{% else %},{% endif %}{% endfor %}],
-      backgroundColor: [{% for name, count in phenotype_measurements.items %}"rgb(177, 103, 24)"{% if forloop.last %}{% else %},{% endif %}{% endfor %}],
+      backgroundColor: [{% for name, count in phenotype_measurements.items %}"rgb(55, 121, 238)"{% if forloop.last %}{% else %},{% endif %}{% endfor %}],
     }]
   },
   options: {
