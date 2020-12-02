@@ -6,6 +6,9 @@ from yeastphenome.apps.conditions.models import ConditionSet, Medium
 from yeastphenome.apps.datasets.models import Datatype, Gene, Tag, Collection
 from yeastphenome.apps.papers.models import Paper
 
+from yeastphenome.apps.common.utils import escape_regex
+
+
 # Search functions
 
 
@@ -51,7 +54,7 @@ def get_search_tags():
 
     # Tags (from dataset)
     tags = [
-        {"value": x[0], "icon": "🏷️", "code": "tag"}
+        {"value": x[0], "icon": "🏷️", "code": "tags"}
         for x in Tag.objects.values_list("name").distinct()
     ]
 
@@ -108,7 +111,8 @@ def run_search_tag_query(query=None, taglist=None):
         else:
             if tag["code"] not in tags:
                 tags[tag["code"]] = []
-            tags[tag["code"]].append(tag["value"])
+            value = escape_regex(tag["value"])
+            tags[tag["code"]].append(value)
 
     # Exclude the papers marked as "not relevant"
     queryset = Paper.objects.exclude(
@@ -117,59 +121,50 @@ def run_search_tag_query(query=None, taglist=None):
     )
 
     # Prepare querysets
-    authors_query = Q()
-    years_query = Q()
-    tag_query = Q()
-    gene_query = Q()
-    collection_query = Q()
-    datatype_query = Q()
-    medium_query = Q()
-    phenotype_query = Q()
-    conditionset_query = Q()
-
+    all_queries = Q()
     if "authors" in tags:
-        authors_query = Q(
-            first_author__iregex="(" + "$|^".join(tags["authors"]) + ")"
-        ) | Q(last_author__iregex="(" + "$|^".join(tags["authors"]) + ")")
+        for tag in tags["authors"]:
+            all_queries = all_queries & (
+                Q(first_author__icontains=tag) | Q(last_author__iregex=tag)
+            )
 
     if "year" in tags:
-        years_query = Q(pub_date__in=tags["year"])
-
-    if "tag" in tags:
-        tag_query = Q(dataset__tags__name__iregex="(" + "$|^".join(tags["tag"]) + ")")
+        for tag in tags["year"]:
+            all_queries = all_queries & Q(pub_date__iregex=tag)
 
     if "gene" in tags:
-        gene_query = Q(dataset__data__gene__systematic_name__in=tags["gene"])
+        for tag in tags["tags"]:
+            all_queries = all_queries & Q(
+                dataset__data__gene__systematic_name__iregex=tag
+            )
 
     if "collection" in tags:
-        collection_query = Q(dataset__collection__name__in=tags["collection"])
+        for tag in tags["collection"]:
+            all_queries = all_queries & Q(dataset__collection__name__iregex=tag)
 
     # Only query for data available, data_published / data_measured not useful
     if "datatype" in tags:
-        datatype_query = Q(dataset__data_available__name__in=tags["datatype"])
+        for tag in tags["datatype"]:
+            all_queries = all_queries & Q(dataset__data_available__name__iregex=tag)
 
     if "medium" in tags:
-        medium_query = Q(dataset__medium__display_name__in=tags["medium"])
+        for tag in tags["medium"]:
+            all_queries = all_queries & Q(dataset__medium__display_name__iregex=tag)
 
     if "phenotype" in tags:
-        phenotype_query = Q(dataset__phenotype__name__in=tags["phenotype"])
+        for tag in tags["phenotype"]:
+            all_queries = all_queries & Q(dataset__phenotype__name__iregex=tag)
 
     if "conditionset" in tags:
-        conditionset_query = Q(
-            dataset__conditionset__systematic_name__in=tags["conditionset"]
-        )
+        for tag in tags["conditionset"]:
+            all_queries = all_queries & Q(
+                dataset__conditionset__systematic_name__iregex=tag
+            )
 
-    queryset = queryset.filter(
-        authors_query,
-        years_query,
-        gene_query,
-        tag_query,
-        collection_query,
-        datatype_query,
-        medium_query,
-        phenotype_query,
-        conditionset_query,
-    )
+    queryset = queryset.filter(all_queries)
+    if "tags" in tags:
+        for tag in tags["tags"]:
+            queryset = queryset.filter(dataset__tags__name__iregex=tag)
 
     # Now filter down results more, search all fields for query if defined
     if queries:
@@ -185,4 +180,4 @@ def run_search_tag_query(query=None, taglist=None):
             | Q(dataset__conditionset__systematic_name__iregex=queries)
         )
 
-    return queryset
+    return queryset.distinct()

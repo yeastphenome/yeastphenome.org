@@ -1,9 +1,5 @@
 <script>
 var color = "steelblue";
-
-// Generate a 1000 data points using normal distribution with mean=20, deviation=5
-//var values = d3.range(1000).map(d3.random.normal(20, 5));
-// var values = [{% for gene in dataset_genes %}{{ gene.value }}{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
 var gene_values = {{ dataset_genes | safe }}
 
 // parse aliases and common names into list
@@ -50,9 +46,11 @@ $.each(gene_values, function(i, e){
 // Create a lookup for gene values
 var gene_values_lookup = Object()
 var gene_rank_lookup = Object()
+var gene_id_lookup = Object()
 $.each(gene_values, function(i, e){
     gene_values_lookup[e.label] = e.value
     gene_rank_lookup[e.label] = e.rank
+    gene_id_lookup[e.label] = e.gene_id
 })
 
 
@@ -61,7 +59,7 @@ var data = Array()
 $.each(counts, function(i, e){
     data.push({"count": e,"value": parseInt(i)})
 })
-data.sort((a, b) => (a.value < b.value))
+data.sort((a, b) => (a.value > b.value))
 
 var yMax = d3.max(data, function(d){return d.value});
 var yMin = d3.min(data, function(d){return d.value});
@@ -166,11 +164,12 @@ svg.selectAll(".bar")
        $("#scores_table").DataTable().destroy();
 
        content = ""
-       $.each(names, function(i,e){
+       $.each(names, function(i, e){
 
            // Grab the value and pvalue
            gene_value = gene_values_lookup[e] || ""
            gene_rank = gene_rank_lookup[e] || ""
+           gene_id = gene_id_lookup[e] || ""
 
            // If we have aliases and common names, add them too
            has_aliases = false
@@ -178,14 +177,14 @@ svg.selectAll(".bar")
            if (e in common_names) {
                $.each(common_names[e], function(ii, ee){
                    gene_value = gene_values_lookup[e]
-                   content += "<tr><td id='td-" + ee + "'><a href='/datasets/genes?q="+ e + "'>" + e + " / " + ee + "</a></td><td>" + gene_value + "</td><td>" + gene_rank + "</td></tr>\n"
+                   content += "<tr><td id='td-" + ee + "'><a href='/genes/"+ gene_id + "/'>" + e + " / " + ee + "</a></td><td>" + gene_value + "</td><td>" + gene_rank + "</td></tr>\n"
                })
                has_aliases = true
            }
 
            // Only add the gene if it doesn't have aliases
            if (!has_aliases){
-               content += "<tr><td id='td-" + e + "'><a href='/datasets/genes?q="+ e + "'>" + e + " / " + e + "</a></td><td>" + gene_value + "</td><td>" + gene_rank + "</td></tr>\n"
+               content += "<tr><td id='td-" + e + "'><a href='/genes/"+ gene_id + "/'>" + e + " / " + e + "</a></td><td>" + gene_value + "</td><td>" + gene_rank + "</td></tr>\n"
            }
        })
 

@@ -1,6 +1,7 @@
 from django.db.models import Q
 
 from yeastphenome.apps.phenotypes.models import Phenotype, Observable, Tag, Measurement
+from yeastphenome.apps.common.utils import escape_regex
 
 # Search functions
 
@@ -23,7 +24,7 @@ def get_search_tags():
 
     # Tags
     tags = [
-        {"value": x[0], "icon": "🏷️", "code": "tag"}
+        {"value": x[0], "icon": "🏷️", "code": "tags"}
         for x in Tag.objects.values_list("name").distinct()
     ]
 
@@ -46,41 +47,33 @@ def run_search_tag_query(query=None, taglist=None):
         else:
             if tag["code"] not in tags:
                 tags[tag["code"]] = []
-            tags[tag["code"]].append(tag["value"])
+            value = escape_regex(tag["value"])
+            tags[tag["code"]].append(value)
 
     # A phenotype search actually returns observables
-    queryset = Observable.objects.order_by("name").all()
+    queryset = Observable.objects.all().order_by("name")
 
     # Prepare querysets
-    observables_query = Q()
-    phenotype_query = Q()
-    measurement_query = Q()
-    tag_query = Q()
+    all_queries = Q()
 
-    print(queryset.count())
     if "observable" in tags:
-        observables_query = Q(name__in=tags["observable"])
-
-    if "tag" in tags:
-        tag_query = Q(tags__name__iregex="(" + "$|^".join(tags["tag"]) + ")")
+        for tag in tags["observable"]:
+            all_queries = all_queries & Q(name__iregex=tag)
 
     if "phenotype" in tags:
-        phenotype_query = Q(phenotype__name__in=tags["phenotype"])
+        for tag in tags["phenotype"]:
+            all_queries = all_queries & Q(phenotype__name__iregex=tag)
 
     if "measurement" in tags:
-        measurement_query = Q(phenotype__measurement__name__in=tags["measurement"])
+        for tag in tags["measurement"]:
+            all_queries = all_queries & Q(phenotype__measurement__name__iregex=tag)
 
-    queryset = queryset.filter(
-        observables_query,
-        tag_query,
-        phenotype_query,
-        measurement_query,
-    )
+    queryset = queryset.filter(all_queries)
 
     if queries:
         queries = "(%s)" % "|".join(queries)
         f = (
-            Q(name__icontains=queries)
+            Q(name__iregex=queries)
             | Q(tags__name__iregex=queries)
             | Q(phenotype__name__iregex=queries)
             | Q(phenotype__description__iregex=queries)
@@ -88,4 +81,9 @@ def run_search_tag_query(query=None, taglist=None):
             | Q(phenotype__reporter__iregex=queries)
         )
         queryset = queryset.filter(f).distinct()
+
+    if "tags" in tags:
+        for tag in tags["tags"]:
+            queryset = queryset.filter(tags__name__iregex=tag)
+
     return queryset

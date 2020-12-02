@@ -102,10 +102,14 @@ class ConditionType(models.Model):
         return mark_safe(", ".join([p.link_edit() for p in self.conditions()]))
 
     def phenotypes(self):
-        return Phenotype.objects.filter(
-            Q(dataset__conditionset__conditions__type=self)
-            | Q(dataset__medium__conditions__type=self)
-        ).distinct()
+        return (
+            Phenotype.objects.filter(
+                Q(dataset__conditionset__conditions__type=self)
+                | Q(dataset__medium__conditions__type=self)
+            )
+            .distinct()
+            .order_by("observable__name")
+        )
 
     def papers(self):
         return (
@@ -116,6 +120,7 @@ class ConditionType(models.Model):
             )
             .exclude(latest_data_status__status__name="not relevant")
             .distinct()
+            .order_by("first_author")
         )
 
     def datasets(self):
@@ -254,7 +259,7 @@ class ConditionSet(models.Model):
 
     def datasets(self):
         return self.datasets_all().exclude(
-            papers__latest_data_status__status__name="not relevant"
+            paper__latest_data_status__status__name="not relevant"
         )
 
     def datasets_edit_link_list(self):

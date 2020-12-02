@@ -173,6 +173,7 @@ class Paper(models.Model):
         return ", ".join(
             Source.objects.filter(acknowledge=True)
             .filter(Q(data_source__paper=self) | Q(tested_source__paper=self))
+            .exclude(Q(person=None))
             .values_list("person", flat=True)
             .distinct()
         )

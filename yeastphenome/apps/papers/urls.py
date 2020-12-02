@@ -6,16 +6,10 @@ from . import views
 urlpatterns = [
     path("", views.paper_explorer, name="all"),
     path("year/<int:year>/", views.paper_explorer, name="all_year"),
-    path("<int:pk>", views.PaperDetailView.as_view(), name="detail"),
-    path("contributors/", views.ContributorsListView.as_view(), name="contributors"),
+    path("<int:pk>/", views.PaperDetailView.as_view(), name="detail"),
     # Data
     path(
-        "<int:paper_id>/%s_<int:paper_pmid>.zip" % settings.DOWNLOAD_PREFIX,
-        views.download_zip,
-        name="download_zip",
-    ),
-    path(
-        "<int:paper_id>/%s_(\d+)_datasets_list.txt" % settings.DOWNLOAD_PREFIX,
+        "<int:paper_id>/%s_<int:pmid>_datasets_list.txt" % settings.DOWNLOAD_PREFIX,
         views.paper_datasets,
         name="paper_datasets",
     ),

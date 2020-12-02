@@ -1,10 +1,8 @@
 from django.db.models import Q
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, reverse
 from django.conf import settings
-from django.core.paginator import Paginator
-from django.contrib import messages
 from django.views import generic
 
 from django.views.decorators.cache import never_cache
@@ -17,23 +15,23 @@ from yeastphenome.apps.datasets.models import (
     Gene,
     GeneAlias,
     GeneSimilarity,
-    Collection,
 )
 from yeastphenome.apps.datasets.search import (
     get_search_tags,
     get_gene_search_tags,
-    run_search_tag_query,
-    run_gene_search_tag_query,
 )
-from yeastphenome.apps.datasets.utils import get_gene_metadata, send_file
-from yeastphenome.apps.conditions.models import ConditionType
+from yeastphenome.apps.datasets.utils import (
+    get_gene_metadata,
+    send_file,
+    prepare_dataset_download,
+)
+from yeastphenome.apps.conditions.models import ConditionType, Medium
 from yeastphenome.apps.phenotypes.models import Observable
 
 from decimal import Decimal
 from libchebipy import ChebiEntity
 import os
 import tempfile
-import pandas
 
 from ratelimit.mixins import RatelimitMixin
 from ratelimit.decorators import ratelimit
@@ -80,10 +78,11 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
 
         # Links should include the dataset detail page
         links = [
-            {"url": reverse("datasets:index"), "name": "Dataset Explorer"},
+            {"url": reverse("common:explorer"), "name": "Explore data"},
+            {"url": reverse("datasets:index"), "name": "Datasets"},
             {
                 "url": reverse("datasets:detail", args=[context["dataset"].id]),
-                "name": "Dataset %s" % context["dataset"].id,
+                "name": context["dataset"].name,
             },
         ]
 
@@ -112,10 +111,11 @@ def dataset_plot(request, dataset_id):
         raise Http404
 
     links = [
-        {"url": reverse("datasets:index"), "name": "Dataset Explorer"},
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("datasets:index"), "name": "Datasets"},
         {
             "url": reverse("datasets:detail", args=[dataset.id]),
-            "name": "Dataset %s" % dataset.id,
+            "name": dataset.name,
         },
         {
             "url": reverse("datasets:dataset_plot", args=[dataset.id]),
@@ -163,7 +163,13 @@ def get_dataset_gene_table_context(dataset):
 
     gene_ids = [gene[2] for gene in genes]
     genes = [
-        {"label": x[0], "value": float(x[1]), "name": x[3], "rank": round(ranks[i], 3)}
+        {
+            "label": x[0],
+            "gene_id": x[2],
+            "value": float(x[1]),
+            "name": x[3],
+            "rank": round(ranks[i], 3),
+        }
         for i, x in enumerate(genes)
         if x[3]
     ]
@@ -195,22 +201,17 @@ def gene_explorer(request):
                 continue
             taglist.append(tag)
 
-    links = [{"url": reverse("datasets:genes"), "name": "Gene Explorer"}]
-    context = {"links": links, "active": "explorer", "tags": get_gene_search_tags()}
-
-    # Use same function above to update search results
-    queryset = []
-    if taglist:
-        queryset = run_gene_search_tag_query(taglist)
-
-        # 50 results per page
-        paginator = Paginator(queryset, 50)
-        page = request.GET.get("page")
-        context["results"] = {
-            "results": paginator.get_page(page),
-            "count": queryset.count(),
-        }
-
+    print(taglist)
+    links = [
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("genes:index"), "name": "Genes"},
+    ]
+    context = {
+        "links": links,
+        "active": "explorer",
+        "tags": get_gene_search_tags(),
+        "taglist": taglist,
+    }
     return render(request, "genes/index.html", context)
 
 
@@ -219,7 +220,9 @@ def gene_detail(request, query):
 
     try:
         gene = Gene.objects.get(
-            Q(systematic_name__iexact=query) | Q(common_name__iexact=query)
+            Q(systematic_name__iexact=query)
+            | Q(common_name__iexact=query)
+            | Q(id__iexact=query)
         )
     except Gene.DoesNotExist:
         gene = GeneAlias.objects.get(name__iexact=query).gene_set.first()
@@ -229,10 +232,11 @@ def gene_detail(request, query):
 
     # Assemble links assuming on root of page
     links = [
-        {"url": reverse("datasets:genes"), "name": "Gene Explorer"},
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("genes:index"), "name": "Genes"},
         {
-            "url": reverse("datasets:gene-detail", args=[gene.systematic_name]),
-            "name": "Gene %s" % gene.systematic_name,
+            "url": reverse("genes:detail", args=[gene.systematic_name]),
+            "name": "%s/%s" % (gene.common_name, gene.systematic_name),
         },
     ]
     metadata = get_gene_metadata(gene.systematic_name)
@@ -261,31 +265,35 @@ def gene_detail(request, query):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def similar_genes(request, systematic_name):
+def similar_genes(request, gene_id):
 
     try:
-        gene = Gene.objects.get(
-            Q(systematic_name__iexact=systematic_name)
-            | Q(common_name__iexact=systematic_name)
-        )
+        gene = Gene.objects.get(id=gene_id)
     except Gene.DoesNotExist:
         raise Http404
 
     sims = (
         GeneSimilarity.objects.filter(gene1=gene)
-        .values_list("gene2__systematic_name", "gene2__common_name", "score", "pvalue")
+        .values_list(
+            "gene2__systematic_name",
+            "gene2__common_name",
+            "score",
+            "pvalue",
+            "gene2__id",
+        )
         .order_by("-score")
         .distinct()
     )
 
     links = [
-        {"url": reverse("datasets:genes"), "name": "Gene Explorer"},
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("genes:index"), "name": "Genes"},
         {
-            "url": "%s?q=%s" % (reverse("datasets:genes"), gene.systematic_name),
-            "name": "Gene %s" % gene.systematic_name,
+            "url": reverse("genes:detail", args=[gene.systematic_name]),
+            "name": "%s/%s" % (gene.common_name, gene.systematic_name),
         },
         {
-            "url": reverse("datasets:similar_genes", args=[gene.systematic_name]),
+            "url": reverse("genes:similar_genes", args=[gene.systematic_name]),
             "name": "Similar Genes",
         },
     ]
@@ -321,10 +329,11 @@ def similar_dataset_table(request, dataset_id):
     )
 
     links = [
-        {"url": reverse("datasets:index"), "name": "Dataset Explorer"},
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("datasets:index"), "name": "Datasets"},
         {
             "url": reverse("datasets:detail", args=[dataset.id]),
-            "name": "Dataset %s" % dataset.id,
+            "name": dataset.name,
         },
         {
             "url": reverse("datasets:similar_dataset_table", args=[dataset.id]),
@@ -344,49 +353,57 @@ def similar_dataset_table(request, dataset_id):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def gene_datasets(request, systematic_name):
+def gene_datasets(request, gene_id):
+    import numpy as np
 
     try:
-        gene = Gene.objects.get(
-            Q(systematic_name__iexact=systematic_name)
-            | Q(common_name__iexact=systematic_name)
-        )
+        gene = Gene.objects.get(id=gene_id)
     except Gene.DoesNotExist:
         raise Http404
 
-    queryset = (
-        Data.objects.filter(gene=gene)
-        .exclude(Q(value=None) | Q(value=Decimal("NaN")))
-        .order_by("-value")
-    )
     links = [
-        {"url": reverse("datasets:genes"), "name": "Gene Explorer"},
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("genes:index"), "name": "Genes"},
         {
-            "url": "%s?q=%s" % (reverse("datasets:genes"), gene.systematic_name),
-            "name": "Gene %s" % gene.systematic_name,
+            "url": reverse("genes:detail", args=[gene.systematic_name]),
+            "name": "%s/%s" % (gene.common_name, gene.systematic_name),
         },
         {
-            "url": reverse("datasets:gene_datasets", args=[gene.systematic_name]),
+            "url": reverse("genes:datasets", args=[gene.systematic_name]),
             "name": "Phenotypic Scores",
         },
     ]
 
-    total = queryset.count()
-    ranks = [(1 - (idx / total)) * 100 for idx, sim in enumerate(queryset)]
+    # Derive datasets bins here
+    datapoints = (
+        Data.objects.filter(gene=gene)
+        .exclude(Q(value=None) | Q(value=Decimal("NaN")))
+        .order_by("-value")
+        .values_list("value")
+    )
+    count, division = np.histogram([float(x[0]) for x in datapoints])
+    counts = []
+    for i, number in enumerate(count):
+        counts.append({"count": number, "value": division[i + 1]})
+
     context = get_gene_names_context()
     context.update(
         {
             "gene": gene,
-            "datasets": queryset,
-            "ranks": ranks,
             "links": links,
             "active": "explorer",
+            "counts": counts,
+            "division": division,
         }
     )
     return render(request, "genes/gene_datasets.html", context)
 
 
 # Datasets Explorer (also the datasets index)
+@never_cache
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def data_explorer_redirect(request, query):
+    return redirect("%s?query=%s" % (reverse("datasets:index"), query))
 
 
 @never_cache
@@ -396,25 +413,11 @@ def data_explorer(request, collection_id=None):
     parameters to derive tags and a query. This will enable users to copy
     a particular search and share it with colleagues.
     """
-    # The user can optionally be searching by a collection
-    collection = None
-    if collection_id:
-        try:
-            collection = Collection.objects.get(id=collection_id)
-            messages.info(
-                request,
-                "Datasets shown are for collection %s (%s)"
-                % (collection.name, collection.shortname),
-            )
-        except Collection.DoesNotExist:
-            messages.warning(
-                request, "We could not find collection with id %s" % collection_id
-            )
-
+    # Table will be rendered server side, and we pass query parameters
     taglist = []
     for key in [
         "datatype",
-        "tag",
+        "tags",
         "medium",
         "conditions",
         "collection",
@@ -426,30 +429,19 @@ def data_explorer(request, collection_id=None):
                 continue
             taglist.append({"value": tag, "code": key})
 
-    links = [{"url": reverse("datasets:index"), "name": "Dataset Explorer"}]
+    links = [
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("datasets:index"), "name": "Datasets"},
+    ]
     context = {
+        "taglist": taglist,
+        "collection_id": collection_id,
         "links": links,
         "active": "explorer",
         "tags": get_search_tags(),
         "cart": request.session.get("cart", []),
         "DOWNLOAD_PREFIX": settings.DOWNLOAD_PREFIX,
     }
-
-    # Use same function above to update search results
-    queryset = []
-    if taglist:
-        queryset = run_search_tag_query(
-            query=None, taglist=taglist, return_instances=True, collection=collection
-        )
-
-        # 50 results per page
-        paginator = Paginator(queryset, 50)
-        page = request.GET.get("page")
-        context["results"] = {
-            "results": paginator.get_page(page),
-            "count": queryset.count(),
-        }
-
     return render(request, "datasets/explorer.html", context)
 
 
@@ -465,9 +457,10 @@ def tag(request, id):
     )
 
     links = [
-        {"url": reverse("datasets:index"), "name": "Dataset Explorer"},
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("datasets:index"), "name": "Datasets"},
         {
-            "url": reverse("datasets:tag", args=[t.id]),
+            "url": "%s?tags=%s" % (reverse("datasets:index"), t.name),
             "name": "Tag %s" % t.name,
         },
     ]
@@ -487,10 +480,12 @@ def tag(request, id):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def download_sims(request, systematic_name):
+def download_sims(request, gene_id):
     """Download all GeneSimilary values (based on a gene)"""
+    import pandas
+
     try:
-        gene = Gene.objects.get(systematic_name=systematic_name)
+        gene = Gene.objects.get(id=gene_id)
     except Gene.DoesNotExist:
         raise Http404
 
@@ -500,20 +495,22 @@ def download_sims(request, systematic_name):
 
     filename = "%s_gene_similarities_%s.txt" % (
         settings.DOWNLOAD_PREFIX,
-        systematic_name,
+        gene.systematic_name,
     )
 
     df = pandas.DataFrame(sims)
     df.columns = ["gene_similarity_id", "gene1", "gene2", "score", "pvalue"]
     exported_file = os.path.join(tempfile.gettempdir(), filename)
     if not os.path.exists(exported_file):
-        df.to_csv(exported_file, sep=",", index=None)
+        df.to_csv(exported_file, sep="\t", index=None)
     return send_file(exported_file)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download_dataset_sims(request, dataset_id):
     """Download all DatasetSimilarity scores (based on a dataset)"""
+    import pandas
+
     try:
         dataset = Dataset.objects.get(id=dataset_id)
     except Dataset.DoesNotExist:
@@ -535,20 +532,21 @@ def download_dataset_sims(request, dataset_id):
     df.columns = ["dataset_similarity_id", "dataset1", "dataset2", "score", "pvalue"]
     exported_file = os.path.join(tempfile.gettempdir(), filename)
     if not os.path.exists(exported_file):
-        df.to_csv(exported_file, sep=",", index=None)
+        df.to_csv(exported_file, sep="\t", index=None)
     return send_file(exported_file)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def download_observable_datasets(request, observable_id):
+def download_observable_datasets_list(request, observable_id):
     """Download all datasets associated with an observable"""
+    import pandas
 
     try:
         observable = Observable.objects.get(id=observable_id)
     except Observable.DoesNotExist:
         raise Http404
 
-    filename = "%s_observable_datasets_%s.txt" % (
+    filename = "%s_observable_datasets_list_%s.txt" % (
         settings.DOWNLOAD_PREFIX,
         observable.name,
     )
@@ -564,15 +562,16 @@ def download_observable_datasets(request, observable_id):
     df.columns = ["id", "name", "pmid", "latest_tested_status"]
     exported_file = os.path.join(tempfile.gettempdir(), filename)
     if not os.path.exists(exported_file):
-        df.to_csv(exported_file, sep=",", index=None)
+        df.to_csv(exported_file, sep="\t", index=None)
     return send_file(exported_file)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def download_all(request, systematic_name=None):
+def download_all(request, gene_id=None):
     """Download all datasets. If a gene name is provided, filter to those"""
+    import pandas
 
-    if systematic_name in ["all", None]:
+    if gene_id in ["all", None]:
         datasets = (
             Dataset.objects.select_related("paper__latest_tested_status__status")
             .filter(paper__latest_data_status__status__name="loaded")
@@ -583,7 +582,7 @@ def download_all(request, systematic_name=None):
 
     else:
         datasets = (
-            Dataset.objects.filter(data__gene__systematic_name=systematic_name)
+            Dataset.objects.filter(data__gene__id=gene_id)
             .select_related("paper__latest_tested_status__status")
             .filter(
                 paper__latest_data_status__status__name="loaded",
@@ -593,22 +592,21 @@ def download_all(request, systematic_name=None):
         )
 
     filename = (
-        "%s_datasets_%s.txt" % (settings.DOWNLOAD_PREFIX, systematic_name)
-        if systematic_name
-        else "%s_datasets_%s.txt" % settings.DOWNLOAD_PREFIX
+        "%s_datasets_%s.txt" % (settings.DOWNLOAD_PREFIX, gene_id)
+        if gene_id
+        else "%s_datasets.txt" % settings.DOWNLOAD_PREFIX
     )
 
     df = pandas.DataFrame(datasets)
     df.columns = ["id", "name", "pmid", "latest_tested_status"]
     exported_file = os.path.join(tempfile.gettempdir(), filename)
     if not os.path.exists(exported_file):
-        df.to_csv(exported_file, sep=",", index=None)
+        df.to_csv(exported_file, sep="\t", index=None)
     return send_file(exported_file)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download(request):
-
     file_header = ""
 
     # View passes: ?papersTable_length=10&14=on&26=on
@@ -662,6 +660,52 @@ def download(request):
     )
 
     return response
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def download_observable_datasets(request, observable_id):
+    """Download all datasets associated with an observable"""
+
+    try:
+        observable = Observable.objects.get(id=observable_id)
+    except Observable.DoesNotExist:
+        raise Http404
+
+    filename = "%s_observable_datasets_%s.txt" % (
+        settings.DOWNLOAD_PREFIX,
+        observable.name,
+    )
+
+    # Returns a pandas dataframe to download from list of dataset ids
+    df = prepare_dataset_download(
+        observable.datasets().filter(data_source__release=True)
+    )
+    exported_file = os.path.join(tempfile.gettempdir(), filename)
+    if not os.path.exists(exported_file):
+        df.to_csv(exported_file, sep="\t", index=None)
+    return send_file(exported_file)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def download_medium_datasets(request, medium_id):
+    """Download all datasets associated with a medium"""
+
+    try:
+        medium = Medium.objects.get(id=medium_id)
+    except Medium.DoesNotExist:
+        raise Http404
+
+    filename = "%s_medium_datasets_%s.txt" % (
+        settings.DOWNLOAD_PREFIX,
+        medium.display_name,
+    )
+
+    # Returns a pandas dataframe to download from list of dataset ids
+    df = prepare_dataset_download(medium.datasets().filter(data_source__release=True))
+    exported_file = os.path.join(tempfile.gettempdir(), filename)
+    if not os.path.exists(exported_file):
+        df.to_csv(exported_file, sep="\t", index=None)
+    return send_file(exported_file)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)

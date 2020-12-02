@@ -21,7 +21,7 @@
             <div class="col-md-6">
                 <div class="box" style="height:200px">
                     <p><h3>About</h3></p>
-                    <p>Our goal is to collect, organize and share in a standardized format all phenotypic screens of the <em>Saccharomyces cerevisiae</em> deletion collection. <a class="hotlink" href="{% url 'common:about' %}">Learn more</a> in the about pages or learn how to <a class="hotlink" href="{% url 'common:getting-started' %}">Get Started</a> or <a class="hotlink" href="{% url 'datasets:index' %}">Explore Data</a></p>
+                    <p>Our goal is to collect, organize and share in a standardized format all phenotypic screens of the <em>Saccharomyces cerevisiae</em> deletion collection. <a class="hotlink" href="{% url 'common:about' %}">Learn more</a> in the about pages or <!--learn how to <a class="hotlink" href="{% url 'common:getting-started' %}">Get Started</a> or--> <a class="hotlink" href="{% url 'datasets:index' %}">Explore Data</a></p>
                 </div>
                 <hr>
                 <div class="box" style="height:200px">
@@ -30,7 +30,8 @@
                     <li><a class="hotlink" href="{% url 'papers:all' %}">Papers</a></li>
                     <li><a class="hotlink" href="{% url 'phenotypes:index' %}">Phenotypes</a></li>
                     <li><a class="hotlink" href="{% url 'conditions:index' %}">Conditions</a></li>
-                    <li><a class="hotlink" href="">Special Collections</a></li>
+                    <li><a class="hotlink" href="{% url 'datasets:index' %}">Datasets</a></li>
+                    <li><a class="hotlink" href="{% url 'genes:index' %}">Genes</a></li>
                     </ul></p>
                 </div>
             </div>
@@ -59,10 +60,6 @@
         </div>
         <div class="row">
             <div class="col-md-12">
-                <div class="box">
-                {% include graph_template %} 
-                 <small style="float:right"><a href="{{ graph_url }}">View Full Width</small> Updated on {% now "M-D-Y" %}
-                </div>
             </div>
         </div>
     </div>

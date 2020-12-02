@@ -6,9 +6,7 @@
         <h1>{{ object }}</h1>
            {% csrf_token %}
             <table class="table">
-
-
-                <tr>
+                {% if object.chebi_name %}<tr>
                     <th width="20%" scope="row" class="first">ChEBI name</th>
                     <td class="first">{{ object.chebi_name }}
                         {% if object.chebi_id %}
@@ -18,7 +16,7 @@
                             </ul>
                         {% endif %}
                     </td>
-                </tr>
+                </tr>{% endif %}
 
                 {% if object.other_names %}<tr>
                     <th width="20%" scope="row" class="first">Other names</th>
@@ -34,25 +32,30 @@
                     </td>
                 </tr>{% endif %}
 
+                {% if object.description %}<tr>
+                    <th width="20%" scope="row" class="first">Description</th>
+                    <td class="first">{{ object.description }}</td>
+                </tr>{% endif %}
+
                 {% if object.tags %}<tr>
                     <th width="20%" scope="row">Tags</th>
-                    <td>{% for tag in object.tags.all %}<a href="{% url 'conditions:tag' tag.id %}">{{ tag.name }}</a>{% if forloop.last %}{% else %},{% endif %}{% endfor %}</td>
+                    <td>{% for tag in object.tags.all %}<a href="{% url 'conditions:index' %}?tags={{ tag.name }}">{{ tag.name }}</a>{% if forloop.last %}{% else %}, {% endif %}{% endfor %} <span style="padding-left:3px; padding-right:5px">|</span> <a href="{% url 'conditions:index'%}?tags={% for tag in object.tags.all %}{{ tag.name }}{% if forloop.last %}{% else %},{% endif %}{% endfor %}">all</a></td>
                 </tr>{% endif %}
             </table>{% if object.datasets.count > 0 %}
              <h2 style="padding-top:30px">Datasets</h2>
-            {% include "datasets/datasets_table.html" with datasets=object.datasets.all %}{% endif %}
+            {% include "datasets/datasets_server_render_table.html" %}{% endif %}
+            <a href="{% url 'common:add_to_cart_by_conditiontype' object.id %}?next={{ request.path }}"><button type="button" class="btn btn-primary">Add all datasets to Downloads</button></a>
     </div>
 </div>
 {% endblock %}
 {% block scripts %}
 <script>
 {% if object.datasets.count > 0 %}$(document).ready(function(){
-    $("#papersTable").DataTable({"pageLength": 10,  
-        "language": {"search": "Filter:"} 
-    });
-    $("#dataset_download").show();
-    add_to_cart()
-    remove_from_cart()
+    $("#papersTable").dataTable({"pageLength": 10, "language": {"search": "Filter:"}, "processing": true, "serverSide": true, "ajax": "{% url 'api:conditiontype_datasets' object.id %}", "lengthMenu": [[10,15,20,25], [10,15,20,25]],
+     "drawCallback": function( settings ) {
+        add_to_cart();
+        remove_from_cart();
+    }});
 });{% endif %}
 </script>
 {% endblock %}

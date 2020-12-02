@@ -6,13 +6,13 @@
 {% block content %}
 <div class="row" style="padding-bottom:35px">
     <div class="col-md-12">
-        <h1>Dataset #{{ dataset.id }}</h1>
+        <h1>{{ dataset.name }} -- Phenotypic Scores</h1>
     </div>
 </div>
 </style>
 <div class="row">
     <div class="col-md-12">
-       {% include "graphs/dataset-genes/index.html" %}
+       {% include "graphs/dataset-genes/index.html" with hide_title="yes" %}
     </div>
 </div>
 

@@ -1,7 +1,7 @@
 {% load my_filters %}
 <div class="row">
     <div class="col-md-12">
-        {% if observables %}<table id="papersTable" class="tablesorter table table-condensed" width="100%">
+        <table id="papersTable" class="tablesorter table table-condensed" width="100%">
             <thead>
             <tr>
                 <th>Name</th>
@@ -13,29 +13,10 @@
         {% for observable in observables %}<tr>
             <td class="col-md-3">{{ observable.link_detail|safe }}</td>
             <td class="col-md-3">{{ observable.conditiontypes|join_and_more:7|safe }}</td>
-            <td class="col-md-3">{% for phenotype in observable.phenotype_set.all %}{% if phenotype.reporter %}{{ phenotype.reporter }}{% endif %}{% if forloop.last %}{% else %}, {% endif %}{% endfor %}</td> 
+            <td class="col-md-3">{{ observable.reporters|join_and_more:7|safe }}</td> 
             <td class="col-md-3">{{ observable.papers|join_and_more:7|safe }}</td>
         </tr>{% endfor %}
         </tbody>
         </table>
-
-	<div class="pagination">
-	    <div class="step-links">
-		{% if observables.has_previous %}
-		    <a href="?page=1">&laquo; first</a>
-		    <a href="?page={{ observables.previous_page_number }}">previous</a>
-		{% endif %}
-
-		<span class="current" style="margin-right:30px; margin-left:30px">
-		    Page {{ observables.number }} of {{ observables.paginator.num_pages }}.
-		</span>
-
-		{% if observables.has_next %}<span style="float:right">
-		    <a href="?page={{ observables.next_page_number }}">next</a>
-		    <a href="?page={{ observables.paginator.num_pages }}">last &raquo;</a>
-		</span>{% endif %}
-	    </div>
-	</div>
-        {% else %}<p class="alert alert-info">There are no phenotypes in the database.</p>{% endif %}
     </div>
 </div>

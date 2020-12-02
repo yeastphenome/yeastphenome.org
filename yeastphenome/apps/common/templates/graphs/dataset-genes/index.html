@@ -50,7 +50,7 @@ tr.highlight {
 {% else %}
 <div class="row">
     <div class="col-md-12">
-      <h1>Phenotypic Scores</h1>
+      {% if hide_title == "yes" %}{% else %}<h1>Phenotypic Scores</h1>{% endif %}
     <table id="scores_table" class="tablesorter table table-striped" width="100%">
         <thead>
         <tr>
@@ -59,11 +59,11 @@ tr.highlight {
             <th width="30%">Percentile (lowest to highest)</th>
         </tr>
         </thead>
-        <tbody id="scores_table_body">{% for entry in dataset_genes %}<tr id="tr-{{ entry.label }}"><td><a href="/datasets/genes?q={{ entry.label }}">{{ entry.label }} / {{ entry.name }}</a></td><td>{{ entry.value }}</td><td>{{ entry.rank|floatformat:1 }}%</td>
+        <tbody id="scores_table_body">{% for entry in dataset_genes %}<tr id="tr-{{ entry.label }}"><td><a href="/genes/{{ entry.gene_id }}/">{{ entry.label }} / {{ entry.name }}</a></td><td>{{ entry.value }}</td><td>{{ entry.rank|floatformat:1 }}%</td>
         </tr>{% endfor %}
         </tbody>
       </table>
-      <a href="/datasets/download/?{{ dataset.id }}=on"><button type="button" class="btn btn-default">Download all</button></a>
+      <a href="/datasets/download/?{{ dataset.id }}=on"><button type="button" class="btn btn-info">Download all</button></a>
     </div>
 </div>
 
@@ -71,7 +71,7 @@ tr.highlight {
 <div id="full_table" style="display:none">
 <table>
 <tbody>
-{% for entry in dataset_genes %}<tr id="tr-{{ entry.label }}"><td><a href="/datasets/genes?q={{ entry.label }}">{{ entry.label }} / {{ entry.name }}</a></td><td>{{ entry.value }}</td><td>{{ entry.rank }}</td>
+{% for entry in dataset_genes %}<tr id="tr-{{ entry.label }}"><td><a href="/genes/{{ entry.gene_id }}/">{{ entry.label }} / {{ entry.name }}</a></td><td>{{ entry.value }}</td><td>{{ entry.rank }}</td>
 </tr>{% endfor %}
 </tbody>
 </table>

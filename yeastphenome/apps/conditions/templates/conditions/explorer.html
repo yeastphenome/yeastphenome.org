@@ -60,35 +60,33 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
             <div class="col-md-10 public-homepage-side-panel">
                 <h1>Conditions</h1>
                 <div>
-                  <h3>Search</h3>
                   <input name='tags' value="">
                 </div>
             </div>
             <div class="col-md-2">
                 <h1></h1>
                 <a href="{% url 'conditions:browse' %}"><button class="btn btn-default" type="button">Browse</button></a>
+                <a href="{% url 'conditions:tags' %}"><button class="btn btn-default" type="button">Tags</button></a>
             </div>
         </div>
         <div class="row">
             <div class="col-md-12" style="padding-top:20px">
                 <form id="searchform" style="display:none">
                 {% csrf_token %}
-               <input type="text" name="q" class="form-control" placeholder="Search (press enter to search only using filters)" required="" id="id_q">
+               <input type="text" name="q" class="form-control" placeholder="Search: e.g., hydroxyurea, growth, temperature" required="" id="id_q">
                 </form>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-12" id="message" style="padding-bottom:5px">{% if queryset.count == 0 %}
-                  <div class="alert alert-info">There were no relevant results for your search.</div>
-               {% endif %}
+        {% if taglist %}<div class="row">
+            <div class="col-md-12" id="message" style="padding-bottom:5px; display:none">
+                  <div id="no-results" class="alert alert-info">There were no relevant results for your search.</div>
             </div>
         </div>
         <div class="row">
-            <div class="col-md-12" id="results" style="padding-bottom:30px">{% if queryset.results %}
-                  {% if queryset.count > 0 %}
-                  {% include "conditions/conditions_table.html" with queryset=queryset.results %}
-            {% endif %}{% endif %}</div>
-        </div>
+            <div class="col-md-12" id="results" style="padding-bottom:30px" id="the-table">
+                  {% include "conditions/conditions_table.html" %}
+            </div>
+        </div>{% endif %}
 
     </div>
 </div></div></div>
@@ -112,12 +110,12 @@ var input = document.querySelector('input[name=tags]'),
         whitelist: tags,
         transformTag: transformTag,
         // backspace: "edit",
-        placeholder: "hydroxyurea, growth, temperature",
+        placeholder: "Search: e.g., hydroxyurea, growth, temperature",
         dropdown : {
             enabled: 1,            // show suggestion after 1 typed character
-            fuzzySearch: false,    // match only suggestions that starts with the typed characters
+            fuzzySearch: true,    // match only suggestions that starts with the typed characters
             position: 'text',      // position suggestions list next to typed text
-            caseSensitive: true,   // allow adding duplicate items if their case is different
+            caseSensitive: false,   // allow adding duplicate items if their case is different
         },
         templates: {
             dropdownItemNoMatch: function(data) {
@@ -195,18 +193,23 @@ function add_tags_by_key(key) {
     }
     tagify.addTags(querytags)
 }
-add_tags_by_key("tag")
+add_tags_by_key("tags")
 add_tags_by_key("pubchem_name")
 add_tags_by_key("other_name")
 add_tags_by_key("chebi_name")
 add_tags_by_key("name")
+add_tags_by_key("query")
+add_tags_by_key("medium")
 add_tags_by_key("q")
 
 update_placeholder = function() {
 
     // Remove placeholder if there are tags, otherwise reset
     if ($('[name=tags]').val() == ""){
-        $(".tagify__input").attr("data-placeholder", "hydroxyurea, growth, temperature");
+        $(".tagify__input").attr("data-placeholder", "Search: e.g., hydroxyurea, growth, temperature");
+
+        // Remove the message of no results
+        $("#no-results").remove()
     } else {
         $(".tagify__input").attr("data-placeholder", "");
     }
@@ -280,11 +283,20 @@ function doTagsSearch() {
    })   
 
 }
-
-{% if queryset %}$(document).ready(function(){
-    $("#papersTable").DataTable({"pageLength": 10,  
-        "language": {"search": "Filter:"} 
-    });
-});{% endif %}
+$(document).ready(function(){
+    $("#papersTable").dataTable({"pageLength": 10,"language": {"search": "Filter:"}, "processing": true, "serverSide": true, "ajax": "{% url 'api:conditions_query' %}{% for tag in taglist %}{% if forloop.first %}?{% else %}&{% endif %}{{ tag.code }}={{ tag.value }}{% endfor %}", "lengthMenu": [[10,15,20,25], [10,15,20,25]],
+    "drawCallback": function( settings ) {
+       if (settings.aoData.length == 0){
+          console.log("NO DATA")
+          $("#message").show();
+          $("#papersTable_wrapper").hide();
+       } else {
+          console.log("DATA")
+          $("#message").hide();
+          $("#papersTable_wrapper").show();
+       }
+    }
+  });
+});
 </script>
 {% endblock %}

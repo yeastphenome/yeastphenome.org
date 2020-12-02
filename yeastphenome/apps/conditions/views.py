@@ -1,9 +1,7 @@
 import re
 
-from django.db import models
 from django.conf import settings
-from django.core.paginator import Paginator
-from django.shortcuts import reverse, render
+from django.shortcuts import reverse, render, redirect
 from django.views import generic
 from django.http import Http404
 
@@ -12,8 +10,8 @@ from yeastphenome.apps.conditions.models import ConditionType, ConditionSet, Med
 from yeastphenome.apps.datasets.models import Dataset
 
 from yeastphenome.apps.conditions.search import (
+    get_conditiontypes,
     get_search_tags,
-    run_search_tag_query,
 )
 
 from libchebipy import ChebiEntity
@@ -28,18 +26,21 @@ from yeastphenome.settings import (
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def index(request):
-
-    # Count == 0 indicates a search, no search is set to None
-    queryset = []
-    count = None
+    """the conditions explorer uses a server side rendered table, which we
+    generate by passing along a taglist to the view
+    """
     taglist = []
-    links = [{"url": reverse("conditions:index"), "name": "Condition Explorer"}]
+    links = [
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("conditions:index"), "name": "Conditions"},
+    ]
     for key in [
         "pubchem_name",
         "other_name",
         "chebi_name",
+        "medium",
         "name",
-        "tag",
+        "tags",
         "query",
     ]:
         for tag in request.GET.get(key, "").split(","):
@@ -47,25 +48,11 @@ def index(request):
                 continue
             taglist.append({"value": tag, "code": key})
 
-    if taglist:
-        queryset = run_search_tag_query(query=None, taglist=taglist)
-
-        # 50 results per page
-        paginator = Paginator(queryset, 50)
-        page = request.GET.get("page")
-        queryset = paginator.get_page(page)
-        count = len(queryset)
-
-    queryset = {
-        "results": queryset,
-        "count": count,
-    }
-
     return render(
         request,
         "conditions/explorer.html",
         {
-            "queryset": queryset,
+            "taglist": taglist,
             "tags": get_search_tags(),
             "links": links,
             "active": "explorer",
@@ -74,24 +61,29 @@ def index(request):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def redirect_index(request):
+    return redirect("conditions:index")
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def tag_browser(request):
+    """View a listing of tags"""
+    tags = Tag.objects.all()
+    links = [
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("conditions:index"), "name": "Conditions"},
+        {"url": reverse("conditions:index"), "name": "Tags"},
+    ]
+    return render(
+        request, "conditions/tag_browser.html", {"tags": tags, "links": links}
+    )
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def browse(request):
     """Browse dataest by condition names (and size by count)"""
-    qs = (
-        ConditionType.objects.annotate(
-            number_of_datasets=models.Count(
-                "condition__conditionset__dataset",
-                filter=~models.Q(
-                    condition__conditionset__dataset__paper__latest_data_status__status__name="not relevant"
-                ),
-            )
-        )
-        .annotate(
-            number_of_papers=models.Count(
-                "condition__conditionset__dataset__paper", distinct=True
-            )
-        )
-        .order_by("-number_of_datasets")
-    )
+    # With >=1 dataset, sorted by datasets
+    qs = get_conditiontypes()
     context = {"data": qs[:100]}
     return render(request, "conditions/graphs/browse.html", context)
 
@@ -110,11 +102,13 @@ class ConditiontypeDetailView(generic.DetailView, RatelimitMixin):
         context["papers"] = context["object"].datasets
         context["id"] = context["object"].id
         context["active"] = "explorer"
+        context["module"] = "conditions"
         context["links"] = [
-            {"url": reverse("conditions:index"), "name": "Condition Explorer"},
+            {"url": reverse("common:explorer"), "name": "Explore data"},
+            {"url": reverse("conditions:index"), "name": "Conditions"},
             {
                 "url": reverse("conditions:detail", args=[context["object"].id]),
-                "name": "Condition (%s)" % context["object"].name,
+                "name": context["object"].name,
             },
         ]
         return context
@@ -132,7 +126,7 @@ def conditionclass(request, class_id):
             tid = int(tid.group(0))
             children.append(tid)
 
-    conditiontypes = ConditionType.objects.filter(chebi_id__in=children)
+    conditiontypes = get_conditiontypes().filter(chebi_id__in=children)
     datasets = (
         Dataset.objects.filter(conditionset__conditions__type__in=conditiontypes)
         .exclude(paper__latest_data_status__status__name="not relevant")
@@ -143,6 +137,7 @@ def conditionclass(request, class_id):
         "conditions/class.html",
         {
             "id": class_id,
+            "module": "conditions",
             "class_name": class_name,
             "conditiontypes": conditiontypes,
             "papers": datasets,
@@ -159,12 +154,18 @@ def conditions_by_tag(request, tag_id):
     except Tag.DoesNotExist:
         raise Http404
 
-    return render(request, "conditions/tag.html", {"tag": tag})
+    links = [
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("conditions:index"), "name": "Conditions"},
+        {"url": reverse("conditions:tags"), "name": "Tags"},
+        {"url": reverse("conditions:tag", args=[tag.id]), "name": tag.name},
+    ]
+    return render(request, "conditions/tag.html", {"tag": tag, "links": links})
 
 
 class MediumDetailView(generic.DetailView, RatelimitMixin):
     model = Medium
-    template_name = "conditions/conditionset_medium_detail.html"
+    template_name = "conditions/medium_detail.html"
     ratelimit_key = "ip"
     ratelimit_rate = rl_rate
     ratelimit_block = rl_block
@@ -173,14 +174,29 @@ class MediumDetailView(generic.DetailView, RatelimitMixin):
         context = super(MediumDetailView, self).get_context_data(**kwargs)
         context["DOWNLOAD_PREFIX"] = settings.DOWNLOAD_PREFIX
         context["USER_AUTH"] = self.request.user.is_authenticated
-        context["papers"] = context["object"].datasets
+        context["datasets"] = context["object"].datasets
+        context["active"] = "explorer"
         context["id"] = context["object"].id
+        context["template"] = "medium"
+        context["links"] = [
+            {"url": reverse("common:explorer"), "name": "Explore data"},
+            {"url": reverse("conditions:index"), "name": "Conditions"},
+            {
+                "url": "%s?medium=%s"
+                % (reverse("conditions:index"), context["object"].display_name),
+                "name": "Medium",
+            },
+            {
+                "url": reverse("conditions:medium_detail", args=[context["object"].id]),
+                "name": context["object"].display_name,
+            },
+        ]
         return context
 
 
 class ConditionSetDetailView(generic.DetailView, RatelimitMixin):
     model = ConditionSet
-    template_name = "conditions/conditionset_medium_detail.html"
+    template_name = "conditions/conditionset_detail.html"
     ratelimit_key = "ip"
     ratelimit_rate = rl_rate
     ratelimit_block = rl_block
@@ -189,6 +205,17 @@ class ConditionSetDetailView(generic.DetailView, RatelimitMixin):
         context = super(ConditionSetDetailView, self).get_context_data(**kwargs)
         context["DOWNLOAD_PREFIX"] = settings.DOWNLOAD_PREFIX
         context["USER_AUTH"] = self.request.user.is_authenticated
-        context["papers"] = context["object"].datasets
+        context["datasets"] = context["object"].datasets
+        context["active"] = "explorer"
         context["id"] = context["object"].id
+        context["links"] = [
+            {"url": reverse("common:explorer"), "name": "Explore data"},
+            {"url": reverse("conditions:index"), "name": "Conditions"},
+            {
+                "url": reverse(
+                    "conditions:conditionset_detail", args=[context["object"].id]
+                ),
+                "name": context["object"].systematic_name,
+            },
+        ]
         return context

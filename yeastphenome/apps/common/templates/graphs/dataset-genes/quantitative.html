@@ -31,6 +31,10 @@ $.each(_common_names, function(i, alias){
 
 var values = gene_values.map(function(d){return d.value;})
 
+// Get min and max
+max_value = d3.max(values)
+min_value = d3.min(values)
+
 // A formatter for counts.
 var formatCount = d3.format(",.0f");
 
@@ -38,7 +42,6 @@ var margin = {top: 40, right: 30, bottom: 30, left: 30},
     width = 960 - margin.left - margin.right,
     height = 300 - margin.top - margin.bottom;
 
-// TODO: we can set fixed values for min/max if possible with dataset
 var max = d3.max(values);
 var min = d3.min(values);
 var x = d3.scale.linear()
@@ -62,9 +65,11 @@ $.each(data, function(i, e){
 // Create a lookup for gene values
 var gene_values_lookup = Object()
 var gene_rank_lookup = Object()
+var gene_id_lookup = Object()
 $.each(gene_values, function(i, e){
     gene_values_lookup[e.label] = e.value
     gene_rank_lookup[e.label] = e.rank
+    gene_id_lookup[e.label] = e.gene_id
 })
 
 var yMax = d3.max(data, function(d){return d.length});
@@ -116,6 +121,18 @@ update_plot = function(d, i) {
     var genes = gene_values.filter(function(record){ return d.x <= record.value && record.value < d.x + d.dx; });
     var names = genes.map(function(record){return record.label; });
 
+    var distance_max = Math.abs(max_value - d.x)
+    var distance_min = Math.abs(min_value - d.x)
+
+    // Boundaries, max then min
+    if ((genes.length == 0) && (distance_max > distance_min) && (distance_min <= d.dx)) {
+        var genes = gene_values.filter(function(record){ return d.x > record.value; });
+        var names = genes.map(function(record){return record.label; });
+    } else if ((genes.length == 0) && (distance_min > distance_max)) {
+        var genes = gene_values.filter(function(record){ return d.x <= record.value });
+        var names = genes.map(function(record){return record.label; });
+    }
+
     value_range = " | Value range: " + (d.x).toFixed(2) + "-" + (d.x + d.dx).toFixed(2) + ". <a style='cursor:pointer' onclick=restore_original()>Reset filter</a>."
 
     // Clear original content
@@ -123,11 +140,12 @@ update_plot = function(d, i) {
     $("#scores_table").DataTable().destroy();
 
     content = ""
-    $.each(names, function(i,e){
+    $.each(names, function(i, e){
 
         // Grab the value and pvalue
         gene_value = gene_values_lookup[e] || ""
         gene_rank = gene_rank_lookup[e] || ""
+        gene_id = gene_id_lookup[e] || ""
 
         // If we have aliases and common names, add them too
         has_aliases = false
@@ -135,14 +153,14 @@ update_plot = function(d, i) {
         if (e in common_names) {
             $.each(common_names[e], function(ii, ee){
                 gene_value = gene_values_lookup[e]
-                content += "<tr><td id='td-" + ee + "'><a href='/datasets/genes?q="+ e + "'>" + e + " / " + ee + "</a></td><td>" + gene_value + "</td><td>" + gene_rank + "</td></tr>\n"
+                content += "<tr><td id='td-" + ee + "'><a href='/genes/"+ gene_id + "/'>" + e + " / " + ee + "</a></td><td>" + gene_value + "</td><td>" + gene_rank + "</td></tr>\n"
             })
            has_aliases = true
         }
 
         // Only add the gene if it doesn't have aliases
         if (!has_aliases){
-            content += "<tr><td id='td-" + e + "'><a href='/datasets/genes?q="+ e + "'>" + e + " / " + e + "</a></td><td>" + gene_value + "</td><td>" + gene_rank + "</td></tr>\n"
+            content += "<tr><td id='td-" + e + "'><a href='/genes/"+ gene_id + "/'>" + e + " / " + e + "</a></td><td>" + gene_value + "</td><td>" + gene_rank + "</td></tr>\n"
         }
     })
 

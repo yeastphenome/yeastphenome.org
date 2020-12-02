@@ -16,7 +16,6 @@
     {% csrf_token %}
     <table id="papersTable" class="tablesorter table table-condensed table-hover" width="100%">
         <thead>
-        <!--<td id="first_column" class="no-sort" style="text-align: left;"><input type="checkbox" onClick="toggle(this)"></td>-->
         <th>Dataset</th>
         <th>Paper</th>
         <th>Phenotype</th>
@@ -24,33 +23,13 @@
         <th>Medium</th>
         <th>Collection</th>
         <th>Data</th>
-        <th>Downloads</th>
-        <th></th>
+        <th>Download</th>
         </thead>
     </table>
     <br>
 </form>
 
 <script language="JavaScript">
-function toggle(source) {
-  checkboxes = document.getElementsByClassName('dataset');
-  for(var i=0, n=checkboxes.length;i<n;i++) {
-    if(!checkboxes[i].disabled) {
-        checkboxes[i].checked = source.checked;
-    }
-  }
-  btn = document.getElementById('dataset_download');
-  btn.disabled = !source.checked;
-}
-
-var chkbxs = $('tbody .dataset');
-
-$("#first_column").removeClass("no-sort sorting_asc");
-chkbxs.change(function () {
-    $('#dataset_download').prop('disabled', chkbxs.filter(':checked').length < 1);
-});
-chkbxs.change();
-
 // If we click a link to add or remove from cart
 function add_to_cart() {
   $(".add-to-cart").click(function(event){
@@ -105,22 +84,4 @@ function remove_from_cart() {
        });
   })
 }
-
-
-function update_checkboxes() {
-    var chkbxs = $('tbody .dataset');
-    chkbxs.change(function () {
-       $('#dataset_download').prop('disabled', chkbxs.filter(':checked').length < 1);
-    });
-    chkbxs.change();
-}
-
-$("#add-to-cart-all").click(function(event){
-     $("#fade").show();
-     ids = ""
-     $.each($("[type=checkbox].dataset:checked"), function(i, e){
-        ids = ids + "," + $(e).attr("name")
-     })
-     document.location = "/cart/add/" + ids + "/datasets:index"
-})
 </script>

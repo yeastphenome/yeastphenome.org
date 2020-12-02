@@ -60,7 +60,6 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
             <div class="col-md-12 public-homepage-side-panel">
                 <h1>Datasets</h1>
                 <div>
-                  <h3>Search</h3>
                   <input name='tags' value="">
                 </div>
             </div>
@@ -69,26 +68,20 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
             <div class="col-md-12" style="padding-top:20px">
                 <form id="searchform" style="display:none">
                 {% csrf_token %}
-               <input type="text" name="q" class="form-control" placeholder="Search (press enter to search only using filters)" required="" id="id_q">
+               <input type="text" name="q" class="form-control" placeholder="Search: e.g., hydroxyurea, growth, Parsons" required="" id="id_q">
                 </form>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-12" id="message" style="padding-bottom:5px">{% if results %}
-               {% if results.count == 0 %}
-                  <div class="alert alert-info">There were no relevant results for your search.</div>
-               {% endif %}{% endif %}
+        {% if taglist %}<div class="row">
+            <div class="col-md-12" id="message" style="padding-bottom:5px; display: none">
+                  <div id="no-results" class="alert alert-info">There were no relevant results for your search.</div>
             </div>
         </div>
         <div class="row">
-            <div class="col-md-12" id="results" style="padding-bottom:30px">{% if results %}
-               {% if results.count != 0 %}
-                  {% include "datasets/datasets_table.html" with datasets=results.results %}
-               {% endif %}{% else %}
-                  {% include "datasets/datasets_table.html" %}
-            </div>{% endif %}
-        </div>
-
+            <div class="col-md-12" id="results" style="padding-bottom:30px">
+                  {% include "datasets/datasets_server_render_table.html" %}
+            </div>
+        </div>{% endif %}
     </div>
 </div></div></div>
 {% endblock %}
@@ -111,12 +104,12 @@ var input = document.querySelector('input[name=tags]'),
         whitelist: tags,
         transformTag: transformTag,
         // backspace: "edit",
-        placeholder: "hydroxyurea, growth, Parsons",
+        placeholder: "Search: e.g., hydroxyurea, growth, Parsons",
         dropdown : {
             enabled: 1,            // show suggestion after 1 typed character
-            fuzzySearch: false,    // match only suggestions that starts with the typed characters
+            fuzzySearch: true,    // match only suggestions that starts with the typed characters
             position: 'text',      // position suggestions list next to typed text
-            caseSensitive: true,   // allow adding duplicate items if their case is different
+            caseSensitive: false,   // allow adding duplicate items if their case is different
         },
         templates: {
             dropdownItemNoMatch: function(data) {
@@ -200,7 +193,7 @@ function add_tags_by_key(key) {
     }
     tagify.addTags(querytags)
 }
-add_tags_by_key("tag")
+add_tags_by_key("tags")
 add_tags_by_key("collection")
 add_tags_by_key("conditions")
 add_tags_by_key("datatype")
@@ -213,7 +206,10 @@ update_placeholder = function() {
 
     // Remove placeholder if there are tags, otherwise reset
     if ($('[name=tags]').val() == ""){
-        $(".tagify__input").attr("data-placeholder", "hydroxyurea, growth, Parsons");
+        $(".tagify__input").attr("data-placeholder", "Search: e.g., hydroxyurea, growth, Parsons");
+
+        // Remove the message of no results
+        $("#no-results").remove()
     } else {
         $(".tagify__input").attr("data-placeholder", "");
     }
@@ -289,13 +285,23 @@ function doTagsSearch() {
 
 }
 
-{% if datasets or results %}$(document).ready(function(){
-    $("#papersTable").DataTable({"pageLength": 10,  
-        "language": {"search": "Filter:"} 
-    });
-    $("#dataset_download").show();
-    add_to_cart()
-    remove_from_cart()
-});{% endif %}
+$(document).ready(function(){
+    $("#papersTable").dataTable({"pageLength": 10,"language": {"search": "Filter:"}, "processing": true, "serverSide": true, "ajax": "{% if collection_id %}{% url 'api:datasets_query' collection_id %}{% else %}{% url 'api:datasets_query' %}{% endif %}{% for tag in taglist %}{% if forloop.first %}?{% else %}&{% endif %}{{ tag.code }}={{ tag.value }}{% endfor %}", "lengthMenu": [[10,15,20,25], [10,15,20,25]],
+    "drawCallback": function( settings ) {
+       if (settings.aoData.length == 0){
+          console.log('NO RESULT') 
+          $("#message").show();
+          $("#papersTable_wrapper").hide();
+       } else {
+          console.log('RESULT') 
+          $("#message").hide();
+          $("#papersTable_wrapper").show();
+       }
+       $("#dataset_download").show();
+       add_to_cart()
+       remove_from_cart()
+    }
+  });
+});
 </script>
 {% endblock %}

@@ -1,4 +1,6 @@
+from django.views.generic.base import TemplateView
 from django.urls import path
+from django.conf.urls import url
 
 from . import views
 from . import graphs
@@ -6,12 +8,34 @@ from . import graphs
 urlpatterns = [
     path("", views.index, name="index"),
     path("about/", views.about, name="about"),
-    path("stats/", views.stats, name="stats"),
-    path("faq/", views.faq, name="faq"),
-    path("contributors/", views.contributors, name="contributors"),
+    path("about/project", views.project, name="project"),
+    path("about/stats/", views.stats, name="stats"),
+    path("about/faq/", views.faq, name="faq"),
+    path("explore/", views.explorer, name="explorer"),
+    path("about/contributors/", views.contributors, name="contributors"),
+    path(
+        "about/data_contributors/",
+        views.ContributorsListView.as_view(),
+        name="data_contributors",
+    ),
     path("cart/", views.view_cart, name="view_cart"),
     path("cart/add/<str:dataset_id>/", views.add_to_cart, name="add_to_cart"),
     path("cart/add/<str:dataset_id>/<str:next>", views.add_to_cart, name="add_to_cart"),
+    path(
+        "cart/add/conditiontype/<str:conditiontype_id>/datasets/",
+        views.add_to_cart_by_conditiontype,
+        name="add_to_cart_by_conditiontype",
+    ),
+    path(
+        "cart/add/medium/<str:medium_id>/datasets/",
+        views.add_to_cart_by_medium,
+        name="add_to_cart_by_medium",
+    ),
+    path(
+        "cart/add/observable/<str:observable_id>/datasets/",
+        views.add_to_cart_by_observable,
+        name="add_to_cart_by_observable",
+    ),
     path(
         "cart/remove/<str:dataset_id>/",
         views.remove_from_cart,
@@ -30,6 +54,12 @@ urlpatterns = [
     path("getting-started/advanced/", views.advanced, name="advanced"),
     path("getting-started/tutorials/", views.tutorials, name="tutorials"),
     path("_ah/warmup/", views.warmup, name="warmup"),
+    url(
+        r"^robots\.txt/$",
+        TemplateView.as_view(
+            template_name="base/robots.txt", content_type="text/plain"
+        ),
+    ),
 ]
 
 # Graphs
