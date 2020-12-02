@@ -175,11 +175,11 @@ class Condition(models.Model):
     def media(self):
         return Medium.objects.filter(conditions=self).all()
 
-    def conditionsets_str_list(self):
-        return mark_safe(", ".join([p.link_edit() for p in self.conditionsets()]))
+    def conditionsets_edit_list(self):
+        return mark_safe(", ".join([p.link_edit() for p in self.conditionsets()[:20]]))
 
-    def media_str_list(self):
-        return mark_safe(", ".join([p.link_edit() for p in self.media()]))
+    def media_edit_list(self):
+        return mark_safe(", ".join([p.link_edit() for p in self.media()[:20]]))
 
     def link_detail(self):
         html = '<a href="%s">%s</a>' % (
@@ -262,7 +262,7 @@ class ConditionSet(models.Model):
             paper__latest_data_status__status__name="not relevant"
         )
 
-    def datasets_edit_link_list(self):
+    def datasets_edit_list(self):
         html = "<ul>"
         html = html + "<li>".join([d.link_edit() for d in self.datasets_all()])
         html = html + "</ul>"
