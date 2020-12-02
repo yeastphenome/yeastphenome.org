@@ -15,7 +15,7 @@
     }
 }
 .second-navbar {
-    background-color: #3779ee;
+    background-color: #2471A3;
     width: 100%;
     position: absolute;
     top: 50px;
@@ -84,7 +84,7 @@ ul.nav li.dropdown:hover ul.dropdown-menu {
           </ul>
         </li>-->
         <li class="dropdown">
-          <a href="{% url 'common:explorer' %}" {% if active == "explorer" %}style="background-color:#3779ee"{% endif %} role="button" aria-haspopup="true" aria-expanded="false">Explore Data <i class="fas fa-caret-down" aria-hidden="true"></i></a>
+          <a href="{% url 'common:explorer' %}" {% if active == "explorer" %}style="background-color:#2471A3"{% endif %} role="button" aria-haspopup="true" aria-expanded="false">Explore Data <i class="fas fa-caret-down" aria-hidden="true"></i></a>
           <ul class="dropdown-menu dropdown-menu-left">
               <li><a href="{% url 'papers:all' %}">Papers</a></li>
               <li><a href="{% url 'datasets:index' %}">Datasets</a></li>
@@ -96,7 +96,7 @@ ul.nav li.dropdown:hover ul.dropdown-menu {
         {% if TWITTER_USERNAME %}<li class="visible-xs-block"><a href="https://twitter.com/{{ TWITTER_USERNAME }}" target="_blank" rel="noopener"><i class="fab fa-twitter"></i> @{{ TWITTER_USERNAME }}</a></li>{% endif %}
         </li>
         <li class="dropdown">
-          <a href="{% url 'common:about' %}" {% if active == "about"%}style="background-color:#3779ee"{% endif %} role="button" aria-haspopup="true" aria-expanded="false">About <i class="fas fa-caret-down" aria-hidden="true"></i></a>
+          <a href="{% url 'common:about' %}" {% if active == "about"%}style="background-color:#2471A3"{% endif %} role="button" aria-haspopup="true" aria-expanded="false">About <i class="fas fa-caret-down" aria-hidden="true"></i></a>
           <ul class="dropdown-menu dropdown-menu-left">
             <li><a href="{% url 'common:project' %}">Project</a></li>
             <li><a href="{% url 'common:contributors' %}">Authors</a></li>
@@ -108,15 +108,15 @@ ul.nav li.dropdown:hover ul.dropdown-menu {
 
 
         <li class="dropdown">
-          <a href="{% url 'common:support' %}" {% if active == "support"%} style="background-color:#3779ee"{% endif %} role="button" aria-haspopup="true" aria-expanded="false">Support <i class="fas fa-caret-down" aria-hidden="true"></i></a>
+          <a href="{% url 'common:support' %}" {% if active == "support"%} style="background-color:#2471A3"{% endif %} role="button" aria-haspopup="true" aria-expanded="false">Support <i class="fas fa-caret-down" aria-hidden="true"></i></a>
           <ul class="dropdown-menu dropdown-menu-left">
-            {% if GITHUB_REPOSITORY %}<li><a href="{{ GITHUB_REPOSITORY }}/issues" target="_blank" rel="noopener"><i class="fas fa-comments visible-xs-inline"></i> Support</a></li>{% endif %}
+            {% if GITHUB_REPOSITORY %}<li><a href="{{ GITHUB_REPOSITORY }}/issues" target="_blank" rel="noopener"><i class="fas fa-comments visible-xs-inline"></i> GitHub</a></li>{% endif %}
             <li><a href="{% url 'common:support' %}">General and Data Inquiries</a></li>
           </ul>
         </li>
 
         <li class="dropdown">
-          <a href="{% url 'common:view_cart' %}" {% if active == "downloads"%}style="background-color:#3779ee"{% endif %} role="button" aria-haspopup="true" aria-expanded="false">Downloads <i class="fas fa-caret-down" aria-hidden="true"></i></a>
+          <a href="{% url 'common:view_cart' %}" {% if active == "downloads"%}style="background-color:#2471A3"{% endif %} role="button" aria-haspopup="true" aria-expanded="false">Downloads <i class="fas fa-caret-down" aria-hidden="true"></i></a>
           <ul class="dropdown-menu dropdown-menu-left">
             <li><a href="{% url 'common:view_cart' %}">Download Cart</a></li>
             <li><a href="{% url 'common:download_bundles' %}">Bundle Downloads</a></li>

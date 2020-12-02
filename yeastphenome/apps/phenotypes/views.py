@@ -34,7 +34,7 @@ def index(request):
         "measurement",
         "query",
     ]:
-        for tag in request.GET.get(key, "").split(","):
+        for tag in request.GET.get(key, "").split("|"):
             if not tag:
                 continue
             taglist.append({"value": tag, "code": key})

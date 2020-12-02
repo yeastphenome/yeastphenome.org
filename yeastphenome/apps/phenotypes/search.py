@@ -12,25 +12,25 @@ def get_search_tags():
     """
     # Observables
     observables = [
-        {"value": x[0].replace(",", ""), "icon": "👁️", "code": "observable"}
+        {"value": x[0], "icon": "👁️", "code": "observable"}
         for x in Observable.objects.values_list("name").distinct()
     ]
 
     # Phenotypes
     phenotypes = [
-        {"value": x[0].replace(",", ""), "icon": "🐶", "code": "phenotype"}
+        {"value": x[0], "icon": "🐶", "code": "phenotype"}
         for x in Phenotype.objects.values_list("name").distinct()
     ]
 
     # Tags
     tags = [
-        {"value": x[0].replace(",", ""), "icon": "🏷️", "code": "tags"}
+        {"value": x[0], "icon": "🏷️", "code": "tags"}
         for x in Tag.objects.values_list("name").distinct()
     ]
 
     # Measurements
     measurements = [
-        {"value": x[0].replace(",", ""), "icon": "🌡️", "code": "measurement"}
+        {"value": x[0], "icon": "🌡️", "code": "measurement"}
         for x in Measurement.objects.values_list("name").distinct()
     ]
 
@@ -41,6 +41,7 @@ def run_search_tag_query(query=None, taglist=None):
     """take a query string and a taglist to run the phenotypes query."""
     queries = [] if not query else [query]
     tags = {}
+    print(taglist)
     for tag in taglist or []:
         if tag["code"] in ["", "query"]:
             queries.append(tag["value"])
