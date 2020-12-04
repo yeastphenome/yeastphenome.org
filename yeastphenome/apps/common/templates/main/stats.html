@@ -6,9 +6,8 @@
       <h1>Stats</h1>
     </div>
 </div>
-<div class="col-xs-12">
 <div class="row">
-    <div class="col-md-12 box-left">
+    <div class="col-md-12">
         <h3>Summary stats ({% now "M. d, Y" %})</h3>
         <ul>
             <li>Total publications: {{ papers_nr|intcomma }} (+ {{ papers_hopeless_nr|intcomma }} for which data could not be recovered)</li>
@@ -142,11 +141,9 @@
 
 
 <div class="row">
-    <div class="col-md-12 box-left">
-        <h3 id="faq">Publications</h3>
+    <div class="col-md-6">
+        <h3 id="faq" style="margin-bottom:20px">Publications</h3>
             {% include "graphs/papers-by-year.html" %}
     </div>
-</div>
-
 </div>
 {% endblock %}

@@ -4,6 +4,19 @@ from yeastphenome.apps.conditions.models import ConditionType, Tag
 from yeastphenome.apps.common.utils import escape_regex
 
 
+def get_tags():
+    """Return same set of tags with annotated dataset count based on query below"""
+    return (
+        Tag.objects.annotate(
+            number_of_conditions=Count(
+                "condition__conditionset__conditions__type__name",
+            )
+        )
+        .filter(number_of_conditions__gte=1)
+        .order_by("-number_of_conditions")
+    )
+
+
 def get_conditiontypes():
     """Shared function to return a list of conditiontypes with a valid paper and
     at least one dataset. We order by the number of datasets.

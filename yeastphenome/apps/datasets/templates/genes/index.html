@@ -73,7 +73,7 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
                 </form>
             </div>
         </div>
-        <div class="row">
+        {% if taglist %}<div class="row">
             <div class="col-md-12" id="message" style="padding-bottom:5px; display:none">
                   <div id="no-results" class="alert alert-info">There were no relevant results for your search.</div>
             </div>
@@ -82,7 +82,7 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
             <div class="col-md-12" id="results" style="padding-bottom:30px">
                   {% include "genes/genes_table.html" %}
             </div>
-        </div>
+        </div>{% endif %}
     </div>
 </div></div>
 {% endblock %}
@@ -159,8 +159,6 @@ function transformTag(tagData){
         tagData["icon"] = ""
         tagData["code"] = ""
         tagData.style = "--tag-bg:" + "white";
-    } else {
-        tagData.style = "--tag-bg:" + getRandomColor();
     }
 }
 

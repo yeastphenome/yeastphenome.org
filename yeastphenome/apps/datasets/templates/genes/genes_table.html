@@ -6,10 +6,4 @@
             <th width="30%">SGDID</th>
         </tr>
         </thead>
-        <tbody>
-{% for gene in genes %}<tr>
-           <td><a href="{% url 'genes:detail' gene.id %}">{{ gene.common_name }}/{{ gene.systematic_name }}</a></td>
-           <td>{% if gene.aliases.count > 0 %}{% for alias in gene.aliases.all %}{{ alias.name }}{% if forloop.last %}{% else %}, {% endif %}{% endfor %}{% endif %}</td>
-           <td>{{ gene.primary_sgdid }}</td>
-    </tr>{% endfor %}
 </table>

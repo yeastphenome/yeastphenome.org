@@ -60,7 +60,7 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
             <div class="col-md-12 public-homepage-side-panel">
                 <h1>Phenotypes</h1>
                 <div>
-                  <input name='tags' value="">
+                    <input name='tags' value="">
                 </div>
             </div>
             <!--<div class="col-md-2">
@@ -164,8 +164,6 @@ function transformTag(tagData){
         tagData["icon"] = ""
         tagData["code"] = ""
         tagData.style = "--tag-bg:" + "white";
-    } else {
-        tagData.style = "--tag-bg:" + getRandomColor();
     }
 }
 

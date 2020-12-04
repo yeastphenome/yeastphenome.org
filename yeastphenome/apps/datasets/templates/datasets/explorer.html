@@ -159,12 +159,7 @@ function transformTag(tagData){
         tagData["icon"] = ""
         tagData["code"] = ""
         tagData.style = "--tag-bg:" + "white";
-    } else {
-        tagData.style = "--tag-bg:" + getRandomColor();
     }
-
-    if( tagData.value.toLowerCase() == 'shit' )
-       tagData.value = 's✲✲t'
 }
 
 
@@ -288,11 +283,9 @@ $(document).ready(function(){
     $("#papersTable").dataTable({"pageLength": 10,"language": {"search": "Filter:"}, "processing": true, "serverSide": true, "ajax": "{% if collection_id %}{% url 'api:datasets_query' collection_id %}{% else %}{% url 'api:datasets_query' %}{% endif %}{% for tag in taglist %}{% if forloop.first %}?{% else %}&{% endif %}{{ tag.code }}={{ tag.value }}{% endfor %}", "lengthMenu": [[10,15,20,25], [10,15,20,25]],
     "drawCallback": function( settings ) {
        if (settings.aoData.length == 0){
-          console.log('NO RESULT') 
           $("#message").show();
           $("#papersTable_wrapper").hide();
        } else {
-          console.log('RESULT') 
           $("#message").hide();
           $("#papersTable_wrapper").show();
        }

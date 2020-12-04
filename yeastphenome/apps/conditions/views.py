@@ -72,7 +72,7 @@ def tag_browser(request):
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
         {"url": reverse("conditions:index"), "name": "Conditions"},
-        {"url": reverse("conditions:index"), "name": "Tags"},
+        {"url": reverse("conditions:index"), "name": "Condition Tags"},
     ]
     return render(
         request,
