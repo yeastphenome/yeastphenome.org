@@ -60,7 +60,7 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
             <div class="col-md-10 public-homepage-side-panel">
                 <h1>Conditions</h1>
                 <div>
-                  <input name='tags' value="">
+                  <input name='tags' value="" style="display:none">
                 </div>
             </div>
             <div class="col-md-2">
@@ -91,9 +91,10 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
     </div>
 </div></div>
 {% endblock %}
-{% block scripts %}
-
+{% block head %}
 <script src="{% static 'js/tagify-3.17.7.min.js' %}"></script>
+{% endblock %}
+{% block scripts %}
 <script>
 
 var tags = {{ tags | safe }}
