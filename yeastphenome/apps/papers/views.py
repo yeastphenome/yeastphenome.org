@@ -45,7 +45,7 @@ def paper_explorer(request, year=None):
         "authors",
         "query",
     ]:
-        for tag in request.GET.get(key, "").split(","):
+        for tag in request.GET.get(key, "").split("|"):
             if not tag:
                 continue
             taglist.append({"value": tag, "code": key})

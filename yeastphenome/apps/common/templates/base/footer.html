@@ -1,24 +1,17 @@
 {% load static %}
 <link rel="stylesheet" href="{% static 'css/footer.css' %}">
-<footer class="footer">
-    <div class="container footer_padding_bottom">
-        <div class="footer_padding_top footer_text_color">
-            <div class="col-md-9">
-            <div class="row">
-                <a href="{% url 'common:index' %}">
-                <img id="navbar_broad" alt="YeastPhenome.org" src="{% static 'images/logo-temporary-blue.png' %}"/></a>
-            </div>
-            <div class="row">
-                <div style="padding-top: 6px;" id="copyright">Copyright © 2020 yeastphenome.org. All rights reserved.<span> <a class="hotlink contact_style" href="#">Privacy</a></span> |<span> <a class="hotlink contact_style" href="#">Terms & Conditions</a></span></div>
-            </div>
+<footer class="container-fluid" style="position: absolute: bottom:0px; height:100px; margin-top:0px">
+    <div class="row" style="margin-left: 80px !important">
+        <div style="padding-top: 20px;" id="copyright">Copyright © 2013-2020  Anastasia Baryshnikova, Calico Life Sciences LLC</div>
         </div>
-        <div class="col-md-3">
+    </div>
+      <!--<div class="col-md-3"><!--
                     <div class="row footer_title">CONNECT</div>
                     <div class="row footer_links">
                         {% if TWITTER_USERNAME %}<a href="https://twitter.com/{{ TWITTER_USERNAME }}"><i class="fab fa-twitter"></i> @{{ TWITTER_USERNAME }}</a>{% endif %}<br>
                         {% if GITHUB_REPOSITORY %}<a href="{{ GITHUB_REPOSITORY }}/issues" target="_blank"><i class="fas fa-comments"></i> Feedback</a>{% endif %}
                     </div>
-                </div>
+                </div>-->
         </div>
     </div>
 </footer>

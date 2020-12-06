@@ -1,0 +1,127 @@
+@font-face {
+  font-family: "DIN OT";
+  src: url("./fonts/DinFonts/FF DIN OT 1/DINOT.otf") format("opentype"); }
+
+@font-face {
+  font-family: "DIN OT Bold";
+  src: url("./fonts/DinFonts/FF DIN OT 1/DINOT-Bold.otf") format("opentype"); }
+
+body {
+  min-height: 100%;
+  padding-top: 50px !important; }
+
+/* YeastPhenome Branding */
+
+.nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus {
+    color: #fff;
+    background-color: #2471A3;
+}
+
+.nav-pills > li.active > a, .nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus {
+    color: #fff;
+    background-color: #2471A3;
+}
+
+.box-left {
+  padding-left: 0px !important;
+}
+
+.nav-pills a {
+    color: #2471A3;
+    text-decoration: none;
+}
+
+.list-group-item.active, .list-group-item.active:hover, .list-group-item.active:focus {
+    z-index: 2;
+    color: #fff;
+    background-color: #2471A3;
+    border-color: #2471A3;
+}
+
+.sidebar-fixed {
+  position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+  z-index: 1; /* Stay on top */
+  top: 130px; /* Stay at the top */
+  left: 60%;
+  overflow-x: hidden; /* Disable horizontal scroll */
+}
+
+/* gitHub style boxes*/
+.box {
+  background-color: #fff;
+  border: 1px solid #e1e4e8;
+  border-radius: 6px;
+  padding: 30px 30px 30px 30px;
+  margin-top:20px; 
+}
+
+.box-title {
+    color: #2471A3 !important;
+    font-weight: 600 !important;
+}
+.box-title::after{
+    white-space: pre;
+}
+.footer-box {
+   margin-top: 100px;
+}
+
+/*global search*/
+.gray {
+  color: gray; }
+
+@media (max-width: 991px) {
+  .public-homepage-side-panel {
+    margin-right: -30px;
+    margin-left: -30px; } }
+
+/* links */
+.hotlink {
+  color: black;
+  text-decoration: none;
+  border-bottom: 1px solid #347bb6; }
+
+.hotlink:focus {
+  color: black;
+  text-decoration: none; }
+
+.hotlink:active {
+  color: black;
+  text-decoration: none; }
+
+.hotlink:visited {
+  color: black;
+  text-decoration: none; }
+
+.hotlink:hover {
+  color: #347bb6;
+  text-decoration: none; }
+
+h1 {
+  font-family: Helvetica Neue", Verdana, Arial, Helvetica, Geneva, sans-serif;
+  font-size: 30px;
+  font-weight: 600; 
+  padding-bottom: 12px;
+}
+
+h2 {
+  font-family: Helvetica Neue", Verdana, Arial, Helvetica, Geneva, sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.25;
+  margin-bottom: 6px; 
+  padding-bottom: 12px;
+}
+
+ul.content-list {
+  list-style: none;
+  margin-left: 0;
+  margin-bottom: 0;
+  padding-left: 0em;
+  text-indent: 0em; }
+
+.external::after {
+    white-space: nowrap;
+    padding-left: .3ex;
+    content: url("../images/external-link-blue-medium.png");
+}

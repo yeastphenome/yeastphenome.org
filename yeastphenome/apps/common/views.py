@@ -48,6 +48,7 @@ def index(request):
 def support(request):
     links = [
         {"url": reverse("common:support"), "name": "Support"},
+        {"url": reverse("common:support"), "name": "General and Data Inquiries"},
     ]
     context = {"links": links, "active": "support"}
     return render(request, "main/support.html", context)
@@ -333,6 +334,7 @@ def clear_cart(request):
 def download_bundles(request):
     """A page with pre-prepared archives to download"""
     links = [
+        {"url": reverse("common:view_cart"), "name": "Downloads"},
         {"url": reverse("common:download_bundles"), "name": "Bundle Downloads"},
     ]
     context = {"active": "downloads", "links": links}
@@ -344,7 +346,8 @@ def download_bundles(request):
 def view_cart(request):
     """View all datasets in the cart, and provide a button to download."""
     links = [
-        {"url": reverse("common:view_cart"), "name": "View Cart"},
+        {"url": reverse("common:view_cart"), "name": "Downloads"},
+        {"url": reverse("common:view_cart"), "name": "Download Cart"},
     ]
     cart = request.session.get("cart", [])
     context = {

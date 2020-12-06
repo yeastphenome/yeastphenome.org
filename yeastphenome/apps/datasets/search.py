@@ -151,7 +151,7 @@ def run_search_tag_query(query, taglist=None, return_instances=False, collection
             Q(name__iregex=queries)
             | Q(phenotype__name__iregex=queries)
             | Q(collection__name__iregex=queries)
-            | Q(medium__systematic_name__iregex=queries)
+            | Q(medium__display_name__iregex=queries)
             | Q(conditionset__conditions__type__name__iregex=queries)
         ).distinct()
 
