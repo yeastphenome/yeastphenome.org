@@ -72,10 +72,12 @@ def tag_browser(request):
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
         {"url": reverse("conditions:index"), "name": "Conditions"},
-        {"url": reverse("conditions:index"), "name": "Tags"},
+        {"url": reverse("conditions:index"), "name": "Condition Tags"},
     ]
     return render(
-        request, "conditions/tag_browser.html", {"tags": tags, "links": links}
+        request,
+        "conditions/tag_browser.html",
+        {"tags": tags, "links": links, "active": "explorer"},
     )
 
 
@@ -84,7 +86,12 @@ def browse(request):
     """Browse dataest by condition names (and size by count)"""
     # With >=1 dataset, sorted by datasets
     qs = get_conditiontypes()
-    context = {"data": qs[:100]}
+    links = [
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("conditions:index"), "name": "Conditions"},
+        {"url": reverse("conditions:browse"), "name": "Browse Conditions"},
+    ]
+    context = {"data": qs[:100], "active": "explorer", "links": links}
     return render(request, "conditions/graphs/browse.html", context)
 
 

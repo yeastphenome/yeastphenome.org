@@ -41,6 +41,7 @@ def run_search_tag_query(query=None, taglist=None):
     """take a query string and a taglist to run the phenotypes query."""
     queries = [] if not query else [query]
     tags = {}
+    print(taglist)
     for tag in taglist or []:
         if tag["code"] in ["", "query"]:
             queries.append(tag["value"])
@@ -86,4 +87,4 @@ def run_search_tag_query(query=None, taglist=None):
         for tag in tags["tags"]:
             queryset = queryset.filter(tags__name__iregex=tag)
 
-    return queryset
+    return queryset.distinct()

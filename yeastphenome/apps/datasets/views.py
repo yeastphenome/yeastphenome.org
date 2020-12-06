@@ -196,7 +196,7 @@ def gene_explorer(request):
     for key in [
         "query",
     ]:
-        for tag in request.GET.get(key, "").split(","):
+        for tag in request.GET.get(key, "").split("|"):
             if not tag:
                 continue
             taglist.append(tag)
@@ -424,7 +424,7 @@ def data_explorer(request, collection_id=None):
         "phenotype",
         "query",
     ]:
-        for tag in request.GET.get(key, "").split(","):
+        for tag in request.GET.get(key, "").split("|"):
             if not tag:
                 continue
             taglist.append({"value": tag, "code": key})

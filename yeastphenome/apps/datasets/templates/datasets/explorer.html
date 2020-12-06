@@ -1,5 +1,6 @@
 {% extends "base/wide.html" %}
 {% load humanize %}
+{% load static %}
 {% block content %}
 <link rel='stylesheet' href='https://unpkg.com/@yaireo/tagify/dist/tagify.css'>
 
@@ -55,7 +56,6 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
     min-height: 11ch;
 }
 </style>
-    <div class="col-md-12">
         <div class="row">
             <div class="col-md-12 public-homepage-side-panel">
                 <h1>Datasets</h1>
@@ -83,11 +83,10 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
             </div>
         </div>{% endif %}
     </div>
-</div></div></div>
+</div></div>
 {% endblock %}
 {% block scripts %}
-
-<script src='https://unpkg.com/@yaireo/tagify@3.17.7/dist/tagify.min.js'></script>
+<script src="{% static 'js/tagify-3.17.7.min.js' %}"></script>
 <script>
 
 var cart = {{ cart | safe }}
@@ -96,7 +95,7 @@ var tags = {{ tags | safe }}
 var input = document.querySelector('input[name=tags]'),
     tagify = new Tagify(input, {
         pattern: /^.{0,200}$/,  // Validate typed tag(s) by Regex. Here maximum chars length is defined as "20"
-        delimiters: ",|;",      // add new tags when these characters are used
+        delimiters: null,      // add new tags when these characters are used
         keepInvalidTags: false, // dont keep invalid tags
         editTags: 1,            // single click to edit a tag
         maxTags: 6,
@@ -160,12 +159,7 @@ function transformTag(tagData){
         tagData["icon"] = ""
         tagData["code"] = ""
         tagData.style = "--tag-bg:" + "white";
-    } else {
-        tagData.style = "--tag-bg:" + getRandomColor();
     }
-
-    if( tagData.value.toLowerCase() == 'shit' )
-       tagData.value = 's✲✲t'
 }
 
 
@@ -187,7 +181,7 @@ function add_tags_by_key(key) {
     console.log(string);
 
     if (string != undefined) {
-        $.each(string.split(','), function(i, e) {
+        $.each(string.split('|'), function(i, e) {
             querytags.push({"value": e,  "code": key})
         })
     }
@@ -261,7 +255,7 @@ function doTagsSearch() {
               if (!(e['code'] in tags)) {
                   tags[e['code']] = e['value']
               } else {
-                  tags[e['code']] += "," + e['value']  
+                  tags[e['code']] += "|" + e['value']  
               }
            })
        }
@@ -289,11 +283,9 @@ $(document).ready(function(){
     $("#papersTable").dataTable({"pageLength": 10,"language": {"search": "Filter:"}, "processing": true, "serverSide": true, "ajax": "{% if collection_id %}{% url 'api:datasets_query' collection_id %}{% else %}{% url 'api:datasets_query' %}{% endif %}{% for tag in taglist %}{% if forloop.first %}?{% else %}&{% endif %}{{ tag.code }}={{ tag.value }}{% endfor %}", "lengthMenu": [[10,15,20,25], [10,15,20,25]],
     "drawCallback": function( settings ) {
        if (settings.aoData.length == 0){
-          console.log('NO RESULT') 
           $("#message").show();
           $("#papersTable_wrapper").hide();
        } else {
-          console.log('RESULT') 
           $("#message").hide();
           $("#papersTable_wrapper").show();
        }

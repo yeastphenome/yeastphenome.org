@@ -1,0 +1,17 @@
+{% extends "base/wide.html" %}
+{% load humanize %}
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+      <h1>Support</h1>
+    </div>
+</div>
+<div class="col-xs-12 box-left" style="padding-bottom:50px">
+<div class="row">
+    <div class="col-md-12">
+       <p>For all general questions and data inquires, please contact <a href="mailto:{{ HELP_CONTACT_EMAIL }}">{{ HELP_CONTACT_EMAIL }}</a>.<br> Website issues can be opened on <a href="{{ GITHUB_REPOSITORY }}/issues" target="_blank">GitHub</a>.</p>
+    </div>
+</div>
+
+</div>
+{% endblock %}
