@@ -1,4 +1,5 @@
 {% extends "base/wide.html" %}
+{% load static %}
 {% load humanize %}
 {% block content %}
 <link rel='stylesheet' href='https://unpkg.com/@yaireo/tagify/dist/tagify.css'>
@@ -55,12 +56,11 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
     min-height: 11ch;
 }
 </style>
-    <div class="col-md-12">
         <div class="row">
             <div class="col-md-12 public-homepage-side-panel">
                 <h1>Phenotypes</h1>
                 <div>
-                  <input name='tags' value="">
+                    <input name='tags' value="">
                 </div>
             </div>
             <!--<div class="col-md-2">
@@ -88,11 +88,11 @@ label[for='checkbox-tagify-show-input'] + input:checked ~ textaragifyea{
         </div>{% endif %}
 
     </div>
-</div></div></div>
+</div></div>
 {% endblock %}
 {% block scripts %}
 
-<script src='https://unpkg.com/@yaireo/tagify@3.17.7/dist/tagify.min.js'></script>
+<script src="{% static 'js/tagify-3.17.7.min.js' %}"></script>
 <script>
 
 var tags = {{ tags | safe }}
@@ -101,7 +101,7 @@ console.log(tags)
 var input = document.querySelector('input[name=tags]'),
     tagify = new Tagify(input, {
         pattern: /^.{0,200}$/,  // Validate typed tag(s) by Regex. Here maximum chars length is defined as "20"
-        delimiters: ",|;",      // add new tags when these characters are used
+        delimiters: null,      // add new tags when these characters are used
         keepInvalidTags: false, // dont keep invalid tags
         editTags: 1,            // single click to edit a tag
         maxTags: 6,
@@ -164,8 +164,6 @@ function transformTag(tagData){
         tagData["icon"] = ""
         tagData["code"] = ""
         tagData.style = "--tag-bg:" + "white";
-    } else {
-        tagData.style = "--tag-bg:" + getRandomColor();
     }
 }
 
@@ -184,9 +182,9 @@ function add_tags_by_key(key) {
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     string = urlParams.get(key);
-
+    console.log(string)
     if (string != undefined) {
-        $.each(string.split(','), function(i, e) {
+        $.each(string.split('|'), function(i, e) {
             querytags.push({"value": e,  "code": key})
         })
     }
@@ -255,10 +253,11 @@ function doTagsSearch() {
        if (query.tags.length > 0) {
            $.each(JSON.parse(query.tags), function(i, e){          
               console.log(e)
+              // commas in tag need to be preserved
               if (!(e['code'] in tags)) {
                   tags[e['code']] = e['value']
               } else {
-                  tags[e['code']] += "," + e['value']  
+                  tags[e['code']] += "|" + e['value']
               }
            })
        }

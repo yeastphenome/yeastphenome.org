@@ -1,14 +1,14 @@
-{% extends "base/base.html" %}
+{% extends "base/wide.html" %}
 {% load static %}
 {% load humanize %}
 {% block content %}
-<style>
-</style>
-<div class="col-xs-8 left-content">
 <div class="row">
-    <div class="col-md-12 box">
+     <h1>Project</h1>
+</div>
+<div class="row">
+    <div class="col-xs-12 box-left">
         <h3 id="about">About</h3>
-        <p>YeastPhenome.org is a collaborative project that builds and maintains the compendium of systematic loss-of-function <a href="{% url 'phenotypes:index' %}">phenotypes</a> for budding yeast <span style="text-decoration:italic">Saccharomyces cerevisiae.</span></p>
+        <p>YeastPhenome.org is a collaborative project that builds and maintains the compendium of systematic loss-of-function phenotypes for budding yeast <span style="text-decoration:italic">Saccharomyces cerevisiae.</span></p>
         <p>As part of this project, we track, collect and annotate all published phenotypic screens that involve the yeast knock-out collection [ref]. We extract the data, standardize their format and structure and make them available for search, download and analysis. Our main goal is to enable ourselves and others to answer the following questions:
         <ul>
           <li>Has phenotype X ever been measured systematically for all knock-out mutants? How many times? In what conditions? Where were the results published? Where can I download the data?</li>
@@ -16,25 +16,11 @@
           <li>What genes rank the highest/lowest for phenotype X? How does gene Y rank relative to all other genes? What other phenotypes have been reported for gene Y? Do any other genes share the same phenotypes?</li>
        </ul>
 </p>
-        <div class="row">
-          <div class="col-md-4">
-            <a href="{% url 'common:contributors' %}"><img class="box" src="{% static 'images/icons/users-gray.svg' %}">
-            <p>Contributors</li></a>
-          </div>
-          <div class="col-md-4">
-            <a href="{% url 'common:stats' %}"><img class="box" src="{% static 'images/icons/bar-chart-gray.svg' %}">
-            <p>Stats</li></a>
-          </div>
-          <div class="col-md-4">
-              <a href="{% url 'common:faq' %}"><img width="164px" height="164px" class="box" src="{% static 'images/icons/question-gray.svg' %}">
-             <p>Frequently Asked Questions</p></a>
-          </div>
-        </div>
     </div>
 </div>
 
 <div class="row" id="criteria">
-    <div class="col-md-12 box">
+    <div class="col-md-12 box-left">
         <h3> Criteria for inclusion</h3>
         <p>In order to be included in the compendium, a study must meet all of the following criteria: 
          <ul>
@@ -44,7 +30,6 @@
          <li>Be associated with a journal article indexed in Pubmed</li>
         </ul>
         </p>
-          <hr>
        <p><h4>We do not include:</h4>
           <ul>
             <li>Large-scale screens of other yeast libraries (e.g., the library of DAmP strains, ts mutants or the prototrophic variant of the knock-out library).</li>
@@ -56,69 +41,36 @@
 </div>
 
 <div class="row" id="datasources">
-    <div class="col-md-12 box">
+    <div class="col-md-12 box-left">
         <h3> Data sources</h3>
            <p>Our primary source of data is the main text and/or the supplementary material of a publication as provided by the journal’s website. When appropriate, we also download data from personal websites that accompany publications.</p>  
-           <p>After downloading the data, we evaluate their completeness relative to the experiment described in the publication and reach out to the authors whenever we see that additional data may be available. For example, if the publication describes the measurement of a quantitative phenotype but only reports a binary list of hits, we ask whether the authors would be able to share the original quantitative dataset. Similarly, we often enquire about the availability of a list of tested strains for each experiment (despite the fact that everyone used the same yeast knock-out library, the actual "tested universe" in each experiment varies by as much as 20%). These datasets, which are effectively unpublished versions of published data, are explicitly flagged in the YeastPhenome.org database to emphasize their special status. The scientists who answered our emails and shared data are acknowledged at <a href="{% url 'common:contributors' %}">Contributors</a>.
+           <p>After downloading the data, we evaluate their completeness relative to the experiment described in the publication and reach out to the authors whenever we see that additional data may be available. For example, if the publication describes the measurement of a quantitative phenotype but only reports a binary list of hits, we ask whether the authors would be able to share the original quantitative dataset. Similarly, we often enquire about the availability of a list of tested strains for each experiment (despite the fact that everyone used the same yeast knock-out library, the actual "tested universe" in each experiment varies by as much as 20%). These datasets, which are effectively unpublished versions of published data, are explicitly flagged in the YeastPhenome.org database to emphasize their special status. The scientists who answered our emails and shared data are acknowledged at <a href="{% url 'common:data_contributors' %}">data contributors</a>.
        </p>
     </div>
 </div>
 
 <div class="row" id="datahandling">
-    <div class="col-md-12 box">
+    <div class="col-md-12 box-left">
         <h3> Data handling</h3>
            <p>For all data, we minimize manual handling to maximize record keeping and reproducibility. The only two operations performed manually are 1) data download and 2) conversion from PDF to a computer-readable format (text or Excel files), whenever required.</p>
-           <p>All other data manipulations (QC, clean-up, reformatting, database upload etc.) are done via script (at first -- Matlab; from 2020 forward -- Python). The scripts are version controlled and stored in <a href="" target="_blank">a Github repository</a>.</p>
+           <p>All other data manipulations (QC, clean-up, reformatting, database upload etc.) are done via script (at first -- Matlab; from 2020 forward -- Python). The scripts are version controlled and stored in <a href="" onclick="return false;" class="external inactive" target="_blank">a Github repository (coming soon!)</a>.</p>
     </div>
 </div>
 
 <div class="row" id="dataphilosophy">
-    <div class="col-md-12 box">
+    <div class="col-md-12 box-left">
         <h3> General philosophy about data collection</h3>
          <p>Coming soon!</p>
     </div>
 </div>
 
 <div class="row" id="citation">
-    <div class="col-md-12 box">
+    <div class="col-md-12 box-left">
         <h3>Data usage and citation policy</h3>
          <p>If you use data downloaded from YeastPhenome.org in a talk or a manuscript, please acknowledge the data source by citing the original publication from which the data is derived, as well as the YeastPhenome.org database. The database should be cited as follows:</p>
         <p style="margin-top:30px"><code style="padding:20px;">The YeastPhenome.org Database, www.yeastphenome.org, accessed on XXXX-XX-XX.</code></p>
     </div>
-</div>
-</div>
-
-<!-- Right sidebar, goes away for small screens -->
-<div class="col-xs-3 right-sidebar sidebar-fixed" style="padding:0px; padding-top:20px">
-    <div class="mini-submenu">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-    </div>
-    <div class="list-group">
-        <span href="#" class="list-group-item active">
-            What do you want to know?
-        </span>
-        <a href="#" onclick="topFunction()" class="list-group-item">
-            About
-        </a>
-        <a href="#criteria" class="list-group-item">
-            Criteria for inclusion
-        </a>
-        <a href="#datasources" class="list-group-item">
-            Data sources
-        </a>
-        <a href="#datahandling" class="list-group-item">
-            Data handling
-        </a>
-        <a href="#dataphilosophy" class="list-group-item">
-            General philosophy about data collection
-        </a>
-        <a href="#citation" class="list-group-item">
-            Data usage and citation policy
-        </a>
-    </div>
-</div>
+  </div>
 {% endblock %}
 {% block scripts %}
 <script>

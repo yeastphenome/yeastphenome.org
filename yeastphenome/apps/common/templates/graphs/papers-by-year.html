@@ -8,17 +8,17 @@ var papersChart = new Chart(ctx, {
   data: {
     labels: [{% for year,count in paper_counts.items %}"{{ year }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %}],
     datasets: [{
-      label: 'Total Papers',
+      label: 'Number of publications',
       data: [{% for year, count in paper_counts.items %}{
           t: new Date("{{ year }}"),
           y: {{ count }}
         }{% if forloop.last %}{% else %},{% endif %}
       {% endfor %}],
       backgroundColor: [{% for year, count in paper_counts.items %}
-         'chocolate'{% if forloop.last %}{% else %},{% endif %}{% endfor %}
+         'rgb(36, 113, 163)'{% if forloop.last %}{% else %},{% endif %}{% endfor %}
       ],
       borderColor: [{% for year, count in paper_counts.items %}
-         'chocolate'{% if forloop.last %}{% else %},{% endif %}{% endfor %}
+         'rgb(36, 113, 163)'{% if forloop.last %}{% else %},{% endif %}{% endfor %}
       ],
       borderWidth: 1
     }
@@ -36,14 +36,10 @@ var papersChart = new Chart(ctx, {
          else e.target.style.cursor = 'default';
       }
     },
-    title: {
-      display: true,
-      text: 'Papers Added to YeastPhenome.org by Year'
-    },
     onClick:function(e, items){
         if (items.length == 0) return; //Clicked outside any bar.
         var activePointLabel = this.getElementsAtEvent(e)[0]._model.label;
-        document.location = "/papers/year/" + activePointLabel + "/"
+        document.location = "/papers/?year=" + activePointLabel
     },
     tooltips: {
       callbacks: {
@@ -63,13 +59,13 @@ var papersChart = new Chart(ctx, {
         },
         scaleLabel: {
           display: true,
-          labelString: 'Date'
+          labelString: 'Publication Year'
         }
       }],
       yAxes: [{
         scaleLabel: {
           display: true,
-          labelString: 'value'
+          labelString: 'Number of publications'
         }
       }]
     }

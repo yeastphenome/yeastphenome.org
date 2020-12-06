@@ -13,7 +13,7 @@ var myChart = new Chart(ctx, {
     datasets: [{
       label: "Dataset Sources",
       data: [{% for name, count in dataset_sources_counts.items %}{{ count }}{% if forloop.last %}{% else %},{% endif %}{% endfor %}],
-      backgroundColor: [{% for name, count in dataset_sources_counts.items %}"rgb(177, 103, 24)"{% if forloop.last %}{% else %},{% endif %}{% endfor %}],
+      backgroundColor: [{% for name, count in dataset_sources_counts.items %}"rgb(55, 121, 238)"{% if forloop.last %}{% else %},{% endif %}{% endfor %}],
     }]
   },
   options: {

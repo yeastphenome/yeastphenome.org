@@ -27,7 +27,7 @@
   overflow-y: auto;
 }
 </style>
-<div class="row" style="padding-top:20px">
+<div class="row">
     <div class="col-md-12">
         <h1>{{ gene.common_name }} / {{ gene.systematic_name }}</h1>
         <table class="table">
@@ -76,7 +76,7 @@
       {% include "genes/similar_table.html" with scores=sims.bottom table_id="nonsimilarTable" %}
       </div>{% endif %}
     </div>
-    <a><button class="dataset_similar_download btn btn-info" style="margin-right:5px" type="button">Download all</button></a>{% if gene %}<a href="{% url 'genes:similar_genes' gene.id %}"><button type="button" class="btn btn-default">View all</button></a>{% endif %}
+    <a><button class="dataset_similar_download btn btn-info" style="margin-right:5px" type="button">Download all</button></a>{% if gene %}<a href="{% url 'genes:similar_genes' gene.id %}"><button type="button" class="btn btn-success">View all</button></a>{% endif %}
   </div>
 </div>{% endif %}
 

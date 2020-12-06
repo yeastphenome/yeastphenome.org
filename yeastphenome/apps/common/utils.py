@@ -9,7 +9,7 @@ import numpy as np
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.conditions.models import ConditionSet, ConditionType
 from yeastphenome.apps.phenotypes.models import Phenotype, Measurement
-from yeastphenome.apps.datasets.models import Dataset, Sourcetype
+from yeastphenome.apps.datasets.models import Dataset, Sourcetype, Gene
 
 import collections
 import random
@@ -132,6 +132,7 @@ def get_papers_by_year(add_padding=True):
     """
     counts = (
         Paper.objects.values("pub_date")
+        .exclude(latest_data_status__status__name="not relevant")
         .order_by("pub_date")
         .annotate(the_count=Count("pub_date"))
     )
@@ -223,6 +224,7 @@ def get_latest_stats():
     # Total number of papers to process
     f = Q(latest_data_status__status__is_valid=True)
     papers_nr = papers_qs.filter(f).count()
+    genes_nr = Gene.objects.all().count()
 
     # Latest modified paper
     updated_on = papers_qs.latest().modified_on
@@ -499,6 +501,7 @@ def get_latest_stats():
 
     context = {
         "papers_nr": papers_nr,
+        "genes_nr": genes_nr,
         "papers_hopeless_nr": papers_hopeless_nr,
         "labs_nr": labs_nr,
         "papers_processed_nr": papers_processed_nr,

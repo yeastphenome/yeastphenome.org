@@ -103,11 +103,12 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
             "measurement",
             "query",
         ]:
-            for tag in request.GET.get(key, "").split(","):
+            for tag in request.GET.get(key, "").split("|"):
                 if not tag:
                     continue
                 taglist.append({"value": tag, "code": key})
 
+        print(taglist)
         if taglist:
             queryset = phenotypes_search(query=None, taglist=taglist)
             count = len(queryset)
@@ -161,7 +162,7 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
 
         for observable in queryset:
             if hasattr(observable, "condition_list"):
-                condition_list = observable.condition_list
+                condition_list = join_and_more(observable.condition_list.split(","), 7)
             else:
                 condition_list = join_and_more(observable.conditiontypes(), 7)
 
