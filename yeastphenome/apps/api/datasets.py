@@ -349,7 +349,11 @@ class GetGeneDatasets(RatelimitMixin, APIView):
         except Gene.DoesNotExist:
             return Response(status=200, data=data)
 
-        datasets = Data.objects.filter(gene=gene).exclude(valuez__isnull=True).order_by("-valuez")
+        datasets = (
+            Data.objects.filter(gene=gene)
+            .exclude(valuez__isnull=True)
+            .order_by("-valuez")
+        )
 
         # If there is a filter
         if query:

@@ -240,8 +240,8 @@ def gene_detail(request, gene_id):
     context["datasets_bottom"] = gene.get_data(reverse=True)[:10]
 
     # Get the top and bottom correlations
-    context['sims_top'] = gene.get_ranked_similar(reverse=False)[:10]
-    context['sims_bottom'] = gene.get_ranked_similar(reverse=True)[:10]
+    context["sims_top"] = gene.get_ranked_similar(reverse=False)[:10]
+    context["sims_bottom"] = gene.get_ranked_similar(reverse=True)[:10]
 
     context["links"] = links
     return render(request, "genes/detail.html", context)
@@ -272,12 +272,13 @@ def similar_genes(request, gene_id):
 
     total_sims = sims.count()
     ranks = [(1 - (idx / total_sims)) * 100 for idx, sim in enumerate(sims)]
-    context = {"gene": gene,
-               "sims": sims,
-               "ranks": ranks,
-               "links": links,
-               "active": "explorer",
-               }
+    context = {
+        "gene": gene,
+        "sims": sims,
+        "ranks": ranks,
+        "links": links,
+        "active": "explorer",
+    }
     return render(request, "genes/similar_genes.html", context)
 
 
@@ -343,9 +344,12 @@ def gene_datasets(request, gene_id):
     ]
 
     # Derive datasets bins here
-    datapoints = Data.objects.filter(gene=gene).exclude(valuez__isnull=True)\
-        .order_by("-valuez")\
+    datapoints = (
+        Data.objects.filter(gene=gene)
+        .exclude(valuez__isnull=True)
+        .order_by("-valuez")
         .values_list("valuez")
+    )
 
     count, division = np.histogram([float(x[0]) for x in datapoints])
     counts = []
@@ -358,7 +362,7 @@ def gene_datasets(request, gene_id):
         "links": links,
         "active": "explorer",
         "counts": counts,
-        "division": division
+        "division": division,
     }
 
     return render(request, "genes/gene_datasets.html", context)

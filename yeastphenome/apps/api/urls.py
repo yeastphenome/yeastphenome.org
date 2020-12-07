@@ -113,9 +113,7 @@ urlpatterns = [
         name="conditiontype_datasets",
     ),
     path("genes/", datasets_views.GetGenes.as_view(), name="get_genes"),
-    path(
-        "genes/<int:gene_id>/similar/", datasets_views.GetSimilarGenes.as_view()
-    ),
+    path("genes/<int:gene_id>/similar/", datasets_views.GetSimilarGenes.as_view()),
     path(
         "genes/datasets/<int:gene_id>/",
         datasets_views.GetGeneDatasets.as_view(),

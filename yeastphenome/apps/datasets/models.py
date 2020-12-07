@@ -322,13 +322,15 @@ class Gene(models.Model):
 
     def link_detail(self):
         """Return the link for the gene detail"""
-        return '<a href="%s">%s</a>' % (
-            reverse("genes:detail", args=[self.id]), self
-        )
+        return '<a href="%s">%s</a>' % (reverse("genes:detail", args=[self.id]), self)
 
     def get_data(self, reverse=False):
         # Filter to data with values defined, sorted greatest to smallest
-        queryset = Data.objects.filter(gene=self).exclude(valuez__isnull=True).order_by("-valuez")
+        queryset = (
+            Data.objects.filter(gene=self)
+            .exclude(valuez__isnull=True)
+            .order_by("-valuez")
+        )
         if reverse:
             queryset = queryset.reverse()
         return queryset
