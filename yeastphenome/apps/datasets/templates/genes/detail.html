@@ -1,107 +1,142 @@
 {% extends "base/wide.html" %}
 {% load static %}
 {% load my_filters %}
-{% block title %}Genes / {{ gene.systematic_name }}/ {{ SITE_NAME }}{% endblock %}
+{% block title %}Genes / {{ gene }} / {{ SITE_NAME }}{% endblock %}
 {% block content %}
-<style>
-#dataset-genes {
-  font: 10px sans-serif;
-}
+    <style>
+        #dataset-genes {
+            font: 10px sans-serif;
+        }
 
-.bar rect {
-  shape-rendering: crispEdges;
-  cursor: pointer;
-}
+        .bar rect {
+            shape-rendering: crispEdges;
+            cursor: pointer;
+        }
 
-.bar text {
-  fill: #999999;
-}
+        .bar text {
+            fill: #999999;
+        }
 
-.axis path, .axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
-}
-#scrollable-dropdown-menu .tt-menu {
-  max-height: 250px;
-  overflow-y: auto;
-}
-</style>
-<div class="row">
-    <div class="col-md-12">
-        <h1>{{ gene.common_name }} / {{ gene.systematic_name }}</h1>
-        <table class="table">
-            <tr><th width="20%" scope="row">Standard Name:</th><td>{{ metadata.display_name }}</td></tr>
-            <tr><th width="20%" scope="row">Systematic name:</th><td>{{ gene.systematic_name }}</td></tr>
-            {% if metadata.sgdid %}<tr><th width="20%" scope="row">SGD ID:</th><td><a target="_blank" href="https://yeastgenome.org/locus/{{ metadata.sgdid }}" class="external">{{ metadata.sgdid }}</a></td></tr>{% endif %}
-            {% if metadata.aliases %}<tr><th width="20%" scope="row">Aliases:</th><td>{% for alias in metadata.aliases %}{% if alias.category == "Alias" %}{% if alias.link %}<a href="{{ alias.link }}" target="_blank">{% endif %} {{ alias.display_name }}{% if forloop.last %}{% else %},{% endif %} {% if alias.link %} </a>{% endif %} {% endif %}{% endfor %}</td></tr>{% endif %}
-            <tr><th width="20%" scope="row">Description</th><td>{% if gene.description %}{{ gene.description }}{% else %}{{ metadata.description }}{% endif %}</td></tr>
-            {% if metadata.name_description %}<tr><th width="20%" scope="row">Name Description</th><td>{{ metadata.name_description }}</td></tr>{% endif %}
-        </table>
+        .axis path, .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
+
+        #scrollable-dropdown-menu .tt-menu {
+            max-height: 250px;
+            overflow-y: auto;
+        }
+    </style>
+    <div class="row">
+        <div class="col-md-12">
+            <h1>{{ gene }}</h1>
+            <table class="table">
+                <tr>
+                    <th width="20%" scope="row">Standard Name:</th>
+                    <td>{{ gene.common_name }}</td>
+                </tr>
+                <tr>
+                    <th width="20%" scope="row">Systematic name:</th>
+                    <td>{{ gene.systematic_name }}</td>
+                </tr>
+                <tr>
+                    <th width="20%" scope="row">SGD ID:</th>
+                    <td><a target="_blank" href="https://yeastgenome.org/locus/{{ gene.primary_sgdid }}"
+                           class="external">{{ gene.primary_sgdid }}</a></td>
+                </tr>
+                <tr>
+                    <th width="20%" scope="row">Aliases:</th>
+                    <td>{% for alias in gene.aliases.all %}{{ alias.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+                </tr>
+                <tr>
+                    <th width="20%" scope="row">Description</th>
+                    <td>{{ gene.description }}</td>
+                </tr>
+                <tr>
+                    <th width="20%" scope="row">Name Description</th>
+                    <td>{{ gene.common_name_explanation }}</td>
+                </tr>
+            </table>
+        </div>
     </div>
-</div>
 
-{% if datasets_top or datasets_bottom %}<div class="row" style="padding-top:20px" id='datasets'>
-    <div class="col-md-12">
-    <h2 style="padding-bottom:20px">Phenotypic Scores</h2>
-    <ul class="nav nav-tabs">
-      {% if datasets_top %}<li class="active"><a data-toggle="tab" href="#datasets_top">Top 10</a></li>{% endif %}
-      {% if datasets_bottom %}<li><a data-toggle="tab" href="#datasets_bottom">Bottom 10</a></li>{% endif %}
-    </ul>
+    {% if datasets_top or datasets_bottom %}
+        <div class="row" style="padding-top:20px" id='datasets'>
+            <div class="col-md-12">
+                <h2 style="padding-bottom:20px">Phenotypic Scores</h2>
+                <ul class="nav nav-tabs">
+                    {% if datasets_top %}
+                        <li class="active"><a data-toggle="tab" href="#datasets_top">Top 10</a></li>{% endif %}
+                    {% if datasets_bottom %}
+                        <li><a data-toggle="tab" href="#datasets_bottom">Bottom 10</a></li>{% endif %}
+                </ul>
 
-    <div class="tab-content">
-      {% if datasets_top %}<div id="datasets_top" class="tab-pane fade in active" style="padding-top:20px">
-      {% include "datasets/data_table.html" with datasets=datasets_top table_id="datasets_top_table" %}
-      </div>{% endif %}
-      {% if datasets_bottom %}<div id="datasets_bottom" class="tab-pane fade" style="padding-top:20px">
-      {% include "datasets/data_table.html" with datasets=datasets_bottom table_id="datasets_bottom_table" %}
-      </div>{% endif %}
-    </div>
-  </div>
-</div>{% endif %}
+                <div class="tab-content">
+                    {% if datasets_top %}
+                        <div id="datasets_top" class="tab-pane fade in active" style="padding-top:20px">
+                            {% include "datasets/data_table.html" with datasets=datasets_top table_id="datasets_top_table" %}
+                        </div>{% endif %}
+                    {% if datasets_bottom %}
+                        <div id="datasets_bottom" class="tab-pane fade" style="padding-top:20px">
+                            {% include "datasets/data_table.html" with datasets=datasets_bottom table_id="datasets_bottom_table" %}
+                        </div>{% endif %}
+                </div>
+            </div>
+        </div>{% endif %}
 
-{% if sims.top or sims.bottom %}<div class="row" style="padding-top:20px" id='similar'>
-    <div class="col-md-12">
-    <h2 style="padding-bottom:20px">Phenotypic Similarities</h2>
-    <ul class="nav nav-tabs">
-      {% if sims.top %}<li class="active"><a data-toggle="tab" href="#top10">Top 10</a></li>{% endif %}
-      {% if sims.bottom %}<li><a data-toggle="tab" href="#bottom10">Bottom 10</a></li>{% endif %}
-    </ul>
+    {% if sims_top or sims_bottom %}
+        <div class="row" style="padding-top:20px" id='similar'>
+            <div class="col-md-12">
+                <h2 style="padding-bottom:20px">Phenotypic Similarities</h2>
+                <ul class="nav nav-tabs">
+                    {% if sims_top %}
+                        <li class="active"><a data-toggle="tab" href="#top10">Top 10</a></li>{% endif %}
+                    {% if sims_bottom %}
+                        <li><a data-toggle="tab" href="#bottom10">Bottom 10</a></li>{% endif %}
+                </ul>
 
-    <div class="tab-content">
-      {% if sims.top %}<div id="top10" class="tab-pane fade in active" style="padding-top:20px">
-      {% include "genes/similar_table.html" with scores=sims.top table_id="similarTable" %}
-      </div>{% endif %}
-      {% if sims.bottom %}<div id="bottom10" class="tab-pane fade" style="padding-top:20px">
-      {% include "genes/similar_table.html" with scores=sims.bottom table_id="nonsimilarTable" %}
-      </div>{% endif %}
-    </div>
-    <a><button class="dataset_similar_download btn btn-info" style="margin-right:5px" type="button">Download all</button></a>{% if gene %}<a href="{% url 'genes:similar_genes' gene.id %}"><button type="button" class="btn btn-success">View all</button></a>{% endif %}
-  </div>
-</div>{% endif %}
+                <div class="tab-content">
+                    {% if sims_top %}
+                        <div id="top10" class="tab-pane fade in active" style="padding-top:20px">
+                            {% include "genes/similar_table.html" with scores=sims_top table_id="similarTable" %}
+                        </div>
+                    {% endif %}
+                    {% if sims_bottom %}
+                        <div id="bottom10" class="tab-pane fade" style="padding-top:20px">
+                            {% include "genes/similar_table.html" with scores=sims_bottom table_id="nonsimilarTable" %}
+                        </div>
+                    {% endif %}
+                </div>
+                <a class="dataset_similar_download btn btn-info" style="margin-right:5px" role="button">Download all</a>
+                <a class="btn btn-success" role="button" href="{% url 'genes:similar_genes' gene.id %}">View all</a>
+            </div>
+        </div>{% endif %}
 
 {% endblock %}
 {% block scripts %}
-<script>
-function download(url){
-    document.location = "#";
-    $("#fade").show()
-    frame = document.createElement("iframe");
-    frame.onload=function(){$("#fade").hide();}
-    frame.src=url;
-    document.body.appendChild(frame);
-}
+    <script>
+        function download(url) {
+            document.location = "#";
+            $("#fade").show()
+            frame = document.createElement("iframe");
+            frame.onload = function () {
+                $("#fade").hide();
+            }
+            frame.src = url;
+            document.body.appendChild(frame);
+        }
 
-$(document).ready(function(){
- 
-    $(".dataset_download_gene").click(function(){
-        document.location = "/download/{{ gene.id }}/"
-    })
+        $(document).ready(function () {
 
-    $(".dataset_similar_download").click(function(){
-        document.location = "{% url 'genes:download_sims' gene.id %}"
-    })
-});
+            $(".dataset_download_gene").click(function () {
+                document.location = "/download/{{ gene.id }}/"
+            })
 
-</script>
+            $(".dataset_similar_download").click(function () {
+                document.location = "{% url 'genes:download_sims' gene.id %}"
+            })
+        });
+
+    </script>
 {% endblock %}

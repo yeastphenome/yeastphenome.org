@@ -332,7 +332,7 @@ class GetGeneDatasets(RatelimitMixin, APIView):
     ratelimit_method = "GET"
     renderer_classes = (JSONRenderer,)
 
-    def get(self, request, systematic_name):
+    def get(self, request, gene_id):
         print("GET GetGeneDatasets")
 
         # Start and length to return
@@ -345,18 +345,11 @@ class GetGeneDatasets(RatelimitMixin, APIView):
         data = {"draw": draw, "recordsTotal": 0, "recordsFiltered": 0, "data": []}
 
         try:
-            gene = Gene.objects.get(
-                Q(systematic_name__iexact=systematic_name)
-                | Q(common_name__iexact=systematic_name)
-            )
+            gene = Gene.objects.get(pk=gene_id)
         except Gene.DoesNotExist:
             return Response(status=200, data=data)
 
-        datasets = (
-            Data.objects.filter(gene=gene)
-            .exclude(Q(value=None) | Q(value=Decimal("NaN")))
-            .order_by("-value")
-        )
+        datasets = Data.objects.filter(gene=gene).exclude(valuez__isnull=True).order_by("-valuez")
 
         # If there is a filter
         if query:
@@ -382,9 +375,9 @@ class GetGeneDatasets(RatelimitMixin, APIView):
         for i, dataset in enumerate(datasets):
             data["data"].append(
                 [
-                    "<a href='/datasets/%s'>%s</a>"
+                    "<a href='/datasets/%s/'>%s</a>"
                     % (dataset.dataset.id, dataset.dataset.name),
-                    round(dataset.value, 1),
+                    round(dataset.valuez, 1),
                     round(ranks[i], 1),
                 ]
             )
@@ -394,7 +387,7 @@ class GetGeneDatasets(RatelimitMixin, APIView):
 
 
 class GetSimilarGenes(RatelimitMixin, APIView):
-    """Given A gene systematic name, return ordered list of similarity scores
+    """Given a gene's, return ordered list of similarity scores
     (most to least similar), top N for each
     """
 
@@ -404,33 +397,32 @@ class GetSimilarGenes(RatelimitMixin, APIView):
     ratelimit_method = "GET"
     renderer_classes = (JSONRenderer,)
 
-    def get(self, request, systematic_name, N=10, reverse=0):
+    def get(self, request, gene_id, N=10, reverse=0):
         print("GET GetSimilarGenes")
         try:
-            gene = Gene.objects.get(systematic_name=systematic_name)
+            gene = Gene.objects.get(pk=gene_id)
         except Gene.DoesNotExist:
             return Response(status=404)
 
-        # Only get top and bottom N
-        sims = list(gene.get_ranked_similar(reverse=(reverse == 1)))
-        first_n = sims[:N]
-        last_n = sims[len(sims) - N :]
+        # # Only get top and bottom N
+        # sims = list(gene.get_ranked_similar(reverse=(reverse == 1)))
+        # first_n = sims[:N]
+        # last_n = sims[len(sims) - N :]
+        #
+        # scores = {}
+        # for sim in first_n + last_n:
+        #     scores[sim.gene2.id] = {
+        #         "gene2": sim.gene2,
+        #         "score": sim.score,
+        #         "pvalue": sim.pvalue
+        #     }
 
-        scores = {}
-        for sim in first_n + last_n:
-            if sim.gene1.systematic_name == gene.systematic_name:
-                scores[sim.gene2.systematic_name] = {
-                    "score": sim.score,
-                    "pvalue": sim.pvalue,
-                }
-            else:
-                scores[sim.gene1.systematic_name] = {
-                    "score": sim.score,
-                    "pvalue": sim.pvalue,
-                }
+        # A list of dicts
+        scores = list(gene.get_ranked_similar(reverse=(reverse == 1)).values())
+        data = {"scores": scores}
 
         # Must make model json serializable
-        return Response(status=200, data=scores)
+        return Response(status=200, data=data)
 
 
 class GetGenes(RatelimitMixin, APIView):
