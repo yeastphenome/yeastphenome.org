@@ -13,7 +13,7 @@ from yeastphenome.apps.datasets.models import (
     Data,
     Tag,
     Gene,
-    GeneAlias
+    GeneAlias,
 )
 from yeastphenome.apps.datasets.search import (
     get_search_tags,
