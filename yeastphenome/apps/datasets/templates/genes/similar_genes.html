@@ -3,67 +3,83 @@
 {% load my_filters %}
 {% block title %}Similar Genes / {{ SITE_NAME }}{% endblock %}
 {% block content %}
-<style>
-#dataset-genes {
-  font: 10px sans-serif;
-}
+    <style>
+        #dataset-genes {
+            font: 10px sans-serif;
+        }
 
-.bar rect {
-  shape-rendering: crispEdges;
-  cursor: pointer;
-}
+        .bar rect {
+            shape-rendering: crispEdges;
+            cursor: pointer;
+        }
 
-.bar text {
-  fill: #999999;
-}
+        .bar text {
+            fill: #999999;
+        }
 
-.axis path, .axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
-}
-</style>
-{% if sims %}<div class="row" id='similar'>
-    <div class="col-md-12">
-      <h1>{{ gene.common_name }}/{{ gene.systematic_name }} -- Similar Genes</h1>
-    <table id="similar_table" class="tablesorter table table-striped" width="100%">
-        <thead>
-        <tr>
-            <th style="text-align:left" data-placeholder="Select an name" class="text-nowrap" width="25%">Gene</th>
-            <th style="text-align:left" width="25%">Correlation</th>
-            <th style="text-align:left" width="25%">P-Value</th>
-            <th style="text-align:left" width="25%">Percentile (lowest to highest)</th>
-        </tr>
-        </thead>
-        <tbody>
-{% for sim in sims %}<tr><td><a href="/genes/{{ sim.4 }}/">{{ sim.1 }}/{{ sim.0 }}</a></td><td>{{ sim.2 }}</td><td>{{ sim.3|stringformat:".2e" }}</td><td>{{ ranks|lookup:forloop.counter0|floatformat:1 }}%</td></tr>{% endfor %}
-      </table>
-    </div>
-    <button class="dataset_similar_download btn btn-info" type="button">Download all</button>
-  </div>
-</div>{% endif %}
+        .axis path, .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
+    </style>
+    {% if sims %}
+        <div class="row" id='similar'>
+            <div class="col-md-12">
+                <h1>{{ gene }} &mdash; Similar Genes</h1>
+                <table id="similar_table" class="tablesorter table table-striped" width="100%">
+                    <thead>
+                    <tr>
+                        <th style="text-align:left" data-placeholder="Select an name" class="text-nowrap" width="25%">
+                            Gene
+                        </th>
+                        <th style="text-align:left" width="25%">Correlation Mean</th>
+                        <th style="text-align:left" width="25%">Correlation Std. Dev.</th>
+                        <th style="text-align:left" width="25%">Percentile (lowest to highest)</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for sim in sims %}
+                        <tr>
+                            <td><a href="{% url 'genes:detail' sim.gene2_id %}">{{ sim.gene2 }}</a></td>
+                            <td>{{ sim.score|stringformat:".2f" }}</td>
+                            <td>{{ sim.pvalue|stringformat:".2f" }}</td>
+                            <td>{{ ranks|lookup:forloop.counter0|floatformat:1 }}%</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <button class="dataset_similar_download btn btn-info" type="button">Download all</button>
+        </div>
+        </div>{% endif %}
 
 {% endblock %}
 {% block scripts %}
-{% include "scripts/tablesorter.html" %}
-<script>
-function download(url){
-    document.location = "#";
-    $("#fade").show()
-    frame = document.createElement("iframe");
-    frame.onload=function(){$("#fade").hide();}
-    frame.src=url;
-    document.body.appendChild(frame);
-}
+    {% include "scripts/tablesorter.html" %}
+    <script>
+        function download(url) {
+            document.location = "#";
+            $("#fade").show()
+            frame = document.createElement("iframe");
+            frame.onload = function () {
+                $("#fade").hide();
+            }
+            frame.src = url;
+            document.body.appendChild(frame);
+        }
 
-$(document).ready(function(){
- 
-    $(".dataset_similar_download").click(function(){
-        download("{% url 'genes:download_sims' gene.id %}")
-    })
-    {% if gene %}$("#gene-name").val("{{ gene.systematic_name }}")
-    $("#similar_table").DataTable({"pageLength": 100,  "order": [[ 2, "asc" ]], "language": {"search": "Filter:"}});{% endif %}
-});
+        $(document).ready(function () {
 
-</script>
+            $(".dataset_similar_download").click(function () {
+                download("{% url 'genes:download_sims' gene.id %}")
+            })
+            {% if gene %}$("#gene-name").val("{{ gene.systematic_name }}")
+                $("#similar_table").DataTable({
+                    "pageLength": 100,
+                    "order": [[2, "asc"]],
+                    "language": {"search": "Filter:"}
+                });{% endif %}
+        });
+
+    </script>
 {% endblock %}

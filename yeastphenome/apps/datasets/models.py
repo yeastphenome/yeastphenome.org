@@ -291,7 +291,7 @@ class GeneAlias(models.Model):
     name = models.CharField(max_length=250, null=True, blank=True, unique=True)
 
     def __str__(self):
-        return "<%s>" % self.name
+        return "%s" % self.name
 
 
 class Gene(models.Model):
@@ -305,33 +305,44 @@ class Gene(models.Model):
     # NOTE: unique removed from here and common name in the case of blank
     primary_sgdid = models.CharField(max_length=50, null=True, blank=True)
 
-    # Cooresponds to 5. Standard gene name, if defined
+    # Corresponds to 5. Standard gene name, if defined
     common_name = models.CharField(max_length=50, null=True, blank=True)
 
     # Corresponds to 6. Alias (optional, multiples separated by |)
     aliases = models.ManyToManyField(GeneAlias, blank=True)
 
+    common_name_explanation = models.CharField(max_length=255, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+
     # TODO: additional mutations resulting from perturbing gene
     # genome_alterations, acquired_secondary_alterations
 
+    def __str__(self):
+        return "%s / %s" % (self.common_name, self.systematic_name)
+
     def link_detail(self):
         """Return the link for the gene detail"""
-        return '<a href="%s">%s/%s</a>' % (
-            reverse("genes:detail", args=[self.id]),
-            self.common_name,
-            self.systematic_name,
+        return '<a href="%s">%s</a>' % (reverse("genes:detail", args=[self.id]), self)
+
+    def get_data(self, reverse=False):
+        # Filter to data with values defined, sorted greatest to smallest
+        queryset = (
+            Data.objects.filter(gene=self)
+            .exclude(valuez__isnull=True)
+            .order_by("-valuez")
         )
+        if reverse:
+            queryset = queryset.reverse()
+        return queryset
 
     def get_ranked_similar(self, reverse=False):
         """Given a gene, get a sorted listed from the most to least similar.
-        Assume each gene represented twice.
+        Assume each pair of genes is represented twice (A-B and B-A).
         """
-        if not reverse:
-            return GeneSimilarity.objects.filter(Q(gene1=self)).order_by("-score")
-        return GeneSimilarity.objects.filter(Q(gene1=self)).order_by("score")
-
-    def __str__(self):
-        return "<%s>" % self.systematic_name
+        queryset = GeneSimilarity.objects.filter(gene1=self).order_by("-score")
+        if reverse:
+            queryset = queryset.reverse()
+        return queryset
 
 
 class DatasetSimilarity(models.Model):
@@ -413,14 +424,17 @@ class GeneSimilarity(models.Model):
 
 
 class Data(models.Model):
-    dataset = models.ForeignKey(Dataset, on_delete=models.DO_NOTHING)
-    value = models.DecimalField(max_digits=10, decimal_places=3)
 
-    # orf can eventually be deleted when the Gene model is migrated in production
-    orf = models.CharField(max_length=50)
     gene = models.ForeignKey(
         "datasets.Gene", null=True, blank=True, on_delete=models.DO_NOTHING
     )
+    dataset = models.ForeignKey(Dataset, on_delete=models.DO_NOTHING)
+
+    # Raw phenotypic score
+    value = models.DecimalField(max_digits=20, decimal_places=10)
+
+    # Normalized phenotypic score
+    valuez = models.DecimalField(max_digits=10, decimal_places=5)
 
     def __str__(self):
-        return "%s - %s" % (self.orf, self.value)
+        return "%s - %d" % (self.gene.systematic_name, self.dataset.id)
