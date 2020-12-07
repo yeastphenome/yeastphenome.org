@@ -13,15 +13,13 @@ from yeastphenome.apps.datasets.models import (
     Data,
     Tag,
     Gene,
-    GeneAlias,
-    GeneSimilarity,
+    GeneAlias
 )
 from yeastphenome.apps.datasets.search import (
     get_search_tags,
     get_gene_search_tags,
 )
 from yeastphenome.apps.datasets.utils import (
-    get_gene_metadata,
     send_file,
     prepare_dataset_download,
 )

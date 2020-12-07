@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.contrib import messages
-from decimal import Decimal
 
 from yeastphenome.apps.datasets.models import Dataset, Collection, Gene, Data
 from yeastphenome.apps.datasets.search import (

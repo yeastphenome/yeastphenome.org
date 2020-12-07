@@ -1,7 +1,6 @@
 from __future__ import unicode_literals
 
 from django.core.exceptions import FieldError
-from django.db.models import Q
 from django.db import models
 from django.apps import apps
 from django.contrib.humanize.templatetags.humanize import intcomma
