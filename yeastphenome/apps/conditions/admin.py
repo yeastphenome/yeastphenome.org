@@ -53,11 +53,10 @@ class ConditionAdmin(ImprovedModelAdmin):
         "id",
         "type",
         "dose",
-        "conditionsets_str_list",
-        "media_str_list",
+        "conditionsets_edit_list",
+        "media_edit_list",
         "tags_edit_list",
     )
-    list_filter = ["type__name"]
     ordering = ("type__name", "dose")
     fields = [
         "type",
@@ -206,12 +205,12 @@ class ConditionSetAdmin(ImprovedModelAdmin):
         "display_name",
         "conditions",
         "description",
-        "datasets_edit_link_list",
+        "datasets_edit_list",
     )
     readonly_fields = (
         "systematic_name",
         "display_name",
-        "datasets_edit_link_list",
+        "datasets_edit_list",
     )
 
     def save_model(self, request, obj, form, change):

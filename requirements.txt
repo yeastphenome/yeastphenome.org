@@ -7,7 +7,7 @@ Bio
 django-ratelimit==3.0.0
 django-extensions==3.0.2
 sendgrid==6.4.3
-biopython==1.77
+biopython==1.78
 # just for postgres
 psycopg2-binary==2.8.5
 djangorestframework==3.11.1
