@@ -255,7 +255,7 @@ def similar_genes(request, gene_id):
     except Gene.DoesNotExist:
         raise Http404
 
-    sims = gene.get_ranked_similar(reverse=False).select_related('gene2')
+    sims = gene.get_ranked_similar(reverse=False).select_related("gene2")
 
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
