@@ -3,16 +3,16 @@ from . import views
 
 urlpatterns = [
     path("", views.gene_explorer, name="index"),
-    path("<str:query>/", views.gene_detail, name="detail"),
-    path("<str:gene_id>/download/", views.download_all, name="download_gene"),
+    path("<int:gene_id>/", views.gene_detail, name="detail"),
+    path("<int:gene_id>/download/", views.download_all, name="download_gene"),
     path(
-        "<str:gene_id>/download/sims/",
+        "<int:gene_id>/download/sims/",
         views.download_sims,
         name="download_sims",
     ),
-    path("<str:gene_id>/similar/", views.similar_genes, name="similar_genes"),
+    path("<int:gene_id>/similar/", views.similar_genes, name="similar_genes"),
     path(
-        "<str:gene_id>/scores/",
+        "<int:gene_id>/scores/",
         views.gene_datasets,
         name="datasets",
     ),

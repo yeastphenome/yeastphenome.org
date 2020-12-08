@@ -1,11 +1,16 @@
-    <table id="{{ table_id }}" class="table table-condensed table-hover" width="100%">
-        <thead>
+<table id="{{ table_id }}" class="table table-condensed table-hover" width="100%">
+    <thead>
+    <tr>
+        <th class="text-nowrap" width="30%">Gene</th>
+        <th width="30%">Correlation Mean</th>
+        <th width="30%">Correlation Std. Dev.</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for sim in scores %}
         <tr>
-            <th class="text-nowrap" width="30%">Gene</th>
-            <th width="30%">Correlation</th>
-            <th width="30%">P-Value</th>
-        </tr>
-        </thead>
-        <tbody>
-{% for sim in scores %}<tr><td><a href="/genes/{% if sim.gene1 == gene %}{{ sim.gene2.id }}{% else %}{{ sim.gene1.id }}{% endif %}/">{% if sim.gene1 == gene %}{{ sim.gene2.common_name }}/{{ sim.gene2.systematic_name }}{% else %}{{ sim.gene1.common_name }}/{{ sim.gene1.systematic_name }}{% endif %}</a></td><td>{{ sim.score }}</td><td>{{ sim.pvalue|stringformat:".2e" }}</td></tr>{% endfor %}
-      </table>
+            <td><a href="{% url 'genes:detail' sim.gene2.id %}">{{ sim.gene2 }}</a></td>
+            <td>{{ sim.score|stringformat:".2f" }}</td>
+            <td>{{ sim.pvalue|stringformat:".2f" }}</td>
+        </tr>{% endfor %}
+</table>

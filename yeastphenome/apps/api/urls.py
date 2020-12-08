@@ -50,10 +50,6 @@ urlpatterns = [
     url(r"^docs/$", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
     path("", include(router.urls)),
     path("papers/<int:paper_id>/references", papers_views.GetPaperReferences.as_view()),
-    path("genes/", datasets_views.GetGenes.as_view(), name="get_genes"),
-    path(
-        "genes/<str:systematic_name>/similar", datasets_views.GetSimilarGenes.as_view()
-    ),
     path(
         "observable/<int:observable_id>/datasets",
         phenotypes_views.GetObservableDatasets.as_view(),
@@ -116,17 +112,19 @@ urlpatterns = [
         conditions_views.GetConditionTypeDatasets.as_view(),
         name="conditiontype_datasets",
     ),
+    path("genes/", datasets_views.GetGenes.as_view(), name="get_genes"),
+    path("genes/<int:gene_id>/similar/", datasets_views.GetSimilarGenes.as_view()),
     path(
-        "genes/datasets/<str:systematic_name>/",
+        "genes/datasets/<int:gene_id>/",
         datasets_views.GetGeneDatasets.as_view(),
         name="gene_datasets",
     ),
     path(
-        "genes/<str:systematic_name>/<int:N>/similar",
+        "genes/<int:gene_id>/<int:N>/similar/",
         datasets_views.GetSimilarGenes.as_view(),
     ),
     path(
-        "genes/<str:systematic_name>/<int:N>/similar/<int:reverse>",
+        "genes/<int:gene_id>/<int:N>/similar/<int:reverse>/",
         datasets_views.GetSimilarGenes.as_view(),
     ),
     path(
@@ -135,7 +133,7 @@ urlpatterns = [
         name="datasets_search",
     ),
     path(
-        "search/conditions/explorr",
+        "search/conditions/explore",
         search_views.ConditionsSearch.as_view(),
         name="conditions_search",
     ),

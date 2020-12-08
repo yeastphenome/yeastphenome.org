@@ -14,14 +14,12 @@ from yeastphenome.apps.datasets.models import (
     Tag,
     Gene,
     GeneAlias,
-    GeneSimilarity,
 )
 from yeastphenome.apps.datasets.search import (
     get_search_tags,
     get_gene_search_tags,
 )
 from yeastphenome.apps.datasets.utils import (
-    get_gene_metadata,
     send_file,
     prepare_dataset_download,
 )
@@ -216,50 +214,33 @@ def gene_explorer(request):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def gene_detail(request, query):
+def gene_detail(request, gene_id):
 
     try:
-        gene = Gene.objects.get(
-            Q(systematic_name__iexact=query)
-            | Q(common_name__iexact=query)
-            | Q(id__iexact=query)
-        )
+        gene = Gene.objects.get(pk=gene_id)
     except Gene.DoesNotExist:
-        gene = GeneAlias.objects.get(name__iexact=query).gene_set.first()
-        # if not found, try for an alias
-        if not gene:
-            raise Http404
+        raise Http404
 
     # Assemble links assuming on root of page
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
         {"url": reverse("genes:index"), "name": "Genes"},
         {
-            "url": reverse("genes:detail", args=[gene.systematic_name]),
-            "name": "%s/%s" % (gene.common_name, gene.systematic_name),
+            "url": reverse("genes:detail", args=[gene.id]),
+            "name": "%s" % gene,
         },
     ]
-    metadata = get_gene_metadata(gene.systematic_name)
-    context = {"links": links, "active": "explorer", "gene": gene, "metadata": metadata}
 
-    # Get top/bottom 10 most similar
-    sims = list(context["gene"].get_ranked_similar())
-    bottom = sims[len(sims) - 10 :]
-    bottom.reverse()
+    context = {"links": links, "active": "explorer", "gene": gene}
 
-    context["sims"] = {"top": sims[:10], "bottom": bottom}
+    # Get the top and bottom phenotypic scores
+    context["datasets_top"] = gene.get_data(reverse=False)[:10]
+    context["datasets_bottom"] = gene.get_data(reverse=True)[:10]
 
-    # Filter to data with values defined, sorted greatest to smallest
-    queryset = (
-        Data.objects.exclude(Q(value=None) | Q(value=Decimal("NaN")))
-        .filter(gene=context["gene"])
-        .order_by("-value")
-    )
+    # Get the top and bottom correlations
+    context["sims_top"] = gene.get_ranked_similar(reverse=False)[:10]
+    context["sims_bottom"] = gene.get_ranked_similar(reverse=True)[:10]
 
-    # We just will show top and bottom 10
-    context["datasets_top"] = queryset[:10]
-    context["datasets_bottom"] = queryset[len(queryset) - 10 :]
-    context["datasets_bottom"].reverse()
     context["links"] = links
     return render(request, "genes/detail.html", context)
 
@@ -268,48 +249,34 @@ def gene_detail(request, query):
 def similar_genes(request, gene_id):
 
     try:
-        gene = Gene.objects.get(id=gene_id)
+        gene = Gene.objects.get(pk=gene_id)
     except Gene.DoesNotExist:
         raise Http404
 
-    sims = (
-        GeneSimilarity.objects.filter(gene1=gene)
-        .values_list(
-            "gene2__systematic_name",
-            "gene2__common_name",
-            "score",
-            "pvalue",
-            "gene2__id",
-        )
-        .order_by("-score")
-        .distinct()
-    )
+    sims = gene.get_ranked_similar(reverse=False).select_related("gene2")
 
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
         {"url": reverse("genes:index"), "name": "Genes"},
         {
-            "url": reverse("genes:detail", args=[gene.systematic_name]),
-            "name": "%s/%s" % (gene.common_name, gene.systematic_name),
+            "url": reverse("genes:detail", args=[gene.id]),
+            "name": "%s" % gene,
         },
         {
-            "url": reverse("genes:similar_genes", args=[gene.systematic_name]),
+            "url": reverse("genes:similar_genes", args=[gene.id]),
             "name": "Similar Genes",
         },
     ]
 
     total_sims = sims.count()
     ranks = [(1 - (idx / total_sims)) * 100 for idx, sim in enumerate(sims)]
-    context = get_gene_names_context()
-    context.update(
-        {
-            "gene": gene,
-            "sims": sims,
-            "ranks": ranks,
-            "links": links,
-            "active": "explorer",
-        }
-    )
+    context = {
+        "gene": gene,
+        "sims": sims,
+        "ranks": ranks,
+        "links": links,
+        "active": "explorer",
+    }
     return render(request, "genes/similar_genes.html", context)
 
 
@@ -357,7 +324,7 @@ def gene_datasets(request, gene_id):
     import numpy as np
 
     try:
-        gene = Gene.objects.get(id=gene_id)
+        gene = Gene.objects.get(pk=gene_id)
     except Gene.DoesNotExist:
         raise Http404
 
@@ -365,11 +332,11 @@ def gene_datasets(request, gene_id):
         {"url": reverse("common:explorer"), "name": "Explore data"},
         {"url": reverse("genes:index"), "name": "Genes"},
         {
-            "url": reverse("genes:detail", args=[gene.systematic_name]),
-            "name": "%s/%s" % (gene.common_name, gene.systematic_name),
+            "url": reverse("genes:detail", args=[gene.id]),
+            "name": "%s" % gene,
         },
         {
-            "url": reverse("genes:datasets", args=[gene.systematic_name]),
+            "url": reverse("genes:datasets", args=[gene.id]),
             "name": "Phenotypic Scores",
         },
     ]
@@ -377,25 +344,24 @@ def gene_datasets(request, gene_id):
     # Derive datasets bins here
     datapoints = (
         Data.objects.filter(gene=gene)
-        .exclude(Q(value=None) | Q(value=Decimal("NaN")))
-        .order_by("-value")
-        .values_list("value")
+        .exclude(valuez__isnull=True)
+        .order_by("-valuez")
+        .values_list("valuez")
     )
+
     count, division = np.histogram([float(x[0]) for x in datapoints])
     counts = []
     for i, number in enumerate(count):
         counts.append({"count": number, "value": division[i + 1]})
 
-    context = get_gene_names_context()
-    context.update(
-        {
-            "gene": gene,
-            "links": links,
-            "active": "explorer",
-            "counts": counts,
-            "division": division,
-        }
-    )
+    context = {
+        "gene": gene,
+        "links": links,
+        "active": "explorer",
+        "counts": counts,
+        "division": division,
+    }
+
     return render(request, "genes/gene_datasets.html", context)
 
 
