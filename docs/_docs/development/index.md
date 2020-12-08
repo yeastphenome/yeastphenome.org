@@ -129,6 +129,21 @@ A secret key is used to secure your server. You can use the [secret key generato
 export DJANGO_SECRET_KEY=123455
 ```
 
+#### Disable Cache
+
+We have the ability to use a filesystem cache, meaning a folder in /tmp (`/tmp/yeast-phenome-cache`) that can save pages when we are developing, or on app engine. Since we've better
+optimized most pages, we don't need this cache, and so it's recommended to export
+this disable cache variable:
+
+```bash
+export DISABLE_CACHE=true
+```
+
+If you find that you are developing and pages aren't changing, likely you forgot
+to export this before starting the server, and you can stop the server, delete
+the temporary folder, export the variable, and start it again.
+
+
 #### Google Analytics
 
 If you want to use [Google Analytics](https://analytics.google.com/analytics/web/) with your application, generate a key and add it to your application, again in the `.env` file.
