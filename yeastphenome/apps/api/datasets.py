@@ -407,19 +407,6 @@ class GetSimilarGenes(RatelimitMixin, APIView):
         except Gene.DoesNotExist:
             return Response(status=404)
 
-        # # Only get top and bottom N
-        # sims = list(gene.get_ranked_similar(reverse=(reverse == 1)))
-        # first_n = sims[:N]
-        # last_n = sims[len(sims) - N :]
-        #
-        # scores = {}
-        # for sim in first_n + last_n:
-        #     scores[sim.gene2.id] = {
-        #         "gene2": sim.gene2,
-        #         "score": sim.score,
-        #         "pvalue": sim.pvalue
-        #     }
-
         # A list of dicts
         scores = list(gene.get_ranked_similar(reverse=(reverse == 1)).values())
         data = {"scores": scores}

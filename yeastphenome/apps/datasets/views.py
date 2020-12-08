@@ -354,7 +354,6 @@ def gene_datasets(request, gene_id):
     for i, number in enumerate(count):
         counts.append({"count": number, "value": division[i + 1]})
 
-    # context = get_gene_names_context()
     context = {
         "gene": gene,
         "links": links,
