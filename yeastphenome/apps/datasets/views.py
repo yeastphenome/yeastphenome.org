@@ -71,7 +71,9 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
             Data.objects.filter(dataset=context["dataset"])
             .exclude(Q(value=None) | Q(value=Decimal("NaN")))
             .order_by("-value")
-            .values_list("gene__systematic_name", "gene__common_name", "value")
+            .values_list(
+                "gene__systematic_name", "gene__common_name", "value", "gene_id"
+            )
         )
 
         # Links should include the dataset detail page
