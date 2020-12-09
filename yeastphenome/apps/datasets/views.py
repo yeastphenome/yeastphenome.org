@@ -561,7 +561,7 @@ def download_all(request, gene_id=None):
         )
 
     filename = (
-        "%s_datasets_%s.txt" % (settings.DOWNLOAD_PREFIX, gene_id)
+        "%s_datasets_gene_%s.txt" % (settings.DOWNLOAD_PREFIX, gene_id)
         if gene_id
         else "%s_datasets.txt" % settings.DOWNLOAD_PREFIX
     )

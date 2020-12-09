@@ -130,7 +130,7 @@
         $(document).ready(function () {
 
             $(".dataset_download_gene").click(function () {
-                document.location = "/download/{{ gene.id }}/"
+                document.location = "{% url 'genes:download_gene' gene.id %}"
             })
 
             $(".dataset_similar_download").click(function () {

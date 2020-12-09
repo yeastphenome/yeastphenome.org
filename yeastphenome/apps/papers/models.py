@@ -75,7 +75,11 @@ class Paper(models.Model):
         return ", ".join([(u"%s" % i) for i in self.collections()])
 
     def phenotypes(self):
-        return Observable.objects.filter(phenotype__dataset__paper=self).distinct()
+        return (
+            Observable.objects.filter(phenotype__dataset__paper=self)
+            .distinct()
+            .order_by("name")
+        )
 
     def phenotypes_str_list(self):
         num = len(self.phenotypes())

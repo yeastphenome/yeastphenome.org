@@ -348,6 +348,17 @@ class GetGeneDatasets(RatelimitMixin, APIView):
         except Gene.DoesNotExist:
             return Response(status=200, data=data)
 
+        order = request.GET["order[0][column]"]
+        direction = request.GET["order[0][dir]"]  # asc or desc
+        order_lookup = {
+            "0asc": "dataset__name",
+            "0desc": "-dataset__name",
+            "1asc": "valuez",
+            "1desc": "-valuez",
+            "2asc": "valuez",
+            "2desc": "-valuez",
+        }
+
         datasets = (
             Data.objects.filter(gene=gene)
             .exclude(valuez__isnull=True)
@@ -359,18 +370,29 @@ class GetGeneDatasets(RatelimitMixin, APIView):
             f = Q(dataset__name__icontains=query)
             datasets = datasets.filter(f).distinct()
 
+        order_by = "%s%s" % (order, direction)
+        if order_by in order_lookup and datasets:
+            print(f"Ordering by {order_by}")
+            datasets = datasets.order_by(order_lookup[order_by])
+
         count = datasets.count()
         ranks = [(1 - (idx / count)) * 100 for idx, sim in enumerate(datasets)]
         if start > count:
             start = count - start
         end = start + length
 
+        # Based on direction, reverse ranks
+        if direction and "asc" in direction:
+            ranks.reverse()
+
         # If we've gone too far
         if end > count:
             end = count - 1
 
-        datasets = datasets[start : end + 1]
-        ranks = ranks[start : end + 1]
+        if datasets:
+            datasets = datasets[start : end + 1]
+            ranks = ranks[start : end + 1]
+
         data["recordsTotal"] = count
         data["recordsFiltered"] = count
 
@@ -381,7 +403,7 @@ class GetGeneDatasets(RatelimitMixin, APIView):
                     "<a href='/datasets/%s/'>%s</a>"
                     % (dataset.dataset.id, dataset.dataset.name),
                     round(dataset.valuez, 1),
-                    round(ranks[i], 1),
+                    str(round(ranks[i], 1)) + "%",
                 ]
             )
 
