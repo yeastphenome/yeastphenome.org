@@ -71,7 +71,9 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
             Data.objects.filter(dataset=context["dataset"])
             .exclude(Q(value=None) | Q(value=Decimal("NaN")))
             .order_by("-value")
-            .values_list("gene__systematic_name", "gene__common_name", "value")
+            .values_list(
+                "gene__systematic_name", "gene__common_name", "valuez", "gene_id"
+            )
         )
 
         # Links should include the dataset detail page
@@ -149,9 +151,9 @@ def get_dataset_gene_table_context(dataset):
     """this context is needed for the graph."""
     context = {}
     genes = (
-        dataset.data_set.exclude(Q(value=None) | Q(value=Decimal("NaN")))
-        .order_by("-value")
-        .values_list("gene__systematic_name", "value", "gene__id", "gene__common_name")
+        dataset.data_set.exclude(valuez__isnull=True)
+        .order_by("-valuez")
+        .values_list("gene__systematic_name", "valuez", "gene__id", "gene__common_name")
         .distinct()
     )
 

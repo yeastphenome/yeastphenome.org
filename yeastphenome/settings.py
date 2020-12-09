@@ -221,7 +221,8 @@ DOWNLOAD_PREFIX = os.environ.get("YEASTPHENOME_DOWNLOAD_PREFIX", "YeastPhenome")
 
 # Rate Limiting
 
-VIEW_RATE_LIMIT = "5000/1d"  # The rate limit for each view, django-ratelimit, "50 per day per ipaddress)
+# The rate limit for each view, django-ratelimit, "50 per day per ipaddress)
+VIEW_RATE_LIMIT = "5000/1d" if DEBUG else "50/1d"
 VIEW_RATE_LIMIT_BLOCK = (
     True  # Given that someone goes over, are they blocked for the period?
 )
