@@ -2,7 +2,9 @@ from wsgiref.util import FileWrapper
 from django.http import StreamingHttpResponse
 from yeastphenome.apps.datasets.models import Gene, Data
 
+from datetime import datetime
 import requests
+import tempfile
 import os
 
 SGD_BASE_URL = "https://www.yeastgenome.org/webservice"
@@ -21,6 +23,12 @@ def send_file(exported_file, chunk_size=8192):
         exported_file
     )
     return response
+
+
+def generate_dated_download(prefix="yeastphenome-datasets"):
+    """Generate the filename for a download with some prefix and the date"""
+    timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+    return os.path.join(tempfile.gettempdir(), "%s-%s.txt" % (prefix, timestamp))
 
 
 def get_gene_metadata(locus_id):

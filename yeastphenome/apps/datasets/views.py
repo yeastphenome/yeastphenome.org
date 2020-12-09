@@ -22,6 +22,7 @@ from yeastphenome.apps.datasets.search import (
 from yeastphenome.apps.datasets.utils import (
     send_file,
     prepare_dataset_download,
+    generate_dated_download,
 )
 from yeastphenome.apps.conditions.models import ConditionType, Medium
 from yeastphenome.apps.phenotypes.models import Observable
@@ -574,10 +575,23 @@ def download_all(request, gene_id=None):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def download(request):
-    file_header = ""
+def download_cart(request):
+    """download all the dataset objects in the user's cart"""
+    # Get dataset ids from cart
+    datasets = request.session.get("cart", [])
+    datasets = Dataset.objects.filter(id__in=datasets)
 
-    # View passes: ?papersTable_length=10&14=on&26=on
+    df = prepare_dataset_download(datasets)
+    exported_file = generate_dated_download()
+    if not os.path.exists(exported_file):
+        df.to_csv(exported_file, sep="\t", index=None)
+    return send_file(exported_file)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def download(request):
+    """Download a specific set of datasets from a serialized request"""
+    # Get dataset id from request
     datasets = []
     for key, value in request.GET.items():
         try:
@@ -585,49 +599,12 @@ def download(request):
         except:
             pass
 
-    data = (
-        Data.objects.filter(dataset_id__in=datasets)
-        .filter(dataset__data_source__release=True)
-        .all()
-    )
-
-    orfs = list(data.values_list("orf", flat=True).distinct())
-    datasets_ids = list(
-        data.values_list("dataset_id", flat=True).order_by("dataset__paper").distinct()
-    )
-    matrix = [[None] * len(datasets_ids) for i in orfs]
-
-    for datapoint in data:
-        i = orfs.index(datapoint.orf)
-        j = datasets_ids.index(datapoint.dataset_id)
-        matrix[i][j] = datapoint.value
-
-    column_headers = (
-        "ORF\t"
-        + "\t".join(
-            [
-                "%s" % get_object_or_404(Dataset, pk=dataset_id)
-                for dataset_id in datasets_ids
-            ]
-        )
-        + "\n"
-    )
-
-    data_row = []
-    for i, orf in enumerate(orfs):
-        new_row = orf + "\t" + "\t".join([str(val) for val in matrix[i]])
-        data_row.append(new_row)
-
-    txt3 = "\n".join(data_row)
-
-    response = HttpResponse(
-        file_header + column_headers + txt3, content_type="text/plain"
-    )
-    response["Content-Disposition"] = 'attachment; filename="%s_data.txt"' % (
-        settings.DOWNLOAD_PREFIX
-    )
-
-    return response
+    datasets = Dataset.objects.filter(id__in=datasets)
+    exported_file = generate_dated_download()
+    df = prepare_dataset_download(datasets)
+    if not os.path.exists(exported_file):
+        df.to_csv(exported_file, sep="\t", index=None)
+    return send_file(exported_file)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)

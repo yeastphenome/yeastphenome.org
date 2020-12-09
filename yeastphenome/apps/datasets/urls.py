@@ -35,6 +35,7 @@ urlpatterns = [
     url(r"^(?P<domain>phenotypes)/(?P<id>\d+)/", views.data, name="data"),
     url(r"^(?P<pk>\d+)/$", views.DatasetDetailView.as_view(), name="detail"),
     url(r"^download/$", views.download, name="download"),
+    url(r"^download/cart/$", views.download_cart, name="download_cart"),
     url(r"^download/all/$", views.download_all, name="download_all"),
     path(
         "download/similar/<int:dataset_id>/",
