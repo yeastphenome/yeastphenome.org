@@ -75,7 +75,7 @@
             })
             {% if gene %}$("#gene-name").val("{{ gene.systematic_name }}")
                 $("#similar_table").DataTable({
-                    "pageLength": 100,
+                    "pageLength": 10,
                     "order": [[2, "asc"]],
                     "language": {"search": "Filter:"}
                 });{% endif %}

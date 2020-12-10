@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.postgres.aggregates.general import StringAgg
 from django.db.models import Q
 from django.shortcuts import reverse
 
@@ -83,6 +84,14 @@ class RunPapersQuery(RatelimitMixin, APIView):
         if year is not None and queryset:
             queryset = queryset.filter(pub_date=year)
             count = len(queryset)
+
+        if queryset:
+            agg_field = "dataset__phenotype__observable__name"
+            queryset = queryset.annotate(
+                phenotype_list=StringAgg(
+                    agg_field, delimiter=", ", distinct=True, ordering=agg_field
+                )
+            )
 
         order_by = "%s%s" % (order, direction)
         if order_by in order_lookup and queryset:

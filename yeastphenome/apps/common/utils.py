@@ -5,7 +5,7 @@ from django.contrib import messages
 
 import numpy as np
 
-
+from yeastphenome import settings
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.conditions.models import ConditionSet, ConditionType
 from yeastphenome.apps.phenotypes.models import Phenotype, Measurement
@@ -39,7 +39,7 @@ def check_download_space(request, datasets):
     decreased. Returns False if the cart cannot be added to, True otherwise
     """
     datasets_in_cart = len(request.session["cart"])
-    if datasets_in_cart + len(datasets) >= 500:
+    if datasets_in_cart + len(datasets) > settings.DOWNLOAD_CART_LIMIT:
         messages.info(
             request,
             (
