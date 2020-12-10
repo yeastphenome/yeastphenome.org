@@ -116,8 +116,7 @@ def run_search_tag_query(query=None, taglist=None):
 
     # Exclude the papers marked as "not relevant"
     queryset = Paper.objects.exclude(
-        Q(data_statuses__name__exact="not relevant")
-        | Q(tested_statuses__name__exact="not relevant")
+        Q(latest_data_status__status__name__exact="not relevant")
     )
 
     # Prepare querysets
@@ -170,7 +169,9 @@ def run_search_tag_query(query=None, taglist=None):
     if queries:
         queries = "(%s)" % "|".join(queries)
         queryset = queryset.filter(
-            Q(dataset__name__iregex=queries)
+            Q(first_author__iregex=queries)
+            | Q(last_author__iregex=queries)
+            | Q(dataset__name__iregex=queries)
             | Q(dataset__phenotype__name__iregex=queries)
             | Q(dataset__collection__name__iregex=queries)
             | Q(data_abstract__iregex=queries)

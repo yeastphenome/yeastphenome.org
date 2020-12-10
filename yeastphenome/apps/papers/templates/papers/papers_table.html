@@ -1,19 +1,19 @@
 {% load my_filters %}
 <table id="papersTable" class="tablesorter table table-striped" width="100%">
-        <thead>
+    <thead>
         <tr>
-            <th class="text-nowrap" width="30%">FirstAuthor~LastAuthor, Year</th>
+            <th class="text-nowrap" width="30%">First Author~Last Author, Year</th>
             <th width="35%">Phenotypes</th>
             <th width="35%">Conditions</th>
         </tr>
-        </thead>
-        <tbody id="papersTableBody">
-        {% for paper in papers_list %}<tr>
+    </thead>
+    <tbody id="papersTableBody">
+        {% for paper in papers_list %}
+        <tr>
             <td class="text-nowrap"><a href="{% url 'papers:detail' paper.pk  %}">{{ paper }}</a></td>
-            <td>{{ paper.phenotypes|join_and_more:7 }}</td>
-            <td>{{ paper.conditiontypes|join_and_more:7|safe }}</td>
-        </tr>{% endfor %}
-        </tbody>
-    </table>
-    </div>
-</div>
+            <td>{{ paper.phenotype_list|truncatechars:50 }}{% if paper.phenotype_list|length > 50 %}...{% endif %}</td>
+            <td>{{ paper.condition_list|truncatechars:50|safe }}{% if paper.condition_list|length > 50 %}...{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

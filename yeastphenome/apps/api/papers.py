@@ -47,10 +47,10 @@ class RunPapersQuery(RatelimitMixin, APIView):
         order_lookup = {
             "0asc": "first_author",
             "0desc": "-first_author",
-            "1asc": "dataset__phenotype__observable__name",
-            "1desc": "-dataset__phenotype__observable__name",
-            "2asc": "dataset__conditionset__systematic_name",
-            "2desc": "-dataset__conditionset__systematic_name",
+            "1asc": "phenotype_list",
+            "1desc": "-phenotype_list",
+            "2asc": "condition_list",
+            "2desc": "-condition_list",
         }
 
         # Empty datatable
@@ -78,17 +78,24 @@ class RunPapersQuery(RatelimitMixin, APIView):
 
         if taglist:
             queryset = papers_search(query=None, taglist=taglist)
-            count = len(queryset)
+            count = queryset.count()
 
         # Filter to year, if defined
         if year is not None and queryset:
             queryset = queryset.filter(pub_date=year)
-            count = len(queryset)
+            count = queryset.count()
 
         if queryset:
             agg_field = "dataset__phenotype__observable__name"
             queryset = queryset.annotate(
                 phenotype_list=StringAgg(
+                    agg_field, delimiter=", ", distinct=True, ordering=agg_field
+                )
+            )
+
+            agg_field = "dataset__conditionset__conditions__type__name"
+            queryset = queryset.annotate(
+                condition_list=StringAgg(
                     agg_field, delimiter=", ", distinct=True, ordering=agg_field
                 )
             )
@@ -127,8 +134,8 @@ class RunPapersQuery(RatelimitMixin, APIView):
                 [
                     '<a href="%s">%s</a></td>'
                     % (reverse("papers:detail", args=[paper.pk]), paper),
-                    join_and_more(paper.phenotypes(), 7),
-                    join_and_more(paper.conditiontypes(), 7),
+                    paper.phenotype_list,
+                    paper.condition_list,
                 ]
             )
         return Response(status=200, data=data)
