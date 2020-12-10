@@ -7,7 +7,6 @@ from django.views.decorators.cache import never_cache
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.datasets.models import (
     Dataset,
-    DatasetSimilarity,
     Data,
     Tag,
     Gene,
@@ -61,6 +60,7 @@ def dataset_detail(request, dataset_id):
     context["sims_bottom"] = dataset.get_ranked_similar(reverse=True)[:10]
 
     return render(request, "datasets/detail.html", context)
+
 
 @never_cache
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
@@ -243,9 +243,11 @@ def similar_dataset_table(request, dataset_id):
 
     dataset = get_object_or_404(Dataset, pk=dataset_id)
 
-    sims = dataset.get_ranked_similar().\
-        select_related("dataset2__name").\
-        values_list("dataset2_id", "dataset2__name", "score", "pvalue")
+    sims = (
+        dataset.get_ranked_similar()
+        .select_related("dataset2__name")
+        .values_list("dataset2_id", "dataset2__name", "score", "pvalue")
+    )
 
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
@@ -397,9 +399,13 @@ def download_gene_similarities(request, gene_id):
 
     gene = get_object_or_404(Gene, pk=gene_id)
 
-    sims = gene.get_ranked_similar()\
-        .select_related("gene1__systematic_name", "gene2__systematic_name")\
-        .values_list("gene1__systematic_name", "gene2__systematic_name", "score", "pvalue")
+    sims = (
+        gene.get_ranked_similar()
+        .select_related("gene1__systematic_name", "gene2__systematic_name")
+        .values_list(
+            "gene1__systematic_name", "gene2__systematic_name", "score", "pvalue"
+        )
+    )
 
     df = pd.DataFrame(sims)
     df.columns = ["Gene1", "Gene2", "Correlation mean", "Correlation std. dev."]
@@ -411,10 +417,10 @@ def download_gene_similarities(request, gene_id):
 
     # Prepare the HttpResponse
     response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = 'attachment; filename=%s' % filename
+    response["Content-Disposition"] = "attachment; filename=%s" % filename
 
     # Print data matrix to response buffer
-    df.to_csv(path_or_buf=response, sep='\t', index=False)
+    df.to_csv(path_or_buf=response, sep="\t", index=False)
 
     return response
 
@@ -427,8 +433,11 @@ def download_dataset_similarities(request, dataset_id):
 
     dataset = get_object_or_404(Dataset, pk=dataset_id)
 
-    sims = dataset.get_ranked_similar().select_related("dataset1__name", "dataset2__name")\
+    sims = (
+        dataset.get_ranked_similar()
+        .select_related("dataset1__name", "dataset2__name")
         .values_list("dataset1__name", "dataset2__name", "score", "pvalue")
+    )
 
     df = pd.DataFrame(sims)
     df.columns = ["Dataset1", "Dataset2", "Correlation", "P-value"]
@@ -440,10 +449,10 @@ def download_dataset_similarities(request, dataset_id):
 
     # Prepare the HttpResponse
     response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = 'attachment; filename=%s' % filename
+    response["Content-Disposition"] = "attachment; filename=%s" % filename
 
     # Print data matrix to response buffer
-    df.to_csv(path_or_buf=response, sep='\t', index=False)
+    df.to_csv(path_or_buf=response, sep="\t", index=False)
 
     return response
 
@@ -486,22 +495,30 @@ def download_gene_scores(request, gene_id=None):
 
     gene = get_object_or_404(Gene, pk=gene_id)
 
-    scores = gene.get_data().select_related('dataset__name').values_list('dataset__name', 'valuez')
-    scores_df = pd.DataFrame(scores, columns=['Dataset name', 'Normalized Phenotypic Score'])
-    scores_df['Gene'] = gene.systematic_name
-    scores_df = scores_df.reindex(columns=['Gene', 'Dataset name', 'Normalized Phenotypic Score'])
+    scores = (
+        gene.get_data()
+        .select_related("dataset__name")
+        .values_list("dataset__name", "valuez")
+    )
+    scores_df = pd.DataFrame(
+        scores, columns=["Dataset name", "Normalized Phenotypic Score"]
+    )
+    scores_df["Gene"] = gene.systematic_name
+    scores_df = scores_df.reindex(
+        columns=["Gene", "Dataset name", "Normalized Phenotypic Score"]
+    )
 
     # Prepare the HttpResponse
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = 'attachment; filename="%s_%s_scores.txt"' % (
-        settings.DOWNLOAD_PREFIX, gene.systematic_name
+        settings.DOWNLOAD_PREFIX,
+        gene.systematic_name,
     )
 
     # Print data matrix to response buffer
-    scores_df.to_csv(path_or_buf=response, sep='\t', index=False)
+    scores_df.to_csv(path_or_buf=response, sep="\t", index=False)
 
     return response
-
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
@@ -520,31 +537,43 @@ def download_dataset_scores(request):
             pass
 
     # Get all data as a list of dicts
-    data = list(Data.objects.filter(dataset_id__in=datasets)
-                .filter(dataset__data_source__release=True)
-                .values())
+    data = list(
+        Data.objects.filter(dataset_id__in=datasets)
+        .filter(dataset__data_source__release=True)
+        .values()
+    )
 
     # Transform data into a DataFrame (long form)
     data_df = pd.DataFrame(data)
 
     # Make sure that values are numeric
-    data_df['valuez'] = data_df['valuez'].astype(float)
+    data_df["valuez"] = data_df["valuez"].astype(float)
 
     # Pivot DataFrame from long to wide form
-    data_matrix = pd.pivot_table(data_df, index='gene_id', columns='dataset_id', values='valuez', fill_value=np.nan)
+    data_matrix = pd.pivot_table(
+        data_df,
+        index="gene_id",
+        columns="dataset_id",
+        values="valuez",
+        fill_value=np.nan,
+    )
 
     # Replace gene_ids with ORF names
     genes = list(Gene.objects.filter(id__in=data_matrix.index.values).values())
     genes_df = pd.DataFrame(genes)
-    genes_df.set_index('id', inplace=True)
-    data_matrix.index = genes_df.reindex(index=data_matrix.index.values)['systematic_name'].values
-    data_matrix.index.rename('ORF', inplace=True)
+    genes_df.set_index("id", inplace=True)
+    data_matrix.index = genes_df.reindex(index=data_matrix.index.values)[
+        "systematic_name"
+    ].values
+    data_matrix.index.rename("ORF", inplace=True)
 
     # Replace dataset_ids with dataset names
     datasets = list(Dataset.objects.filter(id__in=data_matrix.columns.values).values())
     datasets_df = pd.DataFrame(datasets)
-    datasets_df.set_index('id', inplace=True)
-    data_matrix.columns = datasets_df.reindex(index=data_matrix.columns.values)['name'].values
+    datasets_df.set_index("id", inplace=True)
+    data_matrix.columns = datasets_df.reindex(index=data_matrix.columns.values)[
+        "name"
+    ].values
 
     # Prepare the HttpResponse
     response = HttpResponse(content_type="text/csv")
@@ -553,7 +582,7 @@ def download_dataset_scores(request):
     )
 
     # Print data matrix to response buffer
-    data_matrix.to_csv(path_or_buf=response, sep='\t', na_rep='NaN')
+    data_matrix.to_csv(path_or_buf=response, sep="\t", na_rep="NaN")
 
     return response
 
