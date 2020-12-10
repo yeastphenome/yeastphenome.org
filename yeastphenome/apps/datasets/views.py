@@ -69,8 +69,8 @@ class DatasetDetailView(generic.DetailView, RatelimitMixin):
         # Filter to data with values defined, sorted greatest to smallest
         queryset = (
             Data.objects.filter(dataset=context["dataset"])
-            .exclude(Q(value=None) | Q(value=Decimal("NaN")))
-            .order_by("-value")
+            .exclude(valuez__isnull=True)
+            .order_by("-valuez")
             .values_list(
                 "gene__systematic_name", "gene__common_name", "valuez", "gene_id"
             )
