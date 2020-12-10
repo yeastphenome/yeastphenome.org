@@ -6,7 +6,6 @@ from django.shortcuts import reverse
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.papers.utils import get_paper_references_context
 from yeastphenome.apps.papers.search import run_search_tag_query as papers_search
-from yeastphenome.apps.papers.templatetags.my_filters import join_and_more
 
 from .permissions import IsStaffOrSuperUser
 
