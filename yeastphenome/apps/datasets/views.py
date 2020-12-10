@@ -1,9 +1,7 @@
-from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, reverse
 from django.conf import settings
-from django.views import generic
 
 from django.views.decorators.cache import never_cache
 from yeastphenome.apps.papers.models import Paper
@@ -26,12 +24,10 @@ from yeastphenome.apps.datasets.utils import (
 from yeastphenome.apps.conditions.models import ConditionType, Medium
 from yeastphenome.apps.phenotypes.models import Observable
 
-from decimal import Decimal
 from libchebipy import ChebiEntity
 import os
 import tempfile
 
-from ratelimit.mixins import RatelimitMixin
 from ratelimit.decorators import ratelimit
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
@@ -39,64 +35,32 @@ from yeastphenome.settings import (
 )
 
 
-class DatasetDetailView(generic.DetailView, RatelimitMixin):
-    model = Dataset
-    template_name = "datasets/detail.html"
-    context_object_name = "dataset"
-    ratelimit_key = "ip"
-    ratelimit_rate = rl_rate
-    ratelimit_block = rl_block
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def dataset_detail(request, dataset_id):
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+    dataset = get_object_or_404(Dataset, pk=dataset_id)
 
-        # Get DatasetSimilarity values
-        sims = (
-            DatasetSimilarity.objects.filter(dataset1=context["dataset"])
-            .values_list("dataset2_id", "dataset2__name", "score", "pvalue")
-            .order_by("-score")
-            .distinct()
-        )
-        # Show bottom values ascending, top values descending
-        top = []
-        bottom = []
-        if sims.count() >= 10:
-            top = sims[:10]
-            bottom = sims[len(sims) - 10 :]
-            bottom.reverse()
-        context["sims"] = {"top": top, "bottom": bottom}
+    # Links should include the dataset detail page
+    links = [
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("datasets:index"), "name": "Datasets"},
+        {
+            "url": reverse("datasets:dataset_detail", args=[dataset.id]),
+            "name": dataset.name,
+        },
+    ]
 
-        # Filter to data with values defined, sorted greatest to smallest
-        queryset = (
-            Data.objects.filter(dataset=context["dataset"])
-            .exclude(valuez__isnull=True)
-            .order_by("-valuez")
-            .values_list(
-                "gene__systematic_name", "gene__common_name", "valuez", "gene_id"
-            )
-        )
+    context = {"links": links, "active": "explorer", "dataset": dataset}
 
-        # Links should include the dataset detail page
-        links = [
-            {"url": reverse("common:explorer"), "name": "Explore data"},
-            {"url": reverse("datasets:index"), "name": "Datasets"},
-            {
-                "url": reverse("datasets:detail", args=[context["dataset"].id]),
-                "name": context["dataset"].name,
-            },
-        ]
+    # Get the top and bottom phenotypic scores
+    context["datasets_top"] = dataset.get_data(reverse=False)[:10]
+    context["datasets_bottom"] = dataset.get_data(reverse=True)[:10]
 
-        datasets_top = queryset[:10]
-        datasets_bottom = []
-        if queryset.count() >= 10:
-            datasets_bottom = queryset[len(queryset) - 10 :]
-            datasets_bottom.reverse()
-        context["datasets_top"] = datasets_top
-        context["datasets_bottom"] = datasets_bottom
-        context["links"] = links
-        context["active"] = "explorer"
-        return context
+    # Get the top and bottom correlations
+    context["sims_top"] = dataset.get_ranked_similar(reverse=False)[:10]
+    context["sims_bottom"] = dataset.get_ranked_similar(reverse=True)[:10]
 
+    return render(request, "datasets/detail.html", context)
 
 @never_cache
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
@@ -105,16 +69,14 @@ def dataset_plot(request, dataset_id):
     the user can click bars to see genes (and values) within a particular
     range
     """
-    try:
-        dataset = Dataset.objects.get(id=dataset_id)
-    except Dataset.DoesNotExist:
-        raise Http404
+
+    dataset = get_object_or_404(Dataset, pk=dataset_id)
 
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
         {"url": reverse("datasets:index"), "name": "Datasets"},
         {
-            "url": reverse("datasets:detail", args=[dataset.id]),
+            "url": reverse("datasets:dataset_detail", args=[dataset.id]),
             "name": dataset.name,
         },
         {
@@ -218,10 +180,7 @@ def gene_explorer(request):
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def gene_detail(request, gene_id):
 
-    try:
-        gene = Gene.objects.get(pk=gene_id)
-    except Gene.DoesNotExist:
-        raise Http404
+    gene = get_object_or_404(Gene, pk=gene_id)
 
     # Assemble links assuming on root of page
     links = [
@@ -250,10 +209,7 @@ def gene_detail(request, gene_id):
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def similar_genes(request, gene_id):
 
-    try:
-        gene = Gene.objects.get(pk=gene_id)
-    except Gene.DoesNotExist:
-        raise Http404
+    gene = get_object_or_404(Gene, pk=gene_id)
 
     sims = gene.get_ranked_similar(reverse=False).select_related("gene2")
 
@@ -285,23 +241,17 @@ def similar_genes(request, gene_id):
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def similar_dataset_table(request, dataset_id):
 
-    try:
-        dataset = Dataset.objects.get(id=dataset_id)
-    except Dataset.DoesNotExist:
-        raise Http404
+    dataset = get_object_or_404(Dataset, pk=dataset_id)
 
-    sims = (
-        DatasetSimilarity.objects.filter(dataset1=dataset)
-        .values_list("dataset2_id", "dataset2__name", "score", "pvalue")
-        .order_by("-score")
-        .distinct()
-    )
+    sims = dataset.get_ranked_similar().\
+        select_related("dataset2__name").\
+        values_list("dataset2_id", "dataset2__name", "score", "pvalue")
 
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
         {"url": reverse("datasets:index"), "name": "Datasets"},
         {
-            "url": reverse("datasets:detail", args=[dataset.id]),
+            "url": reverse("datasets:dataset_detail", args=[dataset.id]),
             "name": dataset.name,
         },
         {
@@ -325,10 +275,7 @@ def similar_dataset_table(request, dataset_id):
 def gene_datasets(request, gene_id):
     import numpy as np
 
-    try:
-        gene = Gene.objects.get(pk=gene_id)
-    except Gene.DoesNotExist:
-        raise Http404
+    gene = get_object_or_404(Gene, pk=gene_id)
 
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
@@ -344,12 +291,7 @@ def gene_datasets(request, gene_id):
     ]
 
     # Derive datasets bins here
-    datapoints = (
-        Data.objects.filter(gene=gene)
-        .exclude(valuez__isnull=True)
-        .order_by("-valuez")
-        .values_list("valuez")
-    )
+    datapoints = gene.get_data().values_list("valuez")
 
     count, division = np.histogram([float(x[0]) for x in datapoints])
     counts = []
@@ -448,60 +390,62 @@ def tag(request, id):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def download_sims(request, gene_id):
-    """Download all GeneSimilary values (based on a gene)"""
-    import pandas
+def download_gene_similarities(request, gene_id):
+    """Download all GeneSimilarity values for a given gene"""
 
-    try:
-        gene = Gene.objects.get(id=gene_id)
-    except Gene.DoesNotExist:
-        raise Http404
+    import pandas as pd
 
-    sims = gene.get_ranked_similar().values_list(
-        "id", "gene1", "gene2", "score", "pvalue"
-    )
+    gene = get_object_or_404(Gene, pk=gene_id)
+
+    sims = gene.get_ranked_similar()\
+        .select_related("gene1__systematic_name", "gene2__systematic_name")\
+        .values_list("gene1__systematic_name", "gene2__systematic_name", "score", "pvalue")
+
+    df = pd.DataFrame(sims)
+    df.columns = ["Gene1", "Gene2", "Correlation mean", "Correlation std. dev."]
 
     filename = "%s_gene_similarities_%s.txt" % (
         settings.DOWNLOAD_PREFIX,
         gene.systematic_name,
     )
 
-    df = pandas.DataFrame(sims)
-    df.columns = ["gene_similarity_id", "gene1", "gene2", "score", "pvalue"]
-    exported_file = os.path.join(tempfile.gettempdir(), filename)
-    if not os.path.exists(exported_file):
-        df.to_csv(exported_file, sep="\t", index=None)
-    return send_file(exported_file)
+    # Prepare the HttpResponse
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename=%s' % filename
+
+    # Print data matrix to response buffer
+    df.to_csv(path_or_buf=response, sep='\t', index=False)
+
+    return response
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def download_dataset_sims(request, dataset_id):
-    """Download all DatasetSimilarity scores (based on a dataset)"""
-    import pandas
+def download_dataset_similarities(request, dataset_id):
+    """Download all DatasetSimilarity values for a given dataset"""
 
-    try:
-        dataset = Dataset.objects.get(id=dataset_id)
-    except Dataset.DoesNotExist:
-        raise Http404
+    import pandas as pd
 
-    sims = (
-        DatasetSimilarity.objects.filter(Q(dataset1=dataset) | Q(dataset2=dataset))
-        .values_list("id", "dataset1_id", "dataset2_id", "score", "pvalue")
-        .order_by("-score")
-        .distinct()
-    )
+    dataset = get_object_or_404(Dataset, pk=dataset_id)
 
-    filename = "%s_dataset_%s_similarities.txt" % (
+    sims = dataset.get_ranked_similar().select_related("dataset1__name", "dataset2__name")\
+        .values_list("dataset1__name", "dataset2__name", "score", "pvalue")
+
+    df = pd.DataFrame(sims)
+    df.columns = ["Dataset1", "Dataset2", "Correlation", "P-value"]
+
+    filename = "%s_dataset%d_similarities.txt" % (
         settings.DOWNLOAD_PREFIX,
         dataset.id,
     )
 
-    df = pandas.DataFrame(sims)
-    df.columns = ["dataset_similarity_id", "dataset1", "dataset2", "score", "pvalue"]
-    exported_file = os.path.join(tempfile.gettempdir(), filename)
-    if not os.path.exists(exported_file):
-        df.to_csv(exported_file, sep="\t", index=None)
-    return send_file(exported_file)
+    # Prepare the HttpResponse
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename=%s' % filename
+
+    # Print data matrix to response buffer
+    df.to_csv(path_or_buf=response, sep='\t', index=False)
+
+    return response
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
@@ -535,47 +479,37 @@ def download_observable_datasets_list(request, observable_id):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def download_all(request, gene_id=None):
+def download_gene_scores(request, gene_id=None):
     """Download all datasets. If a gene name is provided, filter to those"""
-    import pandas
 
-    if gene_id in ["all", None]:
-        datasets = (
-            Dataset.objects.select_related("paper__latest_tested_status__status")
-            .filter(paper__latest_data_status__status__name="loaded")
-            .filter(data_source__release=True)
-            .values_list("id", "name", "paper__pmid", "paper__latest_tested_status")
-            .distinct()
-        )
+    import pandas as pd
 
-    else:
-        datasets = (
-            Dataset.objects.filter(data__gene__id=gene_id)
-            .select_related("paper__latest_tested_status__status")
-            .filter(
-                paper__latest_data_status__status__name="loaded",
-            )
-            .values_list("id", "name", "paper__pmid", "paper__latest_tested_status")
-            .distinct()
-        )
+    gene = get_object_or_404(Gene, pk=gene_id)
 
-    filename = (
-        "%s_datasets_%s.txt" % (settings.DOWNLOAD_PREFIX, gene_id)
-        if gene_id
-        else "%s_datasets.txt" % settings.DOWNLOAD_PREFIX
+    scores = gene.get_data().select_related('dataset__name').values_list('dataset__name', 'valuez')
+    scores_df = pd.DataFrame(scores, columns=['Dataset name', 'Normalized Phenotypic Score'])
+    scores_df['Gene'] = gene.systematic_name
+    scores_df = scores_df.reindex(columns=['Gene', 'Dataset name', 'Normalized Phenotypic Score'])
+
+    # Prepare the HttpResponse
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="%s_%s_scores.txt"' % (
+        settings.DOWNLOAD_PREFIX, gene.systematic_name
     )
 
-    df = pandas.DataFrame(datasets)
-    df.columns = ["id", "name", "pmid", "latest_tested_status"]
-    exported_file = os.path.join(tempfile.gettempdir(), filename)
-    if not os.path.exists(exported_file):
-        df.to_csv(exported_file, sep="\t", index=None)
-    return send_file(exported_file)
+    # Print data matrix to response buffer
+    scores_df.to_csv(path_or_buf=response, sep='\t', index=False)
+
+    return response
+
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def download(request):
-    file_header = ""
+def download_dataset_scores(request):
+    """Downloads scores for one dataset or a list of datasets. Produces a gene x dataset matrix."""
+
+    import pandas as pd
+    import numpy as np
 
     # View passes: ?papersTable_length=10&14=on&26=on
     datasets = []
@@ -585,47 +519,41 @@ def download(request):
         except:
             pass
 
-    data = (
-        Data.objects.filter(dataset_id__in=datasets)
-        .filter(dataset__data_source__release=True)
-        .all()
-    )
+    # Get all data as a list of dicts
+    data = list(Data.objects.filter(dataset_id__in=datasets)
+                .filter(dataset__data_source__release=True)
+                .values())
 
-    orfs = list(data.values_list("orf", flat=True).distinct())
-    datasets_ids = list(
-        data.values_list("dataset_id", flat=True).order_by("dataset__paper").distinct()
-    )
-    matrix = [[None] * len(datasets_ids) for i in orfs]
+    # Transform data into a DataFrame (long form)
+    data_df = pd.DataFrame(data)
 
-    for datapoint in data:
-        i = orfs.index(datapoint.orf)
-        j = datasets_ids.index(datapoint.dataset_id)
-        matrix[i][j] = datapoint.value
+    # Make sure that values are numeric
+    data_df['valuez'] = data_df['valuez'].astype(float)
 
-    column_headers = (
-        "ORF\t"
-        + "\t".join(
-            [
-                "%s" % get_object_or_404(Dataset, pk=dataset_id)
-                for dataset_id in datasets_ids
-            ]
-        )
-        + "\n"
-    )
+    # Pivot DataFrame from long to wide form
+    data_matrix = pd.pivot_table(data_df, index='gene_id', columns='dataset_id', values='valuez', fill_value=np.nan)
 
-    data_row = []
-    for i, orf in enumerate(orfs):
-        new_row = orf + "\t" + "\t".join([str(val) for val in matrix[i]])
-        data_row.append(new_row)
+    # Replace gene_ids with ORF names
+    genes = list(Gene.objects.filter(id__in=data_matrix.index.values).values())
+    genes_df = pd.DataFrame(genes)
+    genes_df.set_index('id', inplace=True)
+    data_matrix.index = genes_df.reindex(index=data_matrix.index.values)['systematic_name'].values
+    data_matrix.index.rename('ORF', inplace=True)
 
-    txt3 = "\n".join(data_row)
+    # Replace dataset_ids with dataset names
+    datasets = list(Dataset.objects.filter(id__in=data_matrix.columns.values).values())
+    datasets_df = pd.DataFrame(datasets)
+    datasets_df.set_index('id', inplace=True)
+    data_matrix.columns = datasets_df.reindex(index=data_matrix.columns.values)['name'].values
 
-    response = HttpResponse(
-        file_header + column_headers + txt3, content_type="text/plain"
-    )
+    # Prepare the HttpResponse
+    response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = 'attachment; filename="%s_data.txt"' % (
         settings.DOWNLOAD_PREFIX
     )
+
+    # Print data matrix to response buffer
+    data_matrix.to_csv(path_or_buf=response, sep='\t', na_rep='NaN')
 
     return response
 

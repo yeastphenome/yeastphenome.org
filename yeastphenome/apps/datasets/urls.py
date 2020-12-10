@@ -28,19 +28,18 @@ urlpatterns = [
         views.similar_dataset_table,
         name="similar_dataset_table",
     ),
+    path(
+        "<int:dataset_id>/similar/download/",
+        views.download_dataset_similarities,
+        name="download_dataset_similarities",
+    ),
     url(r"^(?P<domain>papers)/(?P<id>\d+)/", views.data, name="data"),
     url(r"^(?P<domain>datasets)/(?P<id>\d+)/", views.data, name="data"),
     url(r"^(?P<domain>conditions)/(?P<id>\d+)/", views.data, name="data"),
     url(r"^conditions/(?P<domain>chebi)/(?P<id>\d+)/", views.data, name="data"),
     url(r"^(?P<domain>phenotypes)/(?P<id>\d+)/", views.data, name="data"),
-    url(r"^(?P<pk>\d+)/$", views.DatasetDetailView.as_view(), name="detail"),
-    url(r"^download/$", views.download, name="download"),
-    url(r"^download/all/$", views.download_all, name="download_all"),
-    path(
-        "download/similar/<int:dataset_id>/",
-        views.download_dataset_sims,
-        name="download_dataset_sims",
-    ),
+    url(r"^(?P<dataset_id>\d+)/$", views.dataset_detail, name="dataset_detail"),
+    url(r"^download/$", views.download_dataset_scores, name="download_dataset_scores"),
     url(r"^tag/(?P<id>\d+)/", views.tag, name="tag"),
 ]
 

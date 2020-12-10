@@ -1,47 +1,27 @@
 {% if datasets %}
-    <style>
-        .tablesorter thead .disabled {
-            display: none;
-        }
-    </style>
-    <form action="{% url 'datasets:download' %}" method="get">
-        <table id="{{ table_id }}" class="table table-condensed table-hover" width="100%">
-            <thead>
-            <tr>
-                <th>Dataset Name</th>
-                <th>Normalized Phenotypic Score</th>
-            </tr>
-            </thead>
-            <tbody id="papersTableBody">
-            {% for d in datasets %}
-                <tr>
-                    <td class="col-md-5"><a href="/datasets/{{ d.dataset.id }}/">{{ d.dataset.name }}</a></td>
-                    <td class="col-md-5">{{ d.valuez|floatformat:2 }}</td>
-                </tr>{% endfor %}
-            </tbody>
-        </table>
-    </form>
-    <a class="dataset_download_gene btn btn-info" style="margin-right:5px" role="button">Download all</a>
-    <a class="btn btn-success" role="button" href="{% url 'genes:datasets' gene.id %}">View all</a>
+<style>
+    .tablesorter thead .disabled {
+        display: none;
+    }
+</style>
+<table id="{{ table_id }}" class="table table-condensed table-hover" width="100%">
+    <thead>
+    <tr>
+        <th>Dataset Name</th>
+        <th>Normalized Phenotypic Score</th>
+    </tr>
+    </thead>
+    <tbody id="papersTableBody">
+    {% for d in datasets %}
+    <tr>
+        <td class="col-md-5"><a href="{% url 'datasets:dataset_detail' d.dataset_id %}">{{ d.dataset.name }}</a></td>
+        <td class="col-md-5">{{ d.valuez|floatformat:2 }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<a class="btn btn-info" style="margin-right:5px" role="button" href="{% url 'genes:download_gene_scores' gene.id %}">Download all</a>
+<a class="btn btn-success" role="button" href="{% url 'genes:datasets' gene.id %}">View all</a>
 {% endif %}
 
-<script language="JavaScript">
-    function toggle(source) {
-        checkboxes = document.getElementsByClassName('dataset');
-        for (var i = 0, n = checkboxes.length; i < n; i++) {
-            if (!checkboxes[i].disabled) {
-                checkboxes[i].checked = source.checked;
-            }
-        }
-        btn = document.getElementById('dataset_download');
-        btn.disabled = !source.checked;
-    }
-</script>
 
-<script language="JavaScript">
-    var chkbxs = $('tbody .dataset');
-    chkbxs.change(function () {
-        $('#dataset_download').prop('disabled', chkbxs.filter(':checked').length < 1);
-    });
-    chkbxs.change();
-</script>

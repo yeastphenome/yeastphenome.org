@@ -8,11 +8,8 @@
     cursor: default;
 }
 </style>
-{% if template == 'paper' %}
-<a href="/{{ template }}s/{{ object.id }}/{{ DOWNLOAD_PREFIX }}_{{ object.pmid }}_datasets_list.txt">Download the list of datasets</a>
-{% endif %}
 
-<form>
+
     {% csrf_token %}
     <table id="papersTable" class="tablesorter table table-condensed table-hover" width="100%">
         <thead>
@@ -27,7 +24,7 @@
         </thead>
     </table>
     <br>
-</form>
+
 
 <script language="JavaScript">
 // If we click a link to add or remove from cart

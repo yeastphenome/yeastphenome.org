@@ -283,6 +283,32 @@ class Dataset(models.Model):
         )
         return mark_safe(html)
 
+    def get_data(self, reverse=False):
+        """Given a dataset, get a sorted list of scores."""
+        queryset = Data.objects.\
+            filter(dataset=self).\
+            filter(valuez__isnull=False).\
+            order_by("-valuez")
+
+        if reverse:
+            queryset = queryset.reverse()
+
+        return queryset
+
+    def get_ranked_similar(self, reverse=False):
+        """Given a dataset, get a sorted listed of similar datasets.
+        Assume each pair of datasets is represented twice (A-B and B-A).
+        """
+        queryset = DatasetSimilarity.objects.\
+            filter(dataset1=self).\
+            filter(dataset2__data_source__release=True).\
+            order_by("-score")
+
+        if reverse:
+            queryset = queryset.reverse()
+
+        return queryset
+
 
 class GeneAlias(models.Model):
     """A GeneAlias is another name for a gene"""
@@ -324,12 +350,12 @@ class Gene(models.Model):
         return '<a href="%s">%s</a>' % (reverse("genes:detail", args=[self.id]), self)
 
     def get_data(self, reverse=False):
-        # Filter to data with values defined, sorted greatest to smallest
-        queryset = (
-            Data.objects.filter(gene=self)
-            .exclude(valuez__isnull=True)
+        """Filter to data with values defined, sorted greatest to smallest"""
+        queryset = Data.objects.filter(gene=self) \
+            .filter(dataset__data_source__release=True) \
+            .exclude(valuez__isnull=True) \
             .order_by("-valuez")
-        )
+
         if reverse:
             queryset = queryset.reverse()
         return queryset

@@ -5,7 +5,7 @@
     <div class="col-md-8 mb-4">
         <h1>Download Cart</h1>
         {% if datasets %}
-	<form action="{% url 'datasets:download' %}" method="GET" class="card-body">
+	<form action="{% url 'datasets:download_dataset_scores' %}" method="GET" class="card-body">
                   {% include "datasets/datasets_server_render_table.html" %}
         <hr class="mb-4">
         <button class="btn btn-primary btn-lg btn-block" type="submit">Download</button>

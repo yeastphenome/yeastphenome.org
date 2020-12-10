@@ -38,7 +38,7 @@
                 </table>
                 <br>
             </form>
-            <button class="dataset_download_gene btn btn-info" type="button">Download all</button>
+            <a class="btn btn-info" href="{% url 'genes:download_gene_scores' gene.id %}" role="button">Download all</a>
         </div>
     </div>
 {% endblock %}
@@ -325,7 +325,7 @@
         $(document).ready(function () {
 
             $(".dataset_download_gene").click(function () {
-                download("{% url 'genes:download_gene' gene.id %}")
+                download("{% url 'genes:download_gene_scores' gene.id %}")
             })
             {% if gene %}$("#gene-name").val("{{ gene.id }}")
                 $("#similarTable").dataTable({
