@@ -330,7 +330,6 @@ class GetGeneDatasets(RatelimitMixin, APIView):
         start = int(request.GET["start"])
         length = int(request.GET["length"])
         draw = int(request.GET["draw"])
-        query = request.GET["search[value]"]
 
         # Empty datatable
         data = {"draw": draw, "recordsTotal": 0, "recordsFiltered": 0, "data": []}
@@ -356,11 +355,6 @@ class GetGeneDatasets(RatelimitMixin, APIView):
             .exclude(valuez__isnull=True)
             .order_by("-valuez")
         )
-
-        # If there is a filter
-        if query:
-            f = Q(dataset__name__icontains=query)
-            datasets = datasets.filter(f).distinct()
 
         order_by = "%s%s" % (order, direction)
         if order_by in order_lookup and datasets:

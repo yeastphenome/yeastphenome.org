@@ -138,7 +138,8 @@ class ConditionType(models.Model):
         return mark_safe(", ".join([t.link_edit() for t in self.tags.all()]))
 
     def link_detail(self):
-        html = '<a href="%s">%s</a>' % (
+        html = '<a id="condition-%s" href="%s">%s</a>' % (
+            self.id,
             reverse("conditions:detail", args=(self.id,)),
             self,
         )

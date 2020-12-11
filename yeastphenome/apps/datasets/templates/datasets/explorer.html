@@ -283,6 +283,7 @@ function doTagsSearch() {
 
 $(document).ready(function(){
     $("#papersTable").dataTable({"pageLength": 10,"language": {"search": "Filter:"}, "processing": true, "serverSide": true, "ajax": "{% if collection_id %}{% url 'api:datasets_query' collection_id %}{% else %}{% url 'api:datasets_query' %}{% endif %}{% for tag in taglist %}{% if forloop.first %}?{% else %}&{% endif %}{{ tag.code }}={{ tag.value }}{% endfor %}", "lengthMenu": [[10,15,20,25], [10,15,20,25]],
+    "bFilter": false,
     "drawCallback": function( settings ) {
        if (settings.aoData.length == 0){
           $("#message").show();

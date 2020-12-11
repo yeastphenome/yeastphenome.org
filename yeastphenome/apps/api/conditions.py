@@ -38,7 +38,6 @@ class RunConditionsQuery(RatelimitMixin, APIView):
         start = int(request.GET["start"])
         length = int(request.GET["length"])
         draw = int(request.GET["draw"])
-        query = request.GET["search[value]"]
 
         order = request.GET["order[0][column]"]
         direction = request.GET["order[0][dir]"]  # asc or desc
@@ -75,8 +74,8 @@ class RunConditionsQuery(RatelimitMixin, APIView):
                     continue
                 taglist.append({"value": tag, "code": key})
 
-        if taglist or query:
-            queryset = conditions_query(query=query, taglist=taglist)
+        if taglist:
+            queryset = conditions_query(query=None, taglist=taglist)
             count = len(queryset)
 
         # Create field to sort phenotypes (2), conditions (3), and tags (4)

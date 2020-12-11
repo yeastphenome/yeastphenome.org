@@ -37,7 +37,6 @@ class RunPapersQuery(RatelimitMixin, APIView):
         start = int(request.GET["start"])
         length = int(request.GET["length"])
         draw = int(request.GET["draw"])
-        query = request.GET["search[value]"]
 
         # Order column and direction
         # Important: columns 2 (phenotypes) and 3 (papers) doesn't have a simple filter solution
@@ -76,7 +75,7 @@ class RunPapersQuery(RatelimitMixin, APIView):
                 taglist.append({"value": tag, "code": key})
 
         if taglist:
-            queryset = papers_search(query=query, taglist=taglist)
+            queryset = papers_search(query=None, taglist=taglist)
             count = queryset.count()
 
         # Filter to year, if defined

@@ -70,7 +70,6 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
         start = int(request.GET["start"])
         length = int(request.GET["length"])
         draw = int(request.GET["draw"])
-        query = request.GET["search[value]"]
 
         # Order column and direction
         # Note: we don't have a good way of querying conditions here either, column 1
@@ -107,9 +106,8 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
                     continue
                 taglist.append({"value": tag, "code": key})
 
-        print(taglist)
         if taglist:
-            queryset = phenotypes_search(query=query, taglist=taglist)
+            queryset = phenotypes_search(query=None, taglist=taglist)
             count = len(queryset)
 
         # Create field to conditions (1) and papers (4) - this is not distinct
