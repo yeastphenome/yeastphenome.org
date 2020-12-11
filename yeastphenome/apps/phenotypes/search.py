@@ -3,88 +3,41 @@ from django.db.models import Q
 from yeastphenome.apps.phenotypes.models import Phenotype, Observable, Tag, Measurement
 from yeastphenome.apps.common.utils import escape_regex
 
-# Search functions
+import itertools
 
 
 def get_search_tags():
     """Return a list of tags, each with a name and icon, to return to the
     phenotype explorer tag search
     """
-    # Observables
-    observables = [
-        {"value": x[0], "icon": "👁️", "code": "observable"}
-        for x in Observable.objects.values_list("name").distinct()
-    ]
+    tags = set(
+        itertools.chain(
+            Observable.objects.values_list("name", flat=True).distinct(),
+            Phenotype.objects.values_list("name", flat=True).distinct(),
+            Tag.objects.values_list("name", flat=True).distinct(),
+            Measurement.objects.values_list("name", flat=True).distinct(),
+        )
+    )
 
-    # Phenotypes
-    phenotypes = [
-        {"value": x[0], "icon": "🐶", "code": "phenotype"}
-        for x in Phenotype.objects.values_list("name").distinct()
-    ]
-
-    # Tags
-    tags = [
-        {"value": x[0], "icon": "🏷️", "code": "tags"}
-        for x in Tag.objects.values_list("name").distinct()
-    ]
-
-    # Measurements
-    measurements = [
-        {"value": x[0], "icon": "🌡️", "code": "measurement"}
-        for x in Measurement.objects.values_list("name").distinct()
-    ]
-
-    return observables + phenotypes + tags + measurements
+    return [{"value": x, "icon": "🌡️", "code": "query"} for x in tags if x]
 
 
-def run_search_tag_query(query=None, taglist=None):
+def run_search_tag_query(queries):
     """take a query string and a taglist to run the phenotypes query."""
-    queries = [] if not query else [query]
-    tags = {}
-    print(taglist)
-    for tag in taglist or []:
-        if tag["code"] in ["", "query"]:
-            queries.append(tag["value"])
-        else:
-            if tag["code"] not in tags:
-                tags[tag["code"]] = []
-            value = escape_regex(tag["value"])
-            tags[tag["code"]].append(value)
+    queries = queries or []
 
     # A phenotype search actually returns observables
     queryset = Observable.objects.all().order_by("name")
 
-    # Prepare querysets
-    all_queries = Q()
-
-    if "observable" in tags:
-        for tag in tags["observable"]:
-            all_queries = all_queries & Q(name__iregex=tag)
-
-    if "phenotype" in tags:
-        for tag in tags["phenotype"]:
-            all_queries = all_queries & Q(phenotype__name__iregex=tag)
-
-    if "measurement" in tags:
-        for tag in tags["measurement"]:
-            all_queries = all_queries & Q(phenotype__measurement__name__iregex=tag)
-
-    queryset = queryset.filter(all_queries)
-
-    if queries:
-        queries = "(%s)" % "|".join(queries)
+    for query in queries:
+        query = escape_regex(query)
         f = (
-            Q(name__iregex=queries)
-            | Q(tags__name__iregex=queries)
-            | Q(phenotype__name__iregex=queries)
-            | Q(phenotype__description__iregex=queries)
-            | Q(phenotype__measurement__name__iregex=queries)
-            | Q(phenotype__reporter__iregex=queries)
+            Q(name__iregex=query)
+            | Q(tags__name__iregex=query)
+            | Q(phenotype__name__iregex=query)
+            | Q(phenotype__description__iregex=query)
+            | Q(phenotype__measurement__name__iregex=query)
+            | Q(phenotype__reporter__iregex=query)
         )
         queryset = queryset.filter(f).distinct()
-
-    if "tags" in tags:
-        for tag in tags["tags"]:
-            queryset = queryset.filter(tags__name__iregex=tag)
-
     return queryset.distinct()

@@ -60,22 +60,13 @@ class RunConditionsQuery(RatelimitMixin, APIView):
         taglist = []
         count = 0
 
-        for key in [
-            "pubchem_name",
-            "other_name",
-            "chebi_name",
-            "medium",
-            "name",
-            "tags",
-            "query",
-        ]:
-            for tag in request.GET.get(key, "").split("|"):
-                if not tag:
-                    continue
-                taglist.append({"value": tag, "code": key})
+        for tag in request.GET.get("query", "").split("|"):
+            if not tag:
+                continue
+            taglist.append(tag)
 
         if taglist:
-            queryset = conditions_query(query=None, taglist=taglist)
+            queryset = conditions_query(taglist)
             count = len(queryset)
 
         # Create field to sort phenotypes (2), conditions (3), and tags (4)

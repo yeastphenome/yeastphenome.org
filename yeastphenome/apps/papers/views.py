@@ -33,22 +33,10 @@ def paper_explorer(request, year=None):
         {"url": reverse("common:explorer"), "name": "Explore data"},
         {"url": reverse("papers:all"), "name": "Papers"},
     ]
-    for key in [
-        "conditionset",
-        "phenotype",
-        "medium",
-        "datatype",
-        "collection",
-        "gene",
-        "tags",
-        "year",
-        "authors",
-        "query",
-    ]:
-        for tag in request.GET.get(key, "").split("|"):
-            if not tag:
-                continue
-            taglist.append({"value": tag, "code": key})
+    for tag in request.GET.get("query", "").split("|"):
+        if not tag:
+            continue
+        taglist.append({"value": tag, "code": "query"})
 
     return render(
         request,

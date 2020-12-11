@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, reverse
 from django.conf import settings
 
@@ -154,16 +154,8 @@ def get_dataset_gene_table_context(dataset):
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def gene_explorer(request):
 
-    taglist = []
-    for key in [
-        "query",
-    ]:
-        for tag in request.GET.get(key, "").split("|"):
-            if not tag:
-                continue
-            taglist.append(tag)
+    taglist = request.GET.get("query", "").split("|")
 
-    print(taglist)
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
         {"url": reverse("genes:index"), "name": "Genes"},
@@ -327,19 +319,10 @@ def data_explorer(request, collection_id=None):
     """
     # Table will be rendered server side, and we pass query parameters
     taglist = []
-    for key in [
-        "datatype",
-        "tags",
-        "medium",
-        "conditions",
-        "collection",
-        "phenotype",
-        "query",
-    ]:
-        for tag in request.GET.get(key, "").split("|"):
-            if not tag:
-                continue
-            taglist.append({"value": tag, "code": key})
+    for tag in request.GET.get("query", "").split("|"):
+        if not tag:
+            continue
+        taglist.append({"value": tag, "code": "query"})
 
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
@@ -372,7 +355,7 @@ def tag(request, id):
         {"url": reverse("common:explorer"), "name": "Explore data"},
         {"url": reverse("datasets:index"), "name": "Datasets"},
         {
-            "url": "%s?tags=%s" % (reverse("datasets:index"), t.name),
+            "url": "%s?query=%s" % (reverse("datasets:index"), t.name),
             "name": "Tag %s" % t.name,
         },
     ]
@@ -462,10 +445,7 @@ def download_observable_datasets_list(request, observable_id):
     """Download all datasets associated with an observable"""
     import pandas
 
-    try:
-        observable = Observable.objects.get(id=observable_id)
-    except Observable.DoesNotExist:
-        raise Http404
+    observable = get_object_or_404(Observable, pk=observable_id)
 
     filename = "%s_observable_datasets_list_%s.txt" % (
         settings.DOWNLOAD_PREFIX,
@@ -591,10 +571,7 @@ def download_dataset_scores(request):
 def download_observable_datasets(request, observable_id):
     """Download all datasets associated with an observable"""
 
-    try:
-        observable = Observable.objects.get(id=observable_id)
-    except Observable.DoesNotExist:
-        raise Http404
+    observable = get_object_or_404(Observable, pk=observable_id)
 
     filename = "%s_observable_datasets_%s.txt" % (
         settings.DOWNLOAD_PREFIX,
@@ -615,10 +592,7 @@ def download_observable_datasets(request, observable_id):
 def download_medium_datasets(request, medium_id):
     """Download all datasets associated with a medium"""
 
-    try:
-        medium = Medium.objects.get(id=medium_id)
-    except Medium.DoesNotExist:
-        raise Http404
+    medium = get_object_or_404(Medium, pk=medium_id)
 
     filename = "%s_medium_datasets_%s.txt" % (
         settings.DOWNLOAD_PREFIX,

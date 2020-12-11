@@ -200,28 +200,9 @@ class RunDatasetsQuery(RatelimitMixin, APIView):
                     request, "We could not find collection with id %s" % collection_id
                 )
 
-        taglist = []
-        for key in [
-            "datatype",
-            "tags",
-            "medium",
-            "conditions",
-            "collection",
-            "phenotype",
-            "query",
-        ]:
-            for tag in request.GET.get(key, "").split("|"):
-                if not tag:
-                    continue
-                taglist.append({"value": tag, "code": key})
-
+        taglist = request.GET.get("query", "").split("|")
         if taglist:
-            queryset = datasets_search(
-                query=None,
-                taglist=taglist,
-                return_instances=True,
-                collection=collection,
-            )
+            queryset = datasets_search(taglist, collection=collection)
 
         data = generate_datasets(request, data, queryset)
         return Response(status=200, data=data)
@@ -265,13 +246,10 @@ class RunGenesQuery(RatelimitMixin, APIView):
             "2desc": "-primary_sgdid",
         }
 
-        for key in [
-            "query",
-        ]:
-            for tag in request.GET.get(key, "").split("|"):
-                if not tag:
-                    continue
-                taglist.append(tag)
+        for tag in request.GET.get("query", "").split("|"):
+            if not tag:
+                continue
+            taglist.append(tag)
 
         # If we have an additional query, add to taglist
         if query:

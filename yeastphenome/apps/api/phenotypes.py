@@ -94,20 +94,9 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
         taglist = []
         count = 0
 
-        for key in [
-            "observable",
-            "tags",
-            "phenotype",
-            "measurement",
-            "query",
-        ]:
-            for tag in request.GET.get(key, "").split("|"):
-                if not tag:
-                    continue
-                taglist.append({"value": tag, "code": key})
-
+        taglist = request.GET.get("query", "").split("|")
         if taglist:
-            queryset = phenotypes_search(query=None, taglist=taglist)
+            queryset = phenotypes_search(taglist)
             count = len(queryset)
 
         # Create field to conditions (1) and papers (4) - this is not distinct

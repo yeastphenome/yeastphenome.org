@@ -58,6 +58,14 @@ class Paper(models.Model):
         on_delete=models.SET_NULL,
     )
 
+    @classmethod
+    def all(cls):
+        return cls.objects.exclude(
+            Q(latest_data_status__status__name__exact="not relevant")
+            | Q(data_statuses__name__exact="not relevant")
+            | Q(tested_statuses__name__exact="not relevant")
+        )
+
     class Meta:
         get_latest_by = "modified_on"
         ordering = ["pmid", "first_author", "last_author"]

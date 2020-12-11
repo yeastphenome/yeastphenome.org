@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from django.core.exceptions import FieldError
+from django.db.models import Q
 from django.db import models
 from django.apps import apps
 from django.contrib.humanize.templatetags.humanize import intcomma
@@ -102,7 +103,8 @@ class Tag(models.Model):
 
     def link_detail(self):
         return mark_safe(
-            '<a href="%s?tags=%s">%s</a>' % (reverse("datasets:index"), self.name, self)
+            '<a href="%s?query=%s">%s</a>'
+            % (reverse("datasets:index"), self.name, self)
         )
 
     def datasets(self):
@@ -207,6 +209,14 @@ class Dataset(models.Model):
 
     def get_absolute_url(self):
         return reverse("datasets:detail", args=[self.id])
+
+    @classmethod
+    def all(cls):
+        return cls.objects.exclude(
+            Q(paper__latest_data_status__status__name__exact="not relevant")
+            | Q(paper__data_statuses__name__exact="not relevant")
+            | Q(paper__tested_statuses__name__exact="not relevant")
+        ).distinct()
 
     # Necessary to run database-wide updates of dataset names
     def save(self, *args, **kwargs):
@@ -346,6 +356,10 @@ class Gene(models.Model):
 
     def __str__(self):
         return "%s / %s" % (self.common_name, self.systematic_name)
+
+    @classmethod
+    def all(cls):
+        return cls.objects.all()
 
     def link_detail(self):
         """Return the link for the gene detail"""

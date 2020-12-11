@@ -57,25 +57,9 @@ class RunPapersQuery(RatelimitMixin, APIView):
         taglist = []
         count = 0
 
-        for key in [
-            "conditionset",
-            "phenotype",
-            "medium",
-            "datatype",
-            "collection",
-            "gene",
-            "tags",
-            "year",
-            "authors",
-            "query",
-        ]:
-            for tag in request.GET.get(key, "").split("|"):
-                if not tag:
-                    continue
-                taglist.append({"value": tag, "code": key})
-
+        taglist = request.GET.get("query", "").split("|")
         if taglist:
-            queryset = papers_search(query=None, taglist=taglist)
+            queryset = papers_search(taglist)
             count = queryset.count()
 
         # Filter to year, if defined

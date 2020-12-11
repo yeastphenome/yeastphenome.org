@@ -9,7 +9,7 @@ def join_and_more(qs, number_obj_to_show):
     if l == 0:
         return ""
     elif l <= number_obj_to_show:
-        return ", ".join((u"%s" % obj) for obj in qs)
+        return ", ".join((u"%s" % obj) for obj in qs).strip(",")
     else:
         number_obj_remaining = l - number_obj_to_show
         return (
