@@ -75,8 +75,8 @@ class RunConditionsQuery(RatelimitMixin, APIView):
                     continue
                 taglist.append({"value": tag, "code": key})
 
-        if taglist:
-            queryset = conditions_query(query=None, taglist=taglist)
+        if taglist or query:
+            queryset = conditions_query(query=query, taglist=taglist)
             count = len(queryset)
 
         # Create field to sort phenotypes (2), conditions (3), and tags (4)
@@ -100,25 +100,10 @@ class RunConditionsQuery(RatelimitMixin, APIView):
                 )
             )
 
-        print(queryset.first().paper_list)
         order_by = "%s%s" % (order, direction)
         if order_by in order_lookup and queryset:
             print(f"Ordering by {order_by}")
             queryset = queryset.order_by(order_lookup[order_by])
-            count = queryset.count()
-
-        # If there is a filter
-        if query and queryset:
-            f = (
-                Q(name__iregex=query)
-                | Q(tags__name__iregex=query)
-                | Q(description__iregex=query)
-                | Q(other_names__iregex=query)
-                | Q(pubchem_name__iregex=query)
-                | Q(chebi_name__iregex=query)
-                | Q(condition__medium__display_name__iregex=query)
-            )
-            queryset = queryset.filter(f).distinct()
             count = queryset.count()
 
         if start > count:

@@ -142,18 +142,16 @@ def run_search_tag_query(query, taglist=None):
     queryset = queryset.filter(all_queries)
 
     # Now filter down results more, search all fields for query if defined
-    if queries:
-        queries = "(%s)" % "|".join(queries)
+    for query in queries:
         f = (
-            Q(name__iregex=queries)
-            | Q(tags__name__iregex=queries)
-            | Q(description__iregex=queries)
-            | Q(other_names__iregex=queries)
-            | Q(pubchem_name__iregex=queries)
-            | Q(chebi_name__iregex=queries)
-            | Q(condition__medium__display_name__iregex=queries)
+            Q(name__iregex=query)
+            | Q(tags__name__iregex=query)
+            | Q(description__iregex=query)
+            | Q(other_names__iregex=query)
+            | Q(pubchem_name__iregex=query)
+            | Q(chebi_name__iregex=query)
+            | Q(condition__medium__display_name__iregex=query)
         )
-
         queryset = queryset.filter(f).distinct()
 
     # Tags requires a filter each time to work - the AND assumes the same tag name

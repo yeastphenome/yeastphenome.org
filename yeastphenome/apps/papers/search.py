@@ -22,17 +22,24 @@ def get_search_tags():
     )
 
     # First and last authors both searched as "authors" - exclude not relevant datasets
-    authors = [
-        {"value": x[0].lower(), "icon": "👱️", "code": "authors"}
-        for x in queryset.exclude(first_author=None)
-        .values_list("first_author")
-        .distinct()
-    ] + [
-        {"value": x[0].lower(), "icon": "👱️", "code": "authors"}
-        for x in queryset.exclude(last_author=None)
-        .values_list("last_author")
-        .distinct()
-    ]
+    authors = {}
+
+    def add_author_type(author_type):
+        """A shared (internal) function for updating the authors lookup with both
+        first and last authors
+        """
+        exclude_dict = {author_type: None}
+        for entry in (
+            queryset.exclude(**exclude_dict).distinct().values_list(author_type)
+        ):
+            author = entry[0].lower()
+            if author in authors:
+                continue
+            authors[author] = {"value": author, "icon": "👱️", "code": "authors"}
+
+    add_author_type("first_author")
+    add_author_type("last_author")
+    authors = list(authors.values())
 
     # Years
     years = [

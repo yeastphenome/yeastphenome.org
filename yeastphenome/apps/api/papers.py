@@ -1,9 +1,9 @@
 from django.conf import settings
 from django.contrib.postgres.aggregates.general import StringAgg
-from django.db.models import Q
 from django.shortcuts import reverse
 
 from yeastphenome.apps.papers.models import Paper
+from yeastphenome.apps.papers.templatetags.my_filters import join_and_more
 from yeastphenome.apps.papers.utils import get_paper_references_context
 from yeastphenome.apps.papers.search import run_search_tag_query as papers_search
 
@@ -76,7 +76,7 @@ class RunPapersQuery(RatelimitMixin, APIView):
                 taglist.append({"value": tag, "code": key})
 
         if taglist:
-            queryset = papers_search(query=None, taglist=taglist)
+            queryset = papers_search(query=query, taglist=taglist)
             count = queryset.count()
 
         # Filter to year, if defined
@@ -105,17 +105,6 @@ class RunPapersQuery(RatelimitMixin, APIView):
             queryset = queryset.order_by(order_lookup[order_by])
             count = queryset.count()
 
-        # If there is a filter
-        if query and queryset:
-            f = (
-                Q(dataset__name__iregex=query)
-                | Q(dataset__phenotype__observable__name__iregex=query)
-                | Q(pmid__iregex=query)
-                | Q(dataset__conditionset__systematic_name__iregex=query)
-            )
-            queryset = queryset.filter(f).distinct()
-            count = queryset.count()
-
         if start > count:
             start = count - start
         end = start + length
@@ -133,8 +122,8 @@ class RunPapersQuery(RatelimitMixin, APIView):
                 [
                     '<a href="%s">%s</a></td>'
                     % (reverse("papers:detail", args=[paper.pk]), paper),
-                    paper.phenotype_list,
-                    paper.condition_list,
+                    join_and_more(paper.phenotype_list.split(","), 7),
+                    join_and_more(paper.condition_list.split(","), 7),
                 ]
             )
         return Response(status=200, data=data)

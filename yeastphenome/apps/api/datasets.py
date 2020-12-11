@@ -215,7 +215,6 @@ class RunDatasetsQuery(RatelimitMixin, APIView):
                     continue
                 taglist.append({"value": tag, "code": key})
 
-        print(taglist)
         if taglist:
             queryset = datasets_search(
                 query=None,
@@ -274,6 +273,10 @@ class RunGenesQuery(RatelimitMixin, APIView):
                     continue
                 taglist.append(tag)
 
+        # If we have an additional query, add to taglist
+        if query:
+            taglist.append(query)
+
         if taglist:
             queryset = genes_search(taglist)
             count = queryset.count()
@@ -282,17 +285,6 @@ class RunGenesQuery(RatelimitMixin, APIView):
         if order_by in order_lookup and queryset:
             print(f"Ordering by {order_by}")
             queryset = queryset.order_by(order_lookup[order_by])
-
-        # If there is a filter
-        if query and queryset:
-            f = (
-                Q(systematic_name__iregex=query)
-                | Q(common_name__iregex=query)
-                | Q(primary_sgdid__iregex=query)
-                | Q(aliases__name__iregex=query)
-            )
-            queryset = queryset.filter(f).distinct()
-            count = queryset.count()
 
         if start > count:
             start = count - start
