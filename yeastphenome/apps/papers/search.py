@@ -1,9 +1,9 @@
 from django.db.models import Q
 
 # from yeastphenome.apps.papers.models import Paper
-from yeastphenome.apps.phenotypes.models import Phenotype, Observable
+from yeastphenome.apps.phenotypes.models import Phenotype
 from yeastphenome.apps.conditions.models import ConditionType
-from yeastphenome.apps.datasets.models import Datatype, Gene, Tag, Collection
+from yeastphenome.apps.datasets.models import Datatype, Tag, Collection
 from yeastphenome.apps.papers.models import Paper
 
 from yeastphenome.apps.common.utils import escape_regex

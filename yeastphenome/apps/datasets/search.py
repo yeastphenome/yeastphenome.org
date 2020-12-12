@@ -2,7 +2,7 @@ from django.db.models import Q
 
 from yeastphenome.apps.common.utils import escape_regex
 from yeastphenome.apps.phenotypes.models import Phenotype
-from yeastphenome.apps.conditions.models import Medium, Condition, ConditionType, ConditionSet
+from yeastphenome.apps.conditions.models import Medium, ConditionType, ConditionSet
 from yeastphenome.apps.datasets.models import (
     Dataset,
     Datatype,
