@@ -18,9 +18,6 @@ class GeneAdmin(ImprovedModelAdmin):
     )
 
 
-#    fields = ("id", "systematic_name", "common_name")
-
-
 class GeneAliasAdmin(ImprovedModelAdmin):
     model = GeneAlias
     list_display = (
@@ -33,8 +30,6 @@ class GeneAliasAdmin(ImprovedModelAdmin):
     )
     ordering = ("name",)
 
-
-#    fields = ("id", "systematic_name", "common_name")
 
 admin.site.register(Gene, GeneAdmin)
 admin.site.register(GeneAlias, GeneAliasAdmin)

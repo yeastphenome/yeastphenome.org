@@ -16,17 +16,15 @@ def get_search_tags():
     # Systematic names, common names, and aliases
     names = set(
         itertools.chain(
-            Gene.objects.exclude(systematic_name=None)
-            .values_list("systematic_name", flat=True)
-            .distinct(),
-            Gene.objects.exclude(common_name=None)
-            .values_list("common_name", flat=True)
-            .distinct(),
-            GeneAlias.objects.exclude(name=None)
-            .values_list("name", flat=True)
-            .distinct(),
+            Gene.objects.values_list("systematic_name", flat=True),
+            Gene.objects.values_list("common_name", flat=True),
+            GeneAlias.objects.values_list("name", flat=True),
         )
     )
+
+    # Remove empty values and sort in alphabetical order
+    names.discard(None)
+    names = sorted(names)
 
     return [{"value": x, "icon": "🏷️", "code": "query"} for x in names if x]
 
