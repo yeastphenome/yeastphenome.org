@@ -3,7 +3,6 @@ from django.http import StreamingHttpResponse
 from yeastphenome.apps.genes.models import Gene
 from yeastphenome.apps.datasets.models import Data
 
-import requests
 import os
 
 

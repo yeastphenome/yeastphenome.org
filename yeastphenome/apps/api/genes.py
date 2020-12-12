@@ -1,16 +1,14 @@
 from django.conf import settings
-from django.contrib import messages
 
-from yeastphenome.apps.datasets.models import Dataset, Collection, Gene, Data
-from yeastphenome.apps.genes.search import run_search_tag_query as genes_search,
+from yeastphenome.apps.genes.models import Gene
+from yeastphenome.apps.datasets.models import Data
+from yeastphenome.apps.genes.search import run_search_tag_query as genes_search
 
 from rest_framework.renderers import JSONRenderer
 from ratelimit.mixins import RatelimitMixin
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.db.models import Q
-
 
 
 class RunGenesQuery(RatelimitMixin, APIView):

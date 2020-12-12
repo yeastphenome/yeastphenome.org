@@ -1,11 +1,8 @@
 from django.conf import settings
 from django.contrib import messages
 
-from yeastphenome.apps.datasets.models import Dataset, Collection, Gene, Data
-from yeastphenome.apps.datasets.search import (
-    run_search_tag_query as datasets_search,
-    run_gene_search_tag_query as genes_search,
-)
+from yeastphenome.apps.datasets.models import Dataset, Collection
+from yeastphenome.apps.datasets.search import run_search_tag_query as datasets_search
 
 from rest_framework.renderers import JSONRenderer
 from ratelimit.mixins import RatelimitMixin

@@ -10,26 +10,33 @@ from yeastphenome.apps.datasets.models import (
     Collection,
 )
 
-
 import itertools
 
-def get_search_tags():
-    """Return a list of gene search tags, which we do all as queries."""
 
-    # Systematic names, common names, and aliases
-    names = set(
+def get_search_tags():
+    """Return a list of tags, each with a name and icon, to return to the
+    data explorer tag search
+    """
+
+    tags = set(
         itertools.chain(
-            Gene.objects.values_list("systematic_name", flat=True),
-            Gene.objects.values_list("common_name", flat=True),
-            GeneAlias.objects.values_list("name", flat=True),
+            Datatype.objects.values_list("name", flat=True),
+            Tag.objects.values_list("name", flat=True),
+            Phenotype.objects.values_list("name", flat=True),
+            ConditionType.objects.values_list("name", flat=True),
+            ConditionType.objects.values_list("chebi_name", flat=True),
+            ConditionType.objects.values_list("pubchem_name", flat=True),
+            ConditionSet.objects.values_list("display_name", flat=True),
+            Medium.objects.values_list("display_name", flat=True),
+            Collection.objects.values_list("name", flat=True),
         )
     )
 
     # Remove empty values and sort in alphabetical order
-    names.discard(None)
-    names = sorted(names)
+    tags.discard(None)
+    tags = sorted(tags)
 
-    return [{"value": x, "icon": "🏷️", "code": "query"} for x in names if x]
+    return [{"value": x, "icon": "🏷️", "code": "query"} for x in tags if x]
 
 
 def run_search_tag_query(queries, collection=None):

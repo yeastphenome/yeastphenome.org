@@ -31,7 +31,7 @@ def get_search_tags():
     return [{"value": x, "icon": "🏷️", "code": "query"} for x in names if x]
 
 
-def run_gene_search_tag_query(queries):
+def run_search_tag_query(queries):
     """The equivalent search for genes, however we don't have specific fields to search."""
 
     queries = queries or []

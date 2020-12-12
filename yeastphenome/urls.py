@@ -7,7 +7,7 @@ from yeastphenome.apps.common import urls as common_urls
 from yeastphenome.apps.phenotypes import urls as phenotypes_urls
 from yeastphenome.apps.conditions import urls as conditions_urls
 from yeastphenome.apps.datasets import urls as datasets_urls
-from yeastphenome.apps.datasets import gene_urls
+from yeastphenome.apps.genes import urls as gene_urls
 from yeastphenome.apps.api import urls as api_urls
 
 admin.autodiscover()

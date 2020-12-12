@@ -1,35 +1,15 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, reverse
 from django.conf import settings
 
-from django.views.decorators.cache import never_cache
-from yeastphenome.apps.papers.models import Paper
-from yeastphenome.apps.datasets.models import (
-    Dataset,
-    Data,
-    Tag,
-    Gene,
-    GeneAlias,
-)
-from yeastphenome.apps.genes.search import get_search_tags,
-from yeastphenome.apps.datasets.utils import (
-    send_file,
-    prepare_dataset_download,
-)
-from yeastphenome.apps.conditions.models import ConditionType, Medium
-from yeastphenome.apps.phenotypes.models import Observable
-
-from libchebipy import ChebiEntity
-import os
-import tempfile
-
+from yeastphenome.apps.genes.models import Gene
+from yeastphenome.apps.genes.search import get_search_tags
 from ratelimit.decorators import ratelimit
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
     VIEW_RATE_LIMIT_BLOCK as rl_block,
 )
-
 
 
 # Explore by genes
@@ -47,7 +27,7 @@ def gene_explorer(request):
     context = {
         "links": links,
         "active": "explorer",
-        "tags": get_gene_search_tags(),
+        "tags": get_search_tags(),
         "taglist": taglist,
     }
     return render(request, "genes/index.html", context)
@@ -62,10 +42,7 @@ def gene_detail(request, gene_id):
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
         {"url": reverse("genes:index"), "name": "Genes"},
-        {
-            "url": reverse("genes:detail", args=[gene.id]),
-            "name": "%s" % gene,
-        },
+        {"url": reverse("genes:detail", args=[gene.id]), "name": "%s" % gene},
     ]
 
     context = {"links": links, "active": "explorer", "gene": gene}
@@ -184,7 +161,6 @@ def download_gene_similarities(request, gene_id):
     df.to_csv(path_or_buf=response, sep="\t", index=False)
 
     return response
-
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)

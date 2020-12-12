@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "yeastphenome.apps.common",
     "yeastphenome.apps.conditions",
     "yeastphenome.apps.datasets",
+    "yeastphenome.apps.genes",
     "yeastphenome.apps.papers",
     "yeastphenome.apps.phenotypes",
     "django.contrib.admin",

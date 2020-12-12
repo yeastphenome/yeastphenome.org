@@ -9,13 +9,9 @@ from yeastphenome.apps.datasets.models import (
     Dataset,
     Data,
     Tag,
-    Gene,
-    GeneAlias,
 )
-from yeastphenome.apps.datasets.search import (
-    get_search_tags,
-    get_gene_search_tags,
-)
+from yeastphenome.apps.genes.models import Gene, GeneAlias
+from yeastphenome.apps.datasets.search import get_search_tags
 from yeastphenome.apps.datasets.utils import (
     send_file,
     prepare_dataset_download,
@@ -91,8 +87,6 @@ def dataset_plot(request, dataset_id):
     return render(request, "datasets/plot.html", context)
 
 
-
-
 def get_dataset_gene_table_context(dataset):
     """this context is needed for the graph."""
     context = {}
@@ -135,7 +129,6 @@ def get_dataset_gene_table_context(dataset):
     return context
 
 
-
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def similar_dataset_table(request, dataset_id):
 
@@ -169,7 +162,6 @@ def similar_dataset_table(request, dataset_id):
         "active": "explorer",
     }
     return render(request, "datasets/dataset_similarity_explorer.html", context)
-
 
 
 # Datasets Explorer (also the datasets index)
@@ -243,7 +235,6 @@ def tag(request, id):
     )
 
 
-
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download_dataset_similarities(request, dataset_id):
     """Download all DatasetSimilarity values for a given dataset"""
@@ -285,7 +276,7 @@ def download_observable_datasets_list(request, observable_id):
 
     filename = "%s_observable_datasets_list_%s.txt" % (
         settings.DOWNLOAD_PREFIX,
-        observable.name,
+        observable_id,
     )
 
     datasets = (
@@ -301,7 +292,6 @@ def download_observable_datasets_list(request, observable_id):
     if not os.path.exists(exported_file):
         df.to_csv(exported_file, sep="\t", index=None)
     return send_file(exported_file)
-
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
@@ -378,7 +368,7 @@ def download_observable_datasets(request, observable_id):
 
     filename = "%s_observable_datasets_%s.txt" % (
         settings.DOWNLOAD_PREFIX,
-        observable.name,
+        observable_id,
     )
 
     # Returns a pandas dataframe to download from list of dataset ids

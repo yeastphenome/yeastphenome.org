@@ -1,5 +1,4 @@
 import requests
-import os
 
 SGD_BASE_URL = "https://www.yeastgenome.org/webservice"
 
