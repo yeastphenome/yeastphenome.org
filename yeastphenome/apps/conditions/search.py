@@ -51,16 +51,16 @@ def get_search_tags():
     queryset = get_conditiontypes()
     tags = set(
         itertools.chain(
-            Tag.objects.values_list("name", flat=True).distinct(),
-            queryset.values_list("chebi_name", flat=True).distinct(),
-            queryset.values_list("pubchem_name", flat=True).distinct(),
-            queryset.values_list("other_names", flat=True).distinct(),
-            queryset.values_list("name", flat=True).distinct(),
-            queryset.exclude(condition__medium__display_name__isnull=True)
-            .distinct()
-            .values_list("condition__medium__display_name", flat=True),
+            Tag.objects.values_list("name", flat=True),
+            queryset.values_list("chebi_name", flat=True),
+            queryset.values_list("pubchem_name", flat=True),
+            queryset.values_list("name", flat=True),
         )
     )
+
+    # Remove empty values and sort in alphabetical order
+    tags.discard(None)
+    tags = sorted(tags)
 
     return [{"value": x, "icon": "📛", "code": "query"} for x in tags if x]
 

@@ -4,6 +4,7 @@
 <div class="row">
     <div class="col-md-8 mb-4">
         <h1>Download Cart</h1>
+        {% include "datasets/data_warning.html"%}
         {% if datasets %}
 	<form action="{% url 'datasets:download_dataset_scores' %}" method="GET" class="card-body">
                   {% include "datasets/datasets_server_render_table.html" %}

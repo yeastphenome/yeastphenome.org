@@ -2,7 +2,7 @@ from django.db.models import Q
 
 from yeastphenome.apps.common.utils import escape_regex
 from yeastphenome.apps.phenotypes.models import Phenotype
-from yeastphenome.apps.conditions.models import Medium, Condition
+from yeastphenome.apps.conditions.models import Medium, ConditionType, ConditionSet
 from yeastphenome.apps.datasets.models import (
     Dataset,
     Datatype,
@@ -13,24 +13,23 @@ from yeastphenome.apps.datasets.models import (
 
 import itertools
 
-
 def get_search_tags():
-    """Return a list of tags, each with a name and icon, to return to the
-    data explorer tag search
-    """
+    """Return a list of gene search tags, which we do all as queries."""
 
-    tags = set(
+    # Systematic names, common names, and aliases
+    names = set(
         itertools.chain(
-            Datatype.objects.values_list("name", flat=True).distinct(),
-            Tag.objects.values_list("name", flat=True).distinct(),
-            Phenotype.objects.values_list("name", flat=True).distinct(),
-            Condition.objects.values_list("type__name", flat=True).distinct(),
-            Medium.objects.values_list("display_name", flat=True).distinct(),
-            Collection.objects.values_list("name", flat=True).distinct(),
+            Gene.objects.values_list("systematic_name", flat=True),
+            Gene.objects.values_list("common_name", flat=True),
+            GeneAlias.objects.values_list("name", flat=True),
         )
     )
 
-    return [{"value": x, "icon": "🏷️", "code": "query"} for x in tags if x]
+    # Remove empty values and sort in alphabetical order
+    names.discard(None)
+    names = sorted(names)
+
+    return [{"value": x, "icon": "🏷️", "code": "query"} for x in names if x]
 
 
 def run_search_tag_query(queries, collection=None):
