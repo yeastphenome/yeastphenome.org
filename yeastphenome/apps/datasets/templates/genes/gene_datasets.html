@@ -24,8 +24,9 @@
     </style>
     <div class="row" id='similar'>
         <div class="col-md-12">
-            <h1>{{ gene }} &mdash; Phenotypic Scores</h1>
+            <h1>Phenotypic Scores for {{ gene }}</h1>
             <!--<div id="datasets-plot"></div>-->
+            {% include "datasets/data_warning.html"%}
             <form>
                 {% csrf_token %}
                 <table id="similarTable" class="tablesorter table table-condensed table-hover" width="100%">

@@ -2,8 +2,8 @@ from django.db.models import Q
 
 # from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.phenotypes.models import Phenotype
-from yeastphenome.apps.conditions.models import ConditionSet, Medium
-from yeastphenome.apps.datasets.models import Datatype, Gene, Tag, Collection
+from yeastphenome.apps.conditions.models import ConditionType
+from yeastphenome.apps.datasets.models import Datatype, Tag, Collection
 from yeastphenome.apps.papers.models import Paper
 
 from yeastphenome.apps.common.utils import escape_regex
@@ -16,26 +16,27 @@ def get_search_tags():
     paper explorer tag search
     """
 
-    queryset = Paper.all()
+    queryset = Paper.objects.exclude(latest_data_status__status__name="not relevant")
 
     tags = set(
         itertools.chain(
-            queryset.exclude(first_author=None)
-            .distinct()
-            .values_list("first_author", flat=True),
-            queryset.exclude(last_author=None)
-            .distinct()
-            .values_list("last_author", flat=True),
-            queryset.values_list("pub_date", flat=True).distinct(),
-            Datatype.objects.values_list("name", flat=True).distinct(),
-            Collection.objects.values_list("name", flat=True).distinct(),
-            Tag.objects.values_list("name", flat=True).distinct(),
-            Gene.objects.values_list("systematic_name", flat=True).distinct(),
-            Phenotype.objects.values_list("name", flat=True).distinct(),
-            ConditionSet.objects.values_list("systematic_name", flat=True).distinct(),
-            Medium.objects.values_list("display_name", flat=True).distinct(),
+            queryset.values_list("first_author", flat=True),
+            queryset.values_list("last_author", flat=True),
+            queryset.values_list("pub_date", flat=True),
+            Datatype.objects.values_list("name", flat=True),
+            Collection.objects.values_list("name", flat=True),
+            Tag.objects.values_list("name", flat=True),
+            Phenotype.objects.values_list("name", flat=True),
+            ConditionType.objects.values_list("name", flat=True),
+            ConditionType.objects.values_list("chebi_name", flat=True),
+            ConditionType.objects.values_list("pubchem_name", flat=True),
         )
     )
+
+    # Remove empty values and sort in alphabetical order
+    # (key=str necessary to tranform the numeric pub_date to str before comparing to all other strings)
+    tags.discard(None)
+    tags = sorted(tags, key=str)
 
     return [{"value": x, "icon": "🧫", "code": "query"} for x in tags if x]
 

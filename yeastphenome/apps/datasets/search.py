@@ -2,7 +2,7 @@ from django.db.models import Q
 
 from yeastphenome.apps.common.utils import escape_regex
 from yeastphenome.apps.phenotypes.models import Phenotype
-from yeastphenome.apps.conditions.models import Medium, Condition
+from yeastphenome.apps.conditions.models import Medium, ConditionType, ConditionSet
 from yeastphenome.apps.datasets.models import (
     Dataset,
     Datatype,
@@ -22,17 +22,15 @@ def get_gene_search_tags():
     # Systematic names, common names, and aliases
     names = set(
         itertools.chain(
-            Gene.objects.exclude(systematic_name=None)
-            .values_list("systematic_name", flat=True)
-            .distinct(),
-            Gene.objects.exclude(common_name=None)
-            .values_list("common_name", flat=True)
-            .distinct(),
-            GeneAlias.objects.exclude(name=None)
-            .values_list("name", flat=True)
-            .distinct(),
+            Gene.objects.values_list("systematic_name", flat=True),
+            Gene.objects.values_list("common_name", flat=True),
+            GeneAlias.objects.values_list("name", flat=True),
         )
     )
+
+    # Remove empty values and sort in alphabetical order
+    names.discard(None)
+    names = sorted(names)
 
     return [{"value": x, "icon": "🏷️", "code": "query"} for x in names if x]
 
@@ -44,14 +42,21 @@ def get_search_tags():
 
     tags = set(
         itertools.chain(
-            Datatype.objects.values_list("name", flat=True).distinct(),
-            Tag.objects.values_list("name", flat=True).distinct(),
-            Phenotype.objects.values_list("name", flat=True).distinct(),
-            Condition.objects.values_list("type__name", flat=True).distinct(),
-            Medium.objects.values_list("display_name", flat=True).distinct(),
-            Collection.objects.values_list("name", flat=True).distinct(),
+            Datatype.objects.values_list("name", flat=True),
+            Tag.objects.values_list("name", flat=True),
+            Phenotype.objects.values_list("name", flat=True),
+            ConditionType.objects.values_list("name", flat=True),
+            ConditionType.objects.values_list("chebi_name", flat=True),
+            ConditionType.objects.values_list("pubchem_name", flat=True),
+            ConditionSet.objects.values_list("display_name", flat=True),
+            Medium.objects.values_list("display_name", flat=True),
+            Collection.objects.values_list("name", flat=True),
         )
     )
+
+    # Remove empty values and sort in alphabetical order
+    tags.discard(None)
+    tags = sorted(tags)
 
     return [{"value": x, "icon": "🏷️", "code": "query"} for x in tags if x]
 

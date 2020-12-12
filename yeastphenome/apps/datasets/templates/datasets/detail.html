@@ -68,7 +68,8 @@
 {% if datasets_top or datasets_bottom %}
 <div class="row" style="padding-top:30px" id='datasets'>
     <div class="col-md-12">
-        <h1 style="padding-bottom:20px">Phenotypic Scores</h1>
+        <h2 style="padding-bottom:20px">Phenotypic Scores</h2>
+        {% include "datasets/data_warning.html"%}
         <ul class="nav nav-tabs">
             {% if datasets_top %}
             <li class="active"><a data-toggle="tab" href="#datasets_top">Top 10</a></li>
@@ -96,7 +97,8 @@
 {% if sims_top or sims_bottom %}
 <div class="row" style="padding-top:50px" id='similar'>
     <div class="col-md-12">
-        <h1 style="padding-bottom:20px">Phenotypic Similarities</h1>
+        <h2 style="padding-bottom:20px">Phenotypic Similarities</h2>
+        {% include "datasets/data_warning.html"%}
         <ul class="nav nav-tabs">
             {% if sims_top %}
             <li class="active"><a data-toggle="tab" href="#top10">Top 10</a></li>
