@@ -49,7 +49,7 @@
                     {% endfor %}
                 </table>
             </div>
-            <button class="dataset_similar_download btn btn-info" type="button">Download all</button>
+            <a class="btn btn-info" href="{% url 'genes:download_gene_similarities' gene.id %}" role="button">Download all</a>
         </div>
         </div>{% endif %}
 
@@ -71,11 +71,11 @@
         $(document).ready(function () {
 
             $(".dataset_similar_download").click(function () {
-                download("{% url 'genes:download_sims' gene.id %}")
+                download("{% url 'genes:download_gene_similarities' gene.id %}")
             })
             {% if gene %}$("#gene-name").val("{{ gene.systematic_name }}")
                 $("#similar_table").DataTable({
-                    "pageLength": 100,
+                    "pageLength": 10,
                     "order": [[2, "asc"]],
                     "language": {"search": "Filter:"}
                 });{% endif %}

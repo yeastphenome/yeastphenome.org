@@ -30,6 +30,9 @@ DOMAIN_NAME = os.environ.get("DOMAIN_NAME", "http://127.0.0.1:8000")
 # Update the secret key to a value of your own before deploying the app.
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 
+# Download cart limit (datasets in cart)
+DOWNLOAD_CART_LIMIT = 50
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if os.getenv("DEBUG") != "false" else False
 

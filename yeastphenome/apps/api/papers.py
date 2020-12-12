@@ -1,11 +1,11 @@
 from django.conf import settings
-from django.db.models import Q
+from django.contrib.postgres.aggregates.general import StringAgg
 from django.shortcuts import reverse
 
 from yeastphenome.apps.papers.models import Paper
+from yeastphenome.apps.papers.templatetags.my_filters import join_and_more
 from yeastphenome.apps.papers.utils import get_paper_references_context
 from yeastphenome.apps.papers.search import run_search_tag_query as papers_search
-from yeastphenome.apps.papers.templatetags.my_filters import join_and_more
 
 from .permissions import IsStaffOrSuperUser
 
@@ -37,7 +37,6 @@ class RunPapersQuery(RatelimitMixin, APIView):
         start = int(request.GET["start"])
         length = int(request.GET["length"])
         draw = int(request.GET["draw"])
-        query = request.GET["search[value]"]
 
         # Order column and direction
         # Important: columns 2 (phenotypes) and 3 (papers) doesn't have a simple filter solution
@@ -46,10 +45,10 @@ class RunPapersQuery(RatelimitMixin, APIView):
         order_lookup = {
             "0asc": "first_author",
             "0desc": "-first_author",
-            "1asc": "dataset__phenotype__observable__name",
-            "1desc": "-dataset__phenotype__observable__name",
-            "2asc": "dataset__conditionset__systematic_name",
-            "2desc": "-dataset__conditionset__systematic_name",
+            "1asc": "phenotype_list",
+            "1desc": "-phenotype_list",
+            "2asc": "condition_list",
+            "2desc": "-condition_list",
         }
 
         # Empty datatable
@@ -58,47 +57,35 @@ class RunPapersQuery(RatelimitMixin, APIView):
         taglist = []
         count = 0
 
-        for key in [
-            "conditionset",
-            "phenotype",
-            "medium",
-            "datatype",
-            "collection",
-            "gene",
-            "tags",
-            "year",
-            "authors",
-            "query",
-        ]:
-            for tag in request.GET.get(key, "").split("|"):
-                if not tag:
-                    continue
-                taglist.append({"value": tag, "code": key})
-
+        taglist = request.GET.get("query", "").split("|")
         if taglist:
-            queryset = papers_search(query=None, taglist=taglist)
-            count = len(queryset)
+            queryset = papers_search(taglist)
+            count = queryset.count()
 
         # Filter to year, if defined
         if year is not None and queryset:
             queryset = queryset.filter(pub_date=year)
-            count = len(queryset)
+            count = queryset.count()
+
+        if queryset:
+            agg_field = "dataset__phenotype__observable__name"
+            queryset = queryset.annotate(
+                phenotype_list=StringAgg(
+                    agg_field, delimiter=", ", distinct=True, ordering=agg_field
+                )
+            )
+
+            agg_field = "dataset__conditionset__conditions__type__name"
+            queryset = queryset.annotate(
+                condition_list=StringAgg(
+                    agg_field, delimiter=", ", distinct=True, ordering=agg_field
+                )
+            )
 
         order_by = "%s%s" % (order, direction)
         if order_by in order_lookup and queryset:
             print(f"Ordering by {order_by}")
             queryset = queryset.order_by(order_lookup[order_by])
-            count = queryset.count()
-
-        # If there is a filter
-        if query and queryset:
-            f = (
-                Q(dataset__name__iregex=query)
-                | Q(dataset__phenotype__observable__name__iregex=query)
-                | Q(pmid__iregex=query)
-                | Q(dataset__conditionset__systematic_name__iregex=query)
-            )
-            queryset = queryset.filter(f).distinct()
             count = queryset.count()
 
         if start > count:
@@ -118,8 +105,8 @@ class RunPapersQuery(RatelimitMixin, APIView):
                 [
                     '<a href="%s">%s</a></td>'
                     % (reverse("papers:detail", args=[paper.pk]), paper),
-                    join_and_more(paper.phenotypes(), 7),
-                    join_and_more(paper.conditiontypes(), 7),
+                    join_and_more(paper.phenotype_list.split(","), 7),
+                    join_and_more(paper.condition_list.split(","), 7),
                 ]
             )
         return Response(status=200, data=data)

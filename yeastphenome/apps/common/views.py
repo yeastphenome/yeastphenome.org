@@ -1,7 +1,7 @@
-from django.shortcuts import render, redirect, reverse
+from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.views import generic
 from django.contrib import messages
-from django.http import HttpResponse, JsonResponse, Http404
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.cache import never_cache
 from django.db.models import Q
 
@@ -238,11 +238,7 @@ def add_bulk_datasets(request, datasets, return_message=False):
 def add_to_cart_by_conditiontype(request, conditiontype_id):
     """Add datasets to the cart based on a conditiontype id"""
     next = request.GET.get("next")
-    try:
-        ct = ConditionType.objects.get(id=conditiontype_id)
-    except ConditionType.DoesNotExist:
-        raise Http404
-
+    ct = get_object_or_404(ConditionType, pk=conditiontype_id)
     add_bulk_datasets(request, ct.datasets())
     return redirect(next)
 
@@ -251,11 +247,7 @@ def add_to_cart_by_conditiontype(request, conditiontype_id):
 def add_to_cart_by_medium(request, medium_id):
     """Add datasets to the cart based on a medium id"""
     next = request.GET.get("next")
-    try:
-        medium = Medium.objects.get(id=medium_id)
-    except Medium.DoesNotExist:
-        raise Http404
-
+    medium = get_object_or_404(Medium, pk=medium_id)
     add_bulk_datasets(request, medium.datasets())
     return redirect(next)
 
@@ -264,11 +256,7 @@ def add_to_cart_by_medium(request, medium_id):
 def add_to_cart_by_observable(request, observable_id):
     """Add datasets to the cart based on a phenotype (observable) id"""
     next = request.GET.get("next")
-    try:
-        observable = Observable.objects.get(id=observable_id)
-    except Observable.DoesNotExist:
-        raise Http404
-
+    observable = get_object_or_404(Observable, pk=observable_id)
     add_bulk_datasets(request, observable.datasets())
     return redirect(next)
 

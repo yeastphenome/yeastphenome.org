@@ -37,9 +37,9 @@
                     <td class="first">{{ object.description }}</td>
                 </tr>{% endif %}
 
-                {% if object.tags %}<tr>
+                {% if object.tags.count > 0 %}<tr>
                     <th width="20%" scope="row">Tags</th>
-                    <td>{% for tag in object.tags.all %}<a href="{% url 'conditions:index' %}?tags={{ tag.name }}">{{ tag.name }}</a>{% if forloop.last %}{% else %}, {% endif %}{% endfor %} <span style="padding-left:3px; padding-right:5px">|</span> <a href="{% url 'conditions:index'%}?tags={% for tag in object.tags.all %}{{ tag.name }}{% if forloop.last %}{% else %}|{% endif %}{% endfor %}">all</a></td>
+                    <td>{% for tag in object.tags.all %}<a href="{% url 'conditions:index' %}?query={{ tag.name }}">{{ tag.name }}</a>{% if forloop.last %}{% else %}, {% endif %}{% endfor %} <span style="padding-left:3px; padding-right:5px">|</span> <a href="{% url 'conditions:index'%}?query={% for tag in object.tags.all %}{{ tag.name }}{% if forloop.last %}{% else %}|{% endif %}{% endfor %}">all</a></td>
                 </tr>{% endif %}
             </table>{% if object.datasets.count > 0 %}
              <h2 style="padding-top:30px">Datasets</h2>

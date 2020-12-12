@@ -1,12 +1,21 @@
-    <table id="{{ table_id }}" class="table table-condensed table-hover" width="100%">
-        <thead>
-        <tr>
-            <th style="text-align:left" with="33%">Dataset Name</th>
-            <th style="text-align:left" width="33%">Correlation Mean</th>
-            <th style="text-align:left" width="33%">Correlation Std. Dev.</th>
-        </tr>
-        </thead>
-        <tbody>
-{% for sim in scores %}<tr><td><a href="{% url 'datasets:detail' sim.0 %}">{{ sim.1 }}</a></td><td>{{ sim.2 }}</td><td>{{ sim.3|stringformat:".2e" }}</td></tr>{% endfor %}
-        </tbody>
-      </table>
+<table id="{{ table_id }}" class="table table-condensed table-hover" width="100%">
+    <thead>
+    <tr>
+        <th style="text-align:left" with="33%">Dataset Name</th>
+        <th style="text-align:left" width="33%">Correlation Mean</th>
+        <th style="text-align:left" width="33%">Correlation Std. Dev.</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for sim in scores %}
+    <tr>
+        <td><a href="{% url 'datasets:dataset_detail' sim.dataset2_id %}">{{ sim.dataset2 }}</a></td>
+        <td>{{ sim.score }}</td>
+        <td>{{ sim.pvalue|stringformat:".2e" }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<a class="btn btn-info" style="padding-right:5px" href="{% url 'datasets:download_dataset_similarities' dataset.id %}" role="button">Download all</a>
+<a class="btn btn-success" href="{% url 'datasets:similar_dataset_table' dataset.id %}" role="button">View all</a>

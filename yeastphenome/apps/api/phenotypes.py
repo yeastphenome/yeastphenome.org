@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.db.models import Q
 
 from yeastphenome.apps.phenotypes.models import Observable
 from yeastphenome.apps.papers.templatetags.my_filters import join_and_more
@@ -71,7 +70,6 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
         start = int(request.GET["start"])
         length = int(request.GET["length"])
         draw = int(request.GET["draw"])
-        query = request.GET["search[value]"]
 
         # Order column and direction
         # Note: we don't have a good way of querying conditions here either, column 1
@@ -96,21 +94,9 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
         taglist = []
         count = 0
 
-        for key in [
-            "observable",
-            "tags",
-            "phenotype",
-            "measurement",
-            "query",
-        ]:
-            for tag in request.GET.get(key, "").split("|"):
-                if not tag:
-                    continue
-                taglist.append({"value": tag, "code": key})
-
-        print(taglist)
+        taglist = request.GET.get("query", "").split("|")
         if taglist:
-            queryset = phenotypes_search(query=None, taglist=taglist)
+            queryset = phenotypes_search(taglist)
             count = len(queryset)
 
         # Create field to conditions (1) and papers (4) - this is not distinct
@@ -127,19 +113,6 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
                     agg_field, delimiter=", ", distinct=True, ordering=agg_field
                 )
             )
-
-        # If there is a filter
-        if query and queryset:
-            f = (
-                Q(name__iregex=query)
-                | Q(tags__name__iregex=query)
-                | Q(phenotype__name__iregex=query)
-                | Q(phenotype__description__iregex=query)
-                | Q(phenotype__measurement__name__iregex=query)
-                | Q(phenotype__reporter__iregex=query)
-            )
-            queryset = queryset.filter(f).distinct()
-            count = queryset.count()
 
         order_by = "%s%s" % (order, direction)
         if order_by in order_lookup and queryset:

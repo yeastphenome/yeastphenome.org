@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models.functions import Lower
 from django.urls import reverse
 from django.db.models import Q
 from django.conf import settings
@@ -57,6 +58,14 @@ class Paper(models.Model):
         on_delete=models.SET_NULL,
     )
 
+    @classmethod
+    def all(cls):
+        return cls.objects.exclude(
+            Q(latest_data_status__status__name__exact="not relevant")
+            | Q(data_statuses__name__exact="not relevant")
+            | Q(tested_statuses__name__exact="not relevant")
+        )
+
     class Meta:
         get_latest_by = "modified_on"
         ordering = ["pmid", "first_author", "last_author"]
@@ -75,7 +84,11 @@ class Paper(models.Model):
         return ", ".join([(u"%s" % i) for i in self.collections()])
 
     def phenotypes(self):
-        return Observable.objects.filter(phenotype__dataset__paper=self).distinct()
+        return (
+            Observable.objects.filter(phenotype__dataset__paper=self)
+            .distinct()
+            .order_by(Lower("name"))
+        )
 
     def phenotypes_str_list(self):
         num = len(self.phenotypes())

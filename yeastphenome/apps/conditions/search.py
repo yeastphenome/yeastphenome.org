@@ -2,6 +2,7 @@ from django.db.models import Q, Count
 
 from yeastphenome.apps.conditions.models import ConditionType, Tag
 from yeastphenome.apps.common.utils import escape_regex
+import itertools
 
 
 def get_tags():
@@ -48,119 +49,42 @@ def get_search_tags():
     conditions explorer tag search
     """
     queryset = get_conditiontypes()
-    seen = set()
+    tags = set(
+        itertools.chain(
+            Tag.objects.values_list("name", flat=True).distinct(),
+            queryset.values_list("chebi_name", flat=True).distinct(),
+            queryset.values_list("pubchem_name", flat=True).distinct(),
+            queryset.values_list("other_names", flat=True).distinct(),
+            queryset.values_list("name", flat=True).distinct(),
+            queryset.exclude(condition__medium__display_name__isnull=True)
+            .distinct()
+            .values_list("condition__medium__display_name", flat=True),
+        )
+    )
 
-    # Names have duplicates
-    def not_seen(value):
-        if value in seen:
-            return False
-        seen.add(value)
-        return True
-
-    # Tags
-    tags = [
-        {"value": x, "icon": "🏷️", "code": "tags"}
-        for x in Tag.objects.values_list("name", flat=True).distinct()
-        if x not in [None, ""] and not_seen(x)
-    ]
-
-    # Any kind of name
-    chebi_names = [
-        {"value": x, "icon": "📛", "code": "chebi_name"}
-        for x in queryset.values_list("chebi_name", flat=True).distinct()
-        if x not in [None, ""] and not_seen(x)
-    ]
-
-    pubchem_names = [
-        {"value": x, "icon": "📛", "code": "pubchem_name"}
-        for x in queryset.values_list("pubchem_name", flat=True).distinct()
-        if x not in [None, ""] and not_seen(x)
-    ]
-
-    other_names = [
-        {"value": x, "icon": "📛", "code": "other_name"}
-        for x in queryset.values_list("other_names", flat=True).distinct()
-        if x not in [None, ""] and not_seen(x)
-    ]
-
-    names = [
-        {"value": x, "icon": "📛", "code": "name"}
-        for x in queryset.values_list("name", flat=True).distinct()
-        if x not in [None, ""] and not_seen(x)
-    ]
-
-    mediums = [
-        {"value": x, "icon": "📛", "code": "medium"}
-        for x in queryset.values_list(
-            "condition__medium__display_name", flat=True
-        ).distinct()
-        if x not in [None, ""] and not_seen(x)
-    ]
-    return tags + chebi_names + other_names + names + pubchem_names + mediums
+    return [{"value": x, "icon": "📛", "code": "query"} for x in tags if x]
 
 
-def run_search_tag_query(query, taglist=None):
+def run_search_tag_query(queries):
     """take a query string and a taglist to run the phenotypes query."""
-    queries = [] if not query else [query]
-    tags = {}
-    for tag in taglist or []:
-        if tag["code"] in ["", "query"]:
-            queries.append(tag["value"])
-        else:
-            if tag["code"] not in tags:
-                tags[tag["code"]] = []
-
-            value = escape_regex(tag["value"])
-            tags[tag["code"]].append(value)
+    queries = queries or []
 
     # We want to search through condition types that have a valid paper and > 0 datasets
     queryset = get_conditiontypes()
 
-    # Filter querysets
-    all_queries = Q()
-
-    if "name" in tags:
-        for tag in tags["name"]:
-            all_queries = all_queries & Q(name__iregex=tag)
-
-    if "medium" in tags:
-        for tag in tags["medium"]:
-            all_queries = all_queries & Q(condition__medium__display_name__iregex=tag)
-
-    if "chebi_name" in tags:
-        for tag in tags["chebi_name"]:
-            all_queries = all_queries & Q(chebi_name__iregex=tag)
-
-    if "other_name" in tags:
-        for tag in tags["other_name"]:
-            all_queries = all_queries & Q(other_name__iregex=tag)
-
-    if "pubchem_name" in tags:
-        for tag in tags["pubchem_name"]:
-            all_queries = all_queries & Q(pubchem_name__iregex=tag)
-
-    queryset = queryset.filter(all_queries)
-
     # Now filter down results more, search all fields for query if defined
-    if queries:
-        queries = "(%s)" % "|".join(queries)
+    for query in queries:
+        query = escape_regex(query)
         f = (
-            Q(name__iregex=queries)
-            | Q(tags__name__iregex=queries)
-            | Q(description__iregex=queries)
-            | Q(other_names__iregex=queries)
-            | Q(pubchem_name__iregex=queries)
-            | Q(chebi_name__iregex=queries)
-            | Q(condition__medium__display_name__iregex=queries)
+            Q(name__iregex=query)
+            | Q(tags__name__iregex=query)
+            | Q(description__iregex=query)
+            | Q(other_names__iregex=query)
+            | Q(pubchem_name__iregex=query)
+            | Q(chebi_name__iregex=query)
+            | Q(condition__medium__display_name__iregex=query)
         )
-
         queryset = queryset.filter(f).distinct()
-
-    # Tags requires a filter each time to work - the AND assumes the same tag name
-    # has all names (not what we want)
-    if "tags" in tags:
-        for tag in tags["tags"]:
-            queryset = queryset.filter(tags__name__iregex=tag)
 
     # Return the queryset
     return queryset

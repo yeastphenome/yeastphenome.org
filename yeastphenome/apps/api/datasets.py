@@ -200,29 +200,9 @@ class RunDatasetsQuery(RatelimitMixin, APIView):
                     request, "We could not find collection with id %s" % collection_id
                 )
 
-        taglist = []
-        for key in [
-            "datatype",
-            "tags",
-            "medium",
-            "conditions",
-            "collection",
-            "phenotype",
-            "query",
-        ]:
-            for tag in request.GET.get(key, "").split("|"):
-                if not tag:
-                    continue
-                taglist.append({"value": tag, "code": key})
-
-        print(taglist)
+        taglist = request.GET.get("query", "").split("|")
         if taglist:
-            queryset = datasets_search(
-                query=None,
-                taglist=taglist,
-                return_instances=True,
-                collection=collection,
-            )
+            queryset = datasets_search(taglist, collection=collection)
 
         data = generate_datasets(request, data, queryset)
         return Response(status=200, data=data)
@@ -266,13 +246,14 @@ class RunGenesQuery(RatelimitMixin, APIView):
             "2desc": "-primary_sgdid",
         }
 
-        for key in [
-            "query",
-        ]:
-            for tag in request.GET.get(key, "").split("|"):
-                if not tag:
-                    continue
-                taglist.append(tag)
+        for tag in request.GET.get("query", "").split("|"):
+            if not tag:
+                continue
+            taglist.append(tag)
+
+        # If we have an additional query, add to taglist
+        if query:
+            taglist.append(query)
 
         if taglist:
             queryset = genes_search(taglist)
@@ -282,17 +263,6 @@ class RunGenesQuery(RatelimitMixin, APIView):
         if order_by in order_lookup and queryset:
             print(f"Ordering by {order_by}")
             queryset = queryset.order_by(order_lookup[order_by])
-
-        # If there is a filter
-        if query and queryset:
-            f = (
-                Q(systematic_name__iregex=query)
-                | Q(common_name__iregex=query)
-                | Q(primary_sgdid__iregex=query)
-                | Q(aliases__name__iregex=query)
-            )
-            queryset = queryset.filter(f).distinct()
-            count = queryset.count()
 
         if start > count:
             start = count - start
@@ -348,16 +318,31 @@ class GetGeneDatasets(RatelimitMixin, APIView):
         except Gene.DoesNotExist:
             return Response(status=200, data=data)
 
+        order = request.GET["order[0][column]"]
+        direction = request.GET["order[0][dir]"]  # asc or desc
+        order_lookup = {
+            "0asc": "dataset__name",
+            "0desc": "-dataset__name",
+            "1asc": "valuez",
+            "1desc": "-valuez",
+            "2asc": "valuez",
+            "2desc": "-valuez",
+        }
+
         datasets = (
             Data.objects.filter(gene=gene)
             .exclude(valuez__isnull=True)
             .order_by("-valuez")
         )
 
-        # If there is a filter
+        # If there is a filter, we can currently filter based on dataset name
         if query:
-            f = Q(dataset__name__icontains=query)
-            datasets = datasets.filter(f).distinct()
+            datasets = datasets.filter(dataset__name__icontains=query).distinct()
+
+        order_by = "%s%s" % (order, direction)
+        if order_by in order_lookup and datasets:
+            print(f"Ordering by {order_by}")
+            datasets = datasets.order_by(order_lookup[order_by])
 
         count = datasets.count()
         ranks = [(1 - (idx / count)) * 100 for idx, sim in enumerate(datasets)]
@@ -365,12 +350,18 @@ class GetGeneDatasets(RatelimitMixin, APIView):
             start = count - start
         end = start + length
 
+        # Based on direction, reverse ranks
+        if direction and "asc" in direction:
+            ranks.reverse()
+
         # If we've gone too far
         if end > count:
             end = count - 1
 
-        datasets = datasets[start : end + 1]
-        ranks = ranks[start : end + 1]
+        if datasets:
+            datasets = datasets[start : end + 1]
+            ranks = ranks[start : end + 1]
+
         data["recordsTotal"] = count
         data["recordsFiltered"] = count
 
@@ -381,7 +372,7 @@ class GetGeneDatasets(RatelimitMixin, APIView):
                     "<a href='/datasets/%s/'>%s</a>"
                     % (dataset.dataset.id, dataset.dataset.name),
                     round(dataset.valuez, 1),
-                    round(ranks[i], 1),
+                    str(round(ranks[i], 1)) + "%",
                 ]
             )
 

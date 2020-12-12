@@ -1,4 +1,4 @@
-from django.shortcuts import render, Http404
+from django.shortcuts import render, get_object_or_404
 
 from ratelimit.decorators import ratelimit
 from yeastphenome.apps.datasets.models import Dataset
@@ -45,11 +45,7 @@ def paper_citation_graph(request, paper_id):
     """A citation graph that shows all of a paper's citations, and whether or
     not each outgoing citation is in the database
     """
-    try:
-        paper = Paper.objects.get(id=paper_id)
-    except Paper.DoesNotExist:
-        return Http404
-
+    paper = get_object_or_404(Paper, pk=paper_id)
     context = get_paper_references_context(paper)
     return render(request, "graphs/citation-graph-wrapper.html", context)
 
@@ -67,11 +63,7 @@ def papers_by_year(request):
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def collection_by_year(request, dataset_id):
     """Show change in time of collection associated with a dataset"""
-    try:
-        dataset = Dataset.objects.get(id=dataset_id)
-    except Dataset.DoesNotExist:
-        return Http404
-
+    dataset = get_object_or_404(Dataset, pk=dataset_id)
     context = {
         "collection_yearly_counts": get_collections_by_year(dataset.collection),
         "collection": dataset.collection,

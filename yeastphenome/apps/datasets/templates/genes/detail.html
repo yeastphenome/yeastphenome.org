@@ -108,35 +108,8 @@
                         </div>
                     {% endif %}
                 </div>
-                <a class="dataset_similar_download btn btn-info" style="margin-right:5px" role="button">Download all</a>
-                <a class="btn btn-success" role="button" href="{% url 'genes:similar_genes' gene.id %}">View all</a>
             </div>
         </div>{% endif %}
 
 {% endblock %}
-{% block scripts %}
-    <script>
-        function download(url) {
-            document.location = "#";
-            $("#fade").show()
-            frame = document.createElement("iframe");
-            frame.onload = function () {
-                $("#fade").hide();
-            }
-            frame.src = url;
-            document.body.appendChild(frame);
-        }
 
-        $(document).ready(function () {
-
-            $(".dataset_download_gene").click(function () {
-                document.location = "/download/{{ gene.id }}/"
-            })
-
-            $(".dataset_similar_download").click(function () {
-                document.location = "{% url 'genes:download_sims' gene.id %}"
-            })
-        });
-
-    </script>
-{% endblock %}

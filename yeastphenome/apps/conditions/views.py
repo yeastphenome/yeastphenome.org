@@ -1,11 +1,9 @@
 import re
 
 from django.conf import settings
-from django.shortcuts import reverse, render, redirect
+from django.shortcuts import reverse, render, redirect, get_object_or_404
 from django.views import generic
-from django.http import Http404
 
-# from django.views.decorators.cache import never_cache
 from yeastphenome.apps.conditions.models import ConditionType, ConditionSet, Medium, Tag
 from yeastphenome.apps.datasets.models import Dataset
 
@@ -34,19 +32,10 @@ def index(request):
         {"url": reverse("common:explorer"), "name": "Explore data"},
         {"url": reverse("conditions:index"), "name": "Conditions"},
     ]
-    for key in [
-        "pubchem_name",
-        "other_name",
-        "chebi_name",
-        "medium",
-        "name",
-        "tags",
-        "query",
-    ]:
-        for tag in request.GET.get(key, "").split(","):
-            if not tag:
-                continue
-            taglist.append({"value": tag, "code": key})
+    for tag in request.GET.get("query", "").split("|"):
+        if not tag:
+            continue
+        taglist.append({"value": tag, "code": "query"})
 
     return render(
         request,
@@ -156,10 +145,7 @@ def conditionclass(request, class_id):
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def conditions_by_tag(request, tag_id):
-    try:
-        tag = Tag.objects.get(id=tag_id)
-    except Tag.DoesNotExist:
-        raise Http404
+    tag = get_object_or_404(Tag, pk=tag_id)
 
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},

@@ -1,8 +1,7 @@
 from django.conf import settings
 from django.views import generic
-from django.shortcuts import render, reverse, redirect
+from django.shortcuts import render, reverse, redirect, get_object_or_404
 from django.db import models
-from django.http import Http404
 
 from yeastphenome.apps.phenotypes.models import Observable, Tag
 from yeastphenome.apps.phenotypes.search import get_search_tags
@@ -54,10 +53,8 @@ def index(request):
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def phenotypes_by_tag(request, tag_id):
-    try:
-        tag = Tag.objects.get(id=tag_id)
-    except Tag.DoesNotExist:
-        raise Http404
+    tag = get_object_or_404(Tag, pk=tag_id)
+
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
         {"url": reverse("phenotypes:index"), "name": "Phenotypes"},
@@ -75,10 +72,7 @@ def phenotypes_by_tags(request, phenotype_id):
     """phenotypes by tags looks up an observable, and returns all phenotypes that
     have all tags
     """
-    try:
-        pheno = Observable.objects.get(id=phenotype_id)
-    except Observable.DoesNotExist:
-        raise Http404
+    pheno = get_object_or_404(Observable, pk=phenotype_id)
     tag_names = ",".join([x.name for x in pheno.tags.all()])
 
     # Filter down observables to those with all tags

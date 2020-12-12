@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from django.core.exceptions import FieldError
+from django.db.models import Q
 from django.db import models
 from django.apps import apps
 from django.contrib.humanize.templatetags.humanize import intcomma
@@ -102,7 +103,8 @@ class Tag(models.Model):
 
     def link_detail(self):
         return mark_safe(
-            '<a href="%s?tags=%s">%s</a>' % (reverse("datasets:index"), self.name, self)
+            '<a href="%s?query=%s">%s</a>'
+            % (reverse("datasets:index"), self.name, self)
         )
 
     def datasets(self):
@@ -208,6 +210,14 @@ class Dataset(models.Model):
     def get_absolute_url(self):
         return reverse("datasets:detail", args=[self.id])
 
+    @classmethod
+    def all(cls):
+        return cls.objects.exclude(
+            Q(paper__latest_data_status__status__name__exact="not relevant")
+            | Q(paper__data_statuses__name__exact="not relevant")
+            | Q(paper__tested_statuses__name__exact="not relevant")
+        ).distinct()
+
     # Necessary to run database-wide updates of dataset names
     def save(self, *args, **kwargs):
         self.name = "%s | %s | %s | %s | %s" % (
@@ -283,6 +293,34 @@ class Dataset(models.Model):
         )
         return mark_safe(html)
 
+    def get_data(self, reverse=False):
+        """Given a dataset, get a sorted list of scores."""
+        queryset = (
+            Data.objects.filter(dataset=self)
+            .filter(valuez__isnull=False)
+            .order_by("-valuez")
+        )
+
+        if reverse:
+            queryset = queryset.reverse()
+
+        return queryset
+
+    def get_ranked_similar(self, reverse=False):
+        """Given a dataset, get a sorted listed of similar datasets.
+        Assume each pair of datasets is represented twice (A-B and B-A).
+        """
+        queryset = (
+            DatasetSimilarity.objects.filter(dataset1=self)
+            .filter(dataset2__data_source__release=True)
+            .order_by("-score")
+        )
+
+        if reverse:
+            queryset = queryset.reverse()
+
+        return queryset
+
 
 class GeneAlias(models.Model):
     """A GeneAlias is another name for a gene"""
@@ -319,17 +357,23 @@ class Gene(models.Model):
     def __str__(self):
         return "%s / %s" % (self.common_name, self.systematic_name)
 
+    @classmethod
+    def all(cls):
+        return cls.objects.all()
+
     def link_detail(self):
         """Return the link for the gene detail"""
         return '<a href="%s">%s</a>' % (reverse("genes:detail", args=[self.id]), self)
 
     def get_data(self, reverse=False):
-        # Filter to data with values defined, sorted greatest to smallest
+        """Filter to data with values defined, sorted greatest to smallest"""
         queryset = (
             Data.objects.filter(gene=self)
+            .filter(dataset__data_source__release=True)
             .exclude(valuez__isnull=True)
             .order_by("-valuez")
         )
+
         if reverse:
             queryset = queryset.reverse()
         return queryset

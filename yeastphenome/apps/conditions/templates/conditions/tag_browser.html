@@ -14,7 +14,7 @@
 		</thead>
 		<tbody id="papersTableBody">
 		{% for tag in tags %}<tr>
-		    <td><a href="/conditions/?tags={{ tag.name }}">{{ tag.name }}</a></td>
+		    <td><a href="/conditions/?query={{ tag.name }}">{{ tag.name }}</a></td>
 		    <td>{{ tag.conditiontype_set.count }}</td>
           	</tr>{% endfor %}
 		</tbody>

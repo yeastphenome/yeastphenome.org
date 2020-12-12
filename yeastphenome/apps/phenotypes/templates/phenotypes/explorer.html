@@ -190,12 +190,7 @@ function add_tags_by_key(key) {
     }
     tagify.addTags(querytags)
 }
-add_tags_by_key("tags")
-add_tags_by_key("observable")
-add_tags_by_key("phenotype")
-add_tags_by_key("measurement")
 add_tags_by_key("query")
-add_tags_by_key("q")
 
 
 update_placeholder = function() {
@@ -248,31 +243,13 @@ function doTagsSearch() {
            return
        }
 
-       // Keep list of tags
-       tags = Object()
-       if (query.tags.length > 0) {
-           $.each(JSON.parse(query.tags), function(i, e){          
-              console.log(e)
-              // commas in tag need to be preserved
-              if (!(e['code'] in tags)) {
-                  tags[e['code']] = e['value']
-              } else {
-                  tags[e['code']] += "|" + e['value']
-              }
-           })
-       }
-
-       // Add the query anyway (even if empty) as the first argument
-       url = "{{ DOMAIN }}/phenotypes/"
-       count = 0       
-       $.each(tags, function(i, e){          
-           if (i == "") {
-               i = "query"
-           }
-           if (count == 0){
-               url = url + "?" + i + "=" + e 
+       url = "{{ DOMAIN }}/phenotypes/?query="
+       count = 0
+       $.each(JSON.parse(query.tags), function(i, e){          
+           if (count == 0) {
+               url = url + e['value']
            } else {
-               url = url + "&" + i + "=" + e 
+               url = url + "|" + e['value']
            }
            count+=1
        })
@@ -282,7 +259,8 @@ function doTagsSearch() {
 }
 
 $(document).ready(function(){
-    $("#papersTable").dataTable({"pageLength": 10,"language": {"search": "Filter:"}, "processing": true, "serverSide": true, "ajax": "{% url 'api:phenotypes_query' %}{% for tag in taglist %}{% if forloop.first %}?{% else %}&{% endif %}{{ tag.code }}={{ tag.value }}{% endfor %}", "lengthMenu": [[10,15,20,25], [10,15,20,25]],
+    $("#papersTable").dataTable({"pageLength": 10,"language": {"search": "Filter:"}, "processing": true, "serverSide": true, "ajax": "{% url 'api:phenotypes_query' %}{% for tag in taglist %}{% if forloop.first %}?query={{ tag.value }}{% else %}|{{ tag.value }}{% endif %}{% endfor %}", "lengthMenu": [[10,15,20,25], [10,15,20,25]],
+    "bFilter": false,
     "drawCallback": function( settings ) {
        if (settings.aoData.length == 0){
           $("#message").show();

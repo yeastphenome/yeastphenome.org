@@ -38,7 +38,6 @@ class RunConditionsQuery(RatelimitMixin, APIView):
         start = int(request.GET["start"])
         length = int(request.GET["length"])
         draw = int(request.GET["draw"])
-        query = request.GET["search[value]"]
 
         order = request.GET["order[0][column]"]
         direction = request.GET["order[0][dir]"]  # asc or desc
@@ -61,22 +60,13 @@ class RunConditionsQuery(RatelimitMixin, APIView):
         taglist = []
         count = 0
 
-        for key in [
-            "pubchem_name",
-            "other_name",
-            "chebi_name",
-            "medium",
-            "name",
-            "tags",
-            "query",
-        ]:
-            for tag in request.GET.get(key, "").split("|"):
-                if not tag:
-                    continue
-                taglist.append({"value": tag, "code": key})
+        for tag in request.GET.get("query", "").split("|"):
+            if not tag:
+                continue
+            taglist.append(tag)
 
         if taglist:
-            queryset = conditions_query(query=None, taglist=taglist)
+            queryset = conditions_query(taglist)
             count = len(queryset)
 
         # Create field to sort phenotypes (2), conditions (3), and tags (4)
@@ -100,25 +90,10 @@ class RunConditionsQuery(RatelimitMixin, APIView):
                 )
             )
 
-        print(queryset.first().paper_list)
         order_by = "%s%s" % (order, direction)
         if order_by in order_lookup and queryset:
             print(f"Ordering by {order_by}")
             queryset = queryset.order_by(order_lookup[order_by])
-            count = queryset.count()
-
-        # If there is a filter
-        if query and queryset:
-            f = (
-                Q(name__iregex=query)
-                | Q(tags__name__iregex=query)
-                | Q(description__iregex=query)
-                | Q(other_names__iregex=query)
-                | Q(pubchem_name__iregex=query)
-                | Q(chebi_name__iregex=query)
-                | Q(condition__medium__display_name__iregex=query)
-            )
-            queryset = queryset.filter(f).distinct()
             count = queryset.count()
 
         if start > count:

@@ -25,7 +25,7 @@
 
         <tbody id="papersTableBody">
         {% for dataset in datasets %}<tr>
-            <td class="col-md-1"><a href="{% url 'datasets:detail' dataset.id %}">{{ dataset.id }}</a></td>
+            <td class="col-md-1"><a href="{% url 'datasets:dataset_detail' dataset.id %}">{{ dataset.id }}</a></td>
             <td class="col-md-2">{{ dataset.paper }}</td>
             <td class="col-md-2">{% if dataset.phenotype.observable %}{{ dataset.phenotype.observable.name }} {% if dataset.phenotype.reporter %} ({{ dataset.phenotype.reporter }}) {% endif %}{% endif %}</td>
             <td class="col-md-2">{{ dataset.conditionset.display_name }}</td>
