@@ -1,11 +1,10 @@
 from wsgiref.util import FileWrapper
 from django.http import StreamingHttpResponse
-from yeastphenome.apps.datasets.models import Gene, Data
+from yeastphenome.apps.genes.models import Gene
+from yeastphenome.apps.datasets.models import Data
 
 import requests
 import os
-
-SGD_BASE_URL = "https://www.yeastgenome.org/webservice"
 
 
 def send_file(exported_file, chunk_size=8192):
@@ -21,19 +20,6 @@ def send_file(exported_file, chunk_size=8192):
         exported_file
     )
     return response
-
-
-def get_gene_metadata(locus_id):
-    try:
-        url = "%s/locus/%s" % (SGD_BASE_URL, locus_id)
-        response = requests.get(url=url).json()
-        # Filter down aliases to only include aliases
-        response["aliases"] = [
-            x for x in response.get("aliases", []) if x["category"] == "Alias"
-        ]
-        return response
-    except:
-        return {}
 
 
 def prepare_dataset_download(datasets):

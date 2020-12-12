@@ -1,0 +1,85 @@
+{% extends "base/wide.html" %}
+{% load static %}
+{% load my_filters %}
+{% block title %}Similar Genes / {{ SITE_NAME }}{% endblock %}
+{% block content %}
+    <style>
+        #dataset-genes {
+            font: 10px sans-serif;
+        }
+
+        .bar rect {
+            shape-rendering: crispEdges;
+            cursor: pointer;
+        }
+
+        .bar text {
+            fill: #999999;
+        }
+
+        .axis path, .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
+    </style>
+    {% if sims %}
+        <div class="row" id='similar'>
+            <div class="col-md-12">
+                <h1>{{ gene }} &mdash; Similar Genes</h1>
+                <table id="similar_table" class="tablesorter table table-striped" width="100%">
+                    <thead>
+                    <tr>
+                        <th style="text-align:left" data-placeholder="Select an name" class="text-nowrap" width="25%">
+                            Gene
+                        </th>
+                        <th style="text-align:left" width="25%">Correlation Mean</th>
+                        <th style="text-align:left" width="25%">Correlation Std. Dev.</th>
+                        <th style="text-align:left" width="25%">Percentile (lowest to highest)</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for sim in sims %}
+                        <tr>
+                            <td><a href="{% url 'genes:detail' sim.gene2_id %}">{{ sim.gene2 }}</a></td>
+                            <td>{{ sim.score|stringformat:".2f" }}</td>
+                            <td>{{ sim.pvalue|stringformat:".2f" }}</td>
+                            <td>{{ ranks|lookup:forloop.counter0|floatformat:1 }}%</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <a class="btn btn-info" href="{% url 'genes:download_gene_similarities' gene.id %}" role="button">Download all</a>
+        </div>
+        </div>{% endif %}
+
+{% endblock %}
+{% block scripts %}
+    {% include "scripts/tablesorter.html" %}
+    <script>
+        function download(url) {
+            document.location = "#";
+            $("#fade").show()
+            frame = document.createElement("iframe");
+            frame.onload = function () {
+                $("#fade").hide();
+            }
+            frame.src = url;
+            document.body.appendChild(frame);
+        }
+
+        $(document).ready(function () {
+
+            $(".dataset_similar_download").click(function () {
+                download("{% url 'genes:download_gene_similarities' gene.id %}")
+            })
+            {% if gene %}$("#gene-name").val("{{ gene.systematic_name }}")
+                $("#similar_table").DataTable({
+                    "pageLength": 10,
+                    "order": [[2, "asc"]],
+                    "language": {"search": "Filter:"}
+                });{% endif %}
+        });
+
+    </script>
+{% endblock %}
