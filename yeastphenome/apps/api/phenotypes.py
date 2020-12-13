@@ -82,8 +82,8 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
             "0desc": "-name",
             "1asc": "condition_list",
             "1desc": "-condition_list",
-            "2asc": "phenotype__reporter",
-            "2desc": "-phenotype__reporter",
+            "2asc": "reporter_list",
+            "2desc": "-reporter_list",
             "3asc": "paper_list",
             "3desc": "-paper_list",
         }
@@ -97,7 +97,7 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
         taglist = request.GET.get("query", "").split("|")
         if taglist:
             queryset = phenotypes_search(taglist)
-            count = len(queryset)
+            count = queryset.count()
 
         # Create field to conditions (1) and papers (4) - this is not distinct
         if queryset:
@@ -107,6 +107,14 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
                     agg_field, delimiter=", ", distinct=True, ordering=agg_field
                 )
             )
+
+            agg_field = "phenotype__reporter"
+            queryset = queryset.annotate(
+                reporter_list=StringAgg(
+                    agg_field, delimiter=", ", distinct=True, ordering=agg_field
+                )
+            )
+
             agg_field = "phenotype__dataset__conditionset__conditions__type__name"
             queryset = queryset.annotate(
                 condition_list=StringAgg(
@@ -143,7 +151,7 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
                 [
                     observable.link_detail(),
                     condition_list,
-                    join_and_more(observable.reporters(), 7),
+                    join_and_more(observable.reporter_list.split(","), 7),
                     join_and_more(observable.papers(), 7),
                 ]
             )

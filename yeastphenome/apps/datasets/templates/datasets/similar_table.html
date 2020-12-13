@@ -10,8 +10,8 @@
     {% for sim in scores %}
     <tr>
         <td><a href="{% url 'datasets:dataset_detail' sim.dataset2_id %}">{{ sim.dataset2 }}</a></td>
-        <td>{{ sim.score }}</td>
-        <td>{{ sim.pvalue|stringformat:".2e" }}</td>
+        <td>{{ sim.score|floatformat:2 }}</td>
+        <td>{{ sim.pvalue|floatformat:2 }}</td>
     </tr>
     {% endfor %}
     </tbody>

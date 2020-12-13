@@ -31,7 +31,7 @@ def run_search_tag_query(queries):
     queries = queries or []
 
     # A phenotype search actually returns observables
-    queryset = Observable.objects.all().order_by("name")
+    queryset = Observable.objects.all()
 
     for query in queries:
         query = escape_regex(query)
@@ -39,9 +39,10 @@ def run_search_tag_query(queries):
             Q(name__iregex=query)
             | Q(tags__name__iregex=query)
             | Q(phenotype__name__iregex=query)
-            | Q(phenotype__description__iregex=query)
-            | Q(phenotype__measurement__name__iregex=query)
+            # | Q(phenotype__description__iregex=query)
+            # | Q(phenotype__measurement__name__iregex=query)
             | Q(phenotype__reporter__iregex=query)
         )
-        queryset = queryset.filter(f).distinct()
-    return queryset.distinct()
+        queryset = queryset.filter(f)
+
+    return queryset.distinct().order_by("name")
