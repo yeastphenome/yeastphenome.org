@@ -65,6 +65,7 @@
     </div>
 </div>
 
+    {% if dataset.data_source.release == True %}
 {% if datasets_top or datasets_bottom %}
 <div class="row" style="padding-top:30px" id='datasets'>
     <div class="col-md-12">
@@ -122,6 +123,7 @@
         </div>
     </div>
 </div>{% endif %}
+    {%  endif %}
 
 
 {% endblock %}
