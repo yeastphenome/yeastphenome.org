@@ -103,7 +103,7 @@
     </div>
 </div>
 
-
+{% if dataset.data_source.release == True  %}
 {% if datasets %}<div class="row" style="padding-top:20px" id='similar'>
     <div class="col-md-12">
     <table id="dataset_table" class="tablesorter table table-striped" width="100%">
@@ -123,7 +123,7 @@
     <a href="{% url 'datasets:download_dataset_similarities' dataset.id %}"><button type="button"class="btn btn-info" type="button">Download all</button></a>
   </div>
 </div>{% endif %}
-
+{% endif %}
 {% endblock %}
 {% block scripts %}
 <script src="{% static 'js/typeahead.bundle.js' %}"></script>
