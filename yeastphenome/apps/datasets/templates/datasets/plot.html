@@ -4,6 +4,7 @@
 {% load humanize %}
 {% block title %}{{ object }} / Datasets / Papers / {{ SITE_NAME }}{% endblock %}
 {% block content %}
+    {%  if dataset.data_source.release == True %}
 <div class="row" style="padding-bottom:35px">
     <div class="col-md-12">
         <h1>Phenotypic Scores for {{ dataset.name }}</h1>
@@ -15,7 +16,7 @@
        {% include "graphs/dataset-genes/index.html" with hide_title="yes" %}
     </div>
 </div>
-
+    {%  endif %}
 {% endblock %}
 {% block scripts %}
 {% include "scripts/script_popup.html" %}
