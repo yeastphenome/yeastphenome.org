@@ -106,10 +106,14 @@ def generate_datasets(request, data, datasets, query=None):
     # Since we have a small queryset (25) we can loop over without it being too slow
     for dataset in datasets:
 
+        disabled = ""
+        if not dataset.data_source.release:
+            disabled = "disabled"
+
         if dataset.id not in cart:
             button = (
-                '<button id="dataset-cart-%s" type="button" class="btn btn-primary btn-sm add-to-cart" style="width:120px" data-id="%s">Add</button>'
-                % (dataset.id, dataset.id)
+                '<button id="dataset-cart-%s" type="button" class="btn btn-primary btn-sm add-to-cart" style="width:120px" data-id="%s" %s>Add</button>'
+                % (dataset.id, dataset.id, disabled)
             )
         else:
             button = (

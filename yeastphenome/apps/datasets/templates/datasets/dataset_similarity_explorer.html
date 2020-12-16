@@ -103,27 +103,27 @@
     </div>
 </div>
 
-
+{% if dataset.data_source.release == True  %}
 {% if datasets %}<div class="row" style="padding-top:20px" id='similar'>
     <div class="col-md-12">
     <table id="dataset_table" class="tablesorter table table-striped" width="100%">
         <thead>
         <tr>
             <th width="33%">Dataset Name</th>
-            <th width="25%">Correlation</th>
-            <th width="25%">P-Value</th>
+            <th width="25%">Correlation Mean</th>
+            <th width="25%">Correlation Std. Dev.</th>
             <th width="25%">Percentile (lowest to highest)</th>
         </tr>
         </thead>
         <tbody id="dataset_table_body">{% for d in datasets %}<tr id="tr-{{ d.0 }}">
-        <td id="td-{{ d.0 }}"><a href="{% url 'datasets:dataset_detail' d.0 %}">{{ d.1 }}</a></td><td>{{ d.2 }}</td><td>{{ d.3 }}</td><td>{{ ranks|lookup:forloop.counter0|floatformat:1 }}%</td>
+        <td id="td-{{ d.0 }}"><a href="{% url 'datasets:dataset_detail' d.0 %}">{{ d.1 }}</a></td><td>{{ d.2|floatformat:2 }}</td><td>{{ d.3|floatformat:2 }}</td><td>{{ ranks|lookup:forloop.counter0|floatformat:1 }}%</td>
     </tr>{% endfor %}
       </table>
     </div>
     <a href="{% url 'datasets:download_dataset_similarities' dataset.id %}"><button type="button"class="btn btn-info" type="button">Download all</button></a>
   </div>
 </div>{% endif %}
-
+{% endif %}
 {% endblock %}
 {% block scripts %}
 <script src="{% static 'js/typeahead.bundle.js' %}"></script>
