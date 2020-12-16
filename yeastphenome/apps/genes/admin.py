@@ -7,14 +7,18 @@ from yeastphenome.apps.common.admin_util import ImprovedModelAdmin
 class GeneAdmin(ImprovedModelAdmin):
     model = Gene
     list_display = (
-        "id",
         "systematic_name",
         "common_name",
+        "primary_sgdid",
+        "common_name_explanation",
+        "description",
     )
     fields = (
-        "id",
         "systematic_name",
         "common_name",
+        "primary_sgdid",
+        "common_name_explanation",
+        "description",
     )
 
 
@@ -24,10 +28,7 @@ class GeneAliasAdmin(ImprovedModelAdmin):
         "id",
         "name",
     )
-    fields = (
-        "id",
-        "name",
-    )
+    fields = ("name",)
     ordering = ("name",)
 
 
