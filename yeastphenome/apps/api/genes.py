@@ -65,8 +65,8 @@ class RunGenesQuery(RatelimitMixin, APIView):
             queryset = queryset.order_by(order_lookup[order_by])
 
         if start > count:
-            start = count - start
-        end = start + length
+            start = 0
+        end = start + length - 1
 
         # If we've gone too far
         if end > count:
@@ -146,17 +146,18 @@ class GetGeneDatasets(RatelimitMixin, APIView):
 
         count = datasets.count()
         ranks = [(1 - (idx / count)) * 100 for idx, sim in enumerate(datasets)]
-        if start > count:
-            start = count - start
-        end = start + length
 
-        # Based on direction, reverse ranks
-        if direction and "asc" in direction:
-            ranks.reverse()
+        if start > count:
+            start = 0
+        end = start + length - 1
 
         # If we've gone too far
         if end > count:
             end = count - 1
+
+        # Based on direction, reverse ranks
+        if direction and "asc" in direction:
+            ranks.reverse()
 
         if datasets:
             datasets = datasets[start : end + 1]

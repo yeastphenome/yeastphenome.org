@@ -91,8 +91,8 @@ def generate_datasets(request, data, datasets, query=None):
     if datasets:
         count = datasets.count()
         if start > count:
-            start = count - start
-        end = start + length
+            start = 0
+        end = start + length - 1
 
         # If we've gone too far
         if end > count:
@@ -106,9 +106,12 @@ def generate_datasets(request, data, datasets, query=None):
     # Since we have a small queryset (25) we can loop over without it being too slow
     for dataset in datasets:
 
-        disabled = ""
-        if not dataset.data_source.release:
-            disabled = "disabled"
+        # Downloads are disabled for those without data, and those without permission to release
+        disabled = (
+            ""
+            if dataset.has_data_in_db() and dataset.data_source.release
+            else "disabled title='This dataset is not available for download.'"
+        )
 
         if dataset.id not in cart:
             button = (

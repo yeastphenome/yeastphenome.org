@@ -104,21 +104,21 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
             agg_field = "phenotype__dataset__paper__first_author"
             queryset = queryset.annotate(
                 paper_list=StringAgg(
-                    agg_field, delimiter=", ", distinct=True, ordering=agg_field
+                    agg_field, delimiter="; ", distinct=True, ordering=agg_field
                 )
             )
 
             agg_field = "phenotype__reporter"
             queryset = queryset.annotate(
                 reporter_list=StringAgg(
-                    agg_field, delimiter=", ", distinct=True, ordering=agg_field
+                    agg_field, delimiter="; ", distinct=True, ordering=agg_field
                 )
             )
 
             agg_field = "phenotype__dataset__conditionset__conditions__type__name"
             queryset = queryset.annotate(
                 condition_list=StringAgg(
-                    agg_field, delimiter=", ", distinct=True, ordering=agg_field
+                    agg_field, delimiter="; ", distinct=True, ordering=agg_field
                 )
             )
 
@@ -129,8 +129,8 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
             count = queryset.count()
 
         if start > count:
-            start = count - start
-        end = start + length
+            start = 0
+        end = start + length - 1
 
         # If we've gone too far
         if end > count:
@@ -143,7 +143,7 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
 
         for observable in queryset:
             if hasattr(observable, "condition_list"):
-                condition_list = join_and_more(observable.condition_list.split(","), 7)
+                condition_list = join_and_more(observable.condition_list.split(";"), 7)
             else:
                 condition_list = join_and_more(observable.conditiontypes(), 7)
 
@@ -151,7 +151,7 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
                 [
                     observable.link_detail(),
                     condition_list,
-                    join_and_more(observable.reporter_list.split(","), 7),
+                    join_and_more(observable.reporter_list.split(";"), 7),
                     join_and_more(observable.papers(), 7),
                 ]
             )
