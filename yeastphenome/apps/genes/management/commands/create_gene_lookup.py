@@ -3,9 +3,9 @@ import json
 import sys
 
 try:
-    from yeastphenome.apps.datasets.models import Gene
+    from yeastphenome.apps.genes.models import Gene
 except:
-    sys.exit("Please create the datasets.Gene model before running this.")
+    sys.exit("Please create the genes.Gene model before running this.")
 
 
 class Command(BaseCommand):

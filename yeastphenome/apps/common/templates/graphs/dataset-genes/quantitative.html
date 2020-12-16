@@ -291,7 +291,7 @@ $(document).ready(function(){
     });
 
     // Show initial set of genes
-    {% if dataset_genes %}$("#scores_table").DataTable({"pageLength":25, "language": {"search": "Filter:", "order": [[ 2, "asc" ]]}})
+    {% if dataset_genes %}$("#scores_table").DataTable({"pageLength":10, "language": {"search": "Filter:", "order": [[ 2, "asc" ]]}})
     $('#scores_table').DataTable().order([1, 'desc']).draw();
     {% endif %}    
 

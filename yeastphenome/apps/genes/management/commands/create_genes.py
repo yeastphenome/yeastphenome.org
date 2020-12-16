@@ -1,12 +1,13 @@
 from django.core.management.base import BaseCommand
 import sys
 
-from yeastphenome.apps.datasets.utils import get_gene_metadata
+from yeastphenome.apps.genes.utils import get_gene_metadata
 
 try:
-    from yeastphenome.apps.datasets.models import Data, Gene, GeneAlias
+    from yeastphenome.apps.genes.models import Gene, GeneAlias
+    from yeastphenome.apps.datasets.models import Data
 except:
-    sys.exit("Please create the datasets.Gene model before running this.")
+    sys.exit("Please create the genes.Gene model before running this.")
 
 
 class Command(BaseCommand):

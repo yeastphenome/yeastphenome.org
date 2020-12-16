@@ -9,7 +9,8 @@ from yeastphenome import settings
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.conditions.models import ConditionSet, ConditionType
 from yeastphenome.apps.phenotypes.models import Phenotype, Measurement
-from yeastphenome.apps.datasets.models import Dataset, Sourcetype, Gene
+from yeastphenome.apps.datasets.models import Dataset, Sourcetype
+from yeastphenome.apps.genes.models import Gene
 
 import collections
 import random

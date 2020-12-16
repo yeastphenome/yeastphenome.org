@@ -305,7 +305,7 @@ $(document).ready(function(){
     });
 
     // Show initial set of datasets
-    {% if datasets %}$("#dataset_table").DataTable({"pageLength":25, "language": {"search": "Filter:", "order": [[ 2, "asc" ]]}})
+    {% if datasets %}$("#dataset_table").DataTable({"pageLength": 10, "language": {"search": "Filter:", "order": [[ 2, "asc" ]]}})
     $('#dataset_table').DataTable().order([1, 'desc']).draw();
     {% endif %}    
 

@@ -4,7 +4,7 @@ import os
 import tempfile
 import time
 
-from yeastphenome.apps.datasets.models import Gene
+from yeastphenome.apps.genes.models import Gene
 
 from contextlib import closing
 import csv

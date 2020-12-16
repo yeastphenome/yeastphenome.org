@@ -13,6 +13,7 @@ from yeastphenome.settings import HELP_CONTACT_EMAIL
 import yeastphenome.apps.api.conditions as conditions_views
 import yeastphenome.apps.api.papers as papers_views
 import yeastphenome.apps.api.datasets as datasets_views
+import yeastphenome.apps.api.genes as genes_views
 import yeastphenome.apps.api.phenotypes as phenotypes_views
 import yeastphenome.apps.api.search as search_views
 
@@ -63,7 +64,7 @@ urlpatterns = [
     ),
     path(
         "explorer/genes",
-        datasets_views.RunGenesQuery.as_view(),
+        genes_views.RunGenesQuery.as_view(),
         name="genes_query",
     ),
     path(
@@ -112,20 +113,20 @@ urlpatterns = [
         conditions_views.GetConditionTypeDatasets.as_view(),
         name="conditiontype_datasets",
     ),
-    path("genes/", datasets_views.GetGenes.as_view(), name="get_genes"),
-    path("genes/<int:gene_id>/similar/", datasets_views.GetSimilarGenes.as_view()),
+    path("genes/", genes_views.GetGenes.as_view(), name="get_genes"),
+    path("genes/<int:gene_id>/similar/", genes_views.GetSimilarGenes.as_view()),
     path(
         "genes/datasets/<int:gene_id>/",
-        datasets_views.GetGeneDatasets.as_view(),
+        genes_views.GetGeneDatasets.as_view(),
         name="gene_datasets",
     ),
     path(
         "genes/<int:gene_id>/<int:N>/similar/",
-        datasets_views.GetSimilarGenes.as_view(),
+        genes_views.GetSimilarGenes.as_view(),
     ),
     path(
         "genes/<int:gene_id>/<int:N>/similar/<int:reverse>/",
-        datasets_views.GetSimilarGenes.as_view(),
+        genes_views.GetSimilarGenes.as_view(),
     ),
     path(
         "search/datasets/explore",

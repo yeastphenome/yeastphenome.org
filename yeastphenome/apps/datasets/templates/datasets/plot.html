@@ -21,6 +21,6 @@
 {% block scripts %}
 {% include "scripts/script_popup.html" %}
 <script>$(document).ready(function(){
-    $("#datasetTable").DataTable({"language": {"search": "Filter:"}, "order": [[ 2, "asc" ]]});
+    $("#datasetTable").DataTable({"pageLength": 10, "language": {"search": "Filter:"}, "order": [[ 2, "asc" ]]});
 });</script>
 {% endblock %}

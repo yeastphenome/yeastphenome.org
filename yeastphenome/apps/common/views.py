@@ -23,6 +23,7 @@ from ratelimit.mixins import RatelimitMixin
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
     VIEW_RATE_LIMIT_BLOCK as rl_block,
+    DOWNLOAD_CART_LIMIT,
 )
 
 # Core Pages
@@ -214,7 +215,10 @@ def add_bulk_datasets(request, datasets, return_message=False):
 
     if not check_download_space(request, datasets):
         if return_message:
-            return "You are limited to adding no more than 500 datasets to download."
+            return (
+                "You are limited to adding no more than %s datasets to download."
+                % DOWNLOAD_CART_LIMIT
+            )
         return
 
     added_count = 0
