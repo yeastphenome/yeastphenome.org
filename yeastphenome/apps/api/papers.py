@@ -105,8 +105,8 @@ class RunPapersQuery(RatelimitMixin, APIView):
                 [
                     '<a href="%s">%s</a></td>'
                     % (reverse("papers:detail", args=[paper.pk]), paper),
-                    join_and_more(paper.phenotype_list.split(";"), 7),
-                    join_and_more(paper.condition_list.split(";"), 7),
+                    join_and_more(paper.phenotype_list.split("; "), 7),
+                    join_and_more(paper.condition_list.split("; "), 7),
                 ]
             )
         return Response(status=200, data=data)
