@@ -74,19 +74,19 @@ class RunConditionsQuery(RatelimitMixin, APIView):
             agg_field = "condition__conditionset__dataset__paper__first_author"
             queryset = queryset.annotate(
                 paper_list=StringAgg(
-                    agg_field, delimiter=", ", distinct=True, ordering=agg_field
+                    agg_field, delimiter="; ", distinct=True, ordering=agg_field
                 )
             )
             agg_field = "condition__conditionset__dataset__phenotype__observable__name"
             queryset = queryset.annotate(
                 phenotype_list=StringAgg(
-                    agg_field, delimiter=", ", distinct=True, ordering=agg_field
+                    agg_field, delimiter="; ", distinct=True, ordering=agg_field
                 )
             )
             agg_field = "tags__name"
             queryset = queryset.annotate(
                 tag_list=StringAgg(
-                    agg_field, delimiter=", ", distinct=True, ordering=agg_field
+                    agg_field, delimiter="; ", distinct=True, ordering=agg_field
                 )
             )
 
@@ -97,8 +97,8 @@ class RunConditionsQuery(RatelimitMixin, APIView):
             count = queryset.count()
 
         if start > count:
-            start = count - start
-        end = start + length
+            start = 0
+        end = start + length - 1
 
         # If we've gone too far
         if end > count:
@@ -188,9 +188,10 @@ class GetTagConditionTypes(RatelimitMixin, APIView):
             queryset = queryset.filter(f).distinct()
 
         count = queryset.count()
+
         if start > count:
-            start = count - start
-        end = start + length
+            start = 0
+        end = start + length - 1
 
         # If we've gone too far
         if end > count:

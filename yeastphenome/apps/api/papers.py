@@ -71,14 +71,14 @@ class RunPapersQuery(RatelimitMixin, APIView):
             agg_field = "dataset__phenotype__observable__name"
             queryset = queryset.annotate(
                 phenotype_list=StringAgg(
-                    agg_field, delimiter=", ", distinct=True, ordering=agg_field
+                    agg_field, delimiter="; ", distinct=True, ordering=agg_field
                 )
             )
 
             agg_field = "dataset__conditionset__conditions__type__name"
             queryset = queryset.annotate(
                 condition_list=StringAgg(
-                    agg_field, delimiter=", ", distinct=True, ordering=agg_field
+                    agg_field, delimiter="; ", distinct=True, ordering=agg_field
                 )
             )
 
@@ -89,8 +89,8 @@ class RunPapersQuery(RatelimitMixin, APIView):
             count = queryset.count()
 
         if start > count:
-            start = count - start
-        end = start + length
+            start = 0
+        end = start + length - 1
 
         # If we've gone too far
         if end > count:
@@ -105,8 +105,8 @@ class RunPapersQuery(RatelimitMixin, APIView):
                 [
                     '<a href="%s">%s</a></td>'
                     % (reverse("papers:detail", args=[paper.pk]), paper),
-                    join_and_more(paper.phenotype_list.split(","), 7),
-                    join_and_more(paper.condition_list.split(","), 7),
+                    join_and_more(paper.phenotype_list.split("; "), 7),
+                    join_and_more(paper.condition_list.split("; "), 7),
                 ]
             )
         return Response(status=200, data=data)
