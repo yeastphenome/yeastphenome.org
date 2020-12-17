@@ -152,7 +152,7 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
                     observable.link_detail(),
                     condition_list,
                     join_and_more(observable.reporter_list.split("; "), 7),
-                    join_and_more(observable.papers(), 7),
+                    join_and_more(observable.paper_list.split("; "), 7),
                 ]
             )
 

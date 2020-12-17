@@ -1,0 +1,23 @@
+<script type = "application/ld+json" > {
+    "@context": "http://schema.org",
+    "@type": "Dataset",
+    "name": "{{ dataset.name }}",
+    "author": [{
+        "@type": "Person",
+        "name": "{{ dataset.paper }}"
+    }],
+    "creator": [{
+        "@type": "Person",
+        "name": "{{ dataset.paper }}"
+    }],
+    "datePublished": "{{ dataset.paper.pub_date }}",
+    "dateModified": "{{ dataset.paper.modified_on }}",
+    "publisher": {
+        "@type": "Organization",
+        "name": "YeastPhenome"
+    },
+    "description": "{% if dataset.collection %}Collection: {{ dataset.collection.name }}\n{% endif %}Tested Number: {{ dataset.tested_num }}\n{% if dataset.medium %}{{ dataset.medium.systematic_name }}\n{% endif %}{% if dataset.phenotype %}{{ dataset.phenotype.name }}\n{% endif %}{% if dataset.notes %}Notes: {{ dataset.notes }}\n{% endif %}Datatype: {{ dataset.data_measured.name }}\n",
+    "version": "1.0.0",
+    "url": "{{ DOMAIN }}/datasets/{{ dataset.id }}",
+    "identifier": []
+}< /script>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>404: Not Found</title>
+  <link href="https://fonts.googleapis.com/css?family=Courgette&display=swap" rel="stylesheet">
+  <style>
+
+.title {
+  font-family: 'Courgette', cursive;
+  font-size: 32px; 
+  font-weight:600; 
+  padding:20px
+}
+
+a:hover, a:focus {
+ color: rgb(36, 113, 163) !important;
+}
+
+@media (max-width:1000px) {
+  .title {
+    font-size: 16px;
+  } 
+}
+
+body {
+ margin: 0px;
+ background-color: #7fb3d5;
+}
+
+#message {
+  color: rgb(36, 113, 163);
+  position: relative;
+  margin: auto;
+  width: 80%;
+  margin-top: 100px;
+  padding: 10px;
+  background-color: white;
+  border-radius: 10px;
+}
+</style>
+</head>
+<body>
+
+<div id="message">
+  <img src="{{ DOMAIN }}/static/images/404.png" style="width:30%; padding-left:100px"/>
+  <span class="title">Looking for Something?</span>
+  <ul style="padding-left:100px">
+  <li><a href="{% url 'common:explorer' %}">Explore Data</a></li>
+  <li><a href="{% url 'common:about' %}">Learn about YeastPhenome</a></li>
+  <li><a href="{% url 'common:index' %}">Return home</a></li>
+</ul>
+</div>
+</body>
+</html>

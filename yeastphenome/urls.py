@@ -10,6 +10,9 @@ from yeastphenome.apps.datasets import urls as datasets_urls
 from yeastphenome.apps.genes import urls as gene_urls
 from yeastphenome.apps.api import urls as api_urls
 
+# Custom 404 page
+handler404 = "yeastphenome.apps.common.views.handler404"
+
 admin.autodiscover()
 
 urlpatterns = [
