@@ -1,0 +1,31 @@
+<script type = "application/ld+json" > {
+    "@context": "http://schema.org",
+    "@type": "Dataset",
+    "name": "{{ dataset.name }}",
+    "author": [{% if dataset.paper.first_author %}{
+        "@type": "Person",
+        "name": "{{ dataset.paper.first_author }}"
+    }{% endif %}{% if dataset.paper.last_author %},{
+        "@type": "Person",
+        "name": "{{ dataset.paper.last_author }}"
+    }{% endif %}],
+    "creator": [{% if dataset.paper.first_author %}{
+        "@type": "Person",
+        "name": "{{ dataset.paper.first_author }}"
+    }{% endif %}{% if dataset.paper.last_author %},{
+        "@type": "Person",
+        "name": "{{ dataset.paper.last_author }}"
+    }{% endif %}],
+    "citation": "{{ dataset.paper }}; PMID:{{ dataset.paper.pmid }}",
+    {% if dataset.has_data_in_db and dataset.data_source.release %}"distribution":[{
+        "@type":"DataDownload",
+        "encodingFormat":"TSV",
+        "contentUrl":"{{ DOMAIN }}/datasets/download/?{{ dataset.id }}=on"
+     }],{% endif %}
+    "datePublished": "{{ dataset.paper.pub_date }}",
+    "dateModified": "{{ dataset.paper.modified_on |date:"c" }}",
+    "description": "Phenotypic screen of the yeast knock-out collection.\n{% if dataset.collection %}Collection type: {{ dataset.collection.name }}\n{% endif %}Number of tested strains: {{ dataset.tested_num }}\n{% if dataset.phenotype %}Phenotype: {{ dataset.phenotype.name }}\n{% endif %}{% if dataset.conditionset %}Experimental condition: {{ dataset.conditionset.systematic_name }}\n{% endif %}{% if dataset.medium %}Medium: {{ dataset.medium.common_name }}\n{% endif %} Type of data: {{ dataset.data_measured.name }}\n",
+    "url": "{{ DOMAIN }}/datasets/{{ dataset.id }}/",
+    "identifier": []
+}</script>
+

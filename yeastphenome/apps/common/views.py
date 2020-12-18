@@ -26,6 +26,15 @@ from yeastphenome.settings import (
     DOWNLOAD_CART_LIMIT,
 )
 
+# Custom 404/500 views
+
+
+def handler404(request, exception):
+    response = render(request, "base/404.html", {})
+    response.status_code = 404
+    return response
+
+
 # Core Pages
 
 

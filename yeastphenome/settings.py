@@ -158,6 +158,10 @@ elif os.getenv("APP_ENGINE_CONNECTION_NAME") != None:
         }
     }
 
+    # If we are on app engine, ensure https only
+    SECURE_SSL_REDIRECT = True
+
+
 # Case 3: Database local development uses DATABASE_* variables
 elif os.getenv("DATABASE_HOST") is not None:
     # Make sure to export all of these in your .env file
