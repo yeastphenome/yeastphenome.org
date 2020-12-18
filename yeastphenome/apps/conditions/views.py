@@ -7,11 +7,7 @@ from django.views import generic
 from yeastphenome.apps.conditions.models import ConditionType, ConditionSet, Medium, Tag
 from yeastphenome.apps.datasets.models import Dataset
 
-from yeastphenome.apps.conditions.search import (
-    get_conditiontypes,
-    get_search_tags,
-)
-
+from yeastphenome.apps.conditions.search import get_search_tags
 from libchebipy import ChebiEntity
 
 from ratelimit.mixins import RatelimitMixin
@@ -74,7 +70,7 @@ def tag_browser(request):
 def browse(request):
     """Browse dataest by condition names (and size by count)"""
     # With >=1 dataset, sorted by datasets
-    qs = get_conditiontypes()
+    qs = ConditionType.all_valid()
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
         {"url": reverse("conditions:index"), "name": "Conditions"},
@@ -122,7 +118,7 @@ def conditionclass(request, class_id):
             tid = int(tid.group(0))
             children.append(tid)
 
-    conditiontypes = get_conditiontypes().filter(chebi_id__in=children)
+    conditiontypes = ConditionType.all_valid().filter(chebi_id__in=children)
     datasets = (
         Dataset.objects.filter(conditionset__conditions__type__in=conditiontypes)
         .exclude(paper__latest_data_status__status__name="not relevant")

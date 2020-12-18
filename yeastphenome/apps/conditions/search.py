@@ -1,44 +1,8 @@
-from django.db.models import Q, Count
+from django.db.models import Q
 
 from yeastphenome.apps.conditions.models import ConditionType, Tag
 from yeastphenome.apps.common.utils import escape_regex
 import itertools
-
-
-def get_tags():
-    """Return same set of tags with annotated dataset count based on query below"""
-    return (
-        Tag.objects.annotate(
-            number_of_conditions=Count(
-                "condition__conditionset__conditions__type__name",
-            )
-        )
-        .filter(number_of_conditions__gte=1)
-        .order_by("-number_of_conditions")
-    )
-
-
-def get_conditiontypes():
-    """Shared function to return a list of conditiontypes with a valid paper and
-    at least one dataset. We order by the number of datasets.
-    """
-    return (
-        ConditionType.objects.annotate(
-            number_of_datasets=Count(
-                "condition__conditionset__dataset",
-                filter=~Q(
-                    condition__conditionset__dataset__paper__latest_data_status__status__name="not relevant"
-                ),
-            )
-        )
-        .annotate(
-            number_of_papers=Count(
-                "condition__conditionset__dataset__paper", distinct=True
-            )
-        )
-        .filter(number_of_datasets__gte=1)
-        .order_by("-number_of_datasets")
-    )
 
 
 # Search functions
@@ -48,7 +12,7 @@ def get_search_tags():
     """Return a list of tags, each with a name and icon, to return to the
     conditions explorer tag search
     """
-    queryset = get_conditiontypes()
+    queryset = ConditionType.all_valid()
     tags = set(
         itertools.chain(
             Tag.objects.values_list("name", flat=True),
@@ -70,7 +34,7 @@ def run_search_tag_query(queries):
     queries = queries or []
 
     # We want to search through condition types that have a valid paper and > 0 datasets
-    queryset = get_conditiontypes()
+    queryset = ConditionType.all_valid()
 
     # Now filter down results more, search all fields for query if defined
     for query in queries:
