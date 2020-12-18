@@ -39,7 +39,7 @@ var papersChart = new Chart(ctx, {
     onClick:function(e, items){
         if (items.length == 0) return; //Clicked outside any bar.
         var activePointLabel = this.getElementsAtEvent(e)[0]._model.label;
-        document.location = "/papers/?year=" + activePointLabel
+        document.location = "/papers/?query=" + activePointLabel
     },
     tooltips: {
       callbacks: {
