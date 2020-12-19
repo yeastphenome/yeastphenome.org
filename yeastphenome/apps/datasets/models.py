@@ -16,6 +16,12 @@ class Collection(models.Model):
     ploidy = models.IntegerField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 
+    @classmethod
+    def all_valid(cls):
+        return cls.objects.exclude(
+            dataset__paper__latest_data_status__status__name="not relevant"
+        )
+
     def __str__(self):
         return "%s" % self.shortname
 
@@ -23,6 +29,10 @@ class Collection(models.Model):
 class Sourcetype(models.Model):
     name = models.CharField(max_length=200, null=True, blank=True)
     shortname = models.CharField(max_length=200, null=True, blank=True)
+
+    @classmethod
+    def all_valid(cls):
+        return cls.objects.all()
 
     def __str__(self):
         return "%s" % self.name
@@ -47,6 +57,12 @@ class Source(models.Model):
             return "%s" % self.person
         else:
             return "%s" % self.sourcetype
+
+    @classmethod
+    def all_valid(cls):
+        return cls.objects.filter(data_source__isnull=False).exclude(
+            data_source__paper__latest_data_status__status__name="not relevant"
+        )
 
     def html(self):
         source_str = ""
@@ -87,13 +103,21 @@ class Datatype(models.Model):
     shortname = models.CharField(max_length=20, null=True, blank=True)
     rank = models.PositiveIntegerField(blank=True, null=True)
 
+    @classmethod
+    def all_valid(cls):
+        return cls.objects.all()
+
     def __str__(self):
         return "%s" % self.name
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=200, null=True, blank=True)
+    name = models.CharField(max_length=200, null=False, blank=False)
     description = models.TextField(max_length=1000, null=True, blank=True)
+
+    @classmethod
+    def all_valid(cls):
+        return cls.objects.filter(dataset__isnull=False)
 
     def __str__(self):
         s = ""
@@ -211,11 +235,9 @@ class Dataset(models.Model):
         return reverse("datasets:detail", args=[self.id])
 
     @classmethod
-    def all(cls):
+    def all_valid(cls):
         return cls.objects.exclude(
             Q(paper__latest_data_status__status__name__exact="not relevant")
-            | Q(paper__data_statuses__name__exact="not relevant")
-            | Q(paper__tested_statuses__name__exact="not relevant")
         ).distinct()
 
     # Necessary to run database-wide updates of dataset names
@@ -336,6 +358,10 @@ class DatasetSimilarity(models.Model):
     score = models.DecimalField(max_digits=10, decimal_places=3)
     pvalue = models.DecimalField(max_digits=10, decimal_places=6)
 
+    @classmethod
+    def all_valid(cls):
+        return cls.objects.exclude(score__isnull=True)
+
     def save(self, *args, **kwargs):
         """Override the save function to ensure that only one similarity score
         for any pair of datasets can be created. If a different ordering is
@@ -370,6 +396,10 @@ class Data(models.Model):
 
     # Normalized phenotypic score
     valuez = models.DecimalField(max_digits=10, decimal_places=5)
+
+    @classmethod
+    def all_valid(cls):
+        return cls.objects.exclude(valuez__isnull=True)
 
     def __str__(self):
         return "%s - %d" % (self.gene.systematic_name, self.dataset.id)

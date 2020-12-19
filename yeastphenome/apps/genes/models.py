@@ -11,6 +11,10 @@ class GeneAlias(models.Model):
 
     name = models.CharField(max_length=250, null=True, blank=True, unique=True)
 
+    @classmethod
+    def all_valid(cls):
+        return cls.objects.exclude(name__isnull=True)
+
     def __str__(self):
         return "%s" % self.name
 
@@ -38,6 +42,10 @@ class Gene(models.Model):
 
     common_name_explanation = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
+
+    @classmethod
+    def all_valid(cls):
+        return cls.objects.all()
 
     # TODO: additional mutations resulting from perturbing gene
     # genome_alterations, acquired_secondary_alterations
@@ -95,6 +103,10 @@ class GeneSimilarity(models.Model):
         max_digits=10, decimal_places=3, help_text="z-score of the metric."
     )
     pvalue = models.DecimalField(max_digits=10, decimal_places=6)
+
+    @classmethod
+    def all_valid(cls):
+        return cls.objects.exclude(score__isnull=True)
 
     @property
     def pvalue_scientific_notation(self):

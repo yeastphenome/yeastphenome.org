@@ -15,8 +15,7 @@ def get_search_tags():
     """Return a list of tags, each with a name and icon, to return to the
     paper explorer tag search
     """
-
-    queryset = Paper.objects.exclude(latest_data_status__status__name="not relevant")
+    queryset = Paper.all_valid()
 
     tags = set(
         itertools.chain(
@@ -45,8 +44,8 @@ def run_search_tag_query(queries):
     """this function is called from the common/views.py for the explorer function"""
     queries = queries or []
 
-    # Exclude the papers marked as "not relevant"
-    queryset = Paper.all()
+    # Exclude the papers marked as "not relevant," etc.
+    queryset = Paper.all_valid()
 
     # Now filter down results more, search all fields for query if defined
     for query in queries:

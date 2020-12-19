@@ -11,6 +11,10 @@ class Tag(models.Model):
     def __str__(self):
         return self.name
 
+    @classmethod
+    def all_valid(cls):
+        return cls.objects.filter(observable__isnull=False)
+
     def link_detail(self):
         html = '<a href="%s">%s</a>' % (
             reverse("phenotypes:tag", args=(self.id,)),
@@ -48,6 +52,10 @@ class Observable(models.Model):
     description = models.TextField(blank=True, null=True)
     modified_on = models.DateField(auto_now=True, null=True)
     tags = models.ManyToManyField(Tag, blank=True)
+
+    @classmethod
+    def all_valid(cls):
+        return cls.objects.filter(phenotype__isnull=False)
 
     class Meta:
         get_latest_by = "modified_on"
@@ -145,6 +153,10 @@ class Measurement(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
 
+    @classmethod
+    def all_valid(cls):
+        return cls.objects.all()
+
     def __str__(self):
         return u"%s" % self.name
 
@@ -204,6 +216,10 @@ class Phenotype(models.Model):
             .distinct()
         )
 
+    @classmethod
+    def all_valid(cls):
+        return cls.objects.filter(dataset__isnull=False)
+
     def papers_all(self):
         return (
             apps.get_model("papers", "Paper")
@@ -236,6 +252,10 @@ class Phenotype(models.Model):
 class MutantType(models.Model):
     name = models.CharField(max_length=200)
     definition = models.TextField(blank=True)
+
+    @classmethod
+    def all_valid(cls):
+        return cls.objects.all()
 
     def __str__(self):
         return u"%s" % self.name

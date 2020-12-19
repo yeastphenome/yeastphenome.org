@@ -18,6 +18,10 @@ class Status(models.Model):
     description = models.TextField(blank=True, null=True)
     is_valid = models.BooleanField()
 
+    @classmethod
+    def all_valid(cls):
+        return cls.objects.all()
+
     def __str__(self):
         return u"%s" % self.name
 
@@ -59,11 +63,9 @@ class Paper(models.Model):
     )
 
     @classmethod
-    def all(cls):
+    def all_valid(cls):
         return cls.objects.exclude(
             Q(latest_data_status__status__name__exact="not relevant")
-            | Q(data_statuses__name__exact="not relevant")
-            | Q(tested_statuses__name__exact="not relevant")
         )
 
     class Meta:
@@ -253,6 +255,10 @@ class Statusdata(models.Model):
     status = models.ForeignKey(Status, on_delete=models.DO_NOTHING)
     status_date = models.DateField()
 
+    @classmethod
+    def all_valid(cls):
+        return cls.objects.all()
+
     class Meta:
         get_latest_by = "id"
 
@@ -264,6 +270,10 @@ class Statustested(models.Model):
     paper = models.ForeignKey(Paper, on_delete=models.DO_NOTHING)
     status = models.ForeignKey(Status, on_delete=models.DO_NOTHING)
     status_date = models.DateField()
+
+    @classmethod
+    def all_valid(cls):
+        return cls.objects.all()
 
     class Meta:
         get_latest_by = "id"
