@@ -23,7 +23,7 @@
         "contentUrl":"{{ DOMAIN }}/datasets/download/?{{ dataset.id }}=on"
      }],{% endif %}
     "datePublished": "{{ dataset.paper.pub_date }}",
-    "dateModified": "{{ dataset.paper.modified_on |date:"c" }}",
+    "dateModified": "{{ dataset.data_modified_on |date:"c" }}",
     "description": "Phenotypic screen of the yeast knock-out collection.\n{% if dataset.collection %}Collection type: {{ dataset.collection.name }}\n{% endif %}Number of tested strains: {{ dataset.tested_num }}\n{% if dataset.phenotype %}Phenotype: {{ dataset.phenotype.name }}\n{% endif %}{% if dataset.conditionset %}Experimental condition: {{ dataset.conditionset.systematic_name }}\n{% endif %}{% if dataset.medium %}Medium: {{ dataset.medium.common_name }}\n{% endif %} Type of data: {{ dataset.data_measured.name }}\n",
     "url": "{{ DOMAIN }}/datasets/{{ dataset.id }}/",
     "identifier": []

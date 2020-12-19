@@ -39,8 +39,6 @@ def run_search_tag_query(queries):
             Q(name__iregex=query)
             | Q(tags__name__iregex=query)
             | Q(phenotype__name__iregex=query)
-            # | Q(phenotype__description__iregex=query)
-            # | Q(phenotype__measurement__name__iregex=query)
             | Q(phenotype__reporter__iregex=query)
         )
         queryset = queryset.filter(f)
