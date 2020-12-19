@@ -18,10 +18,6 @@ class GeneAlias(models.Model):
     def __str__(self):
         return "%s" % self.name
 
-    class Meta:
-        db_table = "datasets_genealias"
-        app_label = "datasets"
-
 
 class Gene(models.Model):
 
@@ -83,10 +79,6 @@ class Gene(models.Model):
             queryset = queryset.reverse()
         return queryset
 
-    class Meta:
-        db_table = "datasets_gene"
-        app_label = "datasets"
-
 
 class GeneSimilarity(models.Model):
     """A gene similarity is a similarity metric calculated to compare genes
@@ -128,8 +120,6 @@ class GeneSimilarity(models.Model):
         super(GeneSimilarity, self).save(*args, **kwargs)
 
     class Meta:
-        app_label = "datasets"
-        db_table = "datasets_genesimilarity"
         unique_together = (
             "gene1",
             "gene2",
