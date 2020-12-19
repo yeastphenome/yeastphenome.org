@@ -1,5 +1,6 @@
 import re
 
+from django.db.models import Count
 from django.conf import settings
 from django.shortcuts import reverse, render, redirect, get_object_or_404
 from django.views import generic
@@ -53,7 +54,7 @@ def redirect_index(request):
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def tag_browser(request):
     """View a listing of tags"""
-    tags = Tag.objects.all()
+    tags = Tag.all_valid()
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
         {"url": reverse("conditions:index"), "name": "Conditions"},
@@ -70,7 +71,16 @@ def tag_browser(request):
 def browse(request):
     """Browse dataest by condition names (and size by count)"""
     # With >=1 dataset, sorted by datasets
-    qs = ConditionType.all_valid()
+    qs = (
+        ConditionType.all_valid()
+        .annotate(
+            number_of_papers=Count(
+                "condition__conditionset__dataset__paper", distinct=True
+            )
+        )
+        .order_by("-number_of_datasets")
+    )
+
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
         {"url": reverse("conditions:index"), "name": "Conditions"},

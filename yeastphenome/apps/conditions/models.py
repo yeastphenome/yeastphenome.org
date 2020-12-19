@@ -20,15 +20,9 @@ class Tag(models.Model):
 
     @classmethod
     def all_valid(cls):
-        return (
-            cls.objects.annotate(
-                number_of_conditions=Count(
-                    "condition__conditionset__conditions__type__name",
-                )
-            )
-            .filter(number_of_conditions__gte=1)
-            .order_by("-number_of_conditions")
-        )
+        return cls.objects.filter(
+            Q(condition__isnull=False) | Q(conditiontype__isnull=False)
+        ).distinct()
 
     def link_edit(self):
         html = '<a href="%s">%s</a>' % (
@@ -72,23 +66,14 @@ class ConditionType(models.Model):
 
     @classmethod
     def all_valid(cls):
-        return (
-            cls.objects.annotate(
-                number_of_datasets=Count(
-                    "condition__conditionset__dataset",
-                    filter=~Q(
-                        condition__conditionset__dataset__paper__latest_data_status__status__name="not relevant"
-                    ),
-                )
+        return cls.objects.annotate(
+            number_of_datasets=Count(
+                "condition__conditionset__dataset",
+                filter=~Q(
+                    condition__conditionset__dataset__paper__latest_data_status__status__name="not relevant"
+                ),
             )
-            .annotate(
-                number_of_papers=Count(
-                    "condition__conditionset__dataset__paper", distinct=True
-                )
-            )
-            .filter(number_of_datasets__gte=1)
-            .order_by("-number_of_datasets")
-        )
+        ).filter(number_of_datasets__gte=1)
 
     def __str__(self):
         if self.name:
@@ -194,7 +179,14 @@ class Condition(models.Model):
 
     @classmethod
     def all_valid(cls):
-        return cls.objects.all()
+        return cls.objects.annotate(
+            number_of_datasets=Count(
+                "conditionset__dataset",
+                filter=~Q(
+                    conditionset__dataset__paper__latest_data_status__status__name="not relevant"
+                ),
+            )
+        ).filter(number_of_datasets__gte=1)
 
     class Meta:
         get_latest_by = "modified_on"
@@ -253,7 +245,7 @@ class ConditionSet(models.Model):
 
     @classmethod
     def all_valid(cls):
-        return cls.objects.all()
+        return cls.objects.filter(dataset__isnull=False)
 
     # # Necessary to run database-wide updates of conditionset names
     # def save(self, *args, **kwargs):

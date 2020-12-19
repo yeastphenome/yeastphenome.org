@@ -18,7 +18,9 @@ class Collection(models.Model):
 
     @classmethod
     def all_valid(cls):
-        return cls.objects.all()
+        return cls.objects.exclude(
+            dataset__paper__latest_data_status__status__name="not relevant"
+        )
 
     def __str__(self):
         return "%s" % self.shortname
@@ -58,7 +60,9 @@ class Source(models.Model):
 
     @classmethod
     def all_valid(cls):
-        return cls.objects.all()
+        return cls.objects.filter(data_source__isnull=False).exclude(
+            data_source__paper__latest_data_status__status__name="not relevant"
+        )
 
     def html(self):
         source_str = ""
@@ -108,12 +112,12 @@ class Datatype(models.Model):
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=200, null=True, blank=True)
+    name = models.CharField(max_length=200, null=False, blank=False)
     description = models.TextField(max_length=1000, null=True, blank=True)
 
     @classmethod
     def all_valid(cls):
-        return cls.objects.exclude(name__isnull=True)
+        return cls.objects.filter(dataset__isnull=False)
 
     def __str__(self):
         s = ""
@@ -234,8 +238,6 @@ class Dataset(models.Model):
     def all_valid(cls):
         return cls.objects.exclude(
             Q(paper__latest_data_status__status__name__exact="not relevant")
-            | Q(paper__data_statuses__name__exact="not relevant")
-            | Q(paper__tested_statuses__name__exact="not relevant")
         ).distinct()
 
     # Necessary to run database-wide updates of dataset names

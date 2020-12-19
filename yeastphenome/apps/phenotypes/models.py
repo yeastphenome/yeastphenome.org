@@ -13,7 +13,7 @@ class Tag(models.Model):
 
     @classmethod
     def all_valid(cls):
-        return cls.objects.all()
+        return cls.objects.filter(observable__isnull=False)
 
     def link_detail(self):
         html = '<a href="%s">%s</a>' % (
@@ -55,7 +55,7 @@ class Observable(models.Model):
 
     @classmethod
     def all_valid(cls):
-        return cls.objects.all()
+        return cls.objects.filter(phenotype__isnull=False)
 
     class Meta:
         get_latest_by = "modified_on"
@@ -218,7 +218,7 @@ class Phenotype(models.Model):
 
     @classmethod
     def all_valid(cls):
-        return cls.papers_all()
+        return cls.objects.filter(dataset__isnull=False)
 
     def papers_all(self):
         return (

@@ -20,7 +20,7 @@ class Status(models.Model):
 
     @classmethod
     def all_valid(cls):
-        return cls.objects.exclude(is_valid=False).all()
+        return cls.objects.all()
 
     def __str__(self):
         return u"%s" % self.name
@@ -66,8 +66,6 @@ class Paper(models.Model):
     def all_valid(cls):
         return cls.objects.exclude(
             Q(latest_data_status__status__name__exact="not relevant")
-            | Q(data_statuses__name__exact="not relevant")
-            | Q(tested_statuses__name__exact="not relevant")
         )
 
     class Meta:
