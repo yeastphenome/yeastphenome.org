@@ -227,6 +227,7 @@ class Dataset(models.Model):
     )
 
     tags = models.ManyToManyField(Tag, blank=True)
+    data_modified_on = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return "%s" % self.name
@@ -387,7 +388,7 @@ class DatasetSimilarity(models.Model):
 class Data(models.Model):
 
     gene = models.ForeignKey(
-        "datasets.Gene", null=True, blank=True, on_delete=models.DO_NOTHING
+        "genes.Gene", null=True, blank=True, on_delete=models.DO_NOTHING
     )
     dataset = models.ForeignKey(Dataset, on_delete=models.DO_NOTHING)
 
