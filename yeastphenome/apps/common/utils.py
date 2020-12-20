@@ -1,6 +1,5 @@
 from django.db.models import Q, F, Count, Sum, Case, When
 from django.db import models
-from django.urls import reverse
 from django.contrib import messages
 
 import numpy as np
@@ -13,7 +12,6 @@ from yeastphenome.apps.datasets.models import Dataset, Sourcetype
 from yeastphenome.apps.genes.models import Gene
 
 import collections
-import random
 
 
 # Search
@@ -52,52 +50,6 @@ def check_download_space(request, datasets):
     return True
 
 
-# Graphs
-
-
-def select_random_graph():
-    """Select a random graph and template to show on the home page. We don't
-    include the citation graph because many papers don't have this metadata
-    and it would appear empty. When we have a global citation network we
-    can choose a reliable starting point and render that instead.
-    """
-    # Randomly select graph to render
-    graph_choice = random.choice(range(4))
-    if graph_choice == 0:
-        return {
-            "paper_counts": get_papers_by_year(),
-            "graph_template": "graphs/papers-by-year.html",
-            "graph_url": reverse("common:papers-by-year"),
-        }
-    elif graph_choice == 1:
-        context = get_phenotype_measurements(hide_legend=True)
-        context.update(
-            {
-                "graph_template": "graphs/phenotype-measurements.html",
-                "graph_url": reverse("common:phenotype-measurements-graph"),
-            }
-        )
-        return context
-    elif graph_choice == 2:
-        context = get_dataset_sources()
-        context.update(
-            {
-                "graph_template": "graphs/dataset-sources.html",
-                "graph_url": reverse("common:dataset-sources-graph"),
-            }
-        )
-        return context
-    else:
-        # Select a random dataset
-        dataset = Dataset.objects.order_by("?").first()
-        return {
-            "collection_yearly_counts": get_collections_by_year(dataset.collection),
-            "collection": dataset.collection,
-            "graph_template": "graphs/collection-by-year.html",
-            "graph_url": reverse("common:collection-by-year", args=(dataset.id,)),
-        }
-
-
 # Phenotypes
 
 
@@ -122,30 +74,6 @@ def get_phenotype_measurements(hide_legend=False):
         "phenotype_measurements_undefined": undefined,
         "measurements": Measurement.objects.all(),
     }
-
-
-# Papers
-
-
-def get_papers_by_year(add_padding=True):
-    """Generate a dictionary of papers by year. If add_padding is True,
-    add an empty year to the left and right (default)
-    """
-    counts = (
-        Paper.objects.values("pub_date")
-        .exclude(latest_data_status__status__name="not relevant")
-        .order_by("pub_date")
-        .annotate(the_count=Count("pub_date"))
-    )
-    counts = {x["pub_date"]: x["the_count"] for x in counts if x["pub_date"] != 0}
-
-    # Add padding on left and right for one year
-    if add_padding:
-        min_year = min(counts.keys())
-        max_year = max(counts.keys())
-        counts[min_year - 1] = 0
-        counts[max_year + 1] = 0
-    return collections.OrderedDict(sorted(counts.items()))
 
 
 # Collections change over time
@@ -177,25 +105,6 @@ def get_collections_by_year(collection):
 
 
 # Datasets
-
-
-def get_dataset_genes(dataset_id=None):
-    if dataset_id is None:
-        count = Dataset.objects.count()
-        random_index = random.randint(0, count - 1)
-        dataset_id = Dataset.objects.all()[random_index].id
-
-    try:
-        dataset = Dataset.objects.get(id=dataset_id)
-        genes = [
-            {"label": d.gene.systematic_name, "value": float(d.value)}
-            for d in dataset.data_set.all()
-            if d.value
-        ]
-        genes = sorted(genes, key=lambda i: i["value"])
-        return {"dataset_genes": genes, "dataset": dataset}
-    except Dataset.DoesNotExist:
-        pass
 
 
 def get_dataset_sources():

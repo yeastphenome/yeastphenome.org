@@ -10,11 +10,11 @@ from yeastphenome.apps.common.utils import (
     check_download_space,
     get_dataset_sources,
     get_latest_stats,
-    get_papers_by_year,
     get_phenotype_measurements,
 )
 from yeastphenome.apps.datasets.models import Dataset
 from yeastphenome.apps.papers.models import Paper
+from yeastphenome.apps.papers.graphs import get_papers_by_year
 from yeastphenome.apps.conditions.models import ConditionType, Medium
 from yeastphenome.apps.phenotypes.models import Observable
 

@@ -1,11 +1,6 @@
 from django.conf.urls import url
 from django.urls import path
 
-from django.conf.urls import include
-import rest_framework.authtoken.views as authviews
-
-from rest_framework import routers
-
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from yeastphenome.settings import HELP_CONTACT_EMAIL
@@ -18,9 +13,6 @@ import yeastphenome.apps.api.phenotypes as phenotypes_views
 import yeastphenome.apps.api.search as search_views
 
 from .permissions import AllowAnyGet
-
-router = routers.DefaultRouter()
-router.register(r"^papers", papers_views.PaperViewSet, basename="paper")
 
 # Documentation URL
 schema_view = get_schema_view(
@@ -37,7 +29,6 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    url(r"^schema/$", schema_view, name="api-schema"),
     url(
         r"^swagger(?P<format>\.json|\.yaml)$",
         schema_view.without_ui(cache_timeout=0),
@@ -48,9 +39,6 @@ urlpatterns = [
         schema_view.with_ui("swagger", cache_timeout=0),
         name="schema-swagger-ui",
     ),
-    url(r"^docs/$", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
-    path("", include(router.urls)),
-    path("papers/<int:paper_id>/references", papers_views.GetPaperReferences.as_view()),
     path(
         "observable/<int:observable_id>/datasets",
         phenotypes_views.GetObservableDatasets.as_view(),
@@ -148,8 +136,6 @@ urlpatterns = [
         search_views.PhenotypesSearch.as_view(),
         name="phenotypes_search",
     ),
-    path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
-    path("api-token-auth/", authviews.obtain_auth_token),
 ]
 
 

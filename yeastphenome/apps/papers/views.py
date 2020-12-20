@@ -3,6 +3,7 @@ from django.shortcuts import render, reverse
 
 from django.views.decorators.cache import never_cache
 
+from .graphs import get_papers_by_year
 from .models import Paper
 from .utils import (
     get_pubmed_paper_context,
@@ -117,3 +118,13 @@ def paper_datasets(request, paper_id, pmid):
     )
 
     return response
+
+
+# Graphs
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def papers_by_year(request):
+    """Render a chart.js visualization for papers by year. Color by year"""
+    context = {"paper_counts": get_papers_by_year()}
+    return render(request, "graphs/papers-by-year-wrapper.html", context)
