@@ -9,7 +9,7 @@ from django.urls import reverse
 class GeneAlias(models.Model):
     """A GeneAlias is another name for a gene"""
 
-    name = models.CharField(max_length=250, null=True, blank=True, unique=True)
+    name = models.CharField(max_length=250, null=False, blank=False, unique=True)
 
     @classmethod
     def all_valid(cls):

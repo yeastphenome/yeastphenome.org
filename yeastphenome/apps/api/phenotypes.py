@@ -86,6 +86,8 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
             "2desc": "-reporter_list",
             "3asc": "paper_list",
             "3desc": "-paper_list",
+            "4asc": "tags_list",
+            "4desc": "-tags_list",
         }
 
         # Empty datatable
@@ -111,6 +113,13 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
             agg_field = "phenotype__reporter"
             queryset = queryset.annotate(
                 reporter_list=StringAgg(
+                    agg_field, delimiter="; ", distinct=True, ordering=agg_field
+                )
+            )
+
+            agg_field = "tags__name"
+            queryset = queryset.annotate(
+                tags_list=StringAgg(
                     agg_field, delimiter="; ", distinct=True, ordering=agg_field
                 )
             )
@@ -153,6 +162,7 @@ class RunPhenotypesQuery(RatelimitMixin, APIView):
                     condition_list,
                     join_and_more(observable.reporter_list.split("; "), 7),
                     join_and_more(observable.paper_list.split("; "), 7),
+                    join_and_more(observable.tags_list.split("; "), 7),
                 ]
             )
 
