@@ -3,7 +3,6 @@ from django.urls import path
 from django.conf.urls import url
 
 from . import views
-from . import graphs
 
 urlpatterns = [
     path("", views.index, name="index"),
@@ -63,53 +62,5 @@ urlpatterns = [
         ),
     ),
 ]
-
-# Graphs
-
-graphs = [
-    path("graph/papers/yearly/", graphs.papers_by_year, name="papers-by-year"),
-    path(
-        "graph/dataset/<int:dataset_id>/collection/yearly/",
-        graphs.collection_by_year,
-        name="collection-by-year",
-    ),
-    path(
-        "graph/papers/citations/explorable/",
-        graphs.paper_citation_graph_explorable,
-        name="paper-citation-graph-explorable",
-    ),
-    path(
-        "graph/papers/citations/",
-        graphs.papers_citation_graph,
-        name="papers-citation-graph",
-    ),
-    path(
-        "graph/papers/<int:paper_id>/citations/",
-        graphs.paper_citation_graph,
-        name="paper-citation-graph",
-    ),
-    path(
-        "graph/phenotypes/measurements/",
-        graphs.phenotype_measurements,
-        name="phenotype-measurements-graph",
-    ),
-    path(
-        "graph/dataset/sources/",
-        graphs.dataset_sources,
-        name="dataset-sources-graph",
-    ),
-    path(
-        "graph/dataset/genes/",
-        graphs.dataset_genes,
-        name="dataset-genes-graph",
-    ),
-    path(
-        "graph/dataset/genes/<int:dataset_id>/",
-        graphs.dataset_genes,
-        name="dataset-genes-graph",
-    ),
-]
-
-urlpatterns += graphs
 
 app_name = "common"

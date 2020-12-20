@@ -7,6 +7,7 @@ urlpatterns = [
     path("", views.paper_explorer, name="all"),
     path("year/<int:year>/", views.paper_explorer, name="all_year"),
     path("<int:pk>/", views.PaperDetailView.as_view(), name="detail"),
+    path("graph/yearly/", views.papers_by_year, name="papers-by-year"),
     # Data
     path(
         "<int:paper_id>/%s_<int:pmid>_datasets_list.txt" % settings.DOWNLOAD_PREFIX,

@@ -4,12 +4,8 @@ from django.shortcuts import reverse
 
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.papers.templatetags.my_filters import join_and_more
-from yeastphenome.apps.papers.utils import get_paper_references_context
 from yeastphenome.apps.papers.search import run_search_tag_query as papers_search
 
-from .permissions import IsStaffOrSuperUser
-
-from rest_framework import serializers, viewsets
 from rest_framework.renderers import JSONRenderer
 from ratelimit.mixins import RatelimitMixin
 
@@ -147,58 +143,4 @@ class GetPaperDatasets(RatelimitMixin, APIView):
         data = generate_datasets(request, data, datasets)
 
         # Must make model json serializable
-        return Response(status=200, data=data)
-
-
-# Papers
-
-
-class PaperSerializer(serializers.ModelSerializer):
-
-    label = serializers.SerializerMethodField("get_label")
-
-    def get_label(self, instance):
-        return "paper"
-
-    class Meta:
-        model = Paper
-        fields = (
-            "id",
-            "first_author",
-            "last_author",
-            "pub_date",
-            "pmid",
-            "modified_on",
-            "data_abstract",
-            "label",
-        )
-
-
-class PaperViewSet(viewsets.ModelViewSet):
-    def get_queryset(self):
-        return Paper.objects.all()
-
-    serializer_class = PaperSerializer
-    permission_classes = (IsStaffOrSuperUser,)
-
-
-class GetPaperReferences(RatelimitMixin, APIView):
-    """Given a paper id, get all references for it to populate a graph."""
-
-    ratelimit_key = "ip"
-    ratelimit_rate = settings.VIEW_RATE_LIMIT
-    ratelimit_block = settings.VIEW_RATE_LIMIT_BLOCK
-    ratelimit_method = "GET"
-    renderer_classes = (JSONRenderer,)
-
-    def get(self, request, paper_id):
-        print("GET GetPaperReferences")
-        try:
-            paper = Paper.objects.get(id=paper_id)
-        except Paper.DoesNotExist:
-            return Response(status=404)
-
-        # Must make model json serializable
-        data = get_paper_references_context(paper)
-        data["paper"] = {"pmid": paper.pmid, "name": str(paper), "status": "root"}
         return Response(status=200, data=data)
