@@ -40,6 +40,7 @@ urlpatterns = [
     url(r"^(?P<domain>phenotypes)/(?P<id>\d+)/", views.data, name="data"),
     url(r"^(?P<dataset_id>\d+)/$", views.dataset_detail, name="dataset_detail"),
     url(r"^download/$", views.download_dataset_scores, name="download_dataset_scores"),
+    url(r"^download/cart/$", views.download_dataset_cart, name="download_dataset_cart"),
     url(r"^tag/(?P<id>\d+)/", views.tag, name="tag"),
 ]
 
