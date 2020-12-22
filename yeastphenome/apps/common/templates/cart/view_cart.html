@@ -6,11 +6,8 @@
         <h1>Download Cart</h1>
         {% include "datasets/data_warning.html"%}
         {% if datasets %}
-	<form action="{% url 'datasets:download_dataset_scores' %}" method="GET" class="card-body">
-                  {% include "datasets/datasets_server_render_table.html" %}
+                  {% include "datasets/datasets_cart_table.html" with datasets=datasets %}
         <hr class="mb-4">
-        <button class="btn btn-primary btn-lg btn-block" type="submit">Download</button>
-        </form>
         {% else %}
           <p class="alert alert-warning">You have no datasets to download. Why don't you <a href="{% url 'datasets:index' %}">browse to add some?</a></p>
         {% endif %}
@@ -27,9 +24,9 @@
         <span>Total Datasets</span>
         <strong>{{ datasets | length }}</strong>
     </li>
-    </ul>
+    </ul>{% if datasets %}
     <a href="{% url 'common:clear_cart' %}"><button class="btn btn-danger btn-lg">Clear Downloads</button></a>
-
+    <a href="{% url 'datasets:download_dataset_cart' %}"><button class="btn btn-primary btn-lg" id="download_button">Download</button></a>{% endif %}
     </div>
    </div>
 </div>
@@ -37,33 +34,10 @@
 {% block scripts %}
 <script>
 $(document).ready(function(){
-    $("#papersTable").dataTable({"pageLength": 10,"language": {"search": "Filter:"}, "processing": true, "serverSide": true, "ajax": "{% url 'api:cart_datasets' %}", "lengthMenu": [[10,15,20,25], [10,15,20,25]],
-    "drawCallback": function( settings ) {
-       add_to_cart()
-       remove_from_cart()
-    }});
-});
-
-$("form").submit(function( event ) {
-
-  console.log("Form submit for dataset download")
-  var url = "#";
-
-  fetch(url).then(res => res.json())
-  .then(function(response) {
-    var response = JSON.stringify(response) 
-    console.log('Success:', response)
-
-    // On an error (order already submit, wrong user) don't send form
-    if (response['message'] == "error"){
-       event.preventDefault();
-    }
-  })
-  .catch(function(response) {
-     var response = JSON.stringify(response);
-     console.log("Error", response)
-     event.preventDefault();
-  })
+    $("#papersTable").dataTable({"pageLength": 10,"language": {"search": "Filter:"}, "lengthMenu": [[10,15,20,25], [10,15,20,25]]});
+    $("#download_button").click(function(){
+        $("#papersTableBody").empty();
+    })
 });
 </script>
 {% endblock %}

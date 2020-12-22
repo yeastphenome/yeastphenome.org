@@ -6,7 +6,7 @@
     <div class="col-md-12">
         <h1>{{ class_name }}</h1>
         <p>{{ class_description }}</p>
-        {% include "datasets/datasets_table.html" with template='datasets_class' %}
+        {% include "datasets/datasets_table.html" with do_add="true" %}
     </div>
 </div>
 {% endblock %}

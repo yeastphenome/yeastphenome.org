@@ -295,19 +295,35 @@ def download_observable_datasets_list(request, observable_id):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def download_dataset_scores(request):
+def download_dataset_cart(request):
+    """download all the dataset objects in the user's cart"""
+    # Get dataset ids from cart
+    datasets = request.session.get("cart", [])
+    response = download_dataset_scores(request, datasets)
+
+    # Clear the cart on download
+    if "cart" in request.session:
+        del request.session["cart"]
+
+    return response
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def download_dataset_scores(request, datasets=None):
     """Downloads scores for one dataset or a list of datasets. Produces a gene x dataset matrix."""
 
     import pandas as pd
     import numpy as np
 
-    # View passes: ?papersTable_length=10&14=on&26=on
-    datasets = []
-    for key, value in request.GET.items():
-        try:
-            datasets.append(int(key))
-        except:
-            pass
+    # Dataset ids can be optionally provided
+    datasets = datasets or []
+
+    if not datasets:
+        for key, value in request.GET.items():
+            try:
+                datasets.append(int(key))
+            except:
+                pass
 
     # Get all data as a list of dicts
     data = list(
