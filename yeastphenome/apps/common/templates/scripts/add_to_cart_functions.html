@@ -1,0 +1,66 @@
+<script>
+function add_to_cart_function(event){
+    var dataset_id = $(this).attr("data-id");
+    var element = $('#dataset-cart-' + dataset_id);
+    $(element).attr("disabled", true);
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    const request = new Request(
+        "/cart/add/" + dataset_id + "/",
+        {headers: {'X-CSRFToken': csrftoken}});
+
+    fetch(request, {
+        method: 'POST',
+        mode: 'same-origin'  // Do not send CSRF token to another domain.
+    }).then(response => response.json())
+       .then(data => {
+          var element = $('#dataset-cart-' + dataset_id);
+          $(element).removeClass('add-to-cart');
+          $(element).removeClass('btn-primary');
+          $(element).addClass('remove-from-cart');
+          $(element).addClass('btn-danger');
+          $(element).text("Remove")
+          $(element).unbind("click");
+          $(element).click(remove_from_cart_function);
+          $(element).attr("disabled", false);
+   });
+}
+
+function add_to_cart() {
+  $(".add-to-cart").click(add_to_cart_function);
+}
+
+function remove_from_cart_function(event){
+    var dataset_id = $(this).attr("data-id");
+    var element = $('#dataset-cart-' + dataset_id);
+    $(element).attr("disabled", true);
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const request = new Request(
+        "/cart/remove/" + dataset_id + "/",
+        {headers: {'X-CSRFToken': csrftoken}});
+
+    fetch(request, {
+        method: 'POST',
+        mode: 'same-origin'  // Do not send CSRF token to another domain.
+    }).then(response => response.json())
+       .then(data => {
+          $(element).removeClass('remove-from-cart');
+          $(element).removeClass('btn-danger');
+          $(element).addClass('add-to-cart');
+          $(element).addClass('btn-primary');
+          $(element).text("Add")
+          $(element).unbind("click");
+          $(element).click(add_to_cart_function);
+          $(element).attr("disabled", false);
+   });
+}
+
+function remove_from_cart() {
+  $(".remove-from-cart").click(remove_from_cart_function);
+}
+
+{% if do_add %}
+add_to_cart()
+remove_to_cart()
+{% endif %}
+</script>

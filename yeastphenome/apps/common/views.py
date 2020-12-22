@@ -286,6 +286,7 @@ def add_to_cart(request, dataset_id, next=None):
 
     datasets = Dataset.objects.filter(id__in=dataset_id.split(","))
     message = add_bulk_datasets(request, datasets, return_message=True)
+    print(message)
 
     # Return to the same page the user was browsing
     if request.method == "POST":

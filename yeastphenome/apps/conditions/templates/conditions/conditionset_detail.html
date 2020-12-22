@@ -25,7 +25,7 @@
                 <td>{{ object.description }}</td>
             </tr>{% endif %}
         </table>
-        {% include "datasets/datasets_table.html" with template="condition" %}
+        {% include "datasets/datasets_table.html" with do_add="true" %}
     </div>
 </div>
 {% endblock %}
