@@ -2,7 +2,6 @@
 function add_to_cart_function(event){
     var dataset_id = $(this).attr("data-id");
     var element = $('#dataset-cart-' + dataset_id);
-    $(element).attr("disabled", true);
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
     const request = new Request(
@@ -14,15 +13,20 @@ function add_to_cart_function(event){
         mode: 'same-origin'  // Do not send CSRF token to another domain.
     }).then(response => response.json())
        .then(data => {
+          $("#message-content").html(data['message']);
+          $("#message-block").show();
           var element = $('#dataset-cart-' + dataset_id);
-          $(element).removeClass('add-to-cart');
-          $(element).removeClass('btn-primary');
-          $(element).addClass('remove-from-cart');
-          $(element).addClass('btn-danger');
-          $(element).text("Remove")
-          $(element).unbind("click");
-          $(element).click(remove_from_cart_function);
-          $(element).attr("disabled", false);
+          if (data['status'] == "success") {
+              $(element).removeClass('add-to-cart');
+              $(element).removeClass('btn-primary');
+              $(element).addClass('remove-from-cart');
+              $(element).addClass('btn-danger');
+              $(element).text("Remove")
+              $(element).unbind("click");
+              $(element).click(remove_from_cart_function);
+          } else {
+              $(".add-to-cart").attr("disabled", true);
+          }
    });
 }
 
@@ -33,7 +37,6 @@ function add_to_cart() {
 function remove_from_cart_function(event){
     var dataset_id = $(this).attr("data-id");
     var element = $('#dataset-cart-' + dataset_id);
-    $(element).attr("disabled", true);
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     const request = new Request(
         "/cart/remove/" + dataset_id + "/",
@@ -44,14 +47,18 @@ function remove_from_cart_function(event){
         mode: 'same-origin'  // Do not send CSRF token to another domain.
     }).then(response => response.json())
        .then(data => {
-          $(element).removeClass('remove-from-cart');
-          $(element).removeClass('btn-danger');
-          $(element).addClass('add-to-cart');
-          $(element).addClass('btn-primary');
-          $(element).text("Add")
-          $(element).unbind("click");
-          $(element).click(add_to_cart_function);
-          $(element).attr("disabled", false);
+          $("#message-content").html(data['message']);
+          $("#message-block").show();
+          if (data['status'] == "success") {
+              $(element).removeClass('remove-from-cart');
+              $(element).removeClass('btn-danger');
+              $(element).addClass('add-to-cart');
+              $(element).addClass('btn-primary');
+              $(element).text("Add")
+              $(element).unbind("click");
+              $(element).click(add_to_cart_function);
+              $(".add-to-cart").attr("disabled", false);
+          }
    });
 }
 

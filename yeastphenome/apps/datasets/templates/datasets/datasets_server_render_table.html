@@ -9,7 +9,7 @@
 }
 </style>
 
-
+    {% include "messages/message-block.html" %}
     {% csrf_token %}
     <table id="papersTable" class="tablesorter table table-condensed table-hover" width="100%">
         <thead>
@@ -20,7 +20,7 @@
         <th>Medium</th>
         <th>Collection</th>
         <th>Data</th>
-        <th>Download</th>
+        <th>Download Cart</th>
         </thead>
     </table>
     <br>

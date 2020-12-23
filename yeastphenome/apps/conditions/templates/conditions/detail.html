@@ -44,7 +44,7 @@
             </table>{% if object.datasets.count > 0 %}
              <h2 style="padding-top:30px">Datasets</h2>
             {% include "datasets/datasets_server_render_table.html" %}{% endif %}
-            <a href="{% url 'common:add_to_cart_by_conditiontype' object.id %}?next={{ request.path }}"><button type="button" class="btn btn-primary">Add all datasets to Downloads</button></a>
+            <a href="{% url 'common:add_to_cart_by_conditiontype' object.id %}?next={{ request.path }}" type="button" class="btn btn-primary">Add all datasets to Downloads</a>
     </div>
 </div>
 {% endblock %}

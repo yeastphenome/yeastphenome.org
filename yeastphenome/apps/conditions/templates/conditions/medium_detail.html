@@ -32,7 +32,7 @@
             </tr>{% endif %}
         </table>
         {% include "datasets/datasets_server_render_table.html" with template="medium" %}
-    <a style="padding-right:5px" href="{% url 'datasets:download_medium_datasets' object.id %}"><button id="dataset_download" type="button" class="btn btn-info">Download all</button></a><a href="{% url 'common:add_to_cart_by_medium' object.id %}?next={{ request.path }}"><button type="button" class="btn btn-primary">Add All to Download Later</button></a>
+    <a style="padding-right:5px" href="{% url 'datasets:download_medium_datasets' object.id %}" id="dataset_download" type="button" class="btn btn-info">Download all</a><a href="{% url 'common:add_to_cart_by_medium' object.id %}?next={{ request.path }}" type="button" class="btn btn-primary">Add All to Download Later</a>
     </div>
 </div>
 {% endblock %}

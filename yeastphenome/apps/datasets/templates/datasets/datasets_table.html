@@ -8,6 +8,8 @@
     cursor: default;
 }
 </style>
+
+{% include "messages/message-block.html" %}
 <form action="{% url 'datasets:download_dataset_scores' %}" method="get">
     {% csrf_token %}
     <table id="papersTable" class="tablesorter table table-condensed table-hover" width="100%" {% if datasets %}{% else %}style="display:none"{% endif %}>
@@ -20,7 +22,7 @@
         <th>Medium</th>
         <th>Collection</th>
         <th>Data</th>
-        <th>Download</th>
+        <th>Download Cart</th>
         </thead>
 
         <tbody id="papersTableBody">
