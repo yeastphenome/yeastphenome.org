@@ -26,6 +26,8 @@ function add_to_cart_function(event){
               $(element).text("Remove")
               $(element).unbind("click");
               $(element).click(remove_from_cart_function);
+          } else {
+              $(".add-to-cart").attr("disabled", true);
           }
    });
 }
@@ -59,6 +61,7 @@ function remove_from_cart_function(event){
               $(element).text("Add")
               $(element).unbind("click");
               $(element).click(add_to_cart_function);
+              $(".add-to-cart").attr("disabled", false);
           }
    });
 }

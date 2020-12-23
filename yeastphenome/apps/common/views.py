@@ -224,7 +224,7 @@ def add_bulk_datasets(request, datasets, return_message=False):
 
     if not check_download_space(request, datasets):
         message = (
-            "You are limited to adding no more than %s datasets to download."
+            "You are limited to adding no more than %s datasets to your Download Cart."
             % DOWNLOAD_CART_LIMIT
         )
         if return_message:
@@ -244,9 +244,9 @@ def add_bulk_datasets(request, datasets, return_message=False):
             added_count += 1
 
     if added_count == 1:
-        message = "1 dataset was added to Downloads."
+        message = "1 dataset was added to your Download Cart."
     else:
-        message = "%s datasets were added to Downloads." % added_count
+        message = "%s datasets were added to your Download Cart." % added_count
 
     if return_message:
         return "success", message
