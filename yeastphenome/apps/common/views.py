@@ -223,17 +223,23 @@ def add_bulk_datasets(request, datasets, return_message=False):
         request.session["cart"] = []
 
     if not check_download_space(request, datasets):
+        message = (
+            "You are limited to adding no more than %s datasets to download."
+            % DOWNLOAD_CART_LIMIT
+        )
         if return_message:
-            return (
-                "You are limited to adding no more than %s datasets to download."
-                % DOWNLOAD_CART_LIMIT
-            )
+            return "full", message
+        messages.info(request, message)
         return
 
     added_count = 0
     for dataset in datasets:
-        if dataset.id not in request.session["cart"]:
-            request.session["cart"].append(dataset.id)
+
+        # The function can support an integer id or a dataset object
+        if isinstance(dataset, Dataset):
+            dataset = dataset.id
+        if dataset not in request.session["cart"]:
+            request.session["cart"].append(dataset)
             request.session.modified = True
             added_count += 1
 
@@ -243,7 +249,7 @@ def add_bulk_datasets(request, datasets, return_message=False):
         message = "%s datasets were added to Downloads." % added_count
 
     if return_message:
-        return message
+        return "success", message
     messages.success(request, message)
 
 
@@ -274,7 +280,6 @@ def add_to_cart_by_observable(request, observable_id):
     return redirect(next)
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def add_to_cart(request, dataset_id, next=None):
     """Add one or more datasets to the cart, if they exist. A dataset id
     can be a single string of values, comma separted, or just the value.
@@ -284,13 +289,11 @@ def add_to_cart(request, dataset_id, next=None):
     if "cart" not in request.session:
         request.session["cart"] = []
 
-    datasets = Dataset.objects.filter(id__in=dataset_id.split(","))
-    message = add_bulk_datasets(request, datasets, return_message=True)
-    print(message)
+    status, message = add_bulk_datasets(request, [int(dataset_id)], return_message=True)
 
     # Return to the same page the user was browsing
     if request.method == "POST":
-        return JsonResponse({"message": message})
+        return JsonResponse({"message": message, "status": status})
 
     messages.success(request, message)
     if next is not None:
@@ -298,7 +301,6 @@ def add_to_cart(request, dataset_id, next=None):
     return redirect("common:view_cart")
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def remove_from_cart(request, dataset_id, next=None):
     """Remove a dataset from the cart, if it exists."""
     dataset_id = int(dataset_id)
@@ -310,7 +312,7 @@ def remove_from_cart(request, dataset_id, next=None):
         message = "Dataset with id %s is not in your cart." % dataset_id
 
     if request.method == "POST":
-        return JsonResponse({"message": message})
+        return JsonResponse({"message": message, "status": "success"})
 
     messages.info(request, message)
 

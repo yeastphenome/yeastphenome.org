@@ -25,8 +25,8 @@
         <strong>{{ datasets | length }}</strong>
     </li>
     </ul>{% if datasets %}
-    <a href="{% url 'common:clear_cart' %}"><button class="btn btn-danger btn-lg">Clear Downloads</button></a>
-    <a href="{% url 'datasets:download_dataset_cart' %}"><button class="btn btn-primary btn-lg" id="download_button">Download</button></a>{% endif %}
+    <a href="{% url 'common:clear_cart' %}" type="button" class="btn btn-danger btn-lg">Clear Downloads</a>
+    <a href="{% url 'datasets:download_dataset_cart' %}" button="button" class="btn btn-primary btn-lg" id="download_button">Download</a>{% endif %}
     </div>
    </div>
 </div>
@@ -36,7 +36,11 @@
 $(document).ready(function(){
     $("#papersTable").dataTable({"pageLength": 10,"language": {"search": "Filter:"}, "lengthMenu": [[10,15,20,25], [10,15,20,25]]});
     $("#download_button").click(function(){
-        $("#papersTableBody").empty();
+        $("#fade").show();
+        setTimeout(function(){ 
+          $("#papersTableBody").empty();
+          $("#fade").hide();
+        }, 2000);
     })
 });
 </script>

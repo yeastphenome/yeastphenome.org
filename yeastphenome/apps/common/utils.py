@@ -1,6 +1,5 @@
 from django.db.models import Q, F, Count, Sum, Case, When
 from django.db import models
-from django.contrib import messages
 
 import numpy as np
 
@@ -39,13 +38,6 @@ def check_download_space(request, datasets):
     """
     datasets_in_cart = len(request.session["cart"])
     if datasets_in_cart + len(datasets) > settings.DOWNLOAD_CART_LIMIT:
-        messages.info(
-            request,
-            (
-                f"You already have {datasets_in_cart} datasets in Downloads and are attempting to"
-                f" add an additional {len(datasets)} which will go over the 500 limit."
-            ),
-        )
         return False
     return True
 
