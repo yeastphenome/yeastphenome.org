@@ -54,6 +54,7 @@
     <div class="col-xs-12">
         <h2>Datasets</h2>
         {% include "datasets/datasets_server_render_table.html" %}
+        <a href="{% url 'datasets:download_paper_datasets' paper.id %}" class="btn btn-primary btn-download" role="button">Download now</a>
      </div>
 </div>
 <div class="row" style="padding-top:30px" id="curation">
@@ -80,6 +81,9 @@ $(document).ready(function(){
      "drawCallback": function( settings ) {
         add_to_cart();
         remove_from_cart();
+    },
+    "initComplete": function(settings, json) {
+        $('#papersTable_paginate').prepend("<a style='margin-right:113px;' href=\"{% url 'common:add_to_cart_by_paper' paper.id %}\" class='btn btn-primary btn-download' role='button' {% if request.session.cart|length >= DOWNLOAD_CART_LIMIT %}disabled title='Your Download Cart is full'{% endif %}>Add all</a><br>");
     }
    });
 });</script>

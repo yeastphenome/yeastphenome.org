@@ -68,6 +68,9 @@ function remove_from_cart() {
 
 {% if do_add %}
 add_to_cart()
-remove_to_cart()
+remove_from_cart()
+{% endif %}
+{% if request.session.cart|length >= DOWNLOAD_CART_LIMIT %}
+$(".add-to-cart").attr('disabled', true);
 {% endif %}
 </script>

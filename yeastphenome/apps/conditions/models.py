@@ -148,6 +148,7 @@ class ConditionType(models.Model):
                 | Q(medium__conditions__type=self)
             )
             .exclude(paper__latest_data_status__status__name="not relevant")
+            .filter(data_source__release=True)
             .distinct()
         )
 

@@ -9,9 +9,19 @@ urlpatterns = [
         "collection/<int:collection_id>/", views.data_explorer, name="collection_detail"
     ),
     path(
+        "condition/<str:condition_id>/",
+        views.download_condition_datasets,
+        name="download_condition_datasets",
+    ),
+    path(
         "observable/<str:observable_id>/",
         views.download_observable_datasets,
         name="download_observable_datasets",
+    ),
+    path(
+        "paper/<str:paper_id>/",
+        views.download_paper_datasets,
+        name="download_paper_datasets",
     ),
     path(
         "medium/<str:medium_id>/",

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.views import generic
 from django.contrib import messages
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.views.decorators.cache import never_cache
 from django.db.models import Q
 
@@ -256,28 +256,33 @@ def add_bulk_datasets(request, datasets, return_message=False):
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def add_to_cart_by_conditiontype(request, conditiontype_id):
     """Add datasets to the cart based on a conditiontype id"""
-    next = request.GET.get("next")
     ct = get_object_or_404(ConditionType, pk=conditiontype_id)
     add_bulk_datasets(request, ct.datasets())
-    return redirect(next)
+    return HttpResponseRedirect("/conditions/%s/" % ct.id)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def add_to_cart_by_medium(request, medium_id):
     """Add datasets to the cart based on a medium id"""
-    next = request.GET.get("next")
     medium = get_object_or_404(Medium, pk=medium_id)
     add_bulk_datasets(request, medium.datasets())
-    return redirect(next)
+    return HttpResponseRedirect("/conditions/media/%s/" % medium.id)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def add_to_cart_by_paper(request, paper_id):
+    """Add datasets to the cart based on a paper id"""
+    paper = get_object_or_404(Paper, pk=paper_id)
+    add_bulk_datasets(request, paper.dataset_set.all())
+    return HttpResponseRedirect("/papers/%s/" % paper.id)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def add_to_cart_by_observable(request, observable_id):
     """Add datasets to the cart based on a phenotype (observable) id"""
-    next = request.GET.get("next")
     observable = get_object_or_404(Observable, pk=observable_id)
     add_bulk_datasets(request, observable.datasets())
-    return redirect(next)
+    return HttpResponseRedirect("/phenotypes/%s/" % observable.id)
 
 
 def add_to_cart(request, dataset_id, next=None):
