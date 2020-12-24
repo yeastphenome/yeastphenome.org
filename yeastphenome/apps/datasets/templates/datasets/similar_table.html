@@ -17,5 +17,5 @@
     </tbody>
 </table>
 
-<a class="btn btn-info" style="padding-right:5px" href="{% url 'datasets:download_dataset_similarities' dataset.id %}" role="button">Download all</a>
-<a class="btn btn-success" href="{% url 'datasets:similar_dataset_table' dataset.id %}" role="button">View all</a>
+<a class="btn btn-primary btn-download btn-sm" style="padding-right:5px" href="{% url 'datasets:download_dataset_similarities' dataset.id %}" role="button">Download now</a>
+<a class="btn btn-success btn-download btn-sm" href="{% url 'datasets:similar_dataset_table' dataset.id %}" role="button">View all</a>
