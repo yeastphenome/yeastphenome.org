@@ -6,6 +6,7 @@ docker/create_roles.sh
 *.pyc
 *~
 .idea/*
+yeastphenome/.idea/*
 .DS_Store
 .env
 __pycache__
