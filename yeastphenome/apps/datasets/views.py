@@ -337,6 +337,10 @@ def download_dataset_scores(request, datasets=None, filename=None):
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = 'attachment; filename="%s"' % filename
 
+    # https://github.com/johnculviner/jquery.fileDownload/blob/master/src/Scripts/jquery.fileDownload.js#L11
+    # If this is not set, callbacks do not work
+    response["Set-Cookie"] = "fileDownload=true; path=/"
+
     # If there are no datasets, cut out early and return empty file
     if data_df.empty:
         data_df.to_csv(path_or_buf=response, sep="\t", na_rep="NaN")
