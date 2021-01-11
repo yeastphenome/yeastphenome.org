@@ -103,6 +103,9 @@ def generate_datasets(request, data, datasets, query=None):
     data["recordsTotal"] = count
     data["recordsFiltered"] = count
 
+    # Are we over the download limit?
+    cart_is_full = len(cart) >= settings.DOWNLOAD_CART_LIMIT
+
     # Since we have a small queryset (25) we can loop over without it being too slow
     for dataset in datasets:
 
@@ -113,7 +116,12 @@ def generate_datasets(request, data, datasets, query=None):
             else "disabled title='This dataset is not available for download.'"
         )
 
-        if dataset.id not in cart:
+        if dataset.id not in cart and cart_is_full:
+            button = (
+                '<button id="dataset-cart-%s" type="button" class="btn btn-primary btn-sm add-to-cart" style="width:120px" data-id="%s" disabled title="Your Download Cart is full.">Add</button>'
+                % (dataset.id, dataset.id)
+            )
+        elif dataset.id not in cart:
             button = (
                 '<button id="dataset-cart-%s" type="button" class="btn btn-primary btn-sm add-to-cart" style="width:120px" data-id="%s" %s>Add</button>'
                 % (dataset.id, dataset.id, disabled)

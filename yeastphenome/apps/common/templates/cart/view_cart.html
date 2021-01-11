@@ -1,16 +1,19 @@
 {% extends "base/wide.html" %}
 {% load humanize %}
+{% load static %}
 {% block content %}
 <div class="row">
     <div class="col-md-8 mb-4">
         <h1>Download Cart</h1>
         {% include "datasets/data_warning.html"%}
+        <p style="display:none" id="add-more-message" class="alert alert-warning">You have no datasets to download. Why don't you <a href="{% url 'datasets:index' %}">browse to add some?</a></p>
         {% if datasets %}
                   {% include "datasets/datasets_cart_table.html" with datasets=datasets %}
         <hr class="mb-4">
         {% else %}
           <p class="alert alert-warning">You have no datasets to download. Why don't you <a href="{% url 'datasets:index' %}">browse to add some?</a></p>
         {% endif %}
+
     </div>
      <div class="col-md-4 mb-4">
 
@@ -22,25 +25,25 @@
     <ul class="list-group mb-3 z-depth-1">
     <li class="list-group-item d-flex justify-content-between">
         <span>Total Datasets</span>
-        <strong>{{ datasets | length }}</strong>
+        <strong id="dataset_count">{{ datasets | length }}</strong>
     </li>
     </ul>{% if datasets %}
     <a href="{% url 'common:clear_cart' %}" type="button" class="btn btn-danger btn-lg">Clear Downloads</a>
-    <a href="{% url 'datasets:download_dataset_cart' %}" button="button" class="btn btn-primary btn-lg" id="download_button">Download</a>{% endif %}
+    <a button="button" class="btn btn-primary btn-lg" id="download_button">Download</a>{% endif %}
     </div>
    </div>
 </div>
 {% endblock %}
 {% block scripts %}
+<script src="{% static 'js/jquery.fileDownload.js' %}"></script>
 <script>
 $(document).ready(function(){
     $("#papersTable").dataTable({"pageLength": 10,"language": {"search": "Filter:"}, "lengthMenu": [[10,15,20,25], [10,15,20,25]]});
     $("#download_button").click(function(){
-        $("#fade").show();
-        setTimeout(function(){ 
-          $("#papersTableBody").empty();
-          $("#fade").hide();
-        }, 2000);
+       $("#fade").show();
+       $.fileDownload("{% url 'datasets:download_dataset_cart' %}")
+        .done(function () { $("#fade").hide(); window.location = "{% url 'common:clear_cart' %}" })
+        .fail(function () { alert('File download failed!'); $("#fade").hide(); });
     })
 });
 </script>

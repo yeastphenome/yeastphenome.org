@@ -49,7 +49,7 @@
                     {% endfor %}
                 </table>
             </div>
-            <a class="btn btn-info" href="{% url 'genes:download_gene_similarities' gene.id %}" role="button">Download all</a>
+            <a class="btn btn-download btn-sm" href="{% url 'genes:download_gene_similarities' gene.id %}" role="button">Download now</a>
         </div>
         </div>{% endif %}
 

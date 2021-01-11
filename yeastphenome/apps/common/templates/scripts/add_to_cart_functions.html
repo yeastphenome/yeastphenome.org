@@ -1,4 +1,9 @@
 <script>
+
+function align_right() {
+    $(".add-to-cart").parent().css("text-align", "right")
+    $(".remove-from-cart").parent().css("text-align", "right")
+}
 function add_to_cart_function(event){
     var dataset_id = $(this).attr("data-id");
     var element = $('#dataset-cart-' + dataset_id);
@@ -13,6 +18,7 @@ function add_to_cart_function(event){
         mode: 'same-origin'  // Do not send CSRF token to another domain.
     }).then(response => response.json())
        .then(data => {
+          $("#top-messages").html("");
           $("#message-content").html(data['message']);
           $("#message-block").show();
           var element = $('#dataset-cart-' + dataset_id);
@@ -49,6 +55,7 @@ function remove_from_cart_function(event){
        .then(data => {
           $("#message-content").html(data['message']);
           $("#message-block").show();
+          $("#top-messages").html("");
           if (data['status'] == "success") {
               $(element).removeClass('remove-from-cart');
               $(element).removeClass('btn-danger');
@@ -68,6 +75,9 @@ function remove_from_cart() {
 
 {% if do_add %}
 add_to_cart()
-remove_to_cart()
+remove_from_cart()
+{% endif %}
+{% if request.session.cart|length >= DOWNLOAD_CART_LIMIT %}
+$(".add-to-cart").attr('disabled', true);
 {% endif %}
 </script>

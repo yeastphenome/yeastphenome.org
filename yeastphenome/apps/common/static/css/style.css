@@ -205,6 +205,11 @@ ul {
     text-indent: 0
 }
 
+.btn-download {
+   text-decoration: none !important;
+   width: 120px;
+}
+
 body.modal-open {
     overflow: visible
 }
