@@ -20,8 +20,8 @@
     {% endfor %}
     </tbody>
 </table>
-<a class="btn btn-download btn-sm btn-primary" style="margin-right:5px" type="button" href="{% url 'genes:download_gene_scores' gene.id %}">Download now</a>
-<a class="btn btn-download btn-sm btn-success" type="button" href="{% url 'genes:datasets' gene.id %}">View all</a>
+<a class="btn btn-sm btn-primary" type="button" href="{% url 'genes:download_gene_scores' gene.id %}">Download now</a>
+<a class="btn btn-sm btn-success" type="button" href="{% url 'genes:datasets' gene.id %}">View all</a>
 {% endif %}
 
 

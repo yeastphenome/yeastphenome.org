@@ -15,5 +15,5 @@
         </tr>
     {% endfor %}
 </table>
-<a class="btn btn-primary btn-sm btn-download" style="margin-right:5px" role="button" href="{% url 'genes:download_gene_similarities' gene.id %}">Download now</a>
-<a class="btn btn-success btn-sm btn-download" role="button" href="{% url 'genes:similar_genes' gene.id %}">View all</a>
+<a class="btn btn-primary btn-sm" role="button" href="{% url 'genes:download_gene_similarities' gene.id %}">Download now</a>
+<a class="btn btn-success btn-sm" role="button" href="{% url 'genes:similar_genes' gene.id %}">View all</a>
