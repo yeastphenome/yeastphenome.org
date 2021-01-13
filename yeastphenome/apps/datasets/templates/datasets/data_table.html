@@ -4,7 +4,7 @@
         display: none;
     }
 </style>
-<table id="{{ table_id }}" class="table table-condensed table-hover" width="100%">
+<table id="{{ table_id }}" class="table table-condensed table-hover dt-body-center" width="100%">
     <thead>
     <tr>
         <th>Dataset Name</th>
@@ -14,8 +14,8 @@
     <tbody id="papersTableBody">
     {% for d in datasets %}
     <tr>
-        <td class="col-md-5"><a href="{% url 'datasets:dataset_detail' d.dataset_id %}">{{ d.dataset.name }}</a></td>
-        <td class="col-md-5">{{ d.valuez|floatformat:2 }}</td>
+        <td class="dt-center"><a href="{% url 'datasets:dataset_detail' d.dataset_id %}">{{ d.dataset.name }}</a></td>
+        <td class="dt-center">{{ d.valuez|floatformat:2 }}</td>
     </tr>
     {% endfor %}
     </tbody>

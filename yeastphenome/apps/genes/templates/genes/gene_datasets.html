@@ -331,6 +331,9 @@
                 $("#similarTable").dataTable({
                     "pageLength": 10,
                     "language": {"search": "Filter:"},
+                    "columnDefs": [
+                        {"className": "dt-center", "targets": "_all"}
+                    ],
                     "processing": true,
                     "serverSide": true,
                     "ajax": "{% url 'api:gene_datasets' gene.id %}",

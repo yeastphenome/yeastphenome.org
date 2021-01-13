@@ -38,7 +38,11 @@
 <script src="{% static 'js/jquery.fileDownload.js' %}"></script>
 <script>
 $(document).ready(function(){
-    $("#papersTable").dataTable({"pageLength": 10,"language": {"search": "Filter:"}, "lengthMenu": [[10,15,20,25], [10,15,20,25]]});
+    $("#papersTable").dataTable({"pageLength": 10,"language": {"search": "Filter:"}, 
+    "columnDefs": [
+        {"className": "dt-center", "targets": "_all"}
+    ],
+    "lengthMenu": [[10,15,20,25], [10,15,20,25]]});
     $("#download_button").click(function(){
        $("#fade").show();
        $.fileDownload("{% url 'datasets:download_dataset_cart' %}")

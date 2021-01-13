@@ -9,9 +9,9 @@
     <tbody>
     {% for sim in scores %}
         <tr>
-            <td><a href="{% url 'genes:detail' sim.gene2.id %}">{{ sim.gene2 }}</a></td>
-            <td>{{ sim.score|stringformat:".2f" }}</td>
-            <td>{{ sim.pvalue|stringformat:".2f" }}</td>
+            <td class="dt-center"><a href="{% url 'genes:detail' sim.gene2.id %}">{{ sim.gene2 }}</a></td>
+            <td class="dt-center">{{ sim.score|stringformat:".2f" }}</td>
+            <td class="dt-center">{{ sim.pvalue|stringformat:".2f" }}</td>
         </tr>
     {% endfor %}
 </table>

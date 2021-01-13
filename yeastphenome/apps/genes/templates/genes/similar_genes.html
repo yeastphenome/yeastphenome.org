@@ -41,10 +41,10 @@
                     <tbody>
                     {% for sim in sims %}
                         <tr>
-                            <td><a href="{% url 'genes:detail' sim.gene2_id %}">{{ sim.gene2 }}</a></td>
-                            <td>{{ sim.score|stringformat:".2f" }}</td>
-                            <td>{{ sim.pvalue|stringformat:".2f" }}</td>
-                            <td>{{ ranks|lookup:forloop.counter0|floatformat:1 }}%</td>
+                            <td class="dt-center"><a href="{% url 'genes:detail' sim.gene2_id %}">{{ sim.gene2 }}</a></td>
+                            <td class="dt-center">{{ sim.score|stringformat:".2f" }}</td>
+                            <td class="dt-center">{{ sim.pvalue|stringformat:".2f" }}</td>
+                            <td class="dt-center">{{ ranks|lookup:forloop.counter0|floatformat:1 }}%</td>
                         </tr>
                     {% endfor %}
                 </table>
@@ -76,6 +76,9 @@
             {% if gene %}$("#gene-name").val("{{ gene.systematic_name }}")
                 $("#similar_table").DataTable({
                     "pageLength": 10,
+                    "columnDefs": [
+                       {"className": "dt-center", "targets": "_all"}
+                     ],
                     "order": [[2, "asc"]],
                     "language": {"search": "Filter:"}
                 });{% endif %}

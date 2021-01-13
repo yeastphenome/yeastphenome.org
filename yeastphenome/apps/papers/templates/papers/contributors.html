@@ -32,7 +32,11 @@
 {% block scripts %}
 <script>
 $(document).ready(function(){
- $("#papersTable").DataTable({"language": {"search": "Filter:"}});
+ $("#papersTable").DataTable({"language": {"search": "Filter:"},
+    "columnDefs": [
+        {"className": "dt-center", "targets": "_all"}
+    ]
+  });
 });
 </script>
 {% endblock %}

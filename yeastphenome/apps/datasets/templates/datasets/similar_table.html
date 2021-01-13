@@ -9,9 +9,9 @@
     <tbody>
     {% for sim in scores %}
     <tr>
-        <td><a href="{% url 'datasets:dataset_detail' sim.dataset2_id %}">{{ sim.dataset2 }}</a></td>
-        <td>{{ sim.score|floatformat:2 }}</td>
-        <td>{{ sim.pvalue|floatformat:2 }}</td>
+        <td class="dt-center"><a href="{% url 'datasets:dataset_detail' sim.dataset2_id %}">{{ sim.dataset2 }}</a></td>
+        <td class="dt-center">{{ sim.score|floatformat:2 }}</td>
+        <td class="dt-center">{{ sim.pvalue|floatformat:2 }}</td>
     </tr>
     {% endfor %}
     </tbody>

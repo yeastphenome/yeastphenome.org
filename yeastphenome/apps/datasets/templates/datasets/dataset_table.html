@@ -12,8 +12,8 @@
         <tbody id="papersTableBody">
         {% for d in datasets %}
         <tr>
-            <td class="col-md-5"><a href="/genes/{{ d.gene.id }}/">{{ d.gene }}</a></td>
-            <td class="col-md-5">{{ d.valuez|floatformat:2 }}</td>
+            <td class="dt-center"><a href="/genes/{{ d.gene.id }}/">{{ d.gene }}</a></td>
+            <td class="dt-center">{{ d.valuez|floatformat:2 }}</td>
         </tr>
         {% endfor %}
         </tbody>

@@ -34,6 +34,9 @@
 <script>
 $(document).ready(function(){
     $("#papersTable").dataTable({"pageLength": 10, "language": {"search": "Filter:"}, "processing": true, "serverSide": true, "ajax": "{% url 'api:observable_datasets' object.id %}", "lengthMenu": [[10,15,20,25], [10,15,20,25]],
+    "columnDefs": [
+        {"className": "dt-center", "targets": "_all"}
+    ],
      "drawCallback": function( settings ) {
         add_to_cart();
         remove_from_cart();
