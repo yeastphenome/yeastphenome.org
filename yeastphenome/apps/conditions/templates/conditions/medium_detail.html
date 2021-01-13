@@ -32,7 +32,7 @@
             </tr>{% endif %}
         </table>
         {% include "datasets/datasets_server_render_table.html" with template="medium" %}
-    <a href="{% url 'datasets:download_medium_datasets' object.id %}" id="dataset_download" role="button" type="button" class="btn btn-primary btn-download btn-sm">Download now</a>
+    <a href="{% url 'datasets:download_medium_datasets' object.id %}" id="dataset_download" role="button" type="button" class="btn btn-primary">Download now</a>
     </div>
 </div>
 {% endblock %}
@@ -44,9 +44,6 @@ $(document).ready(function(){
         add_to_cart();
         remove_from_cart();
         align_right();
-    },
-    "initComplete": function(settings, json) {
-        $('#papersTable_paginate').prepend("<a style='margin-right:5px;' href=\"{% url 'common:add_to_cart_by_medium' object.id %}\" class='btn btn-primary btn-sm btn-download' role='button' {% if request.session.cart|length >= DOWNLOAD_CART_LIMIT %}disabled title='Your Download Cart is full'{% endif %}>Add all</a><br>");
     }
   });
 });

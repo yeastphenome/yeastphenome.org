@@ -18,7 +18,7 @@
         {% endfor %}
         </tbody>
     </table>
-<a class="btn btn-primary btn-sm" role="button" href="/datasets/download/?{{ dataset.id }}=on">Download now</a>
-<a class="btn btn-success btn-sm" role="button" href="{% url 'datasets:dataset_plot' dataset.id %}">View all</a>
+<a class="btn btn-primary" role="button" href="/datasets/download/?{{ dataset.id }}=on">Download now</a>
+<a class="btn btn-success" role="button" href="{% url 'datasets:dataset_plot' dataset.id %}">View all</a>
 
 {% endif %}

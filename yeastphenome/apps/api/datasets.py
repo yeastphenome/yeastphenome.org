@@ -118,17 +118,17 @@ def generate_datasets(request, data, datasets, query=None):
 
         if dataset.id not in cart and cart_is_full:
             button = (
-                '<button id="dataset-cart-%s" type="button" class="btn btn-primary btn-sm add-to-cart" style="width:120px" data-id="%s" disabled title="Your Download Cart is full.">Add</button>'
+                '<a id="dataset-cart-%s" type="button" class="btn btn-primary add-to-cart" data-id="%s" disabled title="Your Download Cart is full.">Add</a>'
                 % (dataset.id, dataset.id)
             )
         elif dataset.id not in cart:
             button = (
-                '<button id="dataset-cart-%s" type="button" class="btn btn-primary btn-sm add-to-cart" style="width:120px" data-id="%s" %s>Add</button>'
+                '<a id="dataset-cart-%s" type="button" class="btn btn-primary add-to-cart" data-id="%s" %s>Add</a>'
                 % (dataset.id, dataset.id, disabled)
             )
         else:
             button = (
-                '<button id="dataset-cart-%s" type="button" class="btn btn-danger btn-sm remove-from-cart" data-id="%s" style="width:120px">Remove</button>'
+                '<a id="dataset-cart-%s" type="button" class="btn btn-danger remove-from-cart" data-id="%s">Remove</a>'
                 % (dataset.id, dataset.id)
             )
 

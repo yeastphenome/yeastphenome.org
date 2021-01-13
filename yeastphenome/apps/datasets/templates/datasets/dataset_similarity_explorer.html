@@ -119,7 +119,7 @@
         <td id="td-{{ d.0 }}"><a href="{% url 'datasets:dataset_detail' d.0 %}">{{ d.1 }}</a></td><td>{{ d.2|floatformat:2 }}</td><td>{{ d.3|floatformat:2 }}</td><td>{{ ranks|lookup:forloop.counter0|floatformat:1 }}%</td>
     </tr>{% endfor %}
       </table>
-    <a href="{% url 'datasets:download_dataset_similarities' dataset.id %}" type="button" class="btn btn-primary btn-sm">Download now</a>
+    <a href="{% url 'datasets:download_dataset_similarities' dataset.id %}" type="button" class="btn btn-primary">Download now</a>
     </div>
   </div>
 </div>{% endif %}
