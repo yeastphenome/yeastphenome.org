@@ -116,11 +116,11 @@
         </tr>
         </thead>
         <tbody id="dataset_table_body">{% for d in datasets %}<tr id="tr-{{ d.0 }}">
-        <td id="td-{{ d.0 }}"><a href="{% url 'datasets:dataset_detail' d.0 %}">{{ d.1 }}</a></td><td>{{ d.2|floatformat:2 }}</td><td>{{ d.3|floatformat:2 }}</td><td>{{ ranks|lookup:forloop.counter0|floatformat:1 }}%</td>
+        <td id="td-{{ d.0 }}" class="dt-center"><a href="{% url 'datasets:dataset_detail' d.0 %}">{{ d.1 }}</a></td><td class="dt-center">{{ d.2|floatformat:2 }}</td><td class='dt-center'>{{ d.3|floatformat:2 }}</td><td class="dt-center">{{ ranks|lookup:forloop.counter0|floatformat:1 }}%</td>
     </tr>{% endfor %}
       </table>
+    <a href="{% url 'datasets:download_dataset_similarities' dataset.id %}" type="button" class="btn btn-primary">Download now</a>
     </div>
-    <a href="{% url 'datasets:download_dataset_similarities' dataset.id %}"><button type="button"class="btn btn-info" type="button">Download now</button></a>
   </div>
 </div>{% endif %}
 {% endif %}
@@ -142,7 +142,13 @@ function restore_original() {
     $("#dataset_table_body").empty()
     $("#dataset_table").DataTable().destroy();
     $("#dataset_table_body").html($("#full_table").html());
-    $("#dataset_table").dataTable({"pageLength": 10, "language": {"search": "Filter:"}, "order": [[ 2, "asc" ]]});
+    $("#dataset_table").dataTable({"pageLength": 10, "language": {"search": "Filter:"}, 
+        "columnDefs": [
+            {"className": "dt-center", "targets": "_all"}
+        ],
+        "order": [[ 2, "asc" ]]
+
+    });
     $('#dataset_table').DataTable().order([1, 'desc']).draw();
 
 }
@@ -256,12 +262,17 @@ update_plot = function(d, i) {
         dataset_rank = dataset_lookup[e].rank || ""
 
         console.log(dataset_pvalue)
-        content += "<tr><td id='td-" + e + "'><a href='/datasets/"+ e + "'>" + dataset_name + "</a></td><td>" + dataset_value + "</td><td>" + dataset_pvalue + "</td><td>"+ dataset_rank + "</td></tr>\n"
+        content += "<tr><td id='td-" + e + "' class='dt-center'><a href='/datasets/"+ e + "'>" + dataset_name + "</a></td><td class='dt-center'>" + dataset_value + "</td><td class='dt-center'>" + dataset_pvalue + "</td><td class='dt-center'>"+ dataset_rank + "</td></tr>\n"
     })
 
     $("#dataset_table_body").html(content)
     $("#dataset_table").show();
-    $("#dataset_table").DataTable({"language": {"search": "Filter:", "order": [[ 2, "asc" ]]}})
+    $("#dataset_table").DataTable({"language": {"search": "Filter:", 
+        "columnDefs": [
+            {"className": "dt-center", "targets": "_all"}
+        ],
+        "order": [[ 2, "asc" ]]}
+    })
     $('#dataset_table').DataTable().order([1, 'desc']).draw();
     $("#dataset_table_length").append(value_range)
 
@@ -305,7 +316,12 @@ $(document).ready(function(){
     });
 
     // Show initial set of datasets
-    {% if datasets %}$("#dataset_table").DataTable({"pageLength": 10, "language": {"search": "Filter:", "order": [[ 2, "asc" ]]}})
+    {% if datasets %}$("#dataset_table").DataTable({"pageLength": 10, 
+        "columnDefs": [
+            {"className": "dt-center", "targets": "_all"}
+       ],
+        "language": {"search": "Filter:", "order": [[ 2, "asc" ]]}
+    })
     $('#dataset_table').DataTable().order([1, 'desc']).draw();
     {% endif %}    
 

@@ -38,7 +38,7 @@
                 </table>
                 <br>
             </form>
-            <a class="btn btn-info" href="{% url 'genes:download_gene_scores' gene.id %}" role="button">Download now</a>
+            <a class="btn btn-primary" href="{% url 'genes:download_gene_scores' gene.id %}" role="button">Download now</a>
         </div>
     </div>
 {% endblock %}
@@ -331,6 +331,9 @@
                 $("#similarTable").dataTable({
                     "pageLength": 10,
                     "language": {"search": "Filter:"},
+                    "columnDefs": [
+                        {"className": "dt-center", "targets": "_all"}
+                    ],
                     "processing": true,
                     "serverSide": true,
                     "ajax": "{% url 'api:gene_datasets' gene.id %}",

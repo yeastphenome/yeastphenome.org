@@ -12,13 +12,13 @@
         <tbody id="papersTableBody">
         {% for d in datasets %}
         <tr>
-            <td class="col-md-5"><a href="/genes/{{ d.gene.id }}/">{{ d.gene }}</a></td>
-            <td class="col-md-5">{{ d.valuez|floatformat:2 }}</td>
+            <td class="dt-center"><a href="/genes/{{ d.gene.id }}/">{{ d.gene }}</a></td>
+            <td class="dt-center">{{ d.valuez|floatformat:2 }}</td>
         </tr>
         {% endfor %}
         </tbody>
     </table>
-<a class="btn btn-download btn-primary btn-sm" style="margin-right:5px" role="button" href="/datasets/download/?{{ dataset.id }}=on">Download now</a>
-<a class="btn btn-success btn-download btn-sm" role="button" href="{% url 'datasets:dataset_plot' dataset.id %}">View all</a>
+<a class="btn btn-primary" role="button" href="/datasets/download/?{{ dataset.id }}=on">Download now</a>
+<a class="btn btn-success" role="button" href="{% url 'datasets:dataset_plot' dataset.id %}">View all</a>
 
 {% endif %}
