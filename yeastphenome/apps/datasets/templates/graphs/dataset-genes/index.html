@@ -5,14 +5,6 @@
   font: 10px sans-serif;
 }
 
-.search-wrapper {
-    display: flex;
-}
-
-.twitter-typeahead {
-    flex: 1 0 auto;
-}
-
 .bar rect {
   shape-rendering: crispEdges;
   cursor: pointer;
@@ -31,18 +23,25 @@
 tr.highlight {
     background-color: yellow !important;
 }
+
+.hovered {
+  opacity: 0.3 !important;
+  fill: #9eacb4;
+}
+
+.t {
+  opacity: 0;
+  cursor: pointer;
+}
+
+#scores_table tr {
+  cursor: pointer;
+}
 </style>
 {% include "style/typeahead.html" %}
 <div class="row">
-    <div class="col-md-9">
+    <div class="col-md-12">
         <div id="dataset-genes"></div>
-    </div>
-    <div class="col-md-3">
-         {% if dataset_genes %}Search genes
-         <div class="search-wrapper">
-	<input type="text" style="width:200px" class="gene-search typeahead tt-query" autocomplete="off" spellcheck="false" id="gene-name">
-     </div>
-        <span id="gene-detail"></span>{% endif %}
     </div>
 </div>
 {% if not dataset_genes %}
@@ -95,9 +94,8 @@ function restore_original() {
     $("#scores_table_body").empty()
     $("#scores_table").DataTable().destroy();
     $("#scores_table_body").html($("#full_table").html());
-    $("#scores_table").dataTable({"pageLength": 10, "language": {"search": "Filter:"}, "order": [[ 2, "asc" ]]});
-    $('#scores_table').DataTable().order([1, 'desc']).draw();
-    $("#group_message").text("")
+    $("#scores_table").dataTable({"pageLength": 10, "language": {"search": "Filter:"}, "drawCallback": addCallback});
+    $("#group_message").text("");
 
 }
 </script>

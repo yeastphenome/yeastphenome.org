@@ -8,14 +8,6 @@
   font: 10px sans-serif;
 }
 
-.search-wrapper {
-    display: flex;
-}
-
-.twitter-typeahead {
-    flex: 1 0 auto;
-}
-
 .bar rect {
   shape-rendering: crispEdges;
   cursor: pointer;
@@ -31,68 +23,24 @@
   shape-rendering: crispEdges;
 }
 
-
-.typeahead, .tt-query, .tt-hint {
-  border: 2px solid #CCCCCC;
-  font-size: 24px;
-  line-height: 30px;
-  outline: medium none;
-  padding: 8px 12px;
-  width: 800px;
-  max-height: 150px;
-  overflow-y: auto;
-}
-.typeahead {
-  background-color: #FFFFFF;
-}
-.typeahead:focus {
-  border: 2px solid #0097CF;
-}
-.tt-query {
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
-}
-.tt-hint {
-  color: #999999;
-}
-.tt-dropdown-menu {
-  background-color: red !important;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  margin-top: 12px;
-  padding: 8px 0;
-  width: 350px;
-}
-.tt-suggestion {
-  background-color: white !important;
-  font-size: 24px;
-  line-height: 24px;
-  padding: 3px 20px;
+tr.highlight {
+    background-color: yellow !important;
 }
 
-.tt-cursor {
-  background-color: #0097cf !important
+.hovered {
+  opacity: 0.3 !important;
+  fill: #9eacb4;
 }
 
-.tt-suggestion p {
-  margin: 0;
+.t {
+  opacity: 0;
+  cursor: pointer;
 }
 
-.tt-suggestion:hover .tt-cursor:hover {
-    cursor: pointer;
-    color: black;
-    background-color: #0097cf !important;
-}
-.tt-dropdown-menu .tt-suggestion.tt-cursor {
-  text-decoration: none;
-  background-color: yellow !important;
-  outline: 0;
-  color: #111;
+#dataset_table tr {
+  cursor: pointer;
 }
 
-#scrollable-dropdown-menu .tt-menu {
-  max-height: 250px;
-  overflow-y: auto;
-}
 </style>
 
 <div class="row">
@@ -126,10 +74,33 @@
 {% endif %}
 {% endblock %}
 {% block scripts %}
-<script src="{% static 'js/typeahead.bundle.js' %}"></script>
 <script src="https://d3js.org/d3.v3.min.js"></script>
 
 <script>
+
+function draw_table(names) {
+    $("#dataset_table_body").empty()
+    $("#dataset_table").DataTable().destroy();
+
+    content = ""
+    $.each(names, function(i,e){
+
+        // Grab the value and pvalue
+        dataset_value = dataset_lookup[e].score || ""
+        dataset_name = dataset_lookup[e].name || "Dataset id: " + e
+        dataset_pvalue = dataset_lookup[e].pvalue || ""
+        dataset_rank = dataset_lookup[e].rank || ""
+        content += "<tr id='tr-" + e + "'><td class='dt-center'><a href='/datasets/"+ e + "'>" + dataset_name + "</a></td><td class='dt-center'>" + dataset_value + "</td><td class='dt-center'>" + dataset_pvalue + "</td><td class='dt-center'>"+ dataset_rank + "</td></tr>\n"
+    })
+
+    $("#dataset_table_body").html(content)
+    $("#dataset_table").show();
+    $("#dataset_table").dataTable({"pageLength": 10, "language": {"search": "Filter:"}, "drawCallback": addCallback,
+        "columnDefs": [
+            {"className": "dt-center", "targets": "_all"}
+        ]
+    });
+}
 
 // Restore original, full table
 function restore_original() {
@@ -139,24 +110,19 @@ function restore_original() {
        $(e).attr("fill", $(e).attr("data-fill"));
      })
 
-    $("#dataset_table_body").empty()
-    $("#dataset_table").DataTable().destroy();
-    $("#dataset_table_body").html($("#full_table").html());
-    $("#dataset_table").dataTable({"pageLength": 10, "language": {"search": "Filter:"}, 
-        "columnDefs": [
-            {"className": "dt-center", "targets": "_all"}
-        ],
-        "order": [[ 2, "asc" ]]
-
-    });
-    $('#dataset_table').DataTable().order([1, 'desc']).draw();
-
+    // Dataset ids
+    var names = datasets.map(function(record){return record.dataset_id; });
+    draw_table(names)
 }
 
 var color = "steelblue";
 
 var datasets = [{% for entry in datasets %}{"dataset_id": "{{ entry.0 }}", "name": "{{ entry.1 }}", "score": {{ entry.2 }}, "pvalue": {{ entry.3 }}, "rank": "{{ ranks|lookup:forloop.counter0|floatformat:1 }}%" }{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
 var values = [{% for entry in datasets %}{{ entry.2 }}{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
+
+// Get min and max
+max_value = d3.max(values)
+min_value = d3.min(values)
 
 // A formatter for counts.
 var formatCount = d3.format(",.0f");
@@ -165,11 +131,8 @@ var margin = {top: 40, right: 30, bottom: 30, left: 30},
     width = 960 - margin.left - margin.right,
     height = 300 - margin.top - margin.bottom;
 
-// TODO: we can set fixed values for min/max if possible with dataset
-var max = d3.max(values);
-var min = d3.min(values);
 var x = d3.scale.linear()
-      .domain([min, max])
+      .domain([min_value, max_value])
       .range([0, width]);
 
 // Generate a histogram using twenty uniformly-spaced bins.
@@ -180,11 +143,22 @@ var data = d3.layout.histogram()
 // Create a lookup by bin id to index into count
 var lookup = Object()
 $.each(data, function(i, e){
-    var filtered = datasets.filter(function(record){ return e.x <= record.score && record.score < e.x + e.dx; });
+
+    // If it's the first bin, include all left values
+    if (i == 0){
+        var filtered = datasets.filter(function(record){return record.score < e.x + e.dx });
+    // If we are in the last bin, we have to include all values
+    } else if (i == data.length - 1) {
+        var filtered = datasets.filter(function(record){return record.score >= e.x });
+    } else {
+        var filtered = datasets.filter(function(record){return e.x <= record.score && record.score < e.x + e.dx; });
+    }
     $.each(filtered, function(ii, ee){
         lookup[ee.dataset_id] = i
     })
 })
+
+
 
 // Lookup of value by dataset
 var dataset_lookup = Object()
@@ -234,6 +208,7 @@ update_plot = function(d, i) {
 
     // Case 1, unset filter
     if (color == "red"){
+        $("tr").removeClass('highlight');
         restore_original()
         return
     }
@@ -241,43 +216,23 @@ update_plot = function(d, i) {
     // Then make selected red!
     bar.attr("fill", "red");
 
-    var ds = datasets.filter(function(record){ return d.x <= record.score && record.score < d.x + d.dx; });
+    // If it's the first bin, include all left values
+    if (i == 0){
+        var ds = datasets.filter(function(record){return record.score < d.x + d.dx });
+    // If we are in the last bin, we have to include all values
+    } else if (i == data.length - 1) {
+        var ds = datasets.filter(function(record){return record.score >= d.x });
+    } else {
+        var ds = datasets.filter(function(record){return d.x <= record.score && record.score < d.x + d.dx; });
+    }
 
     // Dataset ids
     var names = ds.map(function(record){return record.dataset_id; });
-
-    value_range = " | Value range: " + (d.x).toFixed(2) + "-" + (d.x + d.dx).toFixed(2) + ". <a style='cursor:pointer' onclick=restore_original()>Reset filter</a>."
-
-    // Clear original content
-    $("#dataset_table_body").empty();
-    $("#dataset_table").DataTable().destroy();
-
-    content = ""
-    $.each(names, function(i,e){
-
-        // Grab the value and pvalue
-        dataset_value = dataset_lookup[e].score || ""
-        dataset_name = dataset_lookup[e].name || "Dataset id: " + e
-        dataset_pvalue = dataset_lookup[e].pvalue || ""
-        dataset_rank = dataset_lookup[e].rank || ""
-
-        console.log(dataset_pvalue)
-        content += "<tr><td id='td-" + e + "' class='dt-center'><a href='/datasets/"+ e + "'>" + dataset_name + "</a></td><td class='dt-center'>" + dataset_value + "</td><td class='dt-center'>" + dataset_pvalue + "</td><td class='dt-center'>"+ dataset_rank + "</td></tr>\n"
-    })
-
-    $("#dataset_table_body").html(content)
-    $("#dataset_table").show();
-    $("#dataset_table").DataTable({"language": {"search": "Filter:", 
-        "columnDefs": [
-            {"className": "dt-center", "targets": "_all"}
-        ],
-        "order": [[ 2, "asc" ]]}
-    })
-    $('#dataset_table').DataTable().order([1, 'desc']).draw();
-    $("#dataset_table_length").append(value_range)
+    draw_table(names);
 
 }
 
+// Visible Bar
 bar.append("rect")
     .attr("x", 1)
     .attr("id", function(d, i) { return "histbar-" + i; })
@@ -297,44 +252,84 @@ bar.append("text")
     .attr("text-anchor", "middle")
     .text(function(d) { return formatCount(d.y); });
 
+// Invisible Bar
+var cols = svg.selectAll(".t")
+    .data(data)
+   .enter().append("g")
+    .attr("transform", function(d) { return "translate(" + x(d.x) + ")"; })
+  .append('rect')
+   .attr('class', 't')
+   .attr("id", function(d, i) { return "histcol-" + i; })
+   .attr("x", 1)
+   .attr("width", (x(data[0].dx) - x(0)) - 1)
+   .attr("height", function(d) { return height })
+   .on('click', function(d, i){update_plot(d, i)});
+
+// Show that the area is clickable
+d3.selectAll('.t').on("mouseover", function(d, i) {
+    d3.selectAll('rect#histcol-' + i)
+       .classed("hovered", true)
+    })
+    .on("mouseout", function() {
+        d3.selectAll('.hovered')
+        .classed("hovered", false);
+    });
+
 svg.append("g")
     .attr("class", "x axis .xaxis")
     .attr("transform", "translate(0," + height + ")")
     .call(xAxis);
 
 
-$(document).ready(function(){
+function doSearch(rowId) {
 
-    // Add the dataset id to the end
-    var names = [{% for ds in datasets %}"{{ ds.1 }} || {{ ds.0 }}"{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
-   
-    // Constructing the suggestion engine
-    var names = new Bloodhound({
-        datumTokenizer: Bloodhound.tokenizers.whitespace,
-        queryTokenizer: Bloodhound.tokenizers.whitespace,
-        local: names
+  // rowId looks like "tr-12345"
+  var dataset_id = rowId.split("-")[1]
+
+  console.log(dataset_id);
+
+  // Get the bar for the gene from the lookup
+  if (dataset_id in lookup) {
+      var bar_id = lookup[dataset_id];
+
+      // Restore colors to original values
+      $.each($(".histbar"), function(i, e){
+         $(e).attr("fill", $(e).attr("data-fill"));
+      })
+
+      $("tr").removeClass('highlight');
+      $("#" + rowId).addClass('highlight');
+
+      // Then make selected red!
+      var bar = $("#histbar-" + bar_id);
+      bar.attr("fill", "red");
+  } 
+}
+
+function addCallback() {
+    table = $("#dataset_table").DataTable();
+
+    // Add callback on row click
+    $("tr").off("click")
+    $('tr').click(function(){
+        var rowdata = table.row(this).data();
+        var row_id = rowdata.DT_RowId
+        doSearch(row_id);
     });
+}
+
+$(document).ready(function(){
 
     // Show initial set of datasets
     {% if datasets %}$("#dataset_table").DataTable({"pageLength": 10, 
         "columnDefs": [
             {"className": "dt-center", "targets": "_all"}
        ],
-        "language": {"search": "Filter:", "order": [[ 2, "asc" ]]}
-    })
-    $('#dataset_table').DataTable().order([1, 'desc']).draw();
-    {% endif %}    
-
-    // Initializing the typeahead
-    $('.dataset-search').typeahead({
-        hint: true,
-        highlight: true, /* Enable substring highlighting */
-        minLength: 1 /* Specify minimum characters required for showing suggestions */
-    },
-    {
-        name: 'names',
-        source: names
+        "language": {"search": "Filter:"},
+        "drawCallback": addCallback        
     });
+    addCallback()
+    {% endif %}    
 });
 
 </script>
