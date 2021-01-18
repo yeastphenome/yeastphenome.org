@@ -48,6 +48,7 @@ tr.highlight {
         <h1>Datasets Similar to {{ dataset.name }}</h1>
         {% include "datasets/data_warning.html"%}
         <div id="dataset_plot"></div>
+        <a id="reset-selection" onclick="restore_original()" type="button" class="btn btn-primary">Reset selection</a>
     </div>
 </div>
 
@@ -127,7 +128,7 @@ min_value = d3.min(values)
 // A formatter for counts.
 var formatCount = d3.format(",.0f");
 
-var margin = {top: 40, right: 30, bottom: 30, left: 30},
+var margin = {top: 40, right: 30, bottom: 50, left: 30},
     width = 960 - margin.left - margin.right,
     height = 300 - margin.top - margin.bottom;
 
@@ -279,6 +280,19 @@ svg.append("g")
     .attr("class", "x axis .xaxis")
     .attr("transform", "translate(0," + height + ")")
     .call(xAxis);
+
+svg.append("text")
+    .attr("text-anchor", "end")
+    .attr("x", width)
+    .attr("y", height + 35)
+    .text("Correlation");
+
+svg.append("text")
+    .attr("text-anchor", "end")
+    .attr("y", 6)
+    .attr("dy", ".75em")
+    .attr("transform", "rotate(-90)")
+    .text("Number of datasets");
 
 
 function doSearch(rowId) {

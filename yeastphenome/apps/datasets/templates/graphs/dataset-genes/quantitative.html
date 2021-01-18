@@ -223,6 +223,23 @@ svg.append("g")
     .attr("transform", "translate(0," + height + ")")
     .call(xAxis);
 
+// X and Y axis labels
+
+svg.append("text")
+    .style("font-size", "12px")
+    .attr("text-anchor", "end")
+    .attr("x", width)
+    .attr("y", height + 30)
+    .text("Phenotypic scores");
+
+svg.append("text")
+    .style("font-size", "12px")
+    .attr("text-anchor", "end")
+    .attr("y", -10)
+    .attr("dy", ".75em")
+    .attr("transform", "rotate(-90)")
+    .text("Number of genes");
+
 function doSearch(rowId) {
 
   // rowId looks like "tr-YAL026C"

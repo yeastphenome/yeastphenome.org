@@ -28,7 +28,7 @@ var values = gene_values.map(function(d){return d.value;})
 // A formatter for counts.
 var formatCount = d3.format(",.0f");
 
-var margin = {top: 40, right: 30, bottom: 30, left: 30},
+var margin = {top: 40, right: 30, bottom: 30, left: 50},
     width = 960 - margin.left - margin.right,
     height = 300 - margin.top - margin.bottom;
 
@@ -105,21 +105,28 @@ var svg = d3.select("#dataset-genes").append("svg")
       .attr("class", "x axis")
       .attr("transform", "translate(0," + height + ")")
       .call(xAxis)
-    .selectAll("text")
-      .style("text-anchor", "end")
-      .attr("dx", "-.8em")
-      .attr("dy", "-.55em")
-      .attr("transform", "rotate(-90)" );
 
   svg.append("g")
       .attr("class", "y axis")
       .call(yAxis)
-    .append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("y", 6)
-      .attr("dy", ".71em")
-      .style("text-anchor", "end")
-      .text("Count");
+
+// X and Y axis labels
+
+svg.append("text")
+    .style("font-size", "12px")
+    .attr("text-anchor", "end")
+    .attr("x", width)
+    .attr("y", height + 30)
+    .text("Phenotypic scores");
+
+svg.append("text")
+    .style("font-size", "12px")
+    .attr("text-anchor", "end")
+    .attr("y", -40)
+    .attr("dy", ".75em")
+    .attr("transform", "rotate(-90)")
+    .text("Number of genes");
+
 
 function update_plot(d, i) {
 
@@ -181,7 +188,7 @@ function update_plot(d, i) {
 }
 
 // Visible bars
-svg.selectAll(".bar")
+bar = svg.selectAll(".bar")
     .data(data)
   .enter().append("rect")
       .style('cursor', 'pointer')
@@ -195,12 +202,13 @@ svg.selectAll(".bar")
       .attr("y", function(d) { return y(d.count); })
       .attr("height", function(d) { return height - y(d.count); })
       .on('click', function(d, i){update_plot(d, i)})
-      .append("text")
-      .attr("dy", ".75em")
-      .attr("y", -12)
-      .attr("x", (x(data[0].dx) - x(0)) / 2)
-      .attr("text-anchor", "middle")
-      .text(function(d) { return formatCount(d.y); });
+
+bar.append("text")
+    .attr("dy", ".75em")
+    .attr("y", 20)
+    .attr("x", (x(data[0].dx) - x(0)) / 2)
+    .attr("text-anchor", "middle")
+    .text(function(d) { return formatCount(d.y); });
 
 // Invisible Bar
 svg.selectAll(".t")
