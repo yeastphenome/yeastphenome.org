@@ -248,6 +248,7 @@ bar.append("rect")
 
 bar.append("text")
     .attr("dy", ".75em")
+    .style("font-size", "12px")
     .attr("y", -12)
     .attr("x", (x(data[0].dx) - x(0)) / 2)
     .attr("text-anchor", "middle")
@@ -278,17 +279,20 @@ d3.selectAll('.t').on("mouseover", function(d, i) {
 
 svg.append("g")
     .attr("class", "x axis .xaxis")
+    .style("font-size", "12px")
     .attr("transform", "translate(0," + height + ")")
     .call(xAxis);
 
 svg.append("text")
     .attr("text-anchor", "end")
+    .style("font-size", "12px")
     .attr("x", width)
     .attr("y", height + 35)
     .text("Correlation");
 
 svg.append("text")
     .attr("text-anchor", "end")
+    .style("font-size", "12px")
     .attr("y", 6)
     .attr("dy", ".75em")
     .attr("transform", "rotate(-90)")
