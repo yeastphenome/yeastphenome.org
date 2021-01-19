@@ -111,13 +111,13 @@ update_plot = function(d, i) {
     })
 
     // Case 1, unset filter
-    if (color == "red"){
+    if (color == "lightpink"){
         restore_original()
         return
     }
 
     // Then make selected red!
-    bar.attr("fill", "red");
+    bar.attr("fill", "lightpink");
 
     var genes = gene_values.filter(function(record){ return d.x <= record.value && record.value < d.x + d.dx; });
     var names = genes.map(function(record){return record.label; });
@@ -166,6 +166,7 @@ update_plot = function(d, i) {
     $("#scores_table_body").html(content)
     $("#scores_table").show();
     var table = $("#scores_table").DataTable({"language": {"search": "Filter:"}, "drawCallback": addCallback});
+    $("#scores_table_length").append('<a id="reset-selection" style="margin-left:10px" onclick="restore_original()" type="button" class="btn btn-pink">Reset selection</a>')
 
 }
 
@@ -270,7 +271,12 @@ function doSearch(rowId) {
 
       // Then make selected red!
       var bar = $("#histbar-" + bar_id);
-      bar.attr("fill", "red");
+      bar.attr("fill", "lightpink");
+
+      // Add the button to reset the filter
+      if ($("#reset-selection").length == 0) {
+          $("#scores_table_length").append('<a id="reset-selection" style="margin-left:10px" onclick="restore_original()" type="button" class="btn btn-pink">Reset selection</a>')
+      }
   } 
 }
 

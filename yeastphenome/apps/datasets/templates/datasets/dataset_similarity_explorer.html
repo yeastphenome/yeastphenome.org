@@ -8,6 +8,12 @@
   font: 10px sans-serif;
 }
 
+.btn-pink {
+  background-color: lightpink !important;
+  border-color: lightpink !important;
+  color: #333 !important;
+}
+
 .bar rect {
   shape-rendering: crispEdges;
   cursor: pointer;
@@ -24,7 +30,7 @@
 }
 
 tr.highlight {
-    background-color: yellow !important;
+    background-color: lightpink !important;
 }
 
 .hovered {
@@ -48,7 +54,6 @@ tr.highlight {
         <h1>Datasets Similar to {{ dataset.name }}</h1>
         {% include "datasets/data_warning.html"%}
         <div id="dataset_plot"></div>
-        <a id="reset-selection" onclick="restore_original()" type="button" class="btn btn-primary">Reset selection</a>
     </div>
 </div>
 
@@ -101,6 +106,9 @@ function draw_table(names) {
             {"className": "dt-center", "targets": "_all"}
         ]
     });
+    if (names.length != datasets.length) {
+        $("#dataset_table_length").append('<a id="reset-selection" style="margin-left:10px" onclick="restore_original()" type="button" class="btn btn-pink">Reset selection</a>')
+    }
 }
 
 // Restore original, full table
@@ -208,14 +216,14 @@ update_plot = function(d, i) {
     })
 
     // Case 1, unset filter
-    if (color == "red"){
+    if (color == "lightpink"){
         $("tr").removeClass('highlight');
         restore_original()
         return
     }
 
     // Then make selected red!
-    bar.attr("fill", "red");
+    bar.attr("fill", "lightpink");
 
     // If it's the first bin, include all left values
     if (i == 0){
@@ -320,7 +328,12 @@ function doSearch(rowId) {
 
       // Then make selected red!
       var bar = $("#histbar-" + bar_id);
-      bar.attr("fill", "red");
+      bar.attr("fill", "lightpink");
+
+      // Add the button to reset the filter
+      if ($("#reset-selection").length == 0) {
+          $("#dataset_table_length").append('<a id="reset-selection" style="margin-left:10px" onclick="restore_original()" type="button" class="btn btn-pink">Reset selection</a>')
+      }
   } 
 }
 
