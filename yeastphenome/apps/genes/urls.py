@@ -5,7 +5,11 @@ urlpatterns = [
     path("", views.gene_explorer, name="index"),
     path("<int:gene_id>/", views.gene_detail, name="detail"),
     path("<int:gene_id>/similar/", views.similar_genes, name="similar_genes"),
-    #    path("<int:gene_id>/similar/scatterplot/", views.similar_scatterplot, name="similar_scatterplot"),
+    path(
+        "<int:gene1_id>/similar/scatterplot/<int:gene2_id>/",
+        views.similar_scatterplot,
+        name="similar_scatterplot",
+    ),
     path(
         "<int:gene_id>/similar/download/",
         views.download_gene_similarities,

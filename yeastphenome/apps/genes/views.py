@@ -1,8 +1,11 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, reverse
 from django.conf import settings
+from django.contrib import messages
+from django.db.models import Q
 
+from yeastphenome.apps.datasets.models import Data
 from yeastphenome.apps.genes.models import Gene
 from yeastphenome.apps.genes.search import get_search_tags
 from ratelimit.decorators import ratelimit
@@ -89,6 +92,76 @@ def similar_genes(request, gene_id):
         "active": "explorer",
     }
     return render(request, "genes/similar_genes.html", context)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def similar_scatterplot(request, gene1_id, gene2_id):
+    """Generate a scatterplot to compare two genes across datasets. You can
+    interchange gene1 and gene2 and they will produce the same plot (but switched
+    axes). This makes the view flexible to any combination of genes.
+    """
+    gene1 = get_object_or_404(Gene, pk=gene1_id)
+    gene2 = get_object_or_404(Gene, pk=gene2_id)
+
+    # links are based on the page the user came from (e.g., the gene 1 should be correct)
+    links = [
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("genes:index"), "name": "Genes"},
+        {
+            "url": reverse("genes:detail", args=[gene1.id]),
+            "name": "%s" % gene1,
+        },
+        {
+            "url": reverse("genes:similar_scatterplot", args=[gene1.id, gene2.id]),
+            "name": "Gene Similarity Scatterplot",
+        },
+    ]
+
+    # But we want to sort the genes by id so we can correctly assign the axes
+    # This means that gene1 should have the smaller id
+    if gene1.id > gene2.id:
+        gene1, gene2 = gene2, gene1
+    names = {gene.id: str(gene) for gene in [gene1, gene2]}
+
+    # We only want datasets with both genes defined
+    datasets1 = gene1.data_set.filter(valuez__isnull=False).values_list(
+        "dataset_id", flat=True
+    )
+    datasets2 = gene2.data_set.filter(valuez__isnull=False).values_list(
+        "dataset_id", flat=True
+    )
+    shared = set(datasets1).intersection(set(datasets2))
+
+    # Cut out early if there is no intersection
+    if not shared:
+        messages.info(request, "These datasets do not have any overlapping genes")
+        return redirect("genes:detail", args=[gene1.id])
+
+    # Get shared datasets, and create a lookup of scores based on dataset id
+    data = Data.objects.filter(
+        Q(dataset_id__in=shared), Q(gene_id__in=[gene1.id, gene2.id])
+    )
+    values = data.values_list("dataset_id", "gene_id", "valuez")
+    scores = {}
+
+    # Lookup looks like  15343: {'values': [Decimal('-0.97599'), Decimal('0.34786')], 'genes': [1, 3]},
+    # Note that the gene ids are sorted least to greatest, so gene1 < gene2
+    for value in values:
+        if value[0] not in scores:
+            scores[value[0]] = {"values": [], "genes": [], "names": []}
+        scores[value[0]]["values"].append(value[2])
+        scores[value[0]]["genes"].append(value[1])
+        scores[value[0]]["names"].append(names[value[1]])
+
+    print(scores)
+    context = {
+        "gene1": gene1,
+        "gene2": gene2,
+        "scores": scores,
+        "links": links,
+        "active": "explorer",
+    }
+    return render(request, "genes/similar_scatterplot.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
