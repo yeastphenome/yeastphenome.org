@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.db.models import Q
 
 from yeastphenome.apps.datasets.models import Data
-from yeastphenome.apps.genes.models import Gene
+from yeastphenome.apps.genes.models import Gene, GeneSimilarity
 from yeastphenome.apps.genes.search import get_search_tags
 from ratelimit.decorators import ratelimit
 from yeastphenome.settings import (
@@ -103,6 +103,12 @@ def similar_scatterplot(request, gene1_id, gene2_id):
     gene1 = get_object_or_404(Gene, pk=gene1_id)
     gene2 = get_object_or_404(Gene, pk=gene2_id)
 
+    # Get the correlation to add
+    sim = GeneSimilarity.objects.filter(
+        Q(gene1=gene1, gene2=gene2) | Q(gene1=gene2, gene2=gene1)
+    )
+    print(sim)
+
     # links are based on the page the user came from (e.g., the gene 1 should be correct)
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
@@ -153,11 +159,11 @@ def similar_scatterplot(request, gene1_id, gene2_id):
         scores[value[0]]["genes"].append(value[1])
         scores[value[0]]["names"].append(names[value[1]])
 
-    print(scores)
     context = {
         "gene1": gene1,
         "gene2": gene2,
         "scores": scores,
+        "sim": sim.first(),
         "links": links,
         "active": "explorer",
     }

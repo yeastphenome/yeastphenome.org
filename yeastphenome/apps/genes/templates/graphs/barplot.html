@@ -16,7 +16,7 @@ function draw_table(names) {
         gene_name = gene_lookup[e].name || "Dataset id: " + e
         gene_pvalue = gene_lookup[e].pvalue || ""
         gene_rank = gene_lookup[e].rank || ""
-        content += "<tr id='tr-" + e + "'><td class='dt-center' id='td-" + e + "'><a href='/genes/"+ e + "'>" + gene_name + "</a></td><td class='dt-center'>" + gene_value + "</td><td class='dt-center'>" + gene_pvalue + "</td><td class='dt-center'>"+ gene_rank + "</td></tr>\n"
+        content += "<tr id='tr-" + e + "'><td class='dt-center' id='td-" + e + "'><a href='/genes/"+ e + "'>" + gene_name + "</a></td><td class='dt-center'>" + gene_value + "</td><td class='dt-center'>" + gene_pvalue + "</td><td class='dt-center'>"+ gene_rank + "</td><td class='dt-center'><a href='/genes/{{ gene.id }}/similar/scatterplot/" + e + "/'>Scatter plot</a></td></tr>\n"
     })
 
     $("#similar_table_body").html(content)

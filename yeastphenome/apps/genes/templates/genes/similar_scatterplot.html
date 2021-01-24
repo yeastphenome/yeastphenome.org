@@ -22,10 +22,17 @@
   height: 28px;
   pointer-events: none;
 }
+
+.regression {
+  stroke-width: 1px;
+  stroke: {% if sim.score > 0 %}green{% else %}darkred{% endif %};
+  stroke-dasharray: 10,5;
+}
 </style>
 <div class="row">
     <div class="col-md-12">
         <h1>Gene Similarity Scatterplot: {{ gene1 }} vs. {{ gene2 }}</h1>
+        <p>Correlation: {{ sim.score }}</p> 
         <div id="gene_plot"></div>
     </div>
 </div>
@@ -70,6 +77,8 @@ var tooltip = d3.select("body").append("div")
     .attr("class", "tooltip")
     .style("opacity", 0);
 
+
+var lg = calcLinear(data, "value1", "value2");
 
 // don't want dots overlapping axis, so add in buffer to data domain
 xScale.domain([d3.min(data, xValue)-1, d3.max(data, xValue)+1]);
@@ -127,6 +136,13 @@ svg.selectAll(".dot")
                .style("opacity", 0);
       });
 
+svg.append("line")
+    .attr("class", "regression")
+    .attr("x1", xScale(lg.ptA.x))
+    .attr("y1", yScale(lg.ptA.y))
+    .attr("x2", xScale(lg.ptB.x))
+    .attr("y2", yScale(lg.ptB.y));
+
 // draw legend
 // var legend = svg.selectAll(".legend")
 //      .data(color.domain())
@@ -148,5 +164,77 @@ svg.selectAll(".dot")
 //      .attr("dy", ".35em")
 //      .style("text-anchor", "end")
 //      .text(function(d) { return d;})
+
+
+// https://bl.ocks.org/HarryStevens/be559bed98d662f69e68fc8a7e0ad097
+function calcLinear(data, x, y){
+
+      // Get boundaries
+      var minX = d3.min(data, function(d){ return d.value1})
+      var minY = d3.min(data, function(d){ return d.value2})
+      var maxX = d3.max(data, function(d){ return d.value1})
+      var maxY = d3.max(data, function(d){ return d.value2})
+
+      // Let n = the number of data points
+      var n = data.length;
+
+      // Get just the points
+      var pts = [];
+      data.forEach(function(d,i){
+        var obj = {};
+        obj.x = d[x];
+        obj.y = d[y];
+        obj.mult = obj.x*obj.y;
+        pts.push(obj);
+      });
+      console.log(pts)
+
+      // Let a equal n times the summation of all x-values multiplied by their corresponding y-values
+      // Let b equal the sum of all x-values times the sum of all y-values
+      // Let c equal n times the sum of all squared x-values
+      // Let d equal the squared sum of all x-values
+      var sum = 0;
+      var xSum = 0;
+      var ySum = 0;
+      var sumSq = 0;
+      pts.forEach(function(pt){
+        sum = sum + pt.mult;
+        xSum = xSum + pt.x;
+        ySum = ySum + pt.y;
+        sumSq = sumSq + (pt.x * pt.x);
+      });
+      var a = sum * n;
+      var b = xSum * ySum;
+      var c = sumSq * n;
+      var d = xSum * xSum;
+
+      // Plug the values that you calculated for a, b, c, and d into the following equation to calculate the slope
+      // slope = m = (a - b) / (c - d)
+      var m = (a - b) / (c - d);
+
+      // Intercept: Let e equal the sum of all y-values
+      var e = ySum;
+
+      // Let f equal the slope times the sum of all x-values
+      var f = m * xSum;
+
+      // Plug the values you have calculated for e and f into the following equation for the y-intercept
+      // y-intercept = b = (e - f) / n
+      var b = (e - f) / n;
+
+      // return an object of two points
+      // each point is an object with an x and y coordinate
+      return {
+        ptA : {
+          x: minX,
+          y: m * minX + b
+        },
+        ptB : {
+          x: maxX,
+          y: m * maxX + b
+        }
+  }
+}
+
 </script>
 {% endblock %}
