@@ -1,7 +1,7 @@
 {% extends "base/wide.html" %}
 {% load static %}
 {% load my_filters %}
-{% block title %}Similar Genes / {{ SITE_NAME }}{% endblock %}
+{% block title %}Phenotypic Scores / {{ SITE_NAME }}{% endblock %}
 {% block content %}
 <style>
 .axis path,
@@ -12,7 +12,6 @@
 }
 
 .dot {
-  stroke: darkblue;
   cursor: pointer;
 }
 
@@ -23,16 +22,20 @@
   pointer-events: none;
 }
 
-.regression {
+.xyline-text {
+ color: darkred !important;
+}
+
+.xyline {
   stroke-width: 1px;
-  stroke: {% if sim.score > 0 %}green{% else %}darkred{% endif %};
+  stroke: darkred;
   stroke-dasharray: 10,5;
 }
 </style>
 <div class="row">
     <div class="col-md-12">
-        <h1>Gene Similarity Scatterplot: {{ gene1 }} vs. {{ gene2 }}</h1>
-        <p>Correlation: {{ sim.score }}</p> 
+        <h1>Phenotypic Scores: {{ gene1 }} vs. {{ gene2 }}</h1>
+        <p>Correlation: {{ sim.score|stringformat:".2f" }}</p> 
         <div id="gene_plot"></div>
     </div>
 </div>
@@ -43,7 +46,7 @@
 
 <script>
 
-var data = [{% for dataset_id, entry in scores.items %}{"dataset_id": {{ dataset_id }}, "value1": {{ entry.values.0|stringformat:".2f" }}, "value2": {{ entry.values.1|stringformat:".2f" }}, "gene1_id": {{ entry.genes.0 }}, "gene2_id": {{ entry.genes.1 }}, "gene1": "{{ entry.names.0 }}", "gene2": "{{ entry.names.1 }}" }{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
+var data = [{% for dataset_id, entry in scores.items %}{"dataset_id": {{ dataset_id }}, "dataset_name": "{{ entry.dataset_name }}", "value1": {{ entry.values.0|stringformat:".2f" }}, "value2": {{ entry.values.1|stringformat:".2f" }}, "gene1_id": {{ entry.genes.0 }}, "gene2_id": {{ entry.genes.1 }}, "gene1": "{{ entry.names.0 }}", "gene2": "{{ entry.names.1 }}" }{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
 
 var margin = {top: 20, right: 20, bottom: 30, left: 40},
     width = 1400 - margin.left - margin.right,
@@ -78,7 +81,7 @@ var tooltip = d3.select("body").append("div")
     .style("opacity", 0);
 
 
-var lg = calcLinear(data, "value1", "value2");
+var lg = addXY(data);
 
 // don't want dots overlapping axis, so add in buffer to data domain
 xScale.domain([d3.min(data, xValue)-1, d3.max(data, xValue)+1]);
@@ -125,7 +128,7 @@ svg.selectAll(".dot")
           tooltip.transition()
                .duration(200)
                .style("opacity", .9);
-          tooltip.html("Dataset: " + d.dataset_id + " <br/> (" + xValue(d) 
+          tooltip.html("Dataset: " + d.dataset_name + " <br/> (" + xValue(d) 
 	        + ", " + yValue(d) + ")")
                .style("left", (d3.event.pageX + 5) + "px")
                .style("top", (d3.event.pageY - 28) + "px");
@@ -137,11 +140,19 @@ svg.selectAll(".dot")
       });
 
 svg.append("line")
-    .attr("class", "regression")
+    .attr("class", "xyline")
     .attr("x1", xScale(lg.ptA.x))
     .attr("y1", yScale(lg.ptA.y))
     .attr("x2", xScale(lg.ptB.x))
     .attr("y2", yScale(lg.ptB.y));
+
+svg.append('text')
+    .attr('x', xScale(lg.ptA.x + 1))
+    .attr('y', yScale(lg.ptA.y))
+    .attr('dy', '1em')
+    .attr('text-anchor', 'end')
+    .text("y = x")
+    .style("fill", "darkred")
 
 // draw legend
 // var legend = svg.selectAll(".legend")
@@ -166,72 +177,33 @@ svg.append("line")
 //      .text(function(d) { return d;})
 
 
-// https://bl.ocks.org/HarryStevens/be559bed98d662f69e68fc8a7e0ad097
-function calcLinear(data, x, y){
+function addXY(data){
 
       // Get boundaries
       var minX = d3.min(data, function(d){ return d.value1})
-      var minY = d3.min(data, function(d){ return d.value2})
       var maxX = d3.max(data, function(d){ return d.value1})
+      var minY = d3.min(data, function(d){ return d.value2})
       var maxY = d3.max(data, function(d){ return d.value2})
 
-      // Let n = the number of data points
-      var n = data.length;
+      lowerBound = minY
+      if (minX > minY) {
+          lowerBound = minX
+      }
 
-      // Get just the points
-      var pts = [];
-      data.forEach(function(d,i){
-        var obj = {};
-        obj.x = d[x];
-        obj.y = d[y];
-        obj.mult = obj.x*obj.y;
-        pts.push(obj);
-      });
-      console.log(pts)
+      upperBound = maxY
+      if (maxX < maxY) {
+          upperBound = maxX
+      }
 
-      // Let a equal n times the summation of all x-values multiplied by their corresponding y-values
-      // Let b equal the sum of all x-values times the sum of all y-values
-      // Let c equal n times the sum of all squared x-values
-      // Let d equal the squared sum of all x-values
-      var sum = 0;
-      var xSum = 0;
-      var ySum = 0;
-      var sumSq = 0;
-      pts.forEach(function(pt){
-        sum = sum + pt.mult;
-        xSum = xSum + pt.x;
-        ySum = ySum + pt.y;
-        sumSq = sumSq + (pt.x * pt.x);
-      });
-      var a = sum * n;
-      var b = xSum * ySum;
-      var c = sumSq * n;
-      var d = xSum * xSum;
-
-      // Plug the values that you calculated for a, b, c, and d into the following equation to calculate the slope
-      // slope = m = (a - b) / (c - d)
-      var m = (a - b) / (c - d);
-
-      // Intercept: Let e equal the sum of all y-values
-      var e = ySum;
-
-      // Let f equal the slope times the sum of all x-values
-      var f = m * xSum;
-
-      // Plug the values you have calculated for e and f into the following equation for the y-intercept
-      // y-intercept = b = (e - f) / n
-      var b = (e - f) / n;
-
-      // return an object of two points
-      // each point is an object with an x and y coordinate
+      // return an object of two points for y=x within the plot area
       return {
         ptA : {
-          x: minX,
-          y: m * minX + b
+          x: lowerBound,
+          y: lowerBound
         },
         ptB : {
-          x: maxX,
-          y: m * maxX + b
+          x: upperBound,
+          y: upperBound
         }
   }
 }

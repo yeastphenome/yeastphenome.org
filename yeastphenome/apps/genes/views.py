@@ -107,9 +107,8 @@ def similar_scatterplot(request, gene1_id, gene2_id):
     sim = GeneSimilarity.objects.filter(
         Q(gene1=gene1, gene2=gene2) | Q(gene1=gene2, gene2=gene1)
     )
-    print(sim)
 
-    # links are based on the page the user came from (e.g., the gene 1 should be correct)
+    # Explore data > Genes > YHR045 / YHR045W > Similar genes > DAP1 / YPL170W
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
         {"url": reverse("genes:index"), "name": "Genes"},
@@ -118,8 +117,12 @@ def similar_scatterplot(request, gene1_id, gene2_id):
             "name": "%s" % gene1,
         },
         {
+            "url": reverse("genes:detail", args=[gene2.id]),
+            "name": "%s" % gene2,
+        },
+        {
             "url": reverse("genes:similar_scatterplot", args=[gene1.id, gene2.id]),
-            "name": "Gene Similarity Scatterplot",
+            "name": "Phenotypic Scores",
         },
     ]
 
@@ -147,14 +150,19 @@ def similar_scatterplot(request, gene1_id, gene2_id):
     data = Data.objects.filter(
         Q(dataset_id__in=shared), Q(gene_id__in=[gene1.id, gene2.id])
     )
-    values = data.values_list("dataset_id", "gene_id", "valuez")
+    values = data.values_list("dataset_id", "gene_id", "valuez", "dataset__name")
     scores = {}
 
     # Lookup looks like  15343: {'values': [Decimal('-0.97599'), Decimal('0.34786')], 'genes': [1, 3]},
     # Note that the gene ids are sorted least to greatest, so gene1 < gene2
     for value in values:
         if value[0] not in scores:
-            scores[value[0]] = {"values": [], "genes": [], "names": []}
+            scores[value[0]] = {
+                "values": [],
+                "genes": [],
+                "names": [],
+                "dataset_name": value[3],
+            }
         scores[value[0]]["values"].append(value[2])
         scores[value[0]]["genes"].append(value[1])
         scores[value[0]]["names"].append(names[value[1]])
