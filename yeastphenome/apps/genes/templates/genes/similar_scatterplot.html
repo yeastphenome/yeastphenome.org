@@ -1,7 +1,7 @@
 {% extends "base/wide.html" %}
 {% load static %}
 {% load my_filters %}
-{% block title %}Genes similar to: {{ gene1 }} vs. {{ gene2 }} / {{ SITE_NAME }}{% endblock %}
+{% block title %}Genes similar to {{ gene1 }}: {{ gene2 }} / {{ SITE_NAME }}{% endblock %}
 {% block content %}
 <style>
 .axis path,
@@ -39,7 +39,7 @@
 </style>
 <div class="row">
     <div class="col-md-12">
-        <h1>Genes similar to: {{ gene1 }} vs. {{ gene2 }}</h1>
+        <h1>Genes similar to {{ gene1 }}: {{ gene2 }}</h1>
         <p>Correlation: {{ sim.score|stringformat:".2f" }} +/- {{ sim.pvalue|stringformat:".2f" }}</p> 
         <div id="gene_plot"></div>
     </div>
