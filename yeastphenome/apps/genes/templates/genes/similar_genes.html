@@ -62,12 +62,13 @@ tr.highlight {
                 <table id="similar_table" class="tablesorter table table-striped" width="100%">
                     <thead>
                     <tr>
-                        <th style="text-align:left" data-placeholder="Select an name" class="text-nowrap" width="25%">
+                        <th style="text-align:left" data-placeholder="Select an name" class="text-nowrap" width="20%">
                             Gene
                         </th>
-                        <th style="text-align:left" width="25%">Correlation Mean</th>
-                        <th style="text-align:left" width="25%">Correlation Std. Dev.</th>
-                        <th style="text-align:left" width="25%">Percentile (lowest to highest)</th>
+                        <th style="text-align:left" width="20%">Correlation Mean</th>
+                        <th style="text-align:left" width="20%">Correlation Std. Dev.</th>
+                        <th style="text-align:left" width="20%">Percentile (lowest to highest)</th>
+                        <th width="20%">Compare</th>
                     </tr>
                     </thead>
                     <tbody id="similar_table_body">
@@ -77,6 +78,7 @@ tr.highlight {
                             <td class="dt-center">{{ sim.score|stringformat:".2f" }}</td>
                             <td class="dt-center">{{ sim.pvalue|stringformat:".2f" }}</td>
                             <td class="dt-center">{{ ranks|lookup:forloop.counter0|floatformat:1 }}%</td>
+                            <td class="dt-center"><a href="{% url 'genes:similar_scatterplot' sim.gene1.id sim.gene2.id %}">Scatter plot</a></td>
                         </tr>
                     {% endfor %}
                 </table>

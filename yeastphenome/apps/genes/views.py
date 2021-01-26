@@ -2,8 +2,11 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, reverse
 from django.conf import settings
+from django.db.models import Q
+import pandas
 
-from yeastphenome.apps.genes.models import Gene
+from yeastphenome.apps.datasets.models import Data, Dataset
+from yeastphenome.apps.genes.models import Gene, GeneSimilarity
 from yeastphenome.apps.genes.search import get_search_tags
 from ratelimit.decorators import ratelimit
 from yeastphenome.settings import (
@@ -89,6 +92,72 @@ def similar_genes(request, gene_id):
         "active": "explorer",
     }
     return render(request, "genes/similar_genes.html", context)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def similar_scatterplot(request, gene1_id, gene2_id):
+    """Generate a scatterplot to compare two genes across datasets. You can
+    interchange gene1 and gene2 and they will produce the same plot (but switched
+    axes). This makes the view flexible to any combination of genes.
+    """
+    gene1 = get_object_or_404(Gene, pk=gene1_id)
+    gene2 = get_object_or_404(Gene, pk=gene2_id)
+
+    # Get the correlation to add
+    sim = GeneSimilarity.objects.filter(
+        Q(gene1=gene1, gene2=gene2) | Q(gene1=gene2, gene2=gene1)
+    )
+
+    # Get data for gene1 and gene2 as pandas dataframes
+    data1 = pandas.DataFrame(list(Data.objects.filter(gene_id=gene1.id).values()))
+    data2 = pandas.DataFrame(list(Data.objects.filter(gene_id=gene2.id).values()))
+
+    # Join the 2 dataframes using dataset_id as the key
+    data = data1.merge(data2, on="dataset_id")
+
+    # Only keep rows where both genes have values (are not null)
+    data = data.loc[data["valuez_x"].notnull() & data["valuez_y"].notnull()]
+
+    # Get datasets names
+    datasets = pandas.DataFrame(
+        list(Dataset.objects.filter(id__in=data["dataset_id"].values).values())
+    )
+
+    # Add them to the data dataframe
+    data = data.merge(datasets[["id", "name"]], left_on="dataset_id", right_on="id")
+
+    # Convert to scores dictionary for view
+    scores = data[["dataset_id", "valuez_x", "valuez_y", "name"]].to_dict(
+        orient="index"
+    )
+
+    # Explore data > Genes > YHR045 / YHR045W > Similar genes > DAP1 / YPL170W
+    links = [
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("genes:index"), "name": "Genes"},
+        {
+            "url": reverse("genes:detail", args=[gene1.id]),
+            "name": "%s" % gene1,
+        },
+        {
+            "url": reverse("genes:similar_genes", args=[gene1.id]),
+            "name": "Similar Genes",
+        },
+        {
+            "url": reverse("genes:similar_scatterplot", args=[gene1.id, gene2.id]),
+            "name": "%s" % gene2,
+        },
+    ]
+
+    context = {
+        "gene1": gene1,
+        "gene2": gene2,
+        "scores": scores,
+        "sim": sim.first(),
+        "links": links,
+        "active": "explorer",
+    }
+    return render(request, "genes/similar_scatterplot.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
