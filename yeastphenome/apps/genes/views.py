@@ -1,11 +1,11 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, reverse
 from django.conf import settings
-from django.contrib import messages
 from django.db.models import Q
+import pandas
 
-from yeastphenome.apps.datasets.models import Data
+from yeastphenome.apps.datasets.models import Data, Dataset
 from yeastphenome.apps.genes.models import Gene, GeneSimilarity
 from yeastphenome.apps.genes.search import get_search_tags
 from ratelimit.decorators import ratelimit
@@ -108,6 +108,29 @@ def similar_scatterplot(request, gene1_id, gene2_id):
         Q(gene1=gene1, gene2=gene2) | Q(gene1=gene2, gene2=gene1)
     )
 
+    # Get data for gene1 and gene2 as pandas dataframes
+    data1 = pandas.DataFrame(list(Data.objects.filter(gene_id=gene1.id).values()))
+    data2 = pandas.DataFrame(list(Data.objects.filter(gene_id=gene2.id).values()))
+
+    # Join the 2 dataframes using dataset_id as the key
+    data = data1.merge(data2, on="dataset_id")
+
+    # Only keep rows where both genes have values (are not null)
+    data = data.loc[data["valuez_x"].notnull() & data["valuez_y"].notnull()]
+
+    # Get datasets names
+    datasets = pandas.DataFrame(
+        list(Dataset.objects.filter(id__in=data["dataset_id"].values).values())
+    )
+
+    # Add them to the data dataframe
+    data = data.merge(datasets[["id", "name"]], left_on="dataset_id", right_on="id")
+
+    # Convert to scores dictionary for view
+    scores = data[["dataset_id", "valuez_x", "valuez_y", "name"]].to_dict(
+        orient="index"
+    )
+
     # Explore data > Genes > YHR045 / YHR045W > Similar genes > DAP1 / YPL170W
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
@@ -125,47 +148,6 @@ def similar_scatterplot(request, gene1_id, gene2_id):
             "name": "%s" % gene2,
         },
     ]
-
-    # But we want to sort the genes by id so we can correctly assign the axes
-    # This means that gene1 should have the smaller id
-    if gene1.id > gene2.id:
-        gene1, gene2 = gene2, gene1
-    names = {gene.id: str(gene) for gene in [gene1, gene2]}
-
-    # We only want datasets with both genes defined
-    datasets1 = gene1.data_set.filter(valuez__isnull=False).values_list(
-        "dataset_id", flat=True
-    )
-    datasets2 = gene2.data_set.filter(valuez__isnull=False).values_list(
-        "dataset_id", flat=True
-    )
-    shared = set(datasets1).intersection(set(datasets2))
-
-    # Cut out early if there is no intersection
-    if not shared:
-        messages.info(request, "These datasets do not have any overlapping genes")
-        return redirect("genes:detail", args=[gene1.id])
-
-    # Get shared datasets, and create a lookup of scores based on dataset id
-    data = Data.objects.filter(
-        Q(dataset_id__in=shared), Q(gene_id__in=[gene1.id, gene2.id])
-    )
-    values = data.values_list("dataset_id", "gene_id", "valuez", "dataset__name")
-    scores = {}
-
-    # Lookup looks like  15343: {'values': [Decimal('-0.97599'), Decimal('0.34786')], 'genes': [1, 3]},
-    # Note that the gene ids are sorted least to greatest, so gene1 < gene2
-    for value in values:
-        if value[0] not in scores:
-            scores[value[0]] = {
-                "values": [],
-                "genes": [],
-                "names": [],
-                "dataset_name": value[3],
-            }
-        scores[value[0]]["values"].append(value[2])
-        scores[value[0]]["genes"].append(value[1])
-        scores[value[0]]["names"].append(names[value[1]])
 
     context = {
         "gene1": gene1,

@@ -51,7 +51,7 @@
 
 <script>
 
-var data = [{% for dataset_id, entry in scores.items %}{"dataset_id": {{ dataset_id }}, "dataset_name": "{{ entry.dataset_name }}", "value1": {{ entry.values.0|stringformat:".2f" }}, "value2": {{ entry.values.1|stringformat:".2f" }}, "gene1_id": {{ entry.genes.0 }}, "gene2_id": {{ entry.genes.1 }}, "gene1": "{{ entry.names.0 }}", "gene2": "{{ entry.names.1 }}" }{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
+var data = [{% for idx, entry in scores.items %}{"dataset_id": {{ entry.dataset_id }}, "dataset_name": "{{ entry.name }}", "value1": {{ entry.valuez_x|stringformat:".2f" }}, "value2": {{ entry.valuez_y|stringformat:".2f" }} }{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
 
 var margin = {top: 20, right: 20, bottom: 30, left: 40},
     width = 700 - margin.left - margin.right,
