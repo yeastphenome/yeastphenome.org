@@ -117,12 +117,12 @@ def similar_scatterplot(request, gene1_id, gene2_id):
             "name": "%s" % gene1,
         },
         {
-            "url": reverse("genes:detail", args=[gene2.id]),
-            "name": "%s" % gene2,
+            "url": reverse("genes:similar_genes", args=[gene1.id]),
+            "name": "Similar Genes",
         },
         {
             "url": reverse("genes:similar_scatterplot", args=[gene1.id, gene2.id]),
-            "name": "Phenotypic Scores",
+            "name": "%s" % gene2,
         },
     ]
 

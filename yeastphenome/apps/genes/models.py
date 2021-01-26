@@ -94,6 +94,7 @@ class GeneSimilarity(models.Model):
     score = models.DecimalField(
         max_digits=10, decimal_places=3, help_text="z-score of the metric."
     )
+    # IMPORTANT: this is actually a standard deviation
     pvalue = models.DecimalField(max_digits=10, decimal_places=6)
 
     @classmethod

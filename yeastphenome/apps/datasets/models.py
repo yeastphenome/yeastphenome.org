@@ -357,6 +357,8 @@ class DatasetSimilarity(models.Model):
         Dataset, on_delete=models.CASCADE, related_name="dataset_similarity2"
     )
     score = models.DecimalField(max_digits=10, decimal_places=3)
+
+    # IMPORTANT: this is actually a standard deviation
     pvalue = models.DecimalField(max_digits=10, decimal_places=6)
 
     @classmethod

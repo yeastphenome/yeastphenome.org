@@ -1,7 +1,7 @@
 {% extends "base/wide.html" %}
 {% load static %}
 {% load my_filters %}
-{% block title %}Phenotypic Scores / {{ SITE_NAME }}{% endblock %}
+{% block title %}Genes similar to: {{ gene1 }} vs. {{ gene2 }} / {{ SITE_NAME }}{% endblock %}
 {% block content %}
 <style>
 .axis path,
@@ -13,12 +13,17 @@
 
 .dot {
   cursor: pointer;
+  opacity: 50%;
 }
 
 .tooltip {
   position: absolute;
-  width: 300px;
-  height: 28px;
+  width: 350px;
+  padding: 5px;
+  height: 80px;
+  border-radius: 5px;
+  background-color: white;
+  opacity: 80%;
   pointer-events: none;
 }
 
@@ -34,8 +39,8 @@
 </style>
 <div class="row">
     <div class="col-md-12">
-        <h1>Phenotypic Scores: {{ gene1 }} vs. {{ gene2 }}</h1>
-        <p>Correlation: {{ sim.score|stringformat:".2f" }}</p> 
+        <h1>Genes similar to: {{ gene1 }} vs. {{ gene2 }}</h1>
+        <p>Correlation: {{ sim.score|stringformat:".2f" }} +/- {{ sim.pvalue|stringformat:".2f" }}</p> 
         <div id="gene_plot"></div>
     </div>
 </div>
@@ -49,7 +54,7 @@
 var data = [{% for dataset_id, entry in scores.items %}{"dataset_id": {{ dataset_id }}, "dataset_name": "{{ entry.dataset_name }}", "value1": {{ entry.values.0|stringformat:".2f" }}, "value2": {{ entry.values.1|stringformat:".2f" }}, "gene1_id": {{ entry.genes.0 }}, "gene2_id": {{ entry.genes.1 }}, "gene1": "{{ entry.names.0 }}", "gene2": "{{ entry.names.1 }}" }{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
 
 var margin = {top: 20, right: 20, bottom: 30, left: 40},
-    width = 1400 - margin.left - margin.right,
+    width = 700 - margin.left - margin.right,
     height = 700 - margin.top - margin.bottom;
 
 // setup x 
@@ -80,12 +85,27 @@ var tooltip = d3.select("body").append("div")
     .attr("class", "tooltip")
     .style("opacity", 0);
 
+// The plot should be square
+var minX = d3.min(data, function(d){ return d.value1})
+var maxX = d3.max(data, function(d){ return d.value1})
+var minY = d3.min(data, function(d){ return d.value2})
+var maxY = d3.max(data, function(d){ return d.value2})
 
-var lg = addXY(data);
+lowerBound = minY
+if (minX < minY) {
+    lowerBound = minX
+}
+
+upperBound = maxY
+if (maxX > maxY) {
+    upperBound = maxX
+}
 
 // don't want dots overlapping axis, so add in buffer to data domain
-xScale.domain([d3.min(data, xValue)-1, d3.max(data, xValue)+1]);
-yScale.domain([d3.min(data, yValue)-1, d3.max(data, yValue)+1]);
+xScale.domain([lowerBound -1, upperBound +1]);
+yScale.domain([lowerBound -1, upperBound +1]);
+
+var lg = addXY(lowerBound, upperBound);
 
 // x-axis
 svg.append("g")
@@ -116,7 +136,7 @@ svg.selectAll(".dot")
       .data(data)
     .enter().append("circle")
       .attr("class", "dot")
-      .attr("r", 3)
+      .attr("r", 5)
       .attr("cx", xMap)
       .attr("cy", yMap)
       .style("fill", function(d) { return "steelblue";}) 
@@ -147,10 +167,10 @@ svg.append("line")
     .attr("y2", yScale(lg.ptB.y));
 
 svg.append('text')
-    .attr('x', xScale(lg.ptA.x + 1))
-    .attr('y', yScale(lg.ptA.y))
+    .attr('x', xScale(lg.ptB.x))
+    .attr('y', yScale(lg.ptB.y))
     .attr('dy', '1em')
-    .attr('text-anchor', 'end')
+    .attr('text-anchor', 'middle')
     .text("y = x")
     .style("fill", "darkred")
 
@@ -177,33 +197,17 @@ svg.append('text')
 //      .text(function(d) { return d;})
 
 
-function addXY(data){
-
-      // Get boundaries
-      var minX = d3.min(data, function(d){ return d.value1})
-      var maxX = d3.max(data, function(d){ return d.value1})
-      var minY = d3.min(data, function(d){ return d.value2})
-      var maxY = d3.max(data, function(d){ return d.value2})
-
-      lowerBound = minY
-      if (minX > minY) {
-          lowerBound = minX
-      }
-
-      upperBound = maxY
-      if (maxX < maxY) {
-          upperBound = maxX
-      }
+function addXY(lowerBound, upperBound){
 
       // return an object of two points for y=x within the plot area
       return {
         ptA : {
-          x: lowerBound,
-          y: lowerBound
+          x: lowerBound -1,
+          y: lowerBound -1
         },
         ptB : {
-          x: upperBound,
-          y: upperBound
+          x: upperBound +1,
+          y: upperBound +1
         }
   }
 }
