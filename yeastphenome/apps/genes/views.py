@@ -125,11 +125,10 @@ def similar_scatterplot(request, gene1_id, gene2_id):
 
     # Add them to the data dataframe
     data = data.merge(datasets[["id", "name"]], left_on="dataset_id", right_on="id")
+    data = data.rename(columns={"dataset_id": "entry_id"})
 
     # Convert to scores dictionary for view
-    scores = data[["dataset_id", "valuez_x", "valuez_y", "name"]].to_dict(
-        orient="index"
-    )
+    scores = data[["entry_id", "valuez_x", "valuez_y", "name"]].to_dict(orient="index")
 
     # Explore data > Genes > YHR045 / YHR045W > Similar genes > DAP1 / YPL170W
     links = [
@@ -150,8 +149,9 @@ def similar_scatterplot(request, gene1_id, gene2_id):
     ]
 
     context = {
-        "gene1": gene1,
-        "gene2": gene2,
+        "title1": gene1,
+        "title2": gene2,
+        "entry_type": "datasets",
         "scores": scores,
         "sim": sim.first(),
         "links": links,

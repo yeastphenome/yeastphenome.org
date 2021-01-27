@@ -1,9 +1,10 @@
 <table id="{{ table_id }}" class="table table-condensed table-hover" width="100%">
     <thead>
     <tr>
-        <th style="text-align:left" with="33%">Dataset Name</th>
-        <th style="text-align:left" width="33%">Correlation Mean</th>
-        <th style="text-align:left" width="33%">Correlation Std. Dev.</th>
+        <th style="text-align:left" with="25%">Dataset Name</th>
+        <th style="text-align:left" width="25%">Correlation Mean</th>
+        <th style="text-align:left" width="25%">Correlation Std. Dev.</th>
+        <th style="text-align:left" width="25%">Compare</th>
     </tr>
     </thead>
     <tbody>
@@ -12,6 +13,7 @@
         <td class="dt-center"><a href="{% url 'datasets:dataset_detail' sim.dataset2_id %}">{{ sim.dataset2 }}</a></td>
         <td class="dt-center">{{ sim.score|floatformat:2 }}</td>
         <td class="dt-center">{{ sim.pvalue|floatformat:2 }}</td>
+        <td class="dt-center"><a href="{% url 'datasets:similar_scatterplot' sim.dataset1.id sim.dataset2.id %}">Scatter plot</a></td>
     </tr>
     {% endfor %}
     </tbody>

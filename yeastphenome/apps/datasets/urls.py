@@ -39,6 +39,11 @@ urlpatterns = [
         name="similar_dataset_table",
     ),
     path(
+        "<int:dataset1_id>/similar/<int:dataset2_id>/",
+        views.similar_scatterplot,
+        name="similar_scatterplot",
+    ),
+    path(
         "<int:dataset_id>/similar/download/",
         views.download_dataset_similarities,
         name="download_dataset_similarities",

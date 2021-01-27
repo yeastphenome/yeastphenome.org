@@ -63,14 +63,16 @@ tr.highlight {
     <table id="dataset_table" class="tablesorter table table-striped" width="100%">
         <thead>
         <tr>
-            <th width="33%">Dataset Name</th>
-            <th width="25%">Correlation Mean</th>
-            <th width="25%">Correlation Std. Dev.</th>
-            <th width="25%">Percentile (lowest to highest)</th>
+            <th width="30%">Dataset Name</th>
+            <th width="20%">Correlation Mean</th>
+            <th width="20%">Correlation Std. Dev.</th>
+            <th width="20%">Percentile (lowest to highest)</th>
+            <th width="10%">Compare</th>
         </tr>
         </thead>
         <tbody id="dataset_table_body">{% for d in datasets %}<tr id="tr-{{ d.0 }}">
-        <td id="td-{{ d.0 }}" class="dt-center"><a href="{% url 'datasets:dataset_detail' d.0 %}">{{ d.1 }}</a></td><td class="dt-center">{{ d.2|floatformat:2 }}</td><td class='dt-center'>{{ d.3|floatformat:2 }}</td><td class="dt-center">{{ ranks|lookup:forloop.counter0|floatformat:1 }}%</td>
+        <td id="td-{{ d.0 }}" class="dt-center"><a href="{% url 'datasets:dataset_detail' d.0 %}">{{ d.1 }}</a></td><td class="dt-center">{{ d.2|floatformat:2 }}</td><td class='dt-center'>{{ d.3|floatformat:2 }}</td><td class="dt-center">{{ ranks|lookup:forloop.counter0|floatformat:1 }}%</td><td class="dt-center"><a href="{% url 'datasets:similar_scatterplot' dataset.id d.0 %}">Scatter plot</a></td>
+
     </tr>{% endfor %}
       </table>
     <a href="{% url 'datasets:download_dataset_similarities' dataset.id %}" type="button" class="btn btn-primary">Download now</a>
@@ -96,7 +98,7 @@ function draw_table(names) {
         dataset_name = dataset_lookup[e].name || "Dataset id: " + e
         dataset_pvalue = dataset_lookup[e].pvalue || ""
         dataset_rank = dataset_lookup[e].rank || ""
-        content += "<tr id='tr-" + e + "'><td class='dt-center'><a href='/datasets/"+ e + "'>" + dataset_name + "</a></td><td class='dt-center'>" + dataset_value + "</td><td class='dt-center'>" + dataset_pvalue + "</td><td class='dt-center'>"+ dataset_rank + "</td></tr>\n"
+        content += "<tr id='tr-" + e + "'><td class='dt-center'><a href='/datasets/"+ e + "'>" + dataset_name + "</a></td><td class='dt-center'>" + dataset_value + "</td><td class='dt-center'>" + dataset_pvalue + "</td><td class='dt-center'>"+ dataset_rank + "</td><td class='dt-center'><a href='/datasets/{{ dataset.id }}/similar/" + e + "/'>Scatter plot</a></td></tr>\n"
     })
 
     $("#dataset_table_body").html(content)
