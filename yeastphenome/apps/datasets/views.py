@@ -105,7 +105,7 @@ def similar_scatterplot(request, dataset1_id, dataset2_id):
         {"url": reverse("datasets:index"), "name": "Datasets"},
         {
             "url": reverse("datasets:dataset_detail", args=[dataset1.id]),
-            "name": dataset1.name,
+            "name": dataset1.short_name,
         },
         {
             "url": reverse("datasets:similar_dataset_table", args=[dataset1.id]),
@@ -113,12 +113,12 @@ def similar_scatterplot(request, dataset1_id, dataset2_id):
         },
         {
             "url": reverse("datasets:dataset_detail", args=[dataset2.id]),
-            "name": dataset2.id,
+            "name": dataset2.short_name,
         },
     ]
     context = {
-        "title1": dataset1.id,
-        "title2": dataset2.id,
+        "title1": dataset1.short_name,
+        "title2": dataset2.short_name,
         "scores": scores,
         "entry_type": "genes",
         "sim": sim.first(),
