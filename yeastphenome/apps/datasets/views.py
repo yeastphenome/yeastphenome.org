@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, reverse
@@ -6,6 +7,7 @@ from django.conf import settings
 from django.views.decorators.cache import never_cache
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.datasets.models import (
+    DatasetSimilarity,
     Dataset,
     Data,
     Tag,
@@ -18,6 +20,7 @@ from yeastphenome.apps.phenotypes.models import Observable
 
 from libchebipy import ChebiEntity
 import os
+import pandas
 import tempfile
 
 from ratelimit.decorators import ratelimit
@@ -53,6 +56,76 @@ def dataset_detail(request, dataset_id):
     context["sims_bottom"] = dataset.get_ranked_similar(reverse=True)[:10]
 
     return render(request, "datasets/detail.html", context)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def similar_scatterplot(request, dataset1_id, dataset2_id):
+    """Generate a scatterplot to compare two datasets based on phenotypic scores."""
+    dataset1 = get_object_or_404(Dataset, pk=dataset1_id)
+    dataset2 = get_object_or_404(Dataset, pk=dataset2_id)
+
+    # Get the correlation to add
+    sim = DatasetSimilarity.objects.filter(
+        Q(dataset1=dataset1, dataset2=dataset2)
+        | Q(dataset1=dataset2, dataset2=dataset1)
+    )
+
+    # Get gene values across datasets 1 and 2
+    data1 = pandas.DataFrame(list(dataset1.data_set.values()))
+    data2 = pandas.DataFrame(list(dataset2.data_set.values()))
+
+    # Join the 2 dataframes using gene_id as the key
+    data = data1.merge(data2, on="gene_id")
+
+    # Only keep rows where both genes have values (are not null)
+    data = data.loc[data["valuez_x"].notnull() & data["valuez_y"].notnull()]
+
+    # Get gene names
+    names = pandas.DataFrame(
+        list(Gene.objects.filter(id__in=data["gene_id"].values).values())
+    )
+
+    # Add them to the data dataframe
+    data = data.merge(
+        names[["id", "systematic_name", "common_name"]],
+        left_on="gene_id",
+        right_on="id",
+    )
+
+    # Convert to scores dictionary for view
+    scores = data[["gene_id", "valuez_x", "valuez_y", "systematic_name", "common_name"]]
+
+    # This creates a warning that doesn't seem to be fixable
+    scores["name"] = scores["common_name"] + "/" + scores["systematic_name"]
+    scores = scores.rename(columns={"gene_id": "entry_id"})
+    scores = scores.to_dict(orient="index")
+
+    links = [
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("datasets:index"), "name": "Datasets"},
+        {
+            "url": reverse("datasets:dataset_detail", args=[dataset1.id]),
+            "name": dataset1.short_name,
+        },
+        {
+            "url": reverse("datasets:similar_dataset_table", args=[dataset1.id]),
+            "name": "Similar Datasets",
+        },
+        {
+            "url": reverse("datasets:dataset_detail", args=[dataset2.id]),
+            "name": dataset2.short_name,
+        },
+    ]
+    context = {
+        "title1": dataset1.short_name,
+        "title2": dataset2.short_name,
+        "scores": scores,
+        "entry_type": "genes",
+        "sim": sim.first(),
+        "links": links,
+        "active": "explorer",
+    }
+    return render(request, "datasets/similar_scatterplot.html", context)
 
 
 @never_cache

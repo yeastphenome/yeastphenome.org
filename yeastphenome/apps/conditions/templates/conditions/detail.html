@@ -27,7 +27,7 @@
                     <th width="20%" scope="row">PubChem name</th>
                     <td>{{ object.pubchem_name }}
                         {% if object.pubchem_id %}
-                            &mdash; <a class="external" href="https://pubchem.ncbi.nlm.nih.gov/compound/{{ object.pubchem_id }}/">PCID:{{ object.pubchem_id }}</a>
+                            &mdash; <a class="external" href="https://pubchem.ncbi.nlm.nih.gov/compound/{{ object.pubchem_id }}">PCID:{{ object.pubchem_id }}</a>
                         {% endif %}
                     </td>
                 </tr>{% endif %}

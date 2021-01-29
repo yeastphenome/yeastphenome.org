@@ -229,6 +229,17 @@ class Dataset(models.Model):
     tags = models.ManyToManyField(Tag, blank=True)
     data_modified_on = models.DateField(null=True, blank=True)
 
+    @property
+    def short_name(self):
+        """Break the dataset name into words, and return the first 16. If the
+        dataset name is longer than that, return those first 8 plus ... then
+        the last 8.
+        """
+        words = self.name.split(" ")
+        if len(words) <= 16:
+            return " ".join(words)
+        return " ".join(words[0:8]) + " ... " + " ".join(words[-8:])
+
     def __str__(self):
         return "%s" % self.name
 

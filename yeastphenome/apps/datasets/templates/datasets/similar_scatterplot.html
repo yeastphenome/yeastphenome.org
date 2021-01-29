@@ -5,8 +5,8 @@
 {% block content %}
 <div class="row">
     <div class="col-md-12">
-        <h1>Genes similar to {{ title1 }}: {{ title2 }}</h1>
-        <p>{% if sim %}Correlation: {{ sim.score|stringformat:".2f" }} +/- {{ sim.pvalue|stringformat:".2f" }}</p>{% endif %}
+        <h1>Datasets similar to {{ title1 }}: {{ title2 }}</h1>
+        <p>Correlation: {{ sim.score|stringformat:".2f" }} +/- {{ sim.pvalue|stringformat:".2f" }}</p> 
         <div id="gene_plot"></div>
     </div>
 </div>
