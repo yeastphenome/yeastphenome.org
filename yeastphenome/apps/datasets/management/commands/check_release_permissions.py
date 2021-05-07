@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from datasets.models import Dataset
+from yeastphenome.apps.datasets.models import Dataset
 
 
 class Command(BaseCommand):
