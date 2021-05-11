@@ -1,11 +1,9 @@
 from django.contrib import admin
-
 from yeastphenome.apps.phenotypes.models import (
     MutantType,
     Observable,
     Phenotype,
     Measurement,
-    Tag,
 )
 from yeastphenome.apps.common.admin_util import ImprovedModelAdmin
 
@@ -29,13 +27,13 @@ class ObservableAdmin(ImprovedModelAdmin):
     ordering = ["name"]
 
 
-class TagAdmin(ImprovedModelAdmin):
-    list_per_page = 50
-    list_display = ["name", "description", "observables_str_list"]
-    search_fields = ["name", "description"]
-    fields = ("name", "description", "observables_edit_link_list")
-    readonly_fields = ("observables_edit_link_list",)
-    ordering = ["name"]
+# class TagAdmin(ImprovedModelAdmin):
+#     list_per_page = 50
+#     list_display = ["name", "description", "observables_str_list"]
+#     search_fields = ["name", "description"]
+#     fields = ("name", "description", "observables_edit_link_list")
+#     readonly_fields = ("observables_edit_link_list",)
+#     ordering = ["name"]
 
 
 class MutantTypeAdmin(admin.ModelAdmin):
@@ -79,5 +77,4 @@ class MeasurementAdmin(ImprovedModelAdmin):
 admin.site.register(Phenotype, PhenotypeAdmin)
 admin.site.register(MutantType, MutantTypeAdmin)
 admin.site.register(Observable, ObservableAdmin)
-admin.site.register(Tag, TagAdmin)
 admin.site.register(Measurement, MeasurementAdmin)

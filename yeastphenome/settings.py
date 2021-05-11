@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "yeastphenome.apps.genes",
     "yeastphenome.apps.papers",
     "yeastphenome.apps.phenotypes",
+    "yeastphenome.apps.tags",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

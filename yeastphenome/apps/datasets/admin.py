@@ -5,7 +5,7 @@ from django import forms
 from django.utils.http import urlencode
 from django.utils.safestring import mark_safe
 
-from yeastphenome.apps.datasets.models import Dataset, Collection, Source, Tag
+from yeastphenome.apps.datasets.models import Dataset, Collection, Source
 from yeastphenome.apps.common.admin_util import (
     ImprovedModelAdmin,
     ImprovedTabularInline,
@@ -198,19 +198,19 @@ class CollectionAdmin(ImprovedModelAdmin):
     list_display = ("__str__",)
 
 
-class TagAdmin(ImprovedModelAdmin):
-    model = Tag
-    list_display = (
-        "name",
-        "datasets_number",
-    )
-
-    fields = (
-        "name",
-        "description",
-        "datasets_edit_link_list",
-    )
-    readonly_fields = ("datasets_edit_link_list",)
+# class TagAdmin(ImprovedModelAdmin):
+#     model = Tag
+#     list_display = (
+#         "name",
+#         "datasets_number",
+#     )
+#
+#     fields = (
+#         "name",
+#         "description",
+#         "datasets_edit_link_list",
+#     )
+#     readonly_fields = ("datasets_edit_link_list",)
 
 
 class StatusAdmin(ImprovedModelAdmin):
@@ -221,4 +221,3 @@ class StatusAdmin(ImprovedModelAdmin):
 admin.site.register(Source, SourceAdmin)
 admin.site.register(Collection, CollectionAdmin)
 admin.site.register(Dataset, DatasetAdmin)
-admin.site.register(Tag, TagAdmin)
