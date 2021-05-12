@@ -12,7 +12,7 @@ from yeastphenome.apps.conditions.models import (
     ConditionSet,
     Condition,
     ConditionType,
-    Medium
+    Medium,
 )
 from yeastphenome.apps.common.admin_util import (
     ImprovedTabularInline,

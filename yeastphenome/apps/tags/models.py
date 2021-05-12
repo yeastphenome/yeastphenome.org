@@ -13,14 +13,14 @@ class Tag(models.Model):
         return self.name
 
     @classmethod
-    def all_valid(cls, type=''):
-        if type == 'conditions':
+    def all_valid(cls, type=""):
+        if type == "conditions":
             return cls.objects.filter(
                 Q(condition__isnull=False) | Q(conditiontype__isnull=False)
             ).distinct()
-        elif type == 'datasets':
+        elif type == "datasets":
             return cls.objects.filter(dataset__isnull=False)
-        elif type == 'phenotypes':
+        elif type == "phenotypes":
             return cls.objects.filter(observable__isnull=False)
         else:
             return cls.objects.all()
