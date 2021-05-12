@@ -31,3 +31,31 @@ class Tag(models.Model):
             self.name,
         )
         return mark_safe(html)
+
+    def top50_conditiontypes_edit_link_list(self):
+        conditiontypes = self.conditiontype_set.order_by("name").all()
+        html = "<ul>"
+        html += "<li>".join([c.link_edit() for c in conditiontypes[:50]])
+        html += "</ul>"
+        return mark_safe(html)
+
+    def top50_conditions_edit_link_list(self):
+        conditions = self.condition_set.order_by("type__name").all()
+        html = "<ul>"
+        html += "<li>".join([c.link_edit() for c in conditions[:50]])
+        html += "</ul>"
+        return mark_safe(html)
+
+    def top50_datasets_edit_link_list(self):
+        datasets = self.dataset_set.order_by("name").all()
+        html = "<ul>"
+        html += "<li>".join([d.link_edit() for d in datasets[:50]])
+        html += "</ul>"
+        return mark_safe(html)
+
+    def top50_observables_edit_link_list(self):
+        observables = self.observable_set.order_by("name").all()
+        html = "<ul>"
+        html += "<li>".join([p.link_edit() for p in observables[:50]])
+        html += "</ul>"
+        return mark_safe(html)

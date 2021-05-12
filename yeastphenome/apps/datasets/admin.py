@@ -198,21 +198,6 @@ class CollectionAdmin(ImprovedModelAdmin):
     list_display = ("__str__",)
 
 
-# class TagAdmin(ImprovedModelAdmin):
-#     model = Tag
-#     list_display = (
-#         "name",
-#         "datasets_number",
-#     )
-#
-#     fields = (
-#         "name",
-#         "description",
-#         "datasets_edit_link_list",
-#     )
-#     readonly_fields = ("datasets_edit_link_list",)
-
-
 class StatusAdmin(ImprovedModelAdmin):
     list_display = ("name",)
     ordering = ("name",)

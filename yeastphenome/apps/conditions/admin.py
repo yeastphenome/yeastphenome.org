@@ -20,23 +20,6 @@ from yeastphenome.apps.common.admin_util import (
 )
 
 
-# class TagAdmin(ImprovedModelAdmin):
-#     list_per_page = 50
-#     list_display = ["name", "description"]
-#     search_fields = ["name", "description"]
-#     fields = (
-#         "name",
-#         "description",
-#         "conditiontypes_edit_link_list",
-#         "conditions_edit_link_list",
-#     )
-#     readonly_fields = (
-#         "conditiontypes_edit_link_list",
-#         "conditions_edit_link_list",
-#     )
-#     ordering = ["name"]
-
-
 class ConditionAdminForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super(ConditionAdminForm, self).clean()

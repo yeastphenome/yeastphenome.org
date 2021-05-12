@@ -113,45 +113,6 @@ class Datatype(models.Model):
         return "%s" % self.name
 
 
-# class Tag(models.Model):
-#     name = models.CharField(max_length=200, null=False, blank=False)
-#     description = models.TextField(max_length=1000, null=True, blank=True)
-#
-#     @classmethod
-#     def all_valid(cls):
-#         return cls.objects.filter(dataset__isnull=False)
-#
-#     def __str__(self):
-#         s = ""
-#         if self.name:
-#             s = self.name
-#         return s
-#
-#     def link_detail(self):
-#         return mark_safe(
-#             '<a href="%s?query=%s">%s</a>'
-#             % (reverse("datasets:index"), self.name, self)
-#         )
-#
-#     def datasets(self):
-#         return (
-#             apps.get_model("datasets", "Dataset")
-#             .objects.filter(tags=self)
-#             .exclude(paper__latest_data_status__status__name="not relevant")
-#             .order_by("name")
-#             .all()
-#         )
-#
-#     def datasets_number(self):
-#         return self.datasets().count()
-#
-#     def datasets_edit_link_list(self):
-#         html = "<ul>"
-#         html = html + "<li>".join([d.link_edit() for d in self.datasets()])
-#         html = html + "</ul>"
-#         return mark_safe(html)
-
-
 class Dataset(models.Model):
 
     name = models.CharField(max_length=500, null=True, blank=True, unique=True)

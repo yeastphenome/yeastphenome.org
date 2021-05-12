@@ -6,49 +6,6 @@ from django.utils.safestring import mark_safe
 from yeastphenome.apps.tags.models import Tag
 
 
-# class Tag(models.Model):
-#     name = models.CharField(max_length=200, null=False, blank=False)
-#     description = models.TextField(max_length=1000, null=True, blank=True)
-#
-#     def __str__(self):
-#         return self.name
-#
-#     @classmethod
-#     def all_valid(cls):
-#         return cls.objects.filter(observable__isnull=False)
-#
-#     def link_detail(self):
-#         html = '<a href="%s">%s</a>' % (
-#             reverse("phenotypes:tag", args=(self.id,)),
-#             self,
-#         )
-#         return mark_safe(html)
-#
-#     def link_edit(self):
-#         html = '<a href="%s">%s</a>' % (
-#             reverse("admin:phenotypes_tag_change", args=(self.id,)),
-#             self,
-#         )
-#         return mark_safe(html)
-#
-#     def observables(self):
-#         return (
-#             apps.get_model("phenotypes", "Observable")
-#             .objects.filter(tags=self)
-#             .order_by("name")
-#             .all()
-#         )
-#
-#     def observables_str_list(self):
-#         return "; ".join([str(o) for o in self.observables()])
-#
-#     def observables_edit_link_list(self):
-#         html = "<ul>"
-#         html = html + "<li>".join([p.link_edit() for p in self.observables()])
-#         html = html + "</ul>"
-#         return mark_safe(html)
-
-
 class Observable(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
