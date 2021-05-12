@@ -192,6 +192,17 @@ class Dataset(models.Model):
     tags = models.ManyToManyField(Tag, blank=True)
     data_modified_on = models.DateField(null=True, blank=True)
 
+    @property
+    def short_name(self):
+        """Break the dataset name into words, and return the first 16. If the
+        dataset name is longer than that, return those first 8 plus ... then
+        the last 8.
+        """
+        words = self.name.split(" ")
+        if len(words) <= 16:
+            return " ".join(words)
+        return " ".join(words[0:8]) + " ... " + " ".join(words[-8:])
+
     def __str__(self):
         return "%s" % self.name
 
@@ -320,6 +331,8 @@ class DatasetSimilarity(models.Model):
         Dataset, on_delete=models.CASCADE, related_name="dataset_similarity2"
     )
     score = models.DecimalField(max_digits=10, decimal_places=3)
+
+    # IMPORTANT: this is actually a standard deviation
     pvalue = models.DecimalField(max_digits=10, decimal_places=6)
 
     @classmethod

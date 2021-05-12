@@ -27,7 +27,7 @@
                     <th width="20%" scope="row">PubChem name</th>
                     <td>{{ object.pubchem_name }}
                         {% if object.pubchem_id %}
-                            &mdash; <a class="external" href="https://pubchem.ncbi.nlm.nih.gov/compound/{{ object.pubchem_id }}/">PCID:{{ object.pubchem_id }}</a>
+                            &mdash; <a class="external" href="https://pubchem.ncbi.nlm.nih.gov/compound/{{ object.pubchem_id }}">PCID:{{ object.pubchem_id }}</a>
                         {% endif %}
                     </td>
                 </tr>{% endif %}
@@ -43,8 +43,8 @@
                 </tr>{% endif %}
             </table>{% if object.datasets.count > 0 %}
              <h2 style="padding-top:30px">Datasets</h2>
-            {% include "datasets/datasets_server_render_table.html" %}{% endif %}
-            <a href="{% url 'common:add_to_cart_by_conditiontype' object.id %}?next={{ request.path }}" type="button" class="btn btn-primary">Add all datasets to Downloads</a>
+            {% include "datasets/datasets_server_render_table.html" %}
+            <a href="{% url 'datasets:download_condition_datasets' object.id %}" class="btn btn-primary" role="button">Download now</a>{% endif %}
     </div>
 </div>
 {% endblock %}
@@ -52,10 +52,15 @@
 <script>
 {% if object.datasets.count > 0 %}$(document).ready(function(){
     $("#papersTable").dataTable({"pageLength": 10, "language": {"search": "Filter:"}, "processing": true, "serverSide": true, "ajax": "{% url 'api:conditiontype_datasets' object.id %}", "lengthMenu": [[10,15,20,25], [10,15,20,25]],
+    "columnDefs": [
+        {"className": "dt-center", "targets": "_all"}
+    ],
      "drawCallback": function( settings ) {
         add_to_cart();
         remove_from_cart();
-    }});
+        align_right();
+    }
+  });
 });{% endif %}
 </script>
 {% endblock %}

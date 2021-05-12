@@ -1,0 +1,16 @@
+{% extends "base/wide.html" %}
+{% load static %}
+{% load my_filters %}
+{% block title %}Genes similar to {{ title1 }}: {{ title2 }} / {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1>Datasets similar to {{ title1 }}: {{ title2 }}</h1>
+        <p>Correlation: {{ sim.score|stringformat:".2f" }} +/- {{ sim.pvalue|stringformat:".2f" }}</p> 
+        <div id="gene_plot"></div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+{% include "graphs/scatterplot.html" with scores=scores %}
+{% endblock %}

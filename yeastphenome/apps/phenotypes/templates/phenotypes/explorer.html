@@ -257,6 +257,9 @@ function doTagsSearch() {
 $(document).ready(function(){
     $("#papersTable").dataTable({"pageLength": 10,"language": {"search": "Filter:"}, "processing": true, "serverSide": true, "ajax": "{% url 'api:phenotypes_query' %}{% for tag in taglist %}{% if forloop.first %}?query={{ tag.value }}{% else %}|{{ tag.value }}{% endif %}{% endfor %}", "lengthMenu": [[10,15,20,25], [10,15,20,25]],
     "bFilter": false,
+    "columnDefs": [
+        {"className": "dt-center", "targets": "_all"}
+    ],
     "drawCallback": function( settings ) {
        if (settings.aoData.length == 0){
           $("#message").show();

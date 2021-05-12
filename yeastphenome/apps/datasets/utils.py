@@ -1,7 +1,5 @@
 from wsgiref.util import FileWrapper
 from django.http import StreamingHttpResponse
-from yeastphenome.apps.genes.models import Gene
-from yeastphenome.apps.datasets.models import Data
 
 import os
 
@@ -19,41 +17,3 @@ def send_file(exported_file, chunk_size=8192):
         exported_file
     )
     return response
-
-
-def prepare_dataset_download(datasets):
-    """A general function to take a list of datasets, and prepare a data frame
-    to download with columns: ORF, dataset1 .. datasetN and rows
-    ORF-dataset pair (values).
-    """
-    import pandas as pd
-
-    # Get all data for the relevant datasets
-    data = Data.objects.filter(dataset_id__in=datasets.values("id")).all()
-
-    # Load the data into a pandas dataframe
-    df = pd.DataFrame.from_records(data.values())
-
-    # If no datasets, return empty
-    if df.empty:
-        return df
-
-    # Make sure values are numeric
-    df["value"] = df["value"].astype(float)
-
-    # Transform list of gene-dataset-value into a gene x dataset matrix
-    df_matrix = pd.pivot_table(
-        df, index="gene_id", columns="dataset_id", values="value"
-    )
-
-    # Rename gene ids to ORFs
-    genes = Gene.objects.all()
-    genes_df = pd.DataFrame.from_records(genes.values())
-    genes_df.set_index("id", inplace=True)
-    df_matrix.index = genes_df.loc[df_matrix.index, "systematic_name"].values
-
-    # Rename dataset ids to dataset names
-    datasets_df = pd.DataFrame.from_records(datasets.values())
-    datasets_df.set_index("id", inplace=True)
-    df_matrix.columns = datasets_df.loc[df_matrix.columns, "name"].values
-    return df

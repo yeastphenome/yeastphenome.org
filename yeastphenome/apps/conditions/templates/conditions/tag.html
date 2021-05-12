@@ -23,7 +23,11 @@
 {% block scripts %}
 <script>
 $(document).ready(function(){
-    $("#papersTable").dataTable({"pageLength": 10,"language": {"search": "Filter:"}, "processing": true, "serverSide": true, "ajax": "{% url 'api:tag_condition_types' tag.id %}", "lengthMenu": [[10,15,20,25], [10,15,20,25]]});
+    $("#papersTable").dataTable({"pageLength": 10,"language": {"search": "Filter:"}, 
+    "columnDefs": [
+        {"className": "dt-center", "targets": "_all"}
+    ],
+    "processing": true, "serverSide": true, "ajax": "{% url 'api:tag_condition_types' tag.id %}", "lengthMenu": [[10,15,20,25], [10,15,20,25]]});
 });
 </script>
 {% endblock %}

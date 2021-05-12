@@ -3,83 +3,129 @@
 {% load my_filters %}
 {% block title %}Similar Genes / {{ SITE_NAME }}{% endblock %}
 {% block content %}
-    <style>
-        #dataset-genes {
-            font: 10px sans-serif;
-        }
+<style>
+#gene_plot {
+  font: 10px sans-serif;
+}
 
-        .bar rect {
-            shape-rendering: crispEdges;
-            cursor: pointer;
-        }
+.btn-pink {
+  background-color: lightpink !important;
+  border-color: lightpink !important;
+  color: #333 !important;
+}
 
-        .bar text {
-            fill: #999999;
-        }
+.bar rect {
+  shape-rendering: crispEdges;
+  cursor: pointer;
+}
 
-        .axis path, .axis line {
-            fill: none;
-            stroke: #000;
-            shape-rendering: crispEdges;
-        }
-    </style>
-    {% if sims %}
+.bar text {
+  fill: #999999;
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+tr.highlight {
+    background-color: lightpink !important;
+}
+
+.hovered {
+  opacity: 0.3 !important;
+  fill: #9eacb4;
+}
+
+.t {
+  opacity: 0;
+  cursor: pointer;
+}
+
+#similar_table tr {
+  cursor: pointer;
+}
+</style>
+{% if sims %}
+
+<div class="row">
+    <div class="col-md-12">
+        <h1>Genes Similar to {{ gene }}</h1>
+        <div id="gene_plot"></div>
+    </div>
+</div>
+
+
         <div class="row" id='similar'>
             <div class="col-md-12">
-                <h1>{{ gene }} &mdash; Similar Genes</h1>
                 <table id="similar_table" class="tablesorter table table-striped" width="100%">
                     <thead>
                     <tr>
-                        <th style="text-align:left" data-placeholder="Select an name" class="text-nowrap" width="25%">
+                        <th style="text-align:left" data-placeholder="Select an name" class="text-nowrap" width="20%">
                             Gene
                         </th>
-                        <th style="text-align:left" width="25%">Correlation Mean</th>
-                        <th style="text-align:left" width="25%">Correlation Std. Dev.</th>
-                        <th style="text-align:left" width="25%">Percentile (lowest to highest)</th>
+                        <th style="text-align:left" width="20%">Correlation Mean</th>
+                        <th style="text-align:left" width="20%">Correlation Std. Dev.</th>
+                        <th style="text-align:left" width="20%">Percentile (lowest to highest)</th>
+                        <th width="20%">Compare</th>
                     </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="similar_table_body">
                     {% for sim in sims %}
-                        <tr>
-                            <td><a href="{% url 'genes:detail' sim.gene2_id %}">{{ sim.gene2 }}</a></td>
-                            <td>{{ sim.score|stringformat:".2f" }}</td>
-                            <td>{{ sim.pvalue|stringformat:".2f" }}</td>
-                            <td>{{ ranks|lookup:forloop.counter0|floatformat:1 }}%</td>
+                        <tr id="tr-{{ sim.gene2.id }}">
+                            <td class="dt-center"><a href="{% url 'genes:detail' sim.gene2_id %}">{{ sim.gene2 }}</a></td>
+                            <td class="dt-center">{{ sim.score|stringformat:".2f" }}</td>
+                            <td class="dt-center">{{ sim.pvalue|stringformat:".2f" }}</td>
+                            <td class="dt-center">{{ ranks|lookup:forloop.counter0|floatformat:1 }}%</td>
+                            <td class="dt-center"><a href="{% url 'genes:similar_scatterplot' sim.gene1.id sim.gene2.id %}">Scatter plot</a></td>
                         </tr>
                     {% endfor %}
                 </table>
+            <a class="btn btn-primary" href="{% url 'genes:download_gene_similarities' gene.id %}" role="button">Download now</a>
             </div>
-            <a class="btn btn-info" href="{% url 'genes:download_gene_similarities' gene.id %}" role="button">Download all</a>
         </div>
         </div>{% endif %}
 
 {% endblock %}
 {% block scripts %}
-    {% include "scripts/tablesorter.html" %}
-    <script>
-        function download(url) {
-            document.location = "#";
-            $("#fade").show()
-            frame = document.createElement("iframe");
-            frame.onload = function () {
-                $("#fade").hide();
-            }
-            frame.src = url;
-            document.body.appendChild(frame);
-        }
+{% include "graphs/barplot.html" with template="sims" %}
 
-        $(document).ready(function () {
+<script>
+function download(url) {
+  document.location = "#";
+  $("#fade").show()
+  frame = document.createElement("iframe");
+  frame.onload = function () {
+    $("#fade").hide();
+  }
+  frame.src = url;
+  document.body.appendChild(frame);
+}
 
-            $(".dataset_similar_download").click(function () {
-                download("{% url 'genes:download_gene_similarities' gene.id %}")
-            })
-            {% if gene %}$("#gene-name").val("{{ gene.systematic_name }}")
-                $("#similar_table").DataTable({
-                    "pageLength": 10,
-                    "order": [[2, "asc"]],
-                    "language": {"search": "Filter:"}
-                });{% endif %}
-        });
+$(document).ready(function () {
 
-    </script>
+  $(".dataset_similar_download").click(function () {
+    download("{% url 'genes:download_gene_similarities' gene.id %}")
+  })
+  {% if gene %}$("#gene-name").val("{{ gene.systematic_name }}")
+  var table = $("#similar_table").DataTable({
+        "pageLength": 10,
+        "columnDefs": [{"className": "dt-center", "targets": "_all"}],
+      "order": [[2, "asc"]],
+      "language": {"search": "Filter:"}
+  });
+
+   // Add callback on row click
+   $("tr").off("click")
+   $('tr').click(function(){
+       var rowdata = table.row(this).data();
+       var row_id = rowdata.DT_RowId
+       doSearch(row_id);
+   });
+
+{% endif %}
+});
+
+</script>
 {% endblock %}

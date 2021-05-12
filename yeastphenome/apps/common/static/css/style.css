@@ -3,6 +3,11 @@ body {
     height: 100%
 }
 
+th.dt-center, td.dt-center { 
+   text-align: left !important;
+   vertical-align: middle !important;
+}
+
 #wrap {
     min-height: 100%
 }
@@ -203,6 +208,11 @@ ul {
     margin-bottom: 0;
     padding-left: 1.2em;
     text-indent: 0
+}
+
+.btn-download {
+   text-decoration: none !important;
+   width: 120px;
 }
 
 body.modal-open {

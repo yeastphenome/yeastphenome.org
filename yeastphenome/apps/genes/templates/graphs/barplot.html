@@ -1,117 +1,72 @@
-{% extends "base/wide.html" %}
-{% load static %}
 {% load my_filters %}
-{% block title %}Dataset Exporer {{ dataset.id }} / {{ SITE_NAME }}{% endblock %}
-{% block content %}
-<style>
-#dataset-genes {
-  font: 10px sans-serif;
-}
 
-.btn-pink {
-  background-color: lightpink !important;
-  border-color: lightpink !important;
-  color: #333 !important;
-}
-
-.bar rect {
-  shape-rendering: crispEdges;
-  cursor: pointer;
-}
-
-.bar text {
-  fill: #999999;
-}
-
-.axis path, .axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
-}
-
-tr.highlight {
-    background-color: lightpink !important;
-}
-
-.hovered {
-  opacity: 0.3 !important;
-  fill: #9eacb4;
-}
-
-.t {
-  opacity: 0;
-  cursor: pointer;
-}
-
-#dataset_table tr {
-  cursor: pointer;
-}
-
-</style>
-
-<div class="row">
-    <div class="col-md-12">
-        <h1>Datasets Similar to {{ dataset.name }}</h1>
-        {% include "datasets/data_warning.html"%}
-        <div id="dataset_plot"></div>
-    </div>
-</div>
-
-{% if dataset.data_source.release == True  %}
-{% if datasets %}<div class="row" style="padding-top:20px" id='similar'>
-    <div class="col-md-12">
-    <table id="dataset_table" class="tablesorter table table-striped" width="100%">
-        <thead>
-        <tr>
-            <th width="30%">Dataset Name</th>
-            <th width="20%">Correlation Mean</th>
-            <th width="20%">Correlation Std. Dev.</th>
-            <th width="20%">Percentile (lowest to highest)</th>
-            <th width="10%">Compare</th>
-        </tr>
-        </thead>
-        <tbody id="dataset_table_body">{% for d in datasets %}<tr id="tr-{{ d.0 }}">
-        <td id="td-{{ d.0 }}" class="dt-center"><a href="{% url 'datasets:dataset_detail' d.0 %}">{{ d.1 }}</a></td><td class="dt-center">{{ d.2|floatformat:2 }}</td><td class='dt-center'>{{ d.3|floatformat:2 }}</td><td class="dt-center">{{ ranks|lookup:forloop.counter0|floatformat:1 }}%</td><td class="dt-center"><a href="{% url 'datasets:similar_scatterplot' dataset.id d.0 %}">Scatter plot</a></td>
-
-    </tr>{% endfor %}
-      </table>
-    <a href="{% url 'datasets:download_dataset_similarities' dataset.id %}" type="button" class="btn btn-primary">Download now</a>
-    </div>
-  </div>
-</div>{% endif %}
-{% endif %}
-{% endblock %}
-{% block scripts %}
 <script src="https://d3js.org/d3.v3.min.js"></script>
-
 <script>
 
+{% if template == "sims" %}
 function draw_table(names) {
-    $("#dataset_table_body").empty()
-    $("#dataset_table").DataTable().destroy();
+    $("#similar_table_body").empty()
+    $("#similar_table").DataTable().destroy();
 
     content = ""
     $.each(names, function(i,e){
 
         // Grab the value and pvalue
-        dataset_value = dataset_lookup[e].score || ""
-        dataset_name = dataset_lookup[e].name || "Dataset id: " + e
-        dataset_pvalue = dataset_lookup[e].pvalue || ""
-        dataset_rank = dataset_lookup[e].rank || ""
-        content += "<tr id='tr-" + e + "'><td class='dt-center'><a href='/datasets/"+ e + "'>" + dataset_name + "</a></td><td class='dt-center'>" + dataset_value + "</td><td class='dt-center'>" + dataset_pvalue + "</td><td class='dt-center'>"+ dataset_rank + "</td><td class='dt-center'><a href='/datasets/{{ dataset.id }}/similar/" + e + "/'>Scatter plot</a></td></tr>\n"
+        gene_value = gene_lookup[e].score || ""
+        gene_name = gene_lookup[e].name || "Dataset id: " + e
+        gene_pvalue = gene_lookup[e].pvalue || ""
+        gene_rank = gene_lookup[e].rank || ""
+        content += "<tr id='tr-" + e + "'><td class='dt-center' id='td-" + e + "'><a href='/genes/"+ e + "'>" + gene_name + "</a></td><td class='dt-center'>" + gene_value + "</td><td class='dt-center'>" + gene_pvalue + "</td><td class='dt-center'>"+ gene_rank + "</td><td class='dt-center'><a href='/genes/{{ gene.id }}/similar/" + e + "/'>Scatter plot</a></td></tr>\n"
     })
 
-    $("#dataset_table_body").html(content)
-    $("#dataset_table").show();
-    $("#dataset_table").dataTable({"pageLength": 10, "language": {"search": "Filter:"}, "drawCallback": addCallback,
+    $("#similar_table_body").html(content)
+    $("#similar_table").show();
+    $("#similar_table").dataTable({"pageLength": 10, "language": {"search": "Filter:"}, "drawCallback": addCallback,
         "columnDefs": [
             {"className": "dt-center", "targets": "_all"}
         ]
     });
-    if (names.length != datasets.length) {
-        $("#dataset_table_length").append('<a id="reset-selection" style="margin-left:10px" onclick="restore_original()" type="button" class="btn btn-pink">Reset selection</a>')
+    if (names.length != genes.length) {
+        $("#similar_table_length").append('<a id="reset-selection" style="margin-left:10px" onclick="restore_original()" type="button" class="btn btn-pink">Reset selection</a>')
     }
 }
+
+var genes = [{% for entry in sims %}{"gene_id": "{{ entry.gene2.id }}", "name": "{{ entry.gene2 }}", "score": {{ entry.score|stringformat:".2f" }}, "pvalue": {{ entry.pvalue|stringformat:".2f" }}, "rank": "{{ ranks|lookup:forloop.counter0|floatformat:1 }}%" }{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
+var values = [{% for entry in sims %}{{ entry.score|stringformat:".2f" }}{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
+
+{% elif template == "scores" %}
+function draw_table(names) {
+    $("#similar_table_body").empty()
+    $("#similar_table").DataTable().destroy();
+
+    content = ""
+    $.each(names, function(i,e){
+
+        // Grab the value and pvalue
+        gene_value = gene_lookup[e].score || ""
+        gene_name = gene_lookup[e].name || "Dataset id: " + e
+        gene_pvalue = gene_lookup[e].pvalue || ""
+        gene_rank = gene_lookup[e].rank || ""
+        content += "<tr id='tr-" + e + "'><td class='dt-center' id='td-" + e + "'><a href='/genes/"+ e + "'>" + gene_name + "</a></td><td class='dt-center'>" + gene_value + "</td><td class='dt-center'>" + gene_pvalue + "</td><td class='dt-center'>"+ gene_rank + "</td></tr>\n"
+    })
+
+    $("#similar_table_body").html(content)
+    $("#similar_table").show();
+    $("#similar_table").dataTable({"pageLength": 10, "language": {"search": "Filter:"}, "drawCallback": addCallback,
+        "columnDefs": [
+            {"className": "dt-center", "targets": "_all"}
+        ]
+    });
+    if (names.length != genes.length) {
+        $("#similar_table_length").append('<a id="reset-selection" style="margin-left:10px" onclick="restore_original()" type="button" class="btn btn-pink">Reset selection</a>')
+    }
+}
+
+var genes = [{% for entry in sims %}{"gene_id": "{{ entry.gene2.id }}", "name": "{{ entry.gene2 }}", "score": {{ entry.score|stringformat:".2f" }}, "pvalue": {{ entry.pvalue|stringformat:".2f" }}, "rank": "{{ ranks|lookup:forloop.counter0|floatformat:1 }}%" }{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
+var values = [{% for entry in sims %}{{ entry.score|stringformat:".2f" }}{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
+{% elif template == "scores" %}
+
+{% endif %}
 
 // Restore original, full table
 function restore_original() {
@@ -122,14 +77,11 @@ function restore_original() {
      })
 
     // Dataset ids
-    var names = datasets.map(function(record){return record.dataset_id; });
+    var names = genes.map(function(record){return record.gene_id; });
     draw_table(names)
 }
 
 var color = "steelblue";
-
-var datasets = [{% for entry in datasets %}{"dataset_id": "{{ entry.0 }}", "name": "{{ entry.1 }}", "score": {{ entry.2 }}, "pvalue": {{ entry.3 }}, "rank": "{{ ranks|lookup:forloop.counter0|floatformat:1 }}%" }{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
-var values = [{% for entry in datasets %}{{ entry.2 }}{% if forloop.last %}{% else %},{% endif %}{% endfor %}]
 
 // Get min and max
 max_value = d3.max(values)
@@ -157,26 +109,25 @@ $.each(data, function(i, e){
 
     // If it's the first bin, include all left values
     if (i == 0){
-        var filtered = datasets.filter(function(record){return record.score < e.x + e.dx });
+        var filtered = genes.filter(function(record){return record.score < e.x + e.dx });
     // If we are in the last bin, we have to include all values
     } else if (i == data.length - 1) {
-        var filtered = datasets.filter(function(record){return record.score >= e.x });
+        var filtered = genes.filter(function(record){return record.score >= e.x });
     } else {
-        var filtered = datasets.filter(function(record){return e.x <= record.score && record.score < e.x + e.dx; });
+        var filtered = genes.filter(function(record){return e.x <= record.score && record.score < e.x + e.dx; });
     }
     $.each(filtered, function(ii, ee){
-        lookup[ee.dataset_id] = i
+        lookup[ee.gene_id] = i
     })
 })
 
 
-
 // Lookup of value by dataset
-var dataset_lookup = Object()
-var dataset_id_lookup = Object()
-$.each(datasets, function(i, e){
-    dataset_lookup[e.dataset_id] = e
-    dataset_id_lookup[e.name] = e.dataset_id
+var gene_lookup = Object()
+var gene_id_lookup = Object()
+$.each(genes, function(i, e){
+    gene_lookup[e.gene_id] = e
+    gene_id_lookup[e.name] = e.gene_id
 })
 
 
@@ -194,7 +145,7 @@ var xAxis = d3.svg.axis()
     .scale(x)
     .orient("bottom");
 
-var svg = d3.select("#dataset_plot").append("svg")
+var svg = d3.select("#gene_plot").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
   .append("g")
@@ -229,18 +180,17 @@ update_plot = function(d, i) {
 
     // If it's the first bin, include all left values
     if (i == 0){
-        var ds = datasets.filter(function(record){return record.score < d.x + d.dx });
+        var ds = genes.filter(function(record){return record.score < d.x + d.dx });
     // If we are in the last bin, we have to include all values
     } else if (i == data.length - 1) {
-        var ds = datasets.filter(function(record){return record.score >= d.x });
+        var ds = genes.filter(function(record){return record.score >= d.x });
     } else {
-        var ds = datasets.filter(function(record){return d.x <= record.score && record.score < d.x + d.dx; });
+        var ds = genes.filter(function(record){return d.x <= record.score && record.score < d.x + d.dx; });
     }
 
-    // Dataset ids
-    var names = ds.map(function(record){return record.dataset_id; });
+    // Gene id
+    var names = ds.map(function(record){return record.gene_id; });
     draw_table(names);
-
 }
 
 // Visible Bar
@@ -306,7 +256,7 @@ svg.append("text")
     .attr("y", 6)
     .attr("dy", ".75em")
     .attr("transform", "rotate(-90)")
-    .text("Number of datasets");
+    .text("Number of genes");
 
 
 function doSearch(rowId) {
@@ -334,13 +284,13 @@ function doSearch(rowId) {
 
       // Add the button to reset the filter
       if ($("#reset-selection").length == 0) {
-          $("#dataset_table_length").append('<a id="reset-selection" style="margin-left:10px" onclick="restore_original()" type="button" class="btn btn-pink">Reset selection</a>')
+          $("#similar_table_length").append('<a id="reset-selection" style="margin-left:10px" onclick="restore_original()" type="button" class="btn btn-pink">Reset selection</a>')
       }
   } 
 }
 
 function addCallback() {
-    table = $("#dataset_table").DataTable();
+    table = $("#similar_table").DataTable();
 
     // Add callback on row click
     $("tr").off("click")
@@ -350,20 +300,4 @@ function addCallback() {
         doSearch(row_id);
     });
 }
-
-$(document).ready(function(){
-
-    // Show initial set of datasets
-    {% if datasets %}$("#dataset_table").DataTable({"pageLength": 10, 
-        "columnDefs": [
-            {"className": "dt-center", "targets": "_all"}
-       ],
-        "language": {"search": "Filter:"},
-        "drawCallback": addCallback        
-    });
-    addCallback()
-    {% endif %}    
-});
-
 </script>
-{% endblock %}
