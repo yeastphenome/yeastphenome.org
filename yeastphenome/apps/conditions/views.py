@@ -49,7 +49,7 @@ def redirect_index(request):
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def tag_browser(request):
     """View a listing of tags"""
-    tags = Tag.all_valid()
+    tags = Tag.all_valid(type="conditions")
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
         {"url": reverse("conditions:index"), "name": "Conditions"},

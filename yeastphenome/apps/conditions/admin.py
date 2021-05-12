@@ -13,29 +13,11 @@ from yeastphenome.apps.conditions.models import (
     Condition,
     ConditionType,
     Medium,
-    Tag,
 )
 from yeastphenome.apps.common.admin_util import (
     ImprovedTabularInline,
     ImprovedModelAdmin,
 )
-
-
-class TagAdmin(ImprovedModelAdmin):
-    list_per_page = 50
-    list_display = ["name", "description"]
-    search_fields = ["name", "description"]
-    fields = (
-        "name",
-        "description",
-        "conditiontypes_edit_link_list",
-        "conditions_edit_link_list",
-    )
-    readonly_fields = (
-        "conditiontypes_edit_link_list",
-        "conditions_edit_link_list",
-    )
-    ordering = ["name"]
 
 
 class ConditionAdminForm(forms.ModelForm):
@@ -301,7 +283,6 @@ class MediumAdmin(ImprovedModelAdmin):
         obj.save()
 
 
-admin.site.register(Tag, TagAdmin)
 admin.site.register(Condition, ConditionAdmin)
 admin.site.register(ConditionType, ConditionTypeAdmin)
 admin.site.register(ConditionSet, ConditionSetAdmin)
