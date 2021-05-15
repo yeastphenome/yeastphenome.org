@@ -64,14 +64,14 @@ class RunPapersQuery(RatelimitMixin, APIView):
             count = queryset.count()
 
         if queryset:
-            agg_field = "dataset__phenotype__observable__name"
+            agg_field = "datasets__phenotype__observable__name"
             queryset = queryset.annotate(
                 phenotype_list=StringAgg(
                     agg_field, delimiter="; ", distinct=True, ordering=agg_field
                 )
             )
 
-            agg_field = "dataset__conditionset__conditions__type__name"
+            agg_field = "datasets__conditionset__conditions__type__name"
             queryset = queryset.annotate(
                 condition_list=StringAgg(
                     agg_field, delimiter="; ", distinct=True, ordering=agg_field
