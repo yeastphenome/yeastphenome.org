@@ -50,7 +50,7 @@
             {% include "search/phenotypes.html" %}
         {% elif request.GET.tab == 'datasets' %}
             {% include "search/datasets.html" %}
-        {% elif request.GET.tab == 'papers' %}
+        {% elif request.GET.tab == 'papers' or 'tab' not in request.GET %}
             {% include "search/papers.html" %}
         {% endif %}
     {% endif %}

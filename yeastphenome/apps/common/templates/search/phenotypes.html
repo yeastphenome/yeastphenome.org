@@ -11,10 +11,10 @@
             </tr>
             {% for phenotype in phenotypes_page_obj %}
                 <tr>
-                    <td><a href="/phenotypes/{{ phenotype.id }}/">{{ phenotype.name }}</a></td>
-                    <td>{{ phenotype.reporters_list_str }}</td>
-                    <td>{{ phenotype.conditiontypes_list_str }}</td>
-                    <td>{{ phenotype.tags_str_list }}</td>
+                    <td><a href="/phenotypes/{{ phenotype.observable.id }}/">{{ phenotype.observable.name }}</a></td>
+                    <td>{{ phenotype.observable.reporters_list_str }}</td>
+                    <td>{{ phenotype.observable.conditiontypes_list_str }}</td>
+                    <td>{{ phenotype.observable.tags_str_list }}</td>
                 </tr>
             {% endfor %}
         </table>

@@ -7,7 +7,7 @@ from yeastphenome.apps.datasets.models import Dataset
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.genes.models import Gene
 from yeastphenome.apps.conditions.models import ConditionType
-from yeastphenome.apps.phenotypes.models import Observable
+from yeastphenome.apps.phenotypes.models import Observable, Phenotype
 
 from yeastphenome.apps.common.forms import GlobalSearchForm
 
@@ -47,10 +47,12 @@ def index(request):
             context["conditions_page_obj"] = conditions_page_obj
 
             # Phenotypes
-            phenotypes = Observable.objects.filter(
+            phenotypes = Phenotype.objects.filter(
                 Q(name__icontains=q)
-                | Q(description__icontains=q)
-                | Q(tags__name__icontains=q)
+                | Q(reporter__icontains=q)
+                | Q(observable__name__icontains=q)
+                | Q(observable__description__icontains=q)
+                | Q(observable__tags__name__icontains=q)
             ).distinct()
             context["phenotypes"] = phenotypes
             context["num_phenotypes"] = phenotypes.count()
@@ -77,7 +79,7 @@ def index(request):
                 Q(name__icontains=q)
                 | Q(conditionset__conditions__type__in=conditions.values_list("id"))
                 | Q(medium__conditions__type__in=conditions.values_list("id"))
-                | Q(phenotype__observable__in=phenotypes.values_list("id"))
+                | Q(phenotype__in=phenotypes.values_list("id"))
                 | Q(tags__name__icontains=q)
             ).distinct()
             context["datasets"] = datasets
