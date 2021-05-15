@@ -14,10 +14,10 @@
         <tbody id="papersTableBody">
         {% for qs in queryset %}<tr>
             <td>{{ qs.link_detail|safe }}</td>
-            <td>{% for condition in qs.conditions %}{{ condition.dose }}{% if forloop.last %}{% else %}, {% endif %}{% endfor %}</td>
-            <td>{{ qs.phenotypes|join_and_more:7 }}</td>
+            <td>{{ condition.doses_str_list }}</td>
+            <td>{{ condition.observables_list_str }}</td>
             <td>{{ qs.papers|join_and_more:7 }}</td>
-            <td>{% for tag in qs.tags.all %}{{ tag.name }}{% if forloop.last %}{% else %}, {% endif %}{% endfor %}</td>
+            <td>{{ condition.tags_list_str }}</td>
         </tr>{% endfor %}
         </tbody>
     </table>

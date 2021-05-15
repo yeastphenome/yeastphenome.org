@@ -52,7 +52,10 @@ class ConditionType(models.Model):
         return u"%s" % type_name
 
     def all_other_names(self):
-        other_names = [name.strip() for name in re.split("[,\n]", self.other_names)]
+        if self.other_names:
+            other_names = [name.strip() for name in re.split("[,\n]", self.other_names)]
+        else:
+            other_names = []
         other_names += [self.chebi_name, self.pubchem_name]
         other_names = list(
             set([name for name in other_names if name and not name == ""])
@@ -108,8 +111,8 @@ class ConditionType(models.Model):
         return (
             apps.get_model("papers", "Paper")
             .objects.filter(
-                Q(dataset__conditionset__conditions__type=self)
-                | Q(dataset__medium__conditions__type=self)
+                Q(datasets__conditionset__conditions__type=self)
+                | Q(datasets__medium__conditions__type=self)
             )
             .exclude(latest_data_status__status__name="not relevant")
             .distinct()
