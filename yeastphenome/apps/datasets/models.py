@@ -116,7 +116,9 @@ class Datatype(models.Model):
 class Dataset(models.Model):
 
     name = models.CharField(max_length=500, null=True, blank=True, unique=True)
-    paper = models.ForeignKey("papers.Paper", related_name="datasets", on_delete=models.DO_NOTHING)
+    paper = models.ForeignKey(
+        "papers.Paper", related_name="datasets", on_delete=models.DO_NOTHING
+    )
 
     conditionset = models.ForeignKey(
         "conditions.ConditionSet", null=True, blank=True, on_delete=models.DO_NOTHING

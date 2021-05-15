@@ -52,10 +52,12 @@ class ConditionType(models.Model):
         return u"%s" % type_name
 
     def all_other_names(self):
-        other_names = [name.strip() for name in re.split('[,\n]', self.other_names)]
+        other_names = [name.strip() for name in re.split("[,\n]", self.other_names)]
         other_names += [self.chebi_name, self.pubchem_name]
-        other_names = list(set([name for name in other_names if name and not name == '']))
-        return mark_safe('; '.join(other_names))
+        other_names = list(
+            set([name for name in other_names if name and not name == ""])
+        )
+        return mark_safe("; ".join(other_names))
 
     def definition(self):
         if self.chebi_id:
