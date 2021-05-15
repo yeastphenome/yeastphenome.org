@@ -146,15 +146,11 @@ class ContributorsListView(generic.ListView, RatelimitMixin):
 
 
 # Warmup requests (for app engine)
-
-
 def warmup():
     return HttpResponse(status=200)
 
 
 # Explorer Home
-
-
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def explorer(request):
     links = [{"url": reverse("common:explorer"), "name": "Explore data"}]
@@ -162,59 +158,7 @@ def explorer(request):
     return render(request, "main/explorer.html", context)
 
 
-# Getting Started Pages
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def getting_started(request):
-    links = [{"url": reverse("common:getting-started"), "name": "Getting Started"}]
-    context = {"active": "getting-started", "links": links}
-    return render(request, "getting-started/getting-started.html", context)
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def background(request):
-    links = [
-        {"url": reverse("common:getting-started"), "name": "Getting Started"},
-        {"url": reverse("common:background"), "name": "Background"},
-    ]
-    context = {"active": "getting-started", "links": links}
-    return render(request, "getting-started/background.html", context)
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def advanced(request):
-    links = [
-        {"url": reverse("common:getting-started"), "name": "Getting Started"},
-        {"url": reverse("common:advanced"), "name": "Advanced"},
-    ]
-    context = {"active": "getting-started", "links": links}
-    return render(request, "getting-started/advanced.html", context)
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def tutorials(request):
-    links = [
-        {"url": reverse("common:getting-started"), "name": "Getting Started"},
-        {"url": reverse("common:tutorials"), "name": "Tutorials"},
-    ]
-    context = {"active": "getting-started", "links": links}
-    return render(request, "getting-started/tutorials.html", context)
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def introduction(request):
-    links = [
-        {"url": reverse("common:getting-started"), "name": "Getting Started"},
-        {"url": reverse("common:introduction"), "name": "Introduction"},
-    ]
-    context = {"active": "getting-started", "links": links}
-    return render(request, "getting-started/introduction.html", context)
-
-
 # Download Operations
-
-
 def add_bulk_datasets(request, datasets, return_message=False):
     """A shared function to retrieve the downloads from a request, and add bulk
     datasets to it
