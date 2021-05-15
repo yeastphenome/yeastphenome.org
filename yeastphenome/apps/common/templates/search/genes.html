@@ -1,0 +1,25 @@
+<div class="row">&nbsp;</div>
+<div class="row">
+    <div class="col-md-12">
+        <h2>Genes</h2>
+        <table class="table table-striped">
+            <tr>
+            <th style="width: 15%">Systematic name</th>
+            <th style="width: 15%">Common name</th>
+            <th style="width: 15%">Aliases</th>
+            <th>Description</th>
+            </tr>
+            {% for gene in genes_page_obj %}
+                <tr>
+                    <td><a href="/genes/{{ gene.id }}/">{{ gene.systematic_name }}</a></td>
+                    <td>{{ gene.common_name }}</td>
+                    <td>{{ gene.aliases_list_str }}</td>
+                    <td>{{ gene.description }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        {% include "search/pagination.html" with page_obj=genes_page_obj %}
+
+    </div>
+</div>

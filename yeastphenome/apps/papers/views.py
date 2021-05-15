@@ -107,7 +107,7 @@ class PaperDetailView(generic.DetailView, RatelimitMixin):
 def paper_datasets(request, paper_id, pmid):
     p = get_object_or_404(Paper, pk=paper_id)
 
-    txt = "\n".join([(u"%s\t%s" % (d.id, d.name)) for d in p.dataset_set.all()])
+    txt = "\n".join([(u"%s\t%s" % (d.id, d.name)) for d in p.datasets.all()])
 
     response = HttpResponse(txt, content_type="text/plain")
     response[

@@ -2,7 +2,7 @@ from django.views.generic.base import TemplateView
 from django.urls import path
 from django.conf.urls import url
 
-from . import views
+from . import views, search_views
 
 urlpatterns = [
     path("", views.index, name="index"),
@@ -53,12 +53,7 @@ urlpatterns = [
         name="remove_from_cart",
     ),
     path("cart/clear/", views.clear_cart, name="clear_cart"),
-    # Getting Started
-    path("getting-started/", views.getting_started, name="getting-started"),
-    path("getting-started/introduction/", views.introduction, name="introduction"),
-    path("getting-started/background/", views.background, name="background"),
-    path("getting-started/advanced/", views.advanced, name="advanced"),
-    path("getting-started/tutorials/", views.tutorials, name="tutorials"),
+    path("search/", search_views.index, name="search"),
     path("_ah/warmup/", views.warmup, name="warmup"),
     url(
         r"^robots\.txt/$",

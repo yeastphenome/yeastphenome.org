@@ -1,0 +1,25 @@
+<div class="row">&nbsp;</div>
+<div class="row">
+    <div class="col-md-12">
+        <h2>Phenotypes</h2>
+        <table class="table table-striped">
+            <tr>
+                <th style="width: 20%">Name</th>
+                <th style="width: 30%">Reporters</th>
+                <th style="width: 30%">Conditions</th>
+                <th>Tags</th>
+            </tr>
+            {% for phenotype in phenotypes_page_obj %}
+                <tr>
+                    <td><a href="/phenotypes/{{ phenotype.id }}/">{{ phenotype.name }}</a></td>
+                    <td>{{ phenotype.reporters_list_str }}</td>
+                    <td>{{ phenotype.conditiontypes_list_str }}</td>
+                    <td>{{ phenotype.tags_str_list }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        {% include "search/pagination.html" with page_obj=phenotypes_page_obj %}
+
+    </div>
+</div>

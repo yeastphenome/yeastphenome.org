@@ -95,17 +95,18 @@ class Paper(models.Model):
     def phenotypes_str_list(self):
         num = len(self.phenotypes())
         if num == 0:
-            return ""
+            phenotypes_str = ""
         elif num <= 20:
-            return ", ".join([(u"%s" % i) for i in self.phenotypes()])
+            phenotypes_str = ", ".join([(u"%s" % i) for i in self.phenotypes()])
         else:
             num_remaining = num - 20
-            return (
+            phenotypes_str = (
                 ", ".join([(u"%s" % i) for i in self.phenotypes()[:20]])
                 + "... and "
                 + str(num_remaining)
                 + " more"
             )
+        return mark_safe(phenotypes_str)
 
     def conditiontypes(self):
         return ConditionType.objects.filter(
@@ -113,19 +114,21 @@ class Paper(models.Model):
         ).distinct()
 
     def conditiontypes_str_list(self):
-        num = len(self.conditiontypes())
+        conditiontypes_list = self.conditiontypes().values_list("name", flat=True)
+        num = len(conditiontypes_list)
         if num == 0:
-            return ""
+            conditiontypes_str = ""
         elif num <= 20:
-            return ", ".join([(u"%s" % i) for i in self.conditiontypes()])
+            conditiontypes_str = "; ".join(conditiontypes_list)
         else:
             num_remaining = num - 20
-            return (
-                ", ".join([(u"%s" % i) for i in self.conditiontypes()[:20]])
+            conditiontypes_str = (
+                "; ".join(conditiontypes_list[:20])
                 + "... and "
                 + str(num_remaining)
                 + " more"
             )
+        return mark_safe(conditiontypes_str)
 
     def datasets_summary(self):
         return mark_safe(

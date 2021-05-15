@@ -1,0 +1,14 @@
+<nav aria-label="Search results page navigation">
+    <ul class="pagination">
+        {% if page_obj.paginator.num_pages > 1 %}
+            {% for p in page_obj.paginator.page_range %}
+                {% if 'page' not in request.GET and p == 1 or p|slugify == request.GET.page %}
+                    <li class="active"><span>{{ p }}</span></li>
+                {% else %}
+                    <li><a href="?q={{ request.GET.q }}&tab={{ request.GET.tab }}&page={{ p }}">{{ p }}</a></li>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+    </ul>
+</nav>

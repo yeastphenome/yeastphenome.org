@@ -47,11 +47,15 @@ class ConditionType(models.Model):
             type_name = self.chebi_name
         elif self.pubchem_name:
             type_name = self.pubchem_name
-        elif self.name:
-            type_name = self.name
         else:
             type_name = self.other_names
         return u"%s" % type_name
+
+    def all_other_names(self):
+        other_names = [name.strip() for name in re.split('[,\n]', self.other_names)]
+        other_names += [self.chebi_name, self.pubchem_name]
+        other_names = list(set([name for name in other_names if name and not name == '']))
+        return mark_safe('; '.join(other_names))
 
     def definition(self):
         if self.chebi_id:
@@ -77,8 +81,9 @@ class ConditionType(models.Model):
     def conditions(self):
         return Condition.objects.filter(type=self).order_by("dose")
 
-    def conditions_str_list(self):
-        return ", ".join([p.dose for p in self.conditions()])
+    def doses_str_list(self):
+        doses = self.conditions().values_list("dose", flat=True)
+        return mark_safe("; ".join(doses))
 
     def conditions_edit_list(self):
         return mark_safe(", ".join([p.link_edit() for p in self.conditions()]))
@@ -92,6 +97,10 @@ class ConditionType(models.Model):
             .distinct()
             .order_by("observable__name")
         )
+
+    def observables_list_str(self):
+        observables = self.phenotypes().values_list("observable__name", flat=True)
+        return mark_safe("; ".join(observables))
 
     def papers(self):
         return (
@@ -119,6 +128,10 @@ class ConditionType(models.Model):
 
     def tags_edit_list(self):
         return mark_safe(", ".join([t.link_edit() for t in self.tags.all()]))
+
+    def tags_list_str(self):
+        tags_list = self.tags.all().values_list("name", flat=True)
+        return mark_safe("; ".join(tags_list))
 
     def link_detail(self):
         html = '<a id="condition-%s" href="%s">%s</a>' % (

@@ -29,15 +29,13 @@ class Observable(models.Model):
         )
         return mark_safe(html)
 
-    def get_tags(self):
-        return self.tags.order_by("name").all()
-
     def tags_str_list(self):
-        return ", ".join([(u"%s" % t) for t in self.get_tags()])
+        tags_list = self.tags.all().values_list("name", flat=True)
+        return mark_safe("; ".join(tags_list))
 
     def tags_edit_link_list(self):
         html = "<ul>"
-        html = html + "<li>".join([p.link_edit() for p in self.get_tags()])
+        html = html + "<li>".join([p.link_edit() for p in self.tags.all()])
         html = html + "</ul>"
         return mark_safe(html)
 
@@ -61,6 +59,9 @@ class Observable(models.Model):
         return self.phenotype_set.exclude(reporter=None).values_list(
             "reporter", flat=True
         )
+
+    def reporters_list_str(self):
+        return mark_safe("; ".join(self.reporters()))
 
     def datasets(self):
         return (
@@ -94,6 +95,10 @@ class Observable(models.Model):
             .distinct()
             .order_by("name")
         )
+
+    def conditiontypes_list_str(self):
+        conditiontypes_list = self.conditiontypes().values_list("name", flat=True)
+        return mark_safe("; ".join(conditiontypes_list))
 
     def papers(self):
         return (

@@ -1,0 +1,58 @@
+{% extends "base/wide.html" %}
+{% load humanize %}
+{% block title %}Search {{ request.GET.q }} | Yeastphenome.org{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <h1>Search</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+
+            <form action="/search/" method="get" id="searchform">
+                {#                    {% csrf_token %}#}
+                <input type="text" name="q" class="form-control" placeholder="Search: e.g., 12482937, Brown GW, MMS, growth"
+                       required="" id="id_q" value="{{ request.GET.q }}">
+            </form>
+
+        </div>
+    </div>
+
+    {% if request.GET.q %}
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="col-md-12">
+                <ul class="nav nav-tabs">
+                    <li role="presentation" {% if not request.GET.tab or request.GET.tab == 'papers' %}class="active"{% endif %}>
+                        <a href="/search/?q={{ request.GET.q }}&tab=papers">Papers ({{ num_papers }})</a>
+                    </li>
+                    <li role="presentation" {% if request.GET.tab == 'datasets' %}class="active"{% endif %}>
+                        <a href="/search/?q={{ request.GET.q }}&tab=datasets">Datasets ({{ num_datasets }})</a>
+                    </li>
+                    <li role="presentation" {% if request.GET.tab == 'conditions' %}class="active"{% endif %}>
+                        <a href="/search/?q={{ request.GET.q }}&tab=conditions">Conditions ({{ num_conditions }})</a>
+                    </li>
+                    <li role="presentation" {% if request.GET.tab == 'phenotypes' %}class="active"{% endif %}>
+                        <a href="/search/?q={{ request.GET.q }}&tab=phenotypes">Phenotypes ({{ num_phenotypes }})</a>
+                    </li>
+                    <li role="presentation" {% if request.GET.tab == 'genes' %}class="active"{% endif %}>
+                        <a href="/search/?q={{ request.GET.q }}&tab=genes">Genes ({{ num_genes }})</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        {% if request.GET.tab == 'genes' %}
+            {% include "search/genes.html" %}
+        {% elif request.GET.tab == 'conditions' %}
+            {% include "search/conditions.html" %}
+        {% elif request.GET.tab == 'phenotypes' %}
+            {% include "search/phenotypes.html" %}
+        {% elif request.GET.tab == 'datasets' %}
+            {% include "search/datasets.html" %}
+        {% elif request.GET.tab == 'papers' %}
+            {% include "search/papers.html" %}
+        {% endif %}
+    {% endif %}
+
+{% endblock %}

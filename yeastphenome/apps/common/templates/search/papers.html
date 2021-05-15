@@ -1,0 +1,23 @@
+<div class="row">&nbsp;</div>
+<div class="row">
+    <div class="col-md-12">
+        <h2>Papers</h2>
+        <table class="table table-striped">
+            <tr>
+                <th style="width: 25%">First Author~Last Author, Year</th>
+                <th style="width: 35%">Phenotypes</th>
+                <th>Conditions</th>
+            </tr>
+            {% for paper in papers_page_obj %}
+                <tr>
+                    <td><a href="/papers/{{ paper.id }}/">{{ paper }}</a></td>
+                    <td>{{ paper.phenotypes_str_list }}</td>
+                    <td>{{ paper.conditiontypes_str_list }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        {% include "search/pagination.html" with page_obj=papers_page_obj %}
+
+    </div>
+</div>

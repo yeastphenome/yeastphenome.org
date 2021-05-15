@@ -1,9 +1,11 @@
 from __future__ import unicode_literals
 
-from yeastphenome.apps.datasets.models import Data
 from django.core.exceptions import FieldError
 from django.db import models
 from django.urls import reverse
+from django.utils.safestring import mark_safe
+
+from yeastphenome.apps.datasets.models import Data
 
 
 class GeneAlias(models.Model):
@@ -52,6 +54,9 @@ class Gene(models.Model):
     @classmethod
     def all(cls):
         return cls.objects.all()
+
+    def aliases_list_str(self):
+        return mark_safe(", ".join([str(a) for a in self.aliases.all()]))
 
     def link_detail(self):
         """Return the link for the gene detail"""

@@ -12,6 +12,9 @@ class Tag(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        ordering = ["name"]
+
     @classmethod
     def all_valid(cls, type=""):
         if type == "conditions":
