@@ -2,6 +2,26 @@ from django.db import models
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.db.models import Q
+from django.apps import apps
+
+
+class TagManager(models.Manager):
+
+    def all_valid(self, **kwargs):
+        obj = self.all()
+        if "type" in kwargs:
+            if kwargs["type"] == "conditions":
+                valid_conditiontypes = apps.get_model("conditions", "Conditiontype").objects.all_valid()
+                valid_conditions = apps.get_model("conditions", "Condition").objects.all_valid()
+                obj = obj.filter(Q(condition__in=valid_conditions)
+                                 | Q(conditiontype__in=valid_conditiontypes)).distinct()
+            elif kwargs["type"] == "datasets":
+                valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
+                obj = obj.filter(dataset__in=valid_datasets)
+            elif kwargs["type"] == "phenotypes":
+                valid_observables = apps.get_model("phenotype", "Observable").objects.all_valid()
+                obj = obj.filter(observable__in=valid_observables)
+        return obj
 
 
 class Tag(models.Model):
@@ -9,24 +29,13 @@ class Tag(models.Model):
     description = models.TextField(max_length=1000, null=True, blank=True)
     order = models.IntegerField(null=True, blank=True)
 
+    objects = TagManager()
+
     def __str__(self):
         return self.name
 
     class Meta:
         ordering = ["name"]
-
-    @classmethod
-    def all_valid(cls, type=""):
-        if type == "conditions":
-            return cls.objects.filter(
-                Q(condition__isnull=False) | Q(conditiontype__isnull=False)
-            ).distinct()
-        elif type == "datasets":
-            return cls.objects.filter(dataset__isnull=False)
-        elif type == "phenotypes":
-            return cls.objects.filter(observable__isnull=False)
-        else:
-            return cls.objects.all()
 
     def link_edit(self):
         html = '<a href="%s">%s</a>' % (

@@ -44,7 +44,7 @@ def run_search_tag_query(queries, collection=None):
     It takes in a list of tags (and associated models) to build a query for datasets.
     """
     queries = queries or []
-    queryset = Dataset.all_valid()
+    queryset = Dataset.objects.all_valid()
 
     if collection:
         queryset = queryset.filter(collection=collection)

@@ -2,6 +2,9 @@
 <div class="row">
     <div class="col-md-12">
         <h2>Conditions</h2>
+
+        {% include "search/pagination.html" with page_obj=conditions_page_obj %}
+
         <table class="table table-striped">
             <tr>
                 <th style="width: 20%">Name</th>
@@ -12,9 +15,9 @@
             </tr>
             {% for condition in conditions_page_obj %}
                 <tr>
-                    <td><a href="/conditions/{{ condition.id }}/">{{ condition.name }}</a></td>
-                    <td>{{ condition.all_other_names }}</td>
-                    <td>{{ condition.doses_str_list }}</td>
+                    <td><a href="{% url 'conditions:detail' condition.pk  %}">{{ condition }}</a></td>
+                    <td>{{ condition.all_other_names_list_str }}</td>
+                    <td>{{ condition.doses_list_str }}</td>
                     <td>{{ condition.observables_list_str }}</td>
                     <td>{{ condition.tags_list_str }}</td>
                 </tr>

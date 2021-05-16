@@ -18,15 +18,18 @@ class Status(models.Model):
     description = models.TextField(blank=True, null=True)
     is_valid = models.BooleanField()
 
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.all()
-
     def __str__(self):
         return u"%s" % self.name
 
     class Meta:
         ordering = ["name"]
+
+
+class PaperManager(models.Manager):
+
+    def all_valid(self):
+        # Valid = is relevant
+        return self.exclude(latest_data_status__status__name__exact="not relevant")
 
 
 class Paper(models.Model):
@@ -62,11 +65,7 @@ class Paper(models.Model):
         on_delete=models.SET_NULL,
     )
 
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.exclude(
-            Q(latest_data_status__status__name__exact="not relevant")
-        )
+    objects = PaperManager()
 
     class Meta:
         get_latest_by = "modified_on"
@@ -197,10 +196,10 @@ class Paper(models.Model):
         )
 
     def acknowledge_data(self):
-        return self.dataset_set.filter(data_source__acknowledge=True).exists()
+        return self.datasets.filter(data_source__acknowledge=True).exists()
 
     def acknowledge_tested(self):
-        return self.dataset_set.filter(tested_source__acknowledge=True).exists()
+        return self.datasets.filter(tested_source__acknowledge=True).exists()
 
     def latest_data_status_name(self):
         if self.latest_data_status:
@@ -258,10 +257,6 @@ class Statusdata(models.Model):
     status = models.ForeignKey(Status, on_delete=models.DO_NOTHING)
     status_date = models.DateField()
 
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.all()
-
     class Meta:
         get_latest_by = "id"
 
@@ -273,10 +268,6 @@ class Statustested(models.Model):
     paper = models.ForeignKey(Paper, on_delete=models.DO_NOTHING)
     status = models.ForeignKey(Status, on_delete=models.DO_NOTHING)
     status_date = models.DateField()
-
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.all()
 
     class Meta:
         get_latest_by = "id"

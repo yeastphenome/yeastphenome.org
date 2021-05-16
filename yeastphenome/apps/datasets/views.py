@@ -277,9 +277,7 @@ def tag(request, id):
     t = get_object_or_404(Tag, pk=id)
 
     datasets = (
-        Dataset.objects.filter(tags=id)
-        .exclude(paper__latest_data_status__status__name="not relevant")
-        .distinct()
+        Dataset.objects.all_valid().filter(tags=id)
     )
 
     links = [

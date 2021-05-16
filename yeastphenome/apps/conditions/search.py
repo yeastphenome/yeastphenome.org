@@ -12,7 +12,7 @@ def get_search_tags():
     """Return a list of tags, each with a name and icon, to return to the
     conditions explorer tag search
     """
-    queryset = ConditionType.all_valid()
+    queryset = ConditionType.objects.all_valid()
     tags = set(
         itertools.chain(
             Tag.objects.values_list("name", flat=True),
@@ -34,7 +34,7 @@ def run_search_tag_query(queries):
     queries = queries or []
 
     # We want to search through condition types that have a valid paper and > 0 datasets
-    queryset = ConditionType.all_valid()
+    queryset = ConditionType.objects.all_valid()
 
     # Now filter down results more, search all fields for query if defined
     for query in queries:

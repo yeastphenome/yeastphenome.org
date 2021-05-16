@@ -3,7 +3,16 @@ from django.urls import reverse
 from django.apps import apps
 from django.utils.safestring import mark_safe
 
+from yeastphenome.apps.datasets.models import Dataset
 from yeastphenome.apps.tags.models import Tag
+
+
+class ObservableManager(models.Manager):
+
+    def all_valid(self):
+        # Valid = has at least 1 phenotypes associated with one relevant paper
+        valid_datasets = Dataset.objects.all_valid()
+        return self.filter(phenotype__dataset__in=valid_datasets)
 
 
 class Observable(models.Model):
@@ -12,9 +21,7 @@ class Observable(models.Model):
     modified_on = models.DateField(auto_now=True, null=True)
     tags = models.ManyToManyField(Tag, blank=True)
 
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.filter(phenotype__isnull=False)
+    objects = ObservableManager()
 
     class Meta:
         get_latest_by = "modified_on"
@@ -66,8 +73,7 @@ class Observable(models.Model):
     def datasets(self):
         return (
             apps.get_model("datasets", "Dataset")
-            .objects.filter(phenotype__observable=self)
-            .all()
+            .objects.all_valid().filter(phenotype__observable=self)
         )
 
     def datasets_edit_link_list(self):
@@ -86,11 +92,8 @@ class Observable(models.Model):
     def conditiontypes(self):
         return (
             apps.get_model("conditions", "ConditionType")
-            .objects.filter(
+            .objects.all_valid().filter(
                 condition__conditionset__dataset__phenotype__observable=self
-            )
-            .exclude(
-                condition__conditionset__dataset__paper__latest_data_status__status__name="not relevant"
             )
             .distinct()
             .order_by("name")
@@ -98,13 +101,25 @@ class Observable(models.Model):
 
     def conditiontypes_list_str(self):
         conditiontypes_list = self.conditiontypes().values_list("name", flat=True)
-        return mark_safe("; ".join(conditiontypes_list))
+        num = len(conditiontypes_list)
+        if num == 0:
+            conditiontypes_str = ""
+        elif num <= 20:
+            conditiontypes_str = "; ".join(conditiontypes_list)
+        else:
+            num_remaining = num - 20
+            conditiontypes_str = (
+                "; ".join(conditiontypes_list[:20])
+                + "... and "
+                + str(num_remaining)
+                + " more"
+            )
+        return mark_safe(conditiontypes_str)
 
     def papers(self):
         return (
             apps.get_model("papers", "Paper")
-            .objects.filter(dataset__phenotype__observable=self)
-            .exclude(latest_data_status__status__name="not relevant")
+            .objects.all_valid().filter(dataset__phenotype__observable=self)
             .distinct()
             .order_by("first_author")
         )
@@ -117,15 +132,11 @@ class Measurement(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
 
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.all()
-
     def __str__(self):
         return u"%s" % self.name
 
     def phenotypes(self):
-        return apps.get_model("phenotypes", "Phenotype").objects.filter(
+        return apps.get_model("phenotypes", "Phenotype").objects.all_valid().filter(
             measurement=self
         )
 
@@ -134,6 +145,14 @@ class Measurement(models.Model):
         html = html + "<li>".join([ph.link_edit() for ph in self.phenotypes()[:20]])
         html = html + "</ul>"
         return mark_safe(html)
+
+
+class PhenotypeManager(models.Manager):
+
+    def all_valid(self):
+        # Valid = is associated with >=1 valid dataset
+        valid_datasets = Dataset.objects.all_valid()
+        return self.filter(dataset__in=valid_datasets)
 
 
 class Phenotype(models.Model):
@@ -148,6 +167,8 @@ class Phenotype(models.Model):
         Measurement, blank=True, null=True, on_delete=models.DO_NOTHING
     )
     modified_on = models.DateField(auto_now=True, null=True)
+
+    objects = PhenotypeManager()
 
     def __str__(self):
         if self.reporter:
@@ -175,14 +196,9 @@ class Phenotype(models.Model):
     def papers(self):
         return (
             apps.get_model("papers", "Paper")
-            .objects.filter(dataset__phenotype=self)
-            .exclude(latest_data_status__status__name="not relevant")
+            .objects.all_valid().filter(dataset__phenotype=self)
             .distinct()
         )
-
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.filter(dataset__isnull=False)
 
     def papers_all(self):
         return (
@@ -196,7 +212,7 @@ class Phenotype(models.Model):
 
     def datasets(self):
         return (
-            apps.get_model("datasets", "Dataset").objects.filter(phenotype=self).all()
+            apps.get_model("datasets", "Dataset").objects.all_valid().filter(phenotype=self).all()
         )
 
     def datasets_edit_link_list(self):
@@ -216,10 +232,6 @@ class Phenotype(models.Model):
 class MutantType(models.Model):
     name = models.CharField(max_length=200)
     definition = models.TextField(blank=True)
-
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.all()
 
     def __str__(self):
         return u"%s" % self.name

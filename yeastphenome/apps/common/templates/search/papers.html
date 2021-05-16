@@ -2,6 +2,9 @@
 <div class="row">
     <div class="col-md-12">
         <h2>Papers</h2>
+
+        {% include "search/pagination.html" with page_obj=papers_page_obj %}
+
         <table class="table table-striped">
             <tr>
                 <th style="width: 25%">First Author~Last Author, Year</th>

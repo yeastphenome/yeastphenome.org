@@ -9,6 +9,7 @@ from yeastphenome.apps.common.forms import SearchForm
 from yeastphenome.apps.common.utils import (
     check_download_space,
     get_dataset_sources,
+    get_latest_stats_basic,
     get_latest_stats,
     get_phenotype_measurements,
 )
@@ -42,13 +43,7 @@ def handler404(request, exception):
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def index(request):
 
-    form = SearchForm()
-    context = get_latest_stats()
-
-    # Most Recently added, most recently updated
-    context["paper"] = Paper.objects.latest("pub_date")
-    context["paper_latest"] = Paper.objects.latest()
-    context["form"] = form
+    context = get_latest_stats_basic()
 
     # Select a random graph to add to the context
     return render(request, "main/index.html", context)
@@ -130,9 +125,9 @@ class ContributorsListView(generic.ListView, RatelimitMixin):
 
     def get_context_data(self, **kwargs):
         context = super(ContributorsListView, self).get_context_data(**kwargs)
-        papers_list = Paper.objects.filter(
-            Q(dataset__data_source__acknowledge=True)
-            | Q(dataset__tested_source__acknowledge=True)
+        papers_list = Paper.objects.all_valid().filter(
+            Q(datasets__data_source__acknowledge=True)
+            | Q(datasets__tested_source__acknowledge=True)
         ).distinct()
 
         # contributors names, lookup with paper id

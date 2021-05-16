@@ -33,7 +33,7 @@ def run_search_tag_query(queries):
     """The equivalent search for genes, however we don't have specific fields to search."""
 
     queries = queries or []
-    queryset = Gene.all_valid()
+    queryset = Gene.objects.all_valid()
 
     for query in queries:
         query = escape_regex(query)

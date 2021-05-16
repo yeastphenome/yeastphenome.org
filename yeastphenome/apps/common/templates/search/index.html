@@ -12,8 +12,9 @@
 
             <form action="/search/" method="get" id="searchform">
                 {#                    {% csrf_token %}#}
-                <input type="text" name="q" class="form-control" placeholder="Search: e.g., 12482937, Brown GW, MMS, growth"
+                <input type="text" name="q" class="form-control" placeholder="Examples: MMS, aging, barseq, Vulpe, 16738548"
                        required="" id="id_q" value="{{ request.GET.q }}">
+                <input type="hidden" name="tab" value="{{ request.GET.tab }}">
             </form>
 
         </div>
@@ -24,33 +25,33 @@
         <div class="row">
             <div class="col-md-12">
                 <ul class="nav nav-tabs">
-                    <li role="presentation" {% if not request.GET.tab or request.GET.tab == 'papers' %}class="active"{% endif %}>
+                    <li role="presentation" {% if tab == 'papers' %}class="active"{% endif %}>
                         <a href="/search/?q={{ request.GET.q }}&tab=papers">Papers ({{ num_papers }})</a>
                     </li>
-                    <li role="presentation" {% if request.GET.tab == 'datasets' %}class="active"{% endif %}>
+                    <li role="presentation" {% if tab == 'datasets' %}class="active"{% endif %}>
                         <a href="/search/?q={{ request.GET.q }}&tab=datasets">Datasets ({{ num_datasets }})</a>
                     </li>
-                    <li role="presentation" {% if request.GET.tab == 'conditions' %}class="active"{% endif %}>
+                    <li role="presentation" {% if tab == 'conditions' %}class="active"{% endif %}>
                         <a href="/search/?q={{ request.GET.q }}&tab=conditions">Conditions ({{ num_conditions }})</a>
                     </li>
-                    <li role="presentation" {% if request.GET.tab == 'phenotypes' %}class="active"{% endif %}>
+                    <li role="presentation" {% if tab == 'phenotypes' %}class="active"{% endif %}>
                         <a href="/search/?q={{ request.GET.q }}&tab=phenotypes">Phenotypes ({{ num_phenotypes }})</a>
                     </li>
-                    <li role="presentation" {% if request.GET.tab == 'genes' %}class="active"{% endif %}>
+                    <li role="presentation" {% if tab == 'genes' %}class="active"{% endif %}>
                         <a href="/search/?q={{ request.GET.q }}&tab=genes">Genes ({{ num_genes }})</a>
                     </li>
                 </ul>
             </div>
         </div>
-        {% if request.GET.tab == 'genes' %}
+        {% if tab == 'genes' %}
             {% include "search/genes.html" %}
-        {% elif request.GET.tab == 'conditions' %}
+        {% elif tab == 'conditions' %}
             {% include "search/conditions.html" %}
-        {% elif request.GET.tab == 'phenotypes' %}
+        {% elif tab == 'phenotypes' %}
             {% include "search/phenotypes.html" %}
-        {% elif request.GET.tab == 'datasets' %}
+        {% elif tab == 'datasets' %}
             {% include "search/datasets.html" %}
-        {% elif request.GET.tab == 'papers' or 'tab' not in request.GET %}
+        {% elif tab == 'papers' %}
             {% include "search/papers.html" %}
         {% endif %}
     {% endif %}

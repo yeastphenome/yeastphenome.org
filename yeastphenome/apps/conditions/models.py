@@ -11,8 +11,15 @@ from yeastphenome.apps.tags.models import Tag
 from libchebipy import ChebiEntity
 
 
+class ConditionTypeManager(models.Manager):
+
+    def all_valid(self):
+        # Valid = associated with at least 1 dataset from a relevant paper
+        valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
+        return self.filter(condition__conditionset__dataset__in=valid_datasets)
+
+
 class ConditionType(models.Model):
-    """A ConditionType can be temperature, treatment, etc."""
 
     name = models.CharField(max_length=200, verbose_name="common name for display")
     other_names = models.TextField(blank=True, null=True)
@@ -26,32 +33,15 @@ class ConditionType(models.Model):
     description = models.TextField(blank=True, null=True)
     tags = models.ManyToManyField(Tag, blank=True)
 
+    objects = ConditionTypeManager()
+
     class Meta:
         ordering = ["name", "chebi_name", "pubchem_name", "other_names"]
 
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.annotate(
-            number_of_datasets=Count(
-                "condition__conditionset__dataset",
-                filter=~Q(
-                    condition__conditionset__dataset__paper__latest_data_status__status__name="not relevant"
-                ),
-            )
-        ).filter(number_of_datasets__gte=1)
-
     def __str__(self):
-        if self.name:
-            type_name = self.name
-        elif self.chebi_name:
-            type_name = self.chebi_name
-        elif self.pubchem_name:
-            type_name = self.pubchem_name
-        else:
-            type_name = self.other_names
-        return u"%s" % type_name
+        return u"%s" % self.name
 
-    def all_other_names(self):
+    def all_other_names_list_str(self):
         if self.other_names:
             other_names = [name.strip() for name in re.split("[,\n]", self.other_names)]
         else:
@@ -84,9 +74,9 @@ class ConditionType(models.Model):
             return ""
 
     def conditions(self):
-        return Condition.objects.filter(type=self).order_by("dose")
+        return Condition.objects.all_valid().filter(type=self).order_by("dose")
 
-    def doses_str_list(self):
+    def doses_list_str(self):
         doses = self.conditions().values_list("dose", flat=True)
         return mark_safe("; ".join(doses))
 
@@ -110,11 +100,10 @@ class ConditionType(models.Model):
     def papers(self):
         return (
             apps.get_model("papers", "Paper")
-            .objects.filter(
+            .objects.all_valid().filter(
                 Q(datasets__conditionset__conditions__type=self)
                 | Q(datasets__medium__conditions__type=self)
             )
-            .exclude(latest_data_status__status__name="not relevant")
             .distinct()
             .order_by("first_author")
         )
@@ -122,11 +111,10 @@ class ConditionType(models.Model):
     def datasets(self):
         return (
             apps.get_model("datasets", "Dataset")
-            .objects.filter(
+            .objects.all_valid().filter(
                 Q(conditionset__conditions__type=self)
                 | Q(medium__conditions__type=self)
             )
-            .exclude(paper__latest_data_status__status__name="not relevant")
             .filter(data_source__release=True)
             .distinct()
         )
@@ -154,6 +142,14 @@ class ConditionType(models.Model):
         return mark_safe(html)
 
 
+class ConditionManager(models.Manager):
+
+    def all_valid(self):
+        # Valid = associated with at least 1 dataset from a relevant paper
+        valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
+        return self.filter(conditionset__dataset__in=valid_datasets).distinct()
+
+
 class Condition(models.Model):
     type = models.ForeignKey(ConditionType, on_delete=models.DO_NOTHING)
     dose = models.CharField(max_length=200, null=False, blank=False)
@@ -161,16 +157,7 @@ class Condition(models.Model):
     modified_on = models.DateField(auto_now=True, null=True)
     tags = models.ManyToManyField(Tag, blank=True)
 
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.annotate(
-            number_of_datasets=Count(
-                "conditionset__dataset",
-                filter=~Q(
-                    conditionset__dataset__paper__latest_data_status__status__name="not relevant"
-                ),
-            )
-        ).filter(number_of_datasets__gte=1)
+    objects = ConditionManager()
 
     class Meta:
         get_latest_by = "modified_on"
@@ -212,6 +199,14 @@ class Condition(models.Model):
         return mark_safe(", ".join([t.link_edit() for t in self.tags.all()]))
 
 
+class ConditionSetManager(models.Manager):
+
+    def all_valid(self):
+        # Valid = associated with at least 1 dataset from a relevant paper
+        valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
+        return self.filter(dataset__in=valid_datasets).distinct()
+
+
 class ConditionSet(models.Model):
 
     systematic_name = models.CharField(max_length=1000, blank=True, null=True)
@@ -221,15 +216,13 @@ class ConditionSet(models.Model):
     conditions = models.ManyToManyField(Condition, blank=True)
     description = models.TextField(blank=True, null=True)
 
+    objects = ConditionSetManager()
+
     def __str__(self):
         if self.display_name:
             return self.display_name
         else:
             return ""
-
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.filter(dataset__isnull=False)
 
     # # Necessary to run database-wide updates of conditionset names
     # def save(self, *args, **kwargs):
@@ -247,11 +240,9 @@ class ConditionSet(models.Model):
     def papers(self):
         return (
             apps.get_model("papers", "Paper")
-            .objects.filter(
+            .objects.all_valid().filter(
                 Q(dataset__conditionset=self) | Q(dataset__control_conditionset=self)
             )
-            .exclude(latest_data_status__status__name="not relevant")
-            .distinct()
         )
 
     def papers_all(self):
@@ -260,7 +251,6 @@ class ConditionSet(models.Model):
             .objects.filter(
                 Q(dataset__conditionset=self) | Q(dataset__control_conditionset=self)
             )
-            .distinct()
         )
         return ps
 
@@ -271,12 +261,12 @@ class ConditionSet(models.Model):
         return (
             apps.get_model("datasets", "Dataset")
             .objects.filter(conditionset=self)
-            .distinct()
         )
 
     def datasets(self):
-        return self.datasets_all().exclude(
-            paper__latest_data_status__status__name="not relevant"
+        return (
+            apps.get_model("datasets", "Dataset")
+            .objects.all_valid().filter(conditionset=self)
         )
 
     def datasets_edit_list(self):
@@ -303,6 +293,14 @@ class ConditionSet(models.Model):
         return mark_safe(html)
 
 
+class MediumManager(models.Manager):
+
+    def all_valid(self):
+        # Valid = associated with at least 1 dataset from a relevant paper
+        valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
+        return self.filter(dataset__in=valid_datasets).distinct()
+
+
 class Medium(models.Model):
 
     systematic_name = models.CharField(max_length=1000, blank=True, null=True)
@@ -312,24 +310,22 @@ class Medium(models.Model):
     conditions = models.ManyToManyField(Condition, blank=True)
     description = models.TextField(blank=True, null=True)
 
+    objects = MediumManager()
+
     def __str__(self):
         if self.display_name:
             return self.display_name
         else:
             return ""
 
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.all()
-
-    def conditions_str_list(self):
-        return ", ".join([str(c) for c in self.conditions.all()])
+    def conditions_list_str(self):
+        conditions_list = [str(c) for c in self.conditions.all()]
+        return mark_safe("; ".join(conditions_list))
 
     def papers(self):
         return (
             apps.get_model("papers", "Paper")
-            .objects.filter(Q(dataset__medium=self) | Q(dataset__control_medium=self))
-            .exclude(latest_data_status__status__name="not relevant")
+            .objects.all_valid().filter(Q(dataset__medium=self) | Q(dataset__control_medium=self))
             .distinct()
         )
 
@@ -341,8 +337,9 @@ class Medium(models.Model):
         )
         return ps
 
-    def paper_str_list(self):
-        return ", ".join([str(p) for p in self.papers()])
+    def papers_list_str(self):
+        papers_list = [str(p) for p in self.papers()]
+        return mark_safe("; ".join(papers_list))
 
     def papers_edit_link_list(self):
         return mark_safe(", ".join([p.link_edit() for p in self.papers_all()]))
@@ -350,8 +347,7 @@ class Medium(models.Model):
     def datasets(self, num=None):
         qs = (
             apps.get_model("datasets", "Dataset")
-            .objects.filter(medium=self)
-            .exclude(paper__latest_data_status__status__name="not relevant")
+            .objects.all_valid().filter(medium=self)
             .distinct()
         )
         if num:

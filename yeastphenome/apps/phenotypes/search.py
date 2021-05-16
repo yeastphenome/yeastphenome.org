@@ -31,7 +31,7 @@ def run_search_tag_query(queries):
     queries = queries or []
 
     # A phenotype search actually returns observables
-    queryset = Observable.all_valid()
+    queryset = Observable.objects.all_valid()
 
     for query in queries:
         query = escape_regex(query)

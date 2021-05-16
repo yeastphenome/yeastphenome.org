@@ -29,7 +29,7 @@
         <div class="col-md-4">
             <div class="box" style="height:220px">
                     <p><h3>About</h3></p>
-                    <p>Our goal is to collect, organize and share in a common format all genome-scale screens of the knock-out collection in <em>Saccharomyces cerevisiae</em>. <a style="float:right; margin-top:38px" class="hotlink" href="{% url 'common:project' %}">More details ></a> </p>
+                    <p>We collect, organize and share in a common annotated format all genome-scale screens of the knock-out collection in <em>Saccharomyces cerevisiae</em>. <a style="float:right; margin-top:38px" class="hotlink" href="{% url 'common:project' %}">More details ></a> </p>
             </div>
         </div>
         <div class="col-md-4">
@@ -37,7 +37,7 @@
                <h3>What's in the database?</h3>             
                     <p><ul>
                     <li>{{ papers_nr }} <a class="hotlink" href="{% url 'papers:all' %}">papers</a></li>
-                    <li>{{ datasets_nr|intcomma }} <a class="hotlink" href="{% url 'datasets:index' %}">datasets</a></li>
+                    <li>{{ datasets_nr|intcomma }} <a class="hotlink" href="{% url 'datasets:index' %}">datasets</a> (screens)</li>
                     <li>{{ phenotypes_nr|intcomma }} <a class="hotlink" href="{% url 'phenotypes:index' %}">phenotypes</a></li>
                     <li>{{ conditions_nr|intcomma }} <a class="hotlink" href="{% url 'conditions:index' %}">experimental conditions</a></li>
                     <li>{{ genes_nr|intcomma }} <a class="hotlink" href="{% url 'genes:index' %}">genes</a></li>

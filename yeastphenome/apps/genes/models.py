@@ -13,12 +13,14 @@ class GeneAlias(models.Model):
 
     name = models.CharField(max_length=250, null=False, blank=False, unique=True)
 
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.exclude(name__isnull=True)
-
     def __str__(self):
         return "%s" % self.name
+
+
+class GeneManager(models.Manager):
+
+    def all_valid(self):
+        return self.all()
 
 
 class Gene(models.Model):
@@ -41,9 +43,7 @@ class Gene(models.Model):
     common_name_explanation = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.all()
+    objects = GeneManager()
 
     # TODO: additional mutations resulting from perturbing gene
     # genome_alterations, acquired_secondary_alterations
@@ -51,9 +51,9 @@ class Gene(models.Model):
     def __str__(self):
         return "%s / %s" % (self.common_name, self.systematic_name)
 
-    @classmethod
-    def all(cls):
-        return cls.objects.all()
+    # @classmethod
+    # def all(cls):
+    #     return cls.objects.all()
 
     def aliases_list_str(self):
         return mark_safe(", ".join([str(a) for a in self.aliases.all()]))
@@ -101,10 +101,6 @@ class GeneSimilarity(models.Model):
     )
     # IMPORTANT: this is actually a standard deviation
     pvalue = models.DecimalField(max_digits=10, decimal_places=6)
-
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.exclude(score__isnull=True)
 
     @property
     def pvalue_scientific_notation(self):

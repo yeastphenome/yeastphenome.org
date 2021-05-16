@@ -1,13 +1,19 @@
 <nav aria-label="Search results page navigation">
-    <ul class="pagination">
+    <ul class="pagination pull-right">
         {% if page_obj.paginator.num_pages > 1 %}
-            {% for p in page_obj.paginator.page_range %}
+            {% if page_range|first > 1 %}
+                <li><a href="?q={{ request.GET.q }}&tab={{ tab }}&page={{ page_range|first|add:"-1" }}">&laquo;</a></li>
+            {% endif %}
+            {% for p in page_range %}
                 {% if 'page' not in request.GET and p == 1 or p|slugify == request.GET.page %}
                     <li class="active"><span>{{ p }}</span></li>
                 {% else %}
-                    <li><a href="?q={{ request.GET.q }}&tab={{ request.GET.tab }}&page={{ p }}">{{ p }}</a></li>
+                    <li><a href="?q={{ request.GET.q }}&tab={{ tab }}&page={{ p }}">{{ p }}</a></li>
                 {% endif %}
             {% endfor %}
+            {% if page_range|last < page_obj.paginator.num_pages %}
+                <li><a href="?q={{ request.GET.q }}&tab={{ tab }}&page={{ page_range|last|add:"1" }}">&raquo;</a></li>
+            {% endif %}
         {% endif %}
 
     </ul>

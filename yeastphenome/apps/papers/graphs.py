@@ -8,9 +8,7 @@ def get_papers_by_year(add_padding=True):
     add an empty year to the left and right (default)
     """
     counts = (
-        Paper.objects.values("pub_date")
-        .exclude(latest_data_status__status__name="not relevant")
-        .order_by("pub_date")
+        Paper.objects.all_valid().values("pub_date")
         .annotate(the_count=Count("pub_date"))
     )
     counts = {x["pub_date"]: x["the_count"] for x in counts if x["pub_date"] != 0}

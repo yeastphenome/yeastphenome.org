@@ -49,7 +49,7 @@ def redirect_index(request):
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def tag_browser(request):
     """View a listing of tags"""
-    tags = Tag.all_valid(type="conditions")
+    tags = Tag.objects.all_valid(type="conditions")
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
         {"url": reverse("conditions:index"), "name": "Conditions"},
@@ -64,10 +64,10 @@ def tag_browser(request):
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def browse(request):
-    """Browse dataest by condition names (and size by count)"""
+    """Browse dataset by condition names (and size by count)"""
     # With >=1 dataset, sorted by datasets
     qs = (
-        ConditionType.all_valid()
+        ConditionType.objects.all_valid()
         .annotate(
             number_of_papers=Count(
                 "condition__conditionset__dataset__paper", distinct=True

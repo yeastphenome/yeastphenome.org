@@ -2,9 +2,12 @@
 <div class="row">
     <div class="col-md-12">
         <h2>Datasets</h2>
+
+        {% include "search/pagination.html" with page_obj=datasets_page_obj %}
+
         <table class="table table-striped">
             <tr>
-                <th style="width: 15%">Dataset</th>
+                <th style="width: 10%">Dataset</th>
                 <th style="width: 15%">Paper</th>
                 <th style="width: 15%">Phenotype</th>
                 <th style="width: 15%">Condition</th>
@@ -15,7 +18,7 @@
             </tr>
             {% for dataset in datasets_page_obj %}
                 <tr>
-                    <td><a href="/datasets/{{ dataset.id }}/">{{ dataset.id }}</a></td>
+                    <td><a href="{% url 'datasets:dataset_detail' dataset.pk  %}">{{ dataset.pk }}</a></td>
                     <td>{{ dataset.paper }}</td>
                     <td>{{ dataset.phenotype }}</td>
                     <td>{{ dataset.conditionset }}</td>

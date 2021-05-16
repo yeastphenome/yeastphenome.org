@@ -11,6 +11,14 @@ from django.utils.safestring import mark_safe
 from yeastphenome.apps.tags.models import Tag
 
 
+class CollectionManager(models.Manager):
+
+    def all_valid(self):
+        # Valid = associated with at least 1 dataset from a relevant paper
+        valid_datasets = Dataset.objects.all_valid()
+        return self.filter(dataset__in=valid_datasets)
+
+
 class Collection(models.Model):
     name = models.CharField(max_length=200, null=True, blank=True)
     shortname = models.CharField(max_length=200, null=True, blank=True)
@@ -18,11 +26,7 @@ class Collection(models.Model):
     ploidy = models.IntegerField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.exclude(
-            dataset__paper__latest_data_status__status__name="not relevant"
-        )
+    objects = CollectionManager()
 
     def __str__(self):
         return "%s" % self.shortname
@@ -31,10 +35,6 @@ class Collection(models.Model):
 class Sourcetype(models.Model):
     name = models.CharField(max_length=200, null=True, blank=True)
     shortname = models.CharField(max_length=200, null=True, blank=True)
-
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.all()
 
     def __str__(self):
         return "%s" % self.name
@@ -59,12 +59,6 @@ class Source(models.Model):
             return "%s" % self.person
         else:
             return "%s" % self.sourcetype
-
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.filter(data_source__isnull=False).exclude(
-            data_source__paper__latest_data_status__status__name="not relevant"
-        )
 
     def html(self):
         source_str = ""
@@ -105,12 +99,15 @@ class Datatype(models.Model):
     shortname = models.CharField(max_length=20, null=True, blank=True)
     rank = models.PositiveIntegerField(blank=True, null=True)
 
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.all()
-
     def __str__(self):
         return "%s" % self.name
+
+
+class DatasetManager(models.Manager):
+
+    def all_valid(self):
+        valid_papers = apps.get_model("papers", "Paper").objects.all_valid()
+        return self.filter(paper__in=valid_papers)
 
 
 class Dataset(models.Model):
@@ -194,6 +191,8 @@ class Dataset(models.Model):
     tags = models.ManyToManyField(Tag, blank=True)
     data_modified_on = models.DateField(null=True, blank=True)
 
+    objects = DatasetManager()
+
     @property
     def short_name(self):
         """Break the dataset name into words, and return the first 16. If the
@@ -210,12 +209,6 @@ class Dataset(models.Model):
 
     def get_absolute_url(self):
         return reverse("datasets:detail", args=[self.id])
-
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.exclude(
-            Q(paper__latest_data_status__status__name__exact="not relevant")
-        ).distinct()
 
     # Necessary to run database-wide updates of dataset names
     def save(self, *args, **kwargs):
@@ -337,10 +330,6 @@ class DatasetSimilarity(models.Model):
     # IMPORTANT: this is actually a standard deviation
     pvalue = models.DecimalField(max_digits=10, decimal_places=6)
 
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.exclude(score__isnull=True)
-
     def save(self, *args, **kwargs):
         """Override the save function to ensure that only one similarity score
         for any pair of datasets can be created. If a different ordering is
@@ -375,10 +364,6 @@ class Data(models.Model):
 
     # Normalized phenotypic score
     valuez = models.DecimalField(max_digits=10, decimal_places=5)
-
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.exclude(valuez__isnull=True)
 
     def __str__(self):
         return "%s - %d" % (self.gene.systematic_name, self.dataset.id)
