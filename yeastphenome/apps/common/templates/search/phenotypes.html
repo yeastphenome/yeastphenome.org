@@ -8,16 +8,18 @@
         <table class="table table-striped">
             <tr>
                 <th style="width: 20%">Name</th>
-                <th style="width: 30%">Reporters</th>
-                <th style="width: 30%">Conditions</th>
+                <th style="width: 20%">Reporters</th>
+                <th style="width: 20%">Conditions</th>
+                <th style="width: 20%">Papers</th>
                 <th>Tags</th>
             </tr>
             {% for phenotype in phenotypes_page_obj %}
                 <tr>
                     <td><a href="{% url 'phenotypes:detail' phenotype.pk  %}">{{ phenotype }}</a></td>
-                    <td>{{ phenotype.reporters_list_str }}</td>
-                    <td>{{ phenotype.conditiontypes_list_str }}</td>
-                    <td>{{ phenotype.tags_str_list }}</td>
+                    <td>{{ phenotype.reporters_list_as_str }}</td>
+                    <td>{{ phenotype.conditiontypes_list_as_str }}</td>
+                    <td>{{ phenotype.papers_list_as_str }}</td>
+                    <td>{{ phenotype.tags_list_as_str }}</td>
                 </tr>
             {% endfor %}
         </table>

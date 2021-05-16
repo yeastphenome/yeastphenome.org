@@ -121,7 +121,7 @@ class GetPaperDatasets(RatelimitMixin, APIView):
     renderer_classes = (JSONRenderer,)
 
     def get(self, request, paper_id):
-        print("GET GetPaperatasets")
+        print("GET GetPaperdatasets")
 
         # Start and length to return
         draw = int(request.GET["draw"])
@@ -134,7 +134,7 @@ class GetPaperDatasets(RatelimitMixin, APIView):
         except Paper.DoesNotExist:
             return Response(status=200, data=data)
         datasets = (
-            paper.dataset_set.select_related("phenotype__observable")
+            paper.datasets.select_related("phenotype__observable")
             .select_related("collection")
             .select_related("conditionset")
             .all()

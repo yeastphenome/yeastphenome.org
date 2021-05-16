@@ -15,9 +15,9 @@
         {% for qs in queryset %}<tr>
             <td>{{ qs.link_detail|safe }}</td>
             <td>{{ condition.doses_str_list }}</td>
-            <td>{{ condition.observables_list_str }}</td>
+            <td>{{ condition.observables_list_as_str }}</td>
             <td>{{ qs.papers|join_and_more:7 }}</td>
-            <td>{{ condition.tags_list_str }}</td>
+            <td>{{ condition.tags_list_as_str }}</td>
         </tr>{% endfor %}
         </tbody>
     </table>

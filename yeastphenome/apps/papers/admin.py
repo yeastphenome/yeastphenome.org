@@ -22,7 +22,7 @@ class PaperAdmin(ImprovedModelAdmin):
     list_display = (
         "pmid",
         "user",
-        "__str__",
+        "systematic_name",
         "datasets_summary",
         "latest_data_status_name_date",
         "latest_tested_status_name",
@@ -30,17 +30,18 @@ class PaperAdmin(ImprovedModelAdmin):
     list_filter = ["latest_data_status__status__name", "pub_date", "last_author"]
     ordering = (
         "pub_date",
-        "last_author",
-        "first_author",
+        "systematic_name",
     )
     fields = [
         ("user",),
+        ("systematic_name",),
         ("first_author", "last_author", "pub_date", "pmid"),
         ("data_abstract",),
         ("notes", "private_notes"),
         "tags",
     ]
     raw_id_fields = ("tags",)
+    readonly_fields = ("systematic_name",)
     inlines = (
         StatusdataInline,
         StatustestedInline,
@@ -77,6 +78,9 @@ class PaperAdmin(ImprovedModelAdmin):
             paper.latest_tested_status = paper.statustested_set.latest()
         else:
             paper.latest_tested_status = None
+
+        paper.systematic_name = '%s~%s, %s' % (paper.first_author, paper.last_author, paper.pub_date)
+
         super(PaperAdmin, self).save_model(request, paper, form, change)
 
     def change_view(self, request, object_id, form_url="", extra_context=None):

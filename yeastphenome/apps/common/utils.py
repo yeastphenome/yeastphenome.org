@@ -13,9 +13,6 @@ from yeastphenome.apps.genes.models import Gene
 import collections
 
 
-# Search
-
-
 def escape_regex(value):
     """To use iregex in a search, if regular expression characters are included,
     we need to search for them verbatim. This function should replace them with

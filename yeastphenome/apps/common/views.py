@@ -113,7 +113,7 @@ def authors(request):
         {"url": reverse("common:contributors"), "name": "Authors"},
     ]
     context = {"active": "about", "links": links}
-    return render(request, "main/contributors.html", context)
+    return render(request, "main/authors.html", context)
 
 
 class ContributorsListView(generic.ListView, RatelimitMixin):

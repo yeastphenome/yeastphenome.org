@@ -5,6 +5,7 @@ from django.utils.safestring import mark_safe
 
 from yeastphenome.apps.datasets.models import Dataset
 from yeastphenome.apps.tags.models import Tag
+from yeastphenome.apps.common.utils_format import truncated_list_as_str
 
 
 class ObservableManager(models.Manager):
@@ -36,9 +37,9 @@ class Observable(models.Model):
         )
         return mark_safe(html)
 
-    def tags_str_list(self):
-        tags_list = self.tags.all().values_list("name", flat=True)
-        return mark_safe("; ".join(tags_list))
+    def tags_list_as_str(self):
+        tags_list = self.tags.values_list("name", flat=True)
+        return "; ".join(tags_list)
 
     def tags_edit_link_list(self):
         html = "<ul>"
@@ -63,12 +64,12 @@ class Observable(models.Model):
         return mark_safe(html)
 
     def reporters(self):
-        return self.phenotype_set.exclude(reporter=None).values_list(
+        return self.phenotype_set.all_valid().exclude(reporter=None).exclude(reporter="").values_list(
             "reporter", flat=True
-        )
+        ).order_by().distinct()
 
-    def reporters_list_str(self):
-        return mark_safe("; ".join(self.reporters()))
+    def reporters_list_as_str(self):
+        return "; ".join(self.reporters())
 
     def datasets(self):
         return (
@@ -99,22 +100,10 @@ class Observable(models.Model):
             .order_by("name")
         )
 
-    def conditiontypes_list_str(self):
-        conditiontypes_list = self.conditiontypes().values_list("name", flat=True)
-        num = len(conditiontypes_list)
-        if num == 0:
-            conditiontypes_str = ""
-        elif num <= 20:
-            conditiontypes_str = "; ".join(conditiontypes_list)
-        else:
-            num_remaining = num - 20
-            conditiontypes_str = (
-                "; ".join(conditiontypes_list[:20])
-                + "... and "
-                + str(num_remaining)
-                + " more"
-            )
-        return mark_safe(conditiontypes_str)
+    def conditiontypes_list_as_str(self):
+        conditiontypes_list = self.phenotype_set.all_valid().values_list("dataset__conditionset__conditions__type__name",
+                                                                         flat=True).order_by().distinct()
+        return truncated_list_as_str(conditiontypes_list)
 
     def papers(self):
         return (
@@ -124,8 +113,10 @@ class Observable(models.Model):
             .order_by("first_author")
         )
 
-    def papers_str_list(self):
-        return "; ".join([(u"%s" % p) for p in self.papers()])
+    def papers_list_as_str(self):
+        # 2X faster than Paper.objects.all_valid().filter(dataset__phenotype__observable=self)
+        ps = self.phenotype_set.all_valid().values_list("dataset__paper__systematic_name", flat=True).order_by().distinct()
+        return "; ".join(ps)
 
 
 class Measurement(models.Model):

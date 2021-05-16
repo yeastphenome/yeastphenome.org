@@ -7,19 +7,21 @@
 
         <table class="table table-striped">
             <tr>
-                <th style="width: 20%">Name</th>
-                <th style="width: 20%">Other names</th>
-                <th style="width: 20%">Doses</th>
-                <th style="width: 20%">Phenotypes</th>
+                <th style="width: 15%">Name</th>
+                <th style="width: 15%">Other names</th>
+                <th style="width: 15%">Doses</th>
+                <th style="width: 15%">Phenotypes</th>
+                <th style="width: 15%">Papers</th>
                 <th>Tags</th>
             </tr>
             {% for condition in conditions_page_obj %}
                 <tr>
                     <td><a href="{% url 'conditions:detail' condition.pk  %}">{{ condition }}</a></td>
-                    <td>{{ condition.all_other_names_list_str }}</td>
-                    <td>{{ condition.doses_list_str }}</td>
-                    <td>{{ condition.observables_list_str }}</td>
-                    <td>{{ condition.tags_list_str }}</td>
+                    <td>{{ condition.all_other_names_list_as_str }}</td>
+                    <td>{{ condition.doses_list_as_str }}</td>
+                    <td>{{ condition.observables_list_as_str }}</td>
+                    <td>{{ condition.papers_list_as_str }}</td>
+                    <td>{{ condition.tags_list_as_str }}</td>
                 </tr>
             {% endfor %}
         </table>

@@ -1,6 +1,5 @@
 from django.db.models import Q
 
-# from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.phenotypes.models import Phenotype
 from yeastphenome.apps.conditions.models import ConditionType
 from yeastphenome.apps.datasets.models import Datatype, Tag, Collection

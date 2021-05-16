@@ -4,128 +4,128 @@
 {% load humanize %}
 {% block title %}Datasets / {{ SITE_NAME }}{% endblock %}
 {% block content %}
-<div class="row" style="padding-bottom:35px">
-    <div class="col-md-12">
-        <h1>{{ dataset.name }}</h1>
+    <div class="row" style="padding-bottom:35px">
+        <div class="col-md-12">
+            <h1>{{ dataset.name }}</h1>
+        </div>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-xs-12">
-        <table class="table" id="datasetTable">
-            <tr>
-                <th scope="row" width="20%" class="first">Paper</th>
-                <td><a href="{% url 'papers:detail' dataset.paper_id %}">{{ dataset.paper }}</a></td>
-            </tr>
-            <tr>
-                <th scope="row">Phenotype</th>
-                <td>{{ dataset.phenotype.link_detail|safe }}</td>
-            </tr>
-            <tr>
-                <th scope="row">Conditions</th>
-                <td>{{ dataset.conditionset.link_detail|safe }}</td>
-            </tr>
-            <tr>
-                <th scope="row">Medium</th>
-                <td>{{ dataset.medium.link_detail|safe }}</td>
-            </tr>
-            <tr>
-                <th scope="row">Collection</th>
-                <td>{{ dataset.collection.shortname }}</td>
-            </tr>
-            <tr>
-                <th scope="row">Tested mutants</th>
-                <td>
-                    Number reported in the paper: {{ dataset.tested_num|intcomma }}
-                    <br>List reported in the paper: {{ dataset.tested_genes_published|yesno:"yes,no,unknown" }}
-                    <br>List available: {{ dataset.tested_genes_available|yesno:"yes,no,unknown" }}
-                    {% if dataset.tested_genes_available %}
-                    &mdash; {{ dataset.tested_space|intcomma }} from {{ dataset.tested_source.html|safe }}
-                    {% endif %}
-                </td>
-            </tr>
-            <tr>
-                <th scope="row">Data</th>
-                <td>
-                    Measured: {{ dataset.data_measured }}
-                    <br>Published: {{ dataset.data_published }}
-                    <br>Available: {{ dataset.data_available }}
-                    {% if dataset.data_source > 0 %}
-                    &mdash; from {{ dataset.data_source.html|safe }}
-                    {% endif %}
-                </td>
-            </tr>
-            {% if dataset.tags.count > 0 %}
-            <tr>
-                <th scope="row">Tags</th>
-                <td>{{ dataset.tags_link_list|safe }}</td>
-            </tr>
-            {% endif %}
-        </table>
+    <div class="row">
+        <div class="col-xs-12">
+            <table class="table" id="datasetTable">
+                <tr>
+                    <th scope="row" width="20%" class="first">Paper</th>
+                    <td><a href="{% url 'papers:detail' dataset.paper_id %}">{{ dataset.paper }}</a></td>
+                </tr>
+                <tr>
+                    <th scope="row">Phenotype</th>
+                    <td>{{ dataset.phenotype.link_detail|safe }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Conditions</th>
+                    <td>{{ dataset.conditionset.link_detail|safe }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Medium</th>
+                    <td>{{ dataset.medium.link_detail|safe }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Collection</th>
+                    <td>{{ dataset.collection.shortname }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Tested mutants</th>
+                    <td>
+                        Number reported in the paper: {{ dataset.tested_num|intcomma }}
+                        <br>List reported in the paper: {{ dataset.tested_genes_published|yesno:"yes,no,unknown" }}
+                        <br>List available: {{ dataset.tested_genes_available|yesno:"yes,no,unknown" }}
+                        {% if dataset.tested_genes_available %}
+                            &mdash; {{ dataset.tested_space|intcomma }} from {{ dataset.tested_source.html|safe }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Data</th>
+                    <td>
+                        Measured: {{ dataset.data_measured }}
+                        <br>Published: {{ dataset.data_published }}
+                        <br>Available: {{ dataset.data_available }}
+                        {% if dataset.data_source > 0 %}
+                            &mdash; from {{ dataset.data_source.html|safe }}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% if dataset.tags.count > 0 %}
+                    <tr>
+                        <th scope="row">Tags</th>
+                        <td>{{ dataset.tags_link_list|safe }}</td>
+                    </tr>
+                {% endif %}
+            </table>
+        </div>
     </div>
-</div>
 
     {% if dataset.data_source.release == True %}
-{% if datasets_top or datasets_bottom %}
-<div class="row" style="padding-top:30px" id='datasets'>
-    <div class="col-md-12">
-        <h2 style="padding-bottom:20px">Phenotypic Scores</h2>
-        {% include "datasets/data_warning.html"%}
-        <ul class="nav nav-tabs">
-            {% if datasets_top %}
-            <li class="active"><a data-toggle="tab" href="#datasets_top">Top 10</a></li>
-            {% endif %}
-            {% if datasets_bottom %}
-            <li><a data-toggle="tab" href="#datasets_bottom">Bottom 10</a></li>
-            {% endif %}
-        </ul>
+        {% if datasets_top or datasets_bottom %}
+            <div class="row" style="padding-top:30px" id='datasets'>
+                <div class="col-md-12">
+                    <h2 style="padding-bottom:20px">Phenotypic Scores</h2>
+                    {% include "datasets/data_warning.html"%}
+                    <ul class="nav nav-tabs">
+                        {% if datasets_top %}
+                            <li class="active"><a data-toggle="tab" href="#datasets_top">Top 10</a></li>
+                        {% endif %}
+                        {% if datasets_bottom %}
+                            <li><a data-toggle="tab" href="#datasets_bottom">Bottom 10</a></li>
+                        {% endif %}
+                    </ul>
 
-        <div class="tab-content">
-            {% if datasets_top %}
-            <div id="datasets_top" class="tab-pane fade in active" style="padding-top:20px">
-                {% include "datasets/dataset_table.html" with datasets=datasets_top table_id="datasets_top_table" %}
-            </div>
-            {% endif %}
-            {% if datasets_bottom %}
-            <div id="datasets_bottom" class="tab-pane fade" style="padding-top:20px">
-                {% include "datasets/dataset_table.html" with datasets=datasets_bottom table_id="datasets_bottom_table" %}
-            </div>
-            {% endif %}
-        </div>
-    </div>
-</div>{% endif %}
+                    <div class="tab-content">
+                        {% if datasets_top %}
+                            <div id="datasets_top" class="tab-pane fade in active" style="padding-top:20px">
+                                {% include "datasets/dataset_table.html" with datasets=datasets_top table_id="datasets_top_table" %}
+                            </div>
+                        {% endif %}
+                        {% if datasets_bottom %}
+                            <div id="datasets_bottom" class="tab-pane fade" style="padding-top:20px">
+                                {% include "datasets/dataset_table.html" with datasets=datasets_bottom table_id="datasets_bottom_table" %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>{% endif %}
 
-{% if sims_top or sims_bottom %}
-<div class="row" style="padding-top:50px" id='similar'>
-    <div class="col-md-12">
-        <h2 style="padding-bottom:20px">Phenotypic Similarities</h2>
-        {% include "datasets/data_warning.html"%}
-        <ul class="nav nav-tabs">
-            {% if sims_top %}
-            <li class="active"><a data-toggle="tab" href="#top10">Top 10</a></li>
-            {% endif %}
-            {% if sims_bottom %}
-            <li><a data-toggle="tab" href="#bottom10">Bottom 10</a></li>
-            {% endif %}
-        </ul>
+        {% if sims_top or sims_bottom %}
+            <div class="row" style="padding-top:50px" id='similar'>
+                <div class="col-md-12">
+                    <h2 style="padding-bottom:20px">Phenotypic Similarities</h2>
+                    {% include "datasets/data_warning.html"%}
+                    <ul class="nav nav-tabs">
+                        {% if sims_top %}
+                            <li class="active"><a data-toggle="tab" href="#top10">Top 10</a></li>
+                        {% endif %}
+                        {% if sims_bottom %}
+                            <li><a data-toggle="tab" href="#bottom10">Bottom 10</a></li>
+                        {% endif %}
+                    </ul>
 
-        <div class="tab-content">
-            {% if sims_top %}
-            <div id="top10" class="tab-pane fade in active" style="padding-top:20px">
-                {% include "datasets/similar_table.html" with scores=sims_top table_id="sim_top_table" %}
-            </div>
-            {% endif %}
-            {% if sims_bottom %}
-            <div id="bottom10" class="tab-pane fade" style="padding-top:20px">
-                {% include "datasets/similar_table.html" with scores=sims_bottom table_id="sim_bottom_table" %}
-            </div>
-            {% endif %}
-        </div>
-    </div>
-</div>{% endif %}
+                    <div class="tab-content">
+                        {% if sims_top %}
+                            <div id="top10" class="tab-pane fade in active" style="padding-top:20px">
+                                {% include "datasets/similar_table.html" with scores=sims_top table_id="sim_top_table" %}
+                            </div>
+                        {% endif %}
+                        {% if sims_bottom %}
+                            <div id="bottom10" class="tab-pane fade" style="padding-top:20px">
+                                {% include "datasets/similar_table.html" with scores=sims_bottom table_id="sim_bottom_table" %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>{% endif %}
     {%  endif %}
 
 {% endblock %}
 {% block scripts %}
-{% include "datasets/schemaorg_dataset.html" %}
+    {% include "datasets/schemaorg_dataset.html" %}
 {% endblock %}

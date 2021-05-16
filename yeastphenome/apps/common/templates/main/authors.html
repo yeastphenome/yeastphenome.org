@@ -1,0 +1,42 @@
+{% extends "base/wide.html" %}
+{% load humanize %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <h1>Authors</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <h2 id="maintainers">Maintainers</h2>
+            <p>Yeastphenome.org was created and is being maintained by:</p>
+            <ul>
+                <li>Anastasia Baryshnikova (principal investigator, <a class="external" href="http://www.baryshnikova-lab.org">www.baryshnikova-lab.org</a>)</li>
+                <li>Christie Chang (curator)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <h2 id="past_contributors">Past contributors</h2>
+            <p>The following individuals have helped with literature and data curation, as well as with server maintenance, website development, general scripting or infrastructure support:</p>
+            <ul>
+                <li>Vanessa Sochat (website)</li>
+                <li>Sven Heinicke (database, website)</li>
+                <li>Fan Kang (database, website)</li>
+                <li>Rose Oughtred (curator)</li>
+                <li>Brianna Richardson (curator, database, website)</li>
+                <li>Jennifer Rust (curator)</li>
+                <li>Mark Schroeder (database, website)</li>
+            </ul>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <h2 id="data_contributors">Data contributors</h2>
+            <p>A very special thanks goes to the <a href="{% url 'common:data_contributors' %}">members of the yeast community</a> who have answered our questions and shared with us more complete or quantitative data from their experiments.</p>
+        </div>
+
+    </div>
+{% endblock %}

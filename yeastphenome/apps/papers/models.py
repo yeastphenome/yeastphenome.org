@@ -10,6 +10,7 @@ from yeastphenome.apps.phenotypes.models import Observable
 from yeastphenome.apps.conditions.models import ConditionType
 from yeastphenome.apps.datasets.models import Collection, Source
 from yeastphenome.apps.tags.models import Tag
+from yeastphenome.apps.common.utils_format import truncated_list_as_str
 
 import os
 
@@ -30,20 +31,24 @@ class PaperManager(models.Manager):
 
     def all_valid(self):
         # Valid = is relevant
-        return self.exclude(latest_data_status__status__name__exact="not relevant")
+        return self.exclude(latest_data_status__status__name__in=["not relevant", "undefined"])
 
 
 class Paper(models.Model):
     first_author = models.CharField(max_length=200)
     last_author = models.CharField(max_length=200, blank=True, null=True)
     pub_date = models.IntegerField(default=0)
+    systematic_name = models.CharField(max_length=200, blank=False, null=False)
+
     pmid = models.IntegerField(default=0)
     notes = models.TextField(blank=True)
     private_notes = models.TextField(blank=True)
     data_abstract = models.TextField(blank=True, null=True)
-    modified_on = models.DateField(auto_now=True)
+
     user = models.ForeignKey(User, blank=True, null=True, on_delete=models.DO_NOTHING)
     tags = models.ManyToManyField(Tag, blank=True)
+
+    modified_on = models.DateField(auto_now=True)
 
     data_statuses = models.ManyToManyField(
         Status, through="Statusdata", related_name="data_statuses"
@@ -71,74 +76,38 @@ class Paper(models.Model):
 
     class Meta:
         get_latest_by = "modified_on"
-        ordering = ["pmid", "first_author", "last_author"]
+        ordering = ["pmid", "systematic_name"]
 
     def __str__(self):
-        if self.last_author:
-            txt = u"%s~%s, %s" % (self.first_author, self.last_author, self.pub_date)
-        else:
-            txt = u"%s, %s" % (self.first_author, self.pub_date)
-        return txt
+        return self.systematic_name
 
-    def collections(self):
-        return Collection.objects.filter(dataset__paper=self).distinct()
+    def collections_list_as_str(self):
+        collections = self.datasets.values_list("collection__shortname", flat=True).order_by().distinct()
+        return "; ".join(collections)
 
-    def collections_list_str(self):
-        return "; ".join([(u"%s" % i) for i in self.collections()])
+    # def phenotypes(self):
+    #     return (
+    #         Observable.objects.filter(phenotype__dataset__paper=self)
+    #         .distinct()
+    #         .order_by(Lower("name"))
+    #     )
 
-    def phenotypes(self):
-        return (
-            Observable.objects.filter(phenotype__dataset__paper=self)
-            .distinct()
-            .order_by(Lower("name"))
-        )
+    def phenotypes_list_as_str(self):
+        phenotypes = self.datasets.values_list("phenotype__observable__name", flat=True).order_by().distinct()
+        return truncated_list_as_str(phenotypes)
 
-    def phenotypes_str_list(self):
-        num = len(self.phenotypes())
-        if num == 0:
-            phenotypes_str = ""
-        elif num <= 20:
-            phenotypes_str = ", ".join([(u"%s" % i) for i in self.phenotypes()])
-        else:
-            num_remaining = num - 20
-            phenotypes_str = (
-                ", ".join([(u"%s" % i) for i in self.phenotypes()[:20]])
-                + "... and "
-                + str(num_remaining)
-                + " more"
-            )
-        return mark_safe(phenotypes_str)
+    # def conditiontypes(self):
+    #     return ConditionType.objects.filter(
+    #         conditions__conditionset__dataset__paper=self
+    #     ).distinct()
 
-    def conditiontypes(self):
-        return ConditionType.objects.filter(
-            condition__conditionset__dataset__paper=self
-        ).distinct()
-
-    def conditiontypes_str_list(self):
-        conditiontypes_list = self.conditiontypes().values_list("name", flat=True)
-        num = len(conditiontypes_list)
-        if num == 0:
-            conditiontypes_str = ""
-        elif num <= 20:
-            conditiontypes_str = "; ".join(conditiontypes_list)
-        else:
-            num_remaining = num - 20
-            conditiontypes_str = (
-                "; ".join(conditiontypes_list[:20])
-                + "... and "
-                + str(num_remaining)
-                + " more"
-            )
-        return mark_safe(conditiontypes_str)
+    def conditiontypes_list_as_str(self):
+        conditiontypes = self.datasets.values_list("conditionset__conditions__type__name", flat=True).order_by().distinct()
+        return truncated_list_as_str(conditiontypes)
 
     def datasets_summary(self):
-        return mark_safe(
-            self.collections_list_str()
-            + "<br>"
-            + self.phenotypes_str_list()
-            + "<br>"
-            + self.conditiontypes_str_list()
-        )
+        str_list = [self.collections_list_as_str(), self.phenotypes_list_as_str(), self.conditiontypes_list_as_str()]
+        return mark_safe("<br>".join(str_list))
 
     @property
     def datasets_number(self):

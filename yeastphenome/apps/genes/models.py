@@ -51,10 +51,6 @@ class Gene(models.Model):
     def __str__(self):
         return "%s / %s" % (self.common_name, self.systematic_name)
 
-    # @classmethod
-    # def all(cls):
-    #     return cls.objects.all()
-
     def aliases_list_str(self):
         return mark_safe(", ".join([str(a) for a in self.aliases.all()]))
 

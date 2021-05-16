@@ -15,7 +15,7 @@
                 <td>{% for tag in sorted_tags %}<a href="{% url 'phenotypes:index'%}?query={{ tag.name }}">{{ tag.name }}</a>{% if forloop.last %}{% else %}, {% endif %}{% endfor %}{% if object.tags.count > 1 %}<span style="padding-left:8px; padding-right:5px">|</span> <a href="{% url 'phenotypes:index' %}?query={% for tag in object.tags.all %}{{ tag.name }}{% if forloop.last %}{% else %}|{% endif %}{% endfor %}">all</a>{% endif %}</td>
             </tr>{% endif %}
             {% if similar.count > 0 %}<tr>
-                <th width="20%" scope="row" class="first">Similar Phenotypes (sharing >=3 tags)</th>
+                <th width="20%" scope="row" class="first">Similar Phenotypes (sharing >2 tags)</th>
                 <td>{% for p in similar.all %}{% if p.id != object.id %}<a href="{% url 'phenotypes:detail' p.id %}">{{ p.name }}</a>{% if forloop.last %}{% else %}, {% endif %}{% endif %}{% endfor %}</td>
             </tr>{% endif %}
         </table>

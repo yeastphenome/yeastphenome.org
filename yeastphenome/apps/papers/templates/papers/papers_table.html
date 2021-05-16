@@ -11,8 +11,8 @@
         {% for paper in papers_list %}
         <tr>
             <td class="text-nowrap"><a href="{% url 'papers:detail' paper.pk  %}">{{ paper }}</a></td>
-            <td>{{ paper.phenotypes_str_list }}</td>
-            <td>{{ paper.conditiontypes_str_list }}</td>
+            <td>{{ paper.phenotypes_list_as_str }}</td>
+            <td>{{ paper.conditiontypes_list_as_str }}</td>
         </tr>
         {% endfor %}
     </tbody>

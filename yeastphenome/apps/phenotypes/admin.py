@@ -10,7 +10,7 @@ from yeastphenome.apps.common.admin_util import ImprovedModelAdmin
 
 class ObservableAdmin(ImprovedModelAdmin):
     list_per_page = 50
-    list_display = ["name", "description", "tags_str_list", "papers_str_list"]
+    list_display = ["name", "description", "tags_list_as_str", "papers_list_as_str"]
     search_fields = ["name", "description", "tags__name"]
     fields = (
         "name",

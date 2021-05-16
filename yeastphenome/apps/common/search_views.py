@@ -28,7 +28,8 @@ def index(request):
         form = GlobalSearchForm(request.GET)
         if form.is_valid():
             q = form.cleaned_data["q"]
-            q_list = q.split(" ")
+            q_list = q.split(",")
+            q_list = [qi.strip() for qi in q_list]
 
             # Do the search
 
@@ -108,7 +109,7 @@ def index(request):
             papers = Paper.objects.all_valid()
             filter_list_qi = Q()
             for qi in q_list:
-                filter_list_qi &= (Q(first_author__icontains=qi) | Q(last_author__icontains=qi))
+                filter_list_qi &= (Q(systematic_name__icontains=qi))
             filter_list = filter_list_qi | Q(datasets__in=datasets.values_list("id"))
             papers = papers.filter(filter_list).distinct()
             context["num_papers"] = papers.count()
