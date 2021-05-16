@@ -166,6 +166,7 @@ class Phenotype(models.Model):
     measurement = models.ForeignKey(
         Measurement, blank=True, null=True, on_delete=models.DO_NOTHING
     )
+    tags = models.ManyToManyField(Tag, blank=True)
     modified_on = models.DateField(auto_now=True, null=True)
 
     objects = PhenotypeManager()
@@ -196,14 +197,14 @@ class Phenotype(models.Model):
     def papers(self):
         return (
             apps.get_model("papers", "Paper")
-            .objects.all_valid().filter(dataset__phenotype=self)
+            .objects.all_valid().filter(datasets__phenotype=self)
             .distinct()
         )
 
     def papers_all(self):
         return (
             apps.get_model("papers", "Paper")
-            .objects.filter(dataset__phenotype=self)
+            .objects.filter(datasets__phenotype=self)
             .distinct()
         )
 

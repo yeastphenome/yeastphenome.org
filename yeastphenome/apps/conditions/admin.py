@@ -114,6 +114,7 @@ class ConditionTypeAdmin(ImprovedModelAdmin):
         "chebi_name",
         "pubchem_id",
         "pubchem_name",
+        "tags__name"
     )
     fields = (
         "name",
@@ -167,7 +168,7 @@ class ConditionSetAdmin(ImprovedModelAdmin):
         "display_name",
         "papers_edit_link_list",
     )
-    raw_id_fields = ("conditions",)
+    raw_id_fields = ("conditions", "tags")
     search_fields = (
         "systematic_name",
         "common_name",
@@ -175,6 +176,7 @@ class ConditionSetAdmin(ImprovedModelAdmin):
         "conditions__type__other_names",
         "conditions__type__pubchem_name",
         "conditions__type__chebi_name",
+        "tags__name"
     )
     ordering = (
         "id",
@@ -187,6 +189,7 @@ class ConditionSetAdmin(ImprovedModelAdmin):
         "display_name",
         "conditions",
         "description",
+        "tags",
         "datasets_edit_list",
     )
     readonly_fields = (
@@ -228,7 +231,7 @@ class MediumAdmin(ImprovedModelAdmin):
         "display_name",
         "papers_edit_link_list",
     )
-    raw_id_fields = ("conditions",)
+    raw_id_fields = ("conditions", "tags")
     search_fields = (
         "systematic_name",
         "common_name",
@@ -236,6 +239,7 @@ class MediumAdmin(ImprovedModelAdmin):
         "conditions__type__other_names",
         "conditions__type__pubchem_name",
         "conditions__type__chebi_name",
+        "tags__name"
     )
     ordering = (
         "id",
@@ -248,6 +252,7 @@ class MediumAdmin(ImprovedModelAdmin):
         "display_name",
         "conditions",
         "description",
+        "tags",
         "datasets_edit_link_list_top50",
     )
     readonly_fields = (

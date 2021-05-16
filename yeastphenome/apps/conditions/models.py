@@ -216,6 +216,8 @@ class ConditionSet(models.Model):
     conditions = models.ManyToManyField(Condition, blank=True)
     description = models.TextField(blank=True, null=True)
 
+    tags = models.ManyToManyField(Tag, blank=True)
+
     objects = ConditionSetManager()
 
     def __str__(self):
@@ -241,7 +243,7 @@ class ConditionSet(models.Model):
         return (
             apps.get_model("papers", "Paper")
             .objects.all_valid().filter(
-                Q(dataset__conditionset=self) | Q(dataset__control_conditionset=self)
+                Q(datasets__conditionset=self) | Q(datasets__control_conditionset=self)
             )
         )
 
@@ -249,7 +251,7 @@ class ConditionSet(models.Model):
         ps = (
             apps.get_model("papers", "Paper")
             .objects.filter(
-                Q(dataset__conditionset=self) | Q(dataset__control_conditionset=self)
+                Q(datasets__conditionset=self) | Q(datasets__control_conditionset=self)
             )
         )
         return ps
@@ -310,6 +312,8 @@ class Medium(models.Model):
     conditions = models.ManyToManyField(Condition, blank=True)
     description = models.TextField(blank=True, null=True)
 
+    tags = models.ManyToManyField(Tag, blank=True)
+
     objects = MediumManager()
 
     def __str__(self):
@@ -325,14 +329,14 @@ class Medium(models.Model):
     def papers(self):
         return (
             apps.get_model("papers", "Paper")
-            .objects.all_valid().filter(Q(dataset__medium=self) | Q(dataset__control_medium=self))
+            .objects.all_valid().filter(Q(datasets__medium=self) | Q(datasets__control_medium=self))
             .distinct()
         )
 
     def papers_all(self):
         ps = (
             apps.get_model("papers", "Paper")
-            .objects.filter(Q(dataset__medium=self) | Q(dataset__control_medium=self))
+            .objects.filter(Q(datasets__medium=self) | Q(datasets__control_medium=self))
             .distinct()
         )
         return ps

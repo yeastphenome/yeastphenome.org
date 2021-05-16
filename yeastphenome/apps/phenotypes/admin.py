@@ -41,6 +41,7 @@ class PhenotypeAdmin(ImprovedModelAdmin):
         "description",
         "reporter",
         "observable__name",
+        "tags__name"
     ]
     fields = (
         "name",
@@ -48,12 +49,14 @@ class PhenotypeAdmin(ImprovedModelAdmin):
         "observable",
         "reporter",
         "measurement",
+        "tags",
         "datasets_edit_link_list",
         "phenotype_siblings_edit_link_list",
     )
     raw_id_fields = (
         "measurement",
         "observable",
+        "tags"
     )
     readonly_fields = ("datasets_edit_link_list", "phenotype_siblings_edit_link_list")
 

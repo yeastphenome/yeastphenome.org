@@ -38,13 +38,15 @@ class PaperAdmin(ImprovedModelAdmin):
         ("first_author", "last_author", "pub_date", "pmid"),
         ("data_abstract",),
         ("notes", "private_notes"),
+        "tags",
     ]
+    raw_id_fields = ("tags",)
     inlines = (
         StatusdataInline,
         StatustestedInline,
         DatasetInline,
     )
-    search_fields = ("pmid", "first_author", "last_author", "private_notes")
+    search_fields = ("pmid", "first_author", "last_author", "private_notes", "tags__name")
 
     form = PaperModelForm
 

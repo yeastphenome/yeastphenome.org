@@ -9,6 +9,7 @@ from django.utils.safestring import mark_safe
 from yeastphenome.apps.phenotypes.models import Observable
 from yeastphenome.apps.conditions.models import ConditionType
 from yeastphenome.apps.datasets.models import Collection, Source
+from yeastphenome.apps.tags.models import Tag
 
 import os
 
@@ -42,6 +43,7 @@ class Paper(models.Model):
     data_abstract = models.TextField(blank=True, null=True)
     modified_on = models.DateField(auto_now=True)
     user = models.ForeignKey(User, blank=True, null=True, on_delete=models.DO_NOTHING)
+    tags = models.ManyToManyField(Tag, blank=True)
 
     data_statuses = models.ManyToManyField(
         Status, through="Statusdata", related_name="data_statuses"
@@ -81,8 +83,8 @@ class Paper(models.Model):
     def collections(self):
         return Collection.objects.filter(dataset__paper=self).distinct()
 
-    def collections_str_list(self):
-        return ", ".join([(u"%s" % i) for i in self.collections()])
+    def collections_list_str(self):
+        return "; ".join([(u"%s" % i) for i in self.collections()])
 
     def phenotypes(self):
         return (
@@ -131,7 +133,7 @@ class Paper(models.Model):
 
     def datasets_summary(self):
         return mark_safe(
-            self.collections_str_list()
+            self.collections_list_str()
             + "<br>"
             + self.phenotypes_str_list()
             + "<br>"
@@ -140,25 +142,7 @@ class Paper(models.Model):
 
     @property
     def datasets_number(self):
-        return self.dataset_set.count()
-
-    @property
-    def data_published(self):
-        return list(
-            map(
-                str,
-                self.dataset_set.values_list("data_published", flat=True).distinct(),
-            )
-        )
-
-    @property
-    def data_available(self):
-        return list(
-            map(
-                str,
-                self.dataset_set.values_list("data_available", flat=True).distinct(),
-            )
-        )
+        return self.datasets.count()
 
     def should_have_data(self):
         # Returns True if data has been loaded from data files
