@@ -1,0 +1,20 @@
+{% extends "base/base_min.html" %}
+{% load static %}
+{% load my_filters %}
+{% load humanize %}
+{% block title %}Scores | {{ dataset }} | Datasets | {{ SITE_NAME }}{% endblock %}
+{% block content %}
+    {%  if dataset.data_source.release == True %}
+        <div class="row mt-5 mb-3">
+            <div class="col-md-12">
+                <h1>Phenotypic Scores for {{ dataset.name }}</h1>
+                {% include "messages/data_warning.html"%}
+            </div>
+        </div>
+        <div class="row mt-3 mb-3">
+            <div class="col-md-12">
+                {% include "datasets/scores_table_min.html" with scores=scores %}
+            </div>
+        </div>
+    {%  endif %}
+{% endblock %}

@@ -37,6 +37,10 @@ class Tag(models.Model):
     class Meta:
         ordering = ["name"]
 
+    def link_detail(self):
+        html = '<a href="/search/?q=%s">%s</a>' % (self.name, self.name)
+        return mark_safe(html)
+
     def link_edit(self):
         html = '<a href="%s">%s</a>' % (
             reverse("admin:tags_tag_change", args=(self.id,)),

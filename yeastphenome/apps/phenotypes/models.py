@@ -11,9 +11,7 @@ from yeastphenome.apps.common.utils_format import truncated_list_as_str
 class ObservableManager(models.Manager):
 
     def all_valid(self):
-        # Valid = has at least 1 phenotypes associated with one relevant paper
-        valid_datasets = Dataset.objects.all_valid()
-        return self.filter(phenotype__dataset__in=valid_datasets)
+        return self.filter(phenotype__dataset__paper__latest_data_status__status__is_valid=True)
 
 
 class Observable(models.Model):
@@ -103,6 +101,7 @@ class Observable(models.Model):
     def conditiontypes_list_as_str(self):
         conditiontypes_list = self.phenotype_set.all_valid().values_list("dataset__conditionset__conditions__type__name",
                                                                          flat=True).order_by().distinct()
+        conditiontypes_list = [c for c in conditiontypes_list if c is not None]
         return truncated_list_as_str(conditiontypes_list)
 
     def papers(self):
@@ -115,8 +114,9 @@ class Observable(models.Model):
 
     def papers_list_as_str(self):
         # 2X faster than Paper.objects.all_valid().filter(dataset__phenotype__observable=self)
-        ps = self.phenotype_set.all_valid().values_list("dataset__paper__systematic_name", flat=True).order_by().distinct()
-        return "; ".join(ps)
+        papers = self.phenotype_set.all_valid().values_list("dataset__paper__systematic_name",
+                                                            flat=True).order_by().distinct()
+        return truncated_list_as_str(papers)
 
 
 class Measurement(models.Model):

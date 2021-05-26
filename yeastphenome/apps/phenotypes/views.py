@@ -2,6 +2,7 @@ from django.conf import settings
 from django.views import generic
 from django.shortcuts import render, reverse, redirect, get_object_or_404
 from django.db import models
+from django.db.models import F
 
 from yeastphenome.apps.phenotypes.models import Observable, Tag
 from yeastphenome.apps.phenotypes.search import get_search_tags
@@ -90,6 +91,26 @@ def phenotypes_by_tags(request, phenotype_id):
     ]
     context = {"links": links, "names": tag_names, "observables": queryset}
     return render(request, "phenotypes/tags.html", context)
+
+
+def phenotype_detail(request, phenotype_id):
+    observable = get_object_or_404(Observable, pk=phenotype_id)
+    datasets = observable.phenotype_set.values(dataset_id=F("dataset__id"),
+                                              dataset_paper_name=F("dataset__paper__systematic_name"),
+                                              dataset_phenotype_name=F("dataset__phenotype__name"),
+                                              dataset_conditionset_name=F("dataset__conditionset__display_name"),
+                                              dataset_medium_name=F("dataset__medium__display_name"),
+                                              dataset_collection_name=F("dataset__collection__shortname"),
+                                              dataset_data_name=F("dataset__data_available__name"))
+    num_datasets = datasets.count()
+
+    context = {
+        "phenotype": observable,
+        "datasets": datasets[:10],
+        "num_datasets": num_datasets,
+    }
+
+    return render(request, "phenotypes/detail_min.html", context)
 
 
 class ObservableDetailView(generic.DetailView):

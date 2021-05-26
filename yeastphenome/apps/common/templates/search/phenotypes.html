@@ -1,11 +1,10 @@
-<div class="row">&nbsp;</div>
 <div class="row">
     <div class="col-md-12">
-        <h2>Phenotypes</h2>
+        <h2 class="mt-5 mb-4">Phenotypes</h2>
 
         {% include "search/pagination.html" with page_obj=phenotypes_page_obj %}
 
-        <table class="table table-striped">
+        <table class="table">
             <tr>
                 <th style="width: 20%">Name</th>
                 <th style="width: 20%">Reporters</th>
@@ -15,11 +14,15 @@
             </tr>
             {% for phenotype in phenotypes_page_obj %}
                 <tr>
-                    <td><a href="{% url 'phenotypes:detail' phenotype.pk  %}">{{ phenotype }}</a></td>
-                    <td>{{ phenotype.reporters_list_as_str }}</td>
-                    <td>{{ phenotype.conditiontypes_list_as_str }}</td>
-                    <td>{{ phenotype.papers_list_as_str }}</td>
-                    <td>{{ phenotype.tags_list_as_str }}</td>
+                    <td><a href="{% url 'phenotypes:detail' phenotype.id  %}">{{ phenotype.name }}</a></td>
+                    <td>{{ phenotype.reporters }}</td>
+                    <td>{{ phenotype.agg_conditions }}</td>
+                    <td>{{ phenotype.agg_papers }}</td>
+                    <td>{{ phenotype.agg_tags }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 30px">No results match search criteria.</td>
                 </tr>
             {% endfor %}
         </table>

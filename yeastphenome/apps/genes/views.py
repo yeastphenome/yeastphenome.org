@@ -14,8 +14,7 @@ from yeastphenome.settings import (
     VIEW_RATE_LIMIT_BLOCK as rl_block,
 )
 
-
-# Explore by genes
+import numpy as np
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
@@ -40,6 +39,10 @@ def gene_explorer(request):
 def gene_detail(request, gene_id):
 
     gene = get_object_or_404(Gene, pk=gene_id)
+    scores_lowest = gene.get_scores(ascending=True)[:10]
+    scores_highest = gene.get_scores(ascending=False)[:10]
+    similarities_lowest = gene.get_similarities(ascending=True)[:10]
+    similarities_highest = gene.get_similarities(ascending=False)[:10]
 
     # Assemble links assuming on root of page
     links = [
@@ -48,26 +51,24 @@ def gene_detail(request, gene_id):
         {"url": reverse("genes:detail", args=[gene.id]), "name": "%s" % gene},
     ]
 
-    context = {"links": links, "active": "explorer", "gene": gene}
+    context = {
+        "gene": gene,
+        "scores_lowest": scores_lowest,
+        "scores_highest": scores_highest,
+        "similarities_lowest": similarities_lowest,
+        "similarities_highest": similarities_highest,
+        "links": links,
+        "active": "explorer",
+    }
 
-    # Get the top and bottom phenotypic scores
-    context["datasets_top"] = gene.get_data(reverse=False)[:10]
-    context["datasets_bottom"] = gene.get_data(reverse=True)[:10]
-
-    # Get the top and bottom correlations
-    context["sims_top"] = gene.get_ranked_similar(reverse=False)[:10]
-    context["sims_bottom"] = gene.get_ranked_similar(reverse=True)[:10]
-
-    context["links"] = links
-    return render(request, "genes/detail.html", context)
+    return render(request, "genes/detail_min.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def similar_genes(request, gene_id):
+def scores(request, gene_id):
 
     gene = get_object_or_404(Gene, pk=gene_id)
-
-    sims = gene.get_ranked_similar(reverse=False).select_related("gene2")
+    scores = gene.get_scores(ascending=True)
 
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
@@ -77,21 +78,47 @@ def similar_genes(request, gene_id):
             "name": "%s" % gene,
         },
         {
-            "url": reverse("genes:similar_genes", args=[gene.id]),
-            "name": "Similar Genes",
+            "url": reverse("genes:scores", args=[gene.id]),
+            "name": "Phenotypic Scores",
         },
     ]
 
-    total_sims = sims.count()
-    ranks = [(1 - (idx / total_sims)) * 100 for idx, sim in enumerate(sims)]
     context = {
         "gene": gene,
-        "sims": sims,
-        "ranks": ranks,
+        "scores": scores,
+        "links": links,
+        "active": "explorer"
+    }
+
+    return render(request, "genes/scores_min.html", context)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def similarities(request, gene_id):
+
+    gene = get_object_or_404(Gene, pk=gene_id)
+    similarities = gene.get_similarities(ascending=False)
+
+    links = [
+        {"url": reverse("common:explorer"), "name": "Explore data"},
+        {"url": reverse("genes:index"), "name": "Genes"},
+        {
+            "url": reverse("genes:detail", args=[gene.id]),
+            "name": "%s" % gene,
+        },
+        {
+            "url": reverse("genes:similarities", args=[gene.id]),
+            "name": "Phenotypic Similarities",
+        },
+    ]
+
+    context = {
+        "gene": gene,
+        "similarities": similarities,
         "links": links,
         "active": "explorer",
     }
-    return render(request, "genes/similar_genes.html", context)
+    return render(request, "genes/similarities_min.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
@@ -160,42 +187,7 @@ def similar_scatterplot(request, gene1_id, gene2_id):
     return render(request, "genes/similar_scatterplot.html", context)
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def gene_datasets(request, gene_id):
-    import numpy as np
 
-    gene = get_object_or_404(Gene, pk=gene_id)
-
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("genes:index"), "name": "Genes"},
-        {
-            "url": reverse("genes:detail", args=[gene.id]),
-            "name": "%s" % gene,
-        },
-        {
-            "url": reverse("genes:datasets", args=[gene.id]),
-            "name": "Phenotypic Scores",
-        },
-    ]
-
-    # Derive datasets bins here
-    datapoints = gene.get_data().values_list("valuez")
-
-    count, division = np.histogram([float(x[0]) for x in datapoints])
-    counts = []
-    for i, number in enumerate(count):
-        counts.append({"count": number, "value": division[i + 1]})
-
-    context = {
-        "gene": gene,
-        "links": links,
-        "active": "explorer",
-        "counts": counts,
-        "division": division,
-    }
-
-    return render(request, "genes/gene_datasets.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)

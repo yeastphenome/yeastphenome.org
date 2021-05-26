@@ -1,60 +1,21 @@
-{% extends "base/wide.html" %}
+{% extends "base/base_min.html" %}
 {% load humanize %}
+{% block title %}FAQs | About | {{ SITE_NAME }}{% endblock %}
 {% block content %}
-<div class="row">
-    <div class="col-md-12">
-      <h1>Frequently Asked Questions</h1>
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mt-5">Frequently Asked Questions (FAQs)</h1>
+        </div>
     </div>
-</div>
-<div class="row">
-    <div class="col-md-12">
-        <div class="accordion" id="accordionExample">
+    <div class="row">
+        <div class="col-12">
 
-            <div class="card">
-                <div class="card-header" id="headingOne">
-                  <h2>
-                  <button style="padding-left:0px" class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">Why is the drug name on this dataset different from the drug name in the paper?</button>
-                  </h2>
-                </div>
-                <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
-                    <div class="card-body">
-            What you see on this website is the ChEBI or the PubChem name of the drugs.
-            Whenever possible, we associate chemical compounds with a ChEBI ID (preferentially) or a PubChem ID (if ChEBI ID was not available) and display, by default, their ChEBI or PubChem names, respectively.
-            This sometimes results in an unusual name (e.g., the ChEBI name of rapamycin is <a href="http://www.yeastphenome.org/conditions/3/">sirolimus</a>), but it greatly facilitates the consistency of the data.
-            The original drug names (those used in the paper) are still available through search and will soon be displayed on the condition page.
-                    </div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-header" id="headingTwo">
-                  <h2>
-                  <button style="padding-left:0px" class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">How do I cite data downloaded from YeastPhenome.org?</button>
-                  </h2>
-                </div>
-                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
-                    <div class="card-body">
-                     See Data usage and citation policy <a href="{% url 'common:project' %}#citation">on the About page</a>.
-                    </div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-header" id="headingThree">
-                  <h2>
-                  <button style="padding-left:0px" class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">Are you planning to include data for other yeast libraries (e.g., ts mutants)?</button>
-                  </h2>
-                </div>
-                <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionExample">
-                    <div class="card-body">At the moment, we are entirely focused on the yeast knock-out library and are not systematically collecting data for any other strain collection. This approach helps us limit the scope of our search and maximize completeness. However, as we encounter publications that systematically examine other libraries, we add them to a running list that one day may act as a starting point for a new project. We are open for collaborations with anyone who is interested in taking on the curation and systematic analysis of these data.
-                    </div>
-                </div>
-            </div>
+            <h5 class="mt-5 mb-4">How do I cite data downloaded from YeastPhenome.org?</h5>
+            <p>See Data usage and citation policy on the <a href="{% url 'common:project' %}#citation">About</a> page.</p>
 
-       </div>
+            <h5 class="mt-5 mb-4">Are you planning to include data for other yeast libraries (e.g., ts mutants)?</h5>
+            <p>At the moment, we are entirely focused on the yeast knock-out library and are not systematically collecting data for any other strain collection. This approach helps us limit the scope of our search and maximize completeness. However, as we encounter publications that systematically examine other libraries, we add them to a running list that one day may act as a starting point for a new project. We are open for collaborations with anyone who is interested in taking on the curation and systematic analysis of these data.</p>
+
+        </div>
     </div>
-</div>
-{% endblock %}
-{% block scripts %}
-<script>
-$('.collapse').collapse()
-</script>
 {% endblock %}

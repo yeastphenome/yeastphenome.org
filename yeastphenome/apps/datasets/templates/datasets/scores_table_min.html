@@ -1,0 +1,20 @@
+{% if scores %}
+    <table id="{{ table_id }}" class="table mt-3">
+        <thead>
+        <tr>
+            <th scope="col" class="col-md-8">Gene Name</th>
+            <th scope="col">Normalized Phenotypic Score</th>
+            <th scope="col">Percentile</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for score in scores %}
+            <tr>
+                <td><a href="{% url 'genes:detail' score.gene_id %}">{{ score.gene_common_name }} / {{ score.gene_systematic_name }}</a></td>
+                <td>{{ score.valuez|floatformat:2 }}</td>
+                <td>{{ score.percentile|floatformat:2 }}%</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}

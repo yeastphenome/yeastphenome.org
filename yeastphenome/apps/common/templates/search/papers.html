@@ -1,11 +1,10 @@
-<div class="row">&nbsp;</div>
 <div class="row">
     <div class="col-md-12">
-        <h2>Papers</h2>
+        <h2 class="mt-5 mb-4">Papers</h2>
 
         {% include "search/pagination.html" with page_obj=papers_page_obj %}
 
-        <table class="table table-striped">
+        <table class="table">
             <tr>
                 <th style="width: 25%">First Author~Last Author, Year</th>
                 <th style="width: 35%">Phenotypes</th>
@@ -13,9 +12,13 @@
             </tr>
             {% for paper in papers_page_obj %}
                 <tr>
-                    <td><a href="{% url 'papers:detail' paper.pk  %}">{{ paper }}</a></td>
-                    <td>{{ paper.phenotypes_list_as_str }}</td>
-                    <td>{{ paper.conditiontypes_list_as_str }}</td>
+                    <td><a href="{% url 'papers:detail' paper.id  %}">{{ paper.systematic_name }}</a></td>
+                    <td>{{ paper.observables_summary }}</td>
+                    <td>{{ paper.conditiontypes_summary }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3" style="text-align: center; padding: 30px">No results match search criteria.</td>
                 </tr>
             {% endfor %}
         </table>

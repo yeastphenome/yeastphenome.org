@@ -1,33 +1,29 @@
 from django.shortcuts import render, redirect, reverse, get_object_or_404
-from django.views import generic
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.views.decorators.cache import never_cache
 from django.db.models import Q
+from django.contrib.postgres.aggregates.general import StringAgg, BoolOr
 
-from yeastphenome.apps.common.forms import SearchForm
 from yeastphenome.apps.common.utils import (
     check_download_space,
-    get_dataset_sources,
     get_latest_stats_basic,
     get_latest_stats,
-    get_phenotype_measurements,
 )
-from yeastphenome.apps.datasets.models import Dataset
+from yeastphenome.apps.datasets.models import Dataset, Source
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.papers.graphs import get_papers_by_year
 from yeastphenome.apps.conditions.models import ConditionType, Medium
 from yeastphenome.apps.phenotypes.models import Observable
 
 from ratelimit.decorators import ratelimit
-from ratelimit.mixins import RatelimitMixin
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
     VIEW_RATE_LIMIT_BLOCK as rl_block,
     DOWNLOAD_CART_LIMIT,
 )
 
-# Custom 404/500 views
+import itertools
 
 
 def handler404(request, exception):
@@ -36,16 +32,10 @@ def handler404(request, exception):
     return response
 
 
-# Core Pages
-
-
 @never_cache
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def index(request):
-
     context = get_latest_stats_basic()
-
-    # Select a random graph to add to the context
     return render(request, "main/index.html", context)
 
 
@@ -96,14 +86,8 @@ def stats(request):
         {"url": reverse("common:about"), "name": "About"},
         {"url": reverse("common:stats"), "name": "Stats"},
     ]
-
     context["paper_counts"] = get_papers_by_year()
-    context.update(get_phenotype_measurements(hide_legend=True))
-    context.update(get_dataset_sources())
     return render(request, "main/stats.html", context)
-
-
-# Contributors
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
@@ -116,28 +100,49 @@ def authors(request):
     return render(request, "main/authors.html", context)
 
 
-class ContributorsListView(generic.ListView, RatelimitMixin):
-    model = Paper
-    template_name = "papers/contributors.html"
-    ratelimit_key = "ip"
-    ratelimit_rate = rl_rate
-    ratelimit_block = rl_block
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def data_contributors(request):
+    papers = Paper.objects.all_valid().filter(
+        Q(datasets__data_source__acknowledge=True)
+        | Q(datasets__tested_source__acknowledge=True)
+    ).distinct()
 
-    def get_context_data(self, **kwargs):
-        context = super(ContributorsListView, self).get_context_data(**kwargs)
-        papers_list = Paper.objects.all_valid().filter(
-            Q(datasets__data_source__acknowledge=True)
-            | Q(datasets__tested_source__acknowledge=True)
-        ).distinct()
+    # Using queryset annotation to pre-fetch all the relevant data and speed up the loading of the page
+    agg_field1 = "datasets__data_source__label"
+    agg_field2 = "datasets__tested_source__label"
+    agg_field3 = "datasets__data_source__acknowledge"
+    agg_field4 = "datasets__tested_source__acknowledge"
+    papers = papers.annotate(people1=StringAgg(agg_field1, delimiter=", ", distinct=True))
+    papers = papers.annotate(people2=StringAgg(agg_field2, delimiter=", ", distinct=True))
+    papers = papers.annotate(data_ack=BoolOr(agg_field3))
+    papers = papers.annotate(tested_ack=BoolOr(agg_field4))
 
-        # contributors names, lookup with paper id
-        context["papers_list"] = papers_list
-        context["active"] = "about"
-        context["links"] = [
-            {"url": reverse("common:about"), "name": "About"},
-            {"url": reverse("common:data_contributors"), "name": "Data Contributors"},
-        ]
-        return context
+    papers_values = list(papers.values("id", "systematic_name",
+                                  "people1", "people2",
+                                  "data_ack", "tested_ack"))
+
+    def merge_people(paper_dict):
+        people1 = paper_dict["people1"].split(', ')
+        people2 = paper_dict["people2"].split(', ')
+        people = list(itertools.chain.from_iterable([people1, people2]))
+        people = [person for person in people if not person == "" and person is not None]
+        people = list(set(people))
+        paper_dict["people"] = "; ".join(people)
+        return paper_dict
+
+    papers_values = [merge_people(paper_dict) for paper_dict in papers_values]
+
+    num_people_to_ack = len(Source.objects.people_to_acknowledge())
+
+    context = {"active": "about",
+               "papers_list": papers_values,
+               "num_people_to_ack": num_people_to_ack,
+               "links": [
+                   {"url": reverse("common:about"), "name": "About"},
+                   {"url": reverse("common:data_contributors"), "name": "Data Contributors"},
+               ]}
+
+    return render(request, "main/data_contributors.html", context)
 
 
 # Warmup requests (for app engine)

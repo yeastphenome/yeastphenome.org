@@ -1,18 +1,16 @@
-{% extends "base/wide.html" %}
+{% extends "base/base_min.html" %}
 {% load humanize %}
 {% block title %}Search {{ request.GET.q }} | Yeastphenome.org{% endblock %}
 {% block content %}
     <div class="row">
         <div class="col-md-12">
-            <h1>Search</h1>
+            <h1 class="mt-5">Search</h1>
         </div>
     </div>
-    <div class="row">
+    <div class="row mt-5">
         <div class="col-md-12">
-
             <form action="/search/" method="get" id="searchform">
-                {#                    {% csrf_token %}#}
-                <input type="text" name="q" class="form-control" placeholder="Examples: MMS, aging, barseq, Vulpe, 16738548"
+                <input type="text" name="q" class="form-control" placeholder="Examples: Rim101, MMS, aging, barseq, Vulpe, 16738548"
                        required="" id="id_q" value="{{ request.GET.q }}">
                 <input type="hidden" name="tab" value="{{ request.GET.tab }}">
             </form>
@@ -21,24 +19,33 @@
     </div>
 
     {% if request.GET.q %}
-        <div class="row">&nbsp;</div>
-        <div class="row">
+        <div class="row mt-5">
             <div class="col-md-12">
-                <ul class="nav nav-tabs">
-                    <li role="presentation" {% if tab == 'papers' %}class="active"{% endif %}>
-                        <a href="/search/?q={{ request.GET.q }}&tab=papers">Papers ({{ num_papers }})</a>
+                <ul class="nav nav-tabs nav-fill">
+                    <li class="nav-item" {% if tab == 'papers' %}class="active"{% endif %}>
+                        <a class="nav-link {% if tab == 'papers' %}active{% endif %}"
+                           aria-current="page"
+                           href="/search/?q={{ request.GET.q }}&tab=papers">Papers &nbsp; <span class="badge rounded-pill bg-secondary">{{ num_papers }}</span></a>
                     </li>
-                    <li role="presentation" {% if tab == 'datasets' %}class="active"{% endif %}>
-                        <a href="/search/?q={{ request.GET.q }}&tab=datasets">Datasets ({{ num_datasets }})</a>
+                    <li class="nav-item" {% if tab == 'datasets' %}class="active"{% endif %}>
+                        <a class="nav-link {% if tab == 'datasets' %}active{% endif %}"
+                           aria-current="page"
+                           href="/search/?q={{ request.GET.q }}&tab=datasets">Datasets &nbsp; <span class="badge rounded-pill bg-secondary">{{ num_datasets }}</span></a>
                     </li>
-                    <li role="presentation" {% if tab == 'conditions' %}class="active"{% endif %}>
-                        <a href="/search/?q={{ request.GET.q }}&tab=conditions">Conditions ({{ num_conditions }})</a>
+                    <li class="nav-item" {% if tab == 'conditions' %}class="active"{% endif %}>
+                        <a class="nav-link {% if tab == 'conditions' %}active{% endif %}"
+                           aria-current="page"
+                           href="/search/?q={{ request.GET.q }}&tab=conditions">Conditions &nbsp; <span class="badge rounded-pill bg-secondary">{{ num_conditions }}</span></a>
                     </li>
-                    <li role="presentation" {% if tab == 'phenotypes' %}class="active"{% endif %}>
-                        <a href="/search/?q={{ request.GET.q }}&tab=phenotypes">Phenotypes ({{ num_phenotypes }})</a>
+                    <li class="nav-item" {% if tab == 'phenotypes' %}class="active"{% endif %}>
+                        <a class="nav-link {% if tab == 'phenotypes' %}active{% endif %}"
+                           aria-current="page"
+                           href="/search/?q={{ request.GET.q }}&tab=phenotypes">Phenotypes &nbsp; <span class="badge rounded-pill bg-secondary">{{ num_phenotypes }}</span></a>
                     </li>
-                    <li role="presentation" {% if tab == 'genes' %}class="active"{% endif %}>
-                        <a href="/search/?q={{ request.GET.q }}&tab=genes">Genes ({{ num_genes }})</a>
+                    <li class="nav-item" {% if tab == 'genes' %}class="active"{% endif %}>
+                        <a class="nav-link {% if tab == 'genes' %}active{% endif %}"
+                           aria-current="page"
+                           href="/search/?q={{ request.GET.q }}&tab=genes">Genes &nbsp; <span class="badge rounded-pill bg-secondary">{{ num_genes }}</span></a>
                     </li>
                 </ul>
             </div>

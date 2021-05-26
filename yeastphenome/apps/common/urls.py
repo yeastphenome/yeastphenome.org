@@ -15,7 +15,7 @@ urlpatterns = [
     path("about/authors/", views.authors, name="contributors"),
     path(
         "about/data_contributors/",
-        views.ContributorsListView.as_view(),
+        views.data_contributors,
         name="data_contributors",
     ),
     path("downloads/cart/", views.view_cart, name="view_cart"),

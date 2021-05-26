@@ -10,7 +10,7 @@
     <tbody>
     {% for sim in scores %}
     <tr>
-        <td class="dt-center"><a href="{% url 'datasets:dataset_detail' sim.dataset2_id %}">{{ sim.dataset2 }}</a></td>
+        <td class="dt-center"><a href="{% url 'datasets:detail' sim.dataset2_id %}">{{ sim.dataset2 }}</a></td>
         <td class="dt-center">{{ sim.score|floatformat:2 }}</td>
         <td class="dt-center">{{ sim.pvalue|floatformat:2 }}</td>
         <td class="dt-center"><a href="{% url 'datasets:similar_scatterplot' sim.dataset1.id sim.dataset2.id %}">Scatter plot</a></td>

@@ -2,10 +2,12 @@ from __future__ import unicode_literals
 
 from django.core.exceptions import FieldError
 from django.db import models
+from django.db.models import F
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from yeastphenome.apps.datasets.models import Data
+from yeastphenome.apps.common.utils_format import update_values_with_percentile
 
 
 class GeneAlias(models.Model):
@@ -51,34 +53,26 @@ class Gene(models.Model):
     def __str__(self):
         return "%s / %s" % (self.common_name, self.systematic_name)
 
-    def aliases_list_str(self):
-        return mark_safe(", ".join([str(a) for a in self.aliases.all()]))
+    def aliases_list_as_str(self):
+        return "; ".join([str(a) for a in self.aliases.all()])
 
     def link_detail(self):
         """Return the link for the gene detail"""
         return '<a href="%s">%s</a>' % (reverse("genes:detail", args=[self.id]), self)
 
-    def get_data(self, reverse=False):
-        """Filter to data with values defined, sorted greatest to smallest"""
-        queryset = (
-            Data.objects.filter(gene=self)
-            .filter(dataset__data_source__release=True)
-            .exclude(valuez__isnull=True)
-            .order_by("-valuez")
-        )
+    def get_scores(self, ascending=True):
+        data = self.data.filter(dataset__data_source__release=True).filter(valuez__isnull=False)
+        data = data.values("valuez", "dataset_id",
+                           dataset_name=F("dataset__name"))
+        data = data.order_by("valuez") if ascending else data.order_by("-valuez")
+        data = update_values_with_percentile(data, "valuez")
+        return data
 
-        if reverse:
-            queryset = queryset.reverse()
-        return queryset
-
-    def get_ranked_similar(self, reverse=False):
-        """Given a gene, get a sorted listed from the most to least similar.
-        Assume each pair of genes is represented twice (A-B and B-A).
-        """
-        queryset = GeneSimilarity.objects.filter(gene1=self).order_by("-score")
-        if reverse:
-            queryset = queryset.reverse()
-        return queryset
+    def get_similarities(self, ascending=True):
+        data = self.similarities.values("score", "pvalue", "gene2_id", "gene2__systematic_name", "gene2__common_name")
+        data = data.order_by("score") if ascending else data.order_by("-score")
+        data = update_values_with_percentile(data, "score")
+        return data
 
 
 class GeneSimilarity(models.Model):
@@ -87,13 +81,13 @@ class GeneSimilarity(models.Model):
     """
 
     gene1 = models.ForeignKey(
-        Gene, on_delete=models.CASCADE, related_name="gene_similarity1"
+        Gene, on_delete=models.CASCADE, related_name="similarities"
     )
     gene2 = models.ForeignKey(
         Gene, on_delete=models.CASCADE, related_name="gene_similarity2"
     )
     score = models.DecimalField(
-        max_digits=10, decimal_places=3, help_text="z-score of the metric."
+        max_digits=10, decimal_places=3
     )
     # IMPORTANT: this is actually a standard deviation
     pvalue = models.DecimalField(max_digits=10, decimal_places=6)

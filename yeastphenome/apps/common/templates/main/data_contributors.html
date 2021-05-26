@@ -1,0 +1,35 @@
+{% extends "base/base_min.html" %}
+{% load static %}
+{% block title %}Contributors | About | {{ SITE_NAME }}{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mt-5 mb-4">Data contributors</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <p>A special thanks goes to the <mark><strong>{{ num_people_to_ack }} authors</strong></mark> of these <mark><strong>{{ papers_list|length }} papers</strong></mark> who have provided unpublished versions of their datasets, including raw quantitative data and/or lists of tested genes.</p>
+            <table class="table mt-4">
+                <thead>
+                <tr>
+                    <th>Paper</th>
+                    <th>Contact person</th>
+                    <th>Unpublished data</th>
+                    <th>List of tested genes</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for paper in papers_list %}
+                    <tr>
+                        <td><a href="{% url 'papers:detail' paper.id  %}">{{ paper.systematic_name }}</a></td>
+                        <td>{{ paper.people }}</td>
+                        <td>{{ paper.data_ack|yesno:'<span class="yes">✓</span>,<span class="no"></span>,'|safe }}</td>
+                        <td>{{ paper.tested_ack|yesno:'<span class="yes">✓️</span>,<span class="no"></span>,'|safe }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

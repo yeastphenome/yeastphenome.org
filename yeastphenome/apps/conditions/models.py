@@ -1,11 +1,12 @@
 from django.db import models
 from django.urls import reverse
 from django.apps import apps
-from django.db.models import Q, Count
+from django.db.models import Q
 from django.utils.safestring import mark_safe
 
 import re
 
+from yeastphenome.apps.common.utils_format import truncated_list_as_str
 from yeastphenome.apps.phenotypes.models import Phenotype
 from yeastphenome.apps.tags.models import Tag
 from libchebipy import ChebiEntity
@@ -13,10 +14,17 @@ from libchebipy import ChebiEntity
 
 class ConditionTypeManager(models.Manager):
 
+    # def all_valid(self):
+    #     # Valid = associated with at least 1 dataset from a relevant paper
+    #     valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
+    #     f = Q(conditions__conditionset__dataset__in=valid_datasets) \
+    #         | Q(conditions__medium__dataset__in=valid_datasets)
+    #     return self.filter(f).distinct()
+
     def all_valid(self):
-        # Valid = associated with at least 1 dataset from a relevant paper
-        valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
-        return self.filter(conditions__conditionset__dataset__in=valid_datasets)
+        f1 = Q(conditions__conditionset__dataset__paper__latest_data_status__status__is_valid=True)
+        f2 = Q(conditions__medium__dataset__paper__latest_data_status__status__is_valid=True)
+        return self.filter(f1 | f2)
 
 
 class ConditionType(models.Model):
@@ -86,7 +94,7 @@ class ConditionType(models.Model):
 
         observables = observables1.union(observables2).order_by().distinct()
         observables = [o for o in observables if o is not None]
-        return "; ".join(observables)
+        return truncated_list_as_str(observables)
 
     def papers_list_as_str(self):
         papers1 = self.conditions.values_list("conditionset__dataset__paper__systematic_name", flat=True)
@@ -95,7 +103,7 @@ class ConditionType(models.Model):
         papers = papers1.union(papers2).order_by().distinct()
         papers = [p for p in papers if p is not None]
 
-        return "; ".join(papers)
+        return truncated_list_as_str(papers)
 
     def datasets(self):
         return (
@@ -136,7 +144,9 @@ class ConditionManager(models.Manager):
     def all_valid(self):
         # Valid = associated with at least 1 dataset from a relevant paper
         valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
-        return self.filter(conditionset__dataset__in=valid_datasets).distinct()
+        f = Q(conditionset__dataset__in=valid_datasets) \
+            | Q(medium__dataset__in=valid_datasets)
+        return self.filter(f).distinct()
 
 
 class Condition(models.Model):

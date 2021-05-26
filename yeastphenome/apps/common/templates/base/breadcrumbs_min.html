@@ -1,0 +1,17 @@
+{#{% if navigation %}#}
+{#    <div class="row mt-5 mb-1">#}
+{#        <div class="col-md-12">#}
+{#            <nav aria-label="breadcrumb">#}
+{#                <ol class="breadcrumb">#}
+{#                    {% for link in navigation %}#}
+{#                        {% if forloop.last %}#}
+{#                            <li class="breadcrumb-item active" aria-current="page">{{ link.name }}</li>#}
+{#                        {% else %}#}
+{#                            <li class="breadcrumb-item"><a href="{{ link.url }}">{{ link.name }}</a></li>#}
+{#                        {% endif %}#}
+{#                    {% endfor %}#}
+{#                </ol>#}
+{#            </nav>#}
+{#        </div>#}
+{#    </div>#}
+{#{% endif %}#}

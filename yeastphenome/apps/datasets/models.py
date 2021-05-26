@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 from django.core.exceptions import FieldError
-from django.db.models import Q
+from django.db.models import F, Q
 from django.db import models
 from django.apps import apps
 from django.contrib.humanize.templatetags.humanize import intcomma
@@ -9,6 +9,9 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from yeastphenome.apps.tags.models import Tag
+from yeastphenome.apps.common.utils_format import update_values_with_percentile
+
+import itertools
 
 
 class CollectionManager(models.Manager):
@@ -40,6 +43,24 @@ class Sourcetype(models.Model):
         return "%s" % self.name
 
 
+class SourceManager(models.Manager):
+
+    def all_valid(self):
+        valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
+        return self.filter(Q(data_source__in=valid_datasets) | Q(tested_source__in=valid_datasets)).order_by().distinct()
+
+    def people_to_acknowledge(self):
+        valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
+        sources = self.filter(sourcetype_id=5).filter(acknowledge=True)
+        sources = sources.filter(Q(data_source__in=valid_datasets)
+                                 | Q(tested_source__in=valid_datasets)).order_by().distinct()
+        people_list = sources.values_list("label", flat=True)
+        people_list = [person for person in people_list if not person=="" and person is not None]
+        people_list = [person.split(", ") for person in people_list]
+        people_list = list(set(itertools.chain.from_iterable(people_list)))
+        return people_list
+
+
 class Source(models.Model):
     sourcetype = models.ForeignKey(
         Sourcetype,
@@ -48,40 +69,40 @@ class Source(models.Model):
         related_name="sourcetype",
         on_delete=models.DO_NOTHING,
     )
-    link = models.TextField(max_length=200, null=True, blank=True)
-    person = models.CharField(max_length=200, null=True, blank=True)
+    # link = models.TextField(max_length=200, null=True, blank=True)
+    # person = models.CharField(max_length=200, null=True, blank=True)
+    label = models.CharField(max_length=200, null=True, blank=True)
+    url = models.TextField(null=True, blank=True)
     date = models.DateField(null=True)
     acknowledge = models.NullBooleanField()
     release = models.NullBooleanField()
 
+    objects = SourceManager()
+
     def __str__(self):
-        if self.person:
-            return "%s" % self.person
+        if self.label:
+            return "%s" % self.label
         else:
             return "%s" % self.sourcetype
 
     def html(self):
-        source_str = ""
-        if self.person:
-            source_str = "%s" % self.person
-        else:
-            if self.link:
+        if self.url:
+            if self.label:
                 source_str = '<a class="external" href="%s">%s</a>' % (
-                    self.link,
-                    self.sourcetype,
+                    self.url,
+                    self.label,
                 )
             else:
-                source_str = "%s" % self.sourcetype
-        return mark_safe(source_str)
-
-    def link_or_person(self):
-        if self.person:
-            return "%s" % self.person
+                source_str = '<a class="external" href="%s">%s</a>' % (
+                    self.url,
+                    self.sourcetype,
+                )
         else:
-            if self.link:
-                return "%s..." % self.link[: min(60, len(self.link))]
+            if self.label:
+                source_str = self.label
             else:
-                return "unknown"
+                source_str = self.sourcetype
+        return mark_safe(source_str)
 
     def papers(self):
         return (
@@ -105,9 +126,16 @@ class Datatype(models.Model):
 
 class DatasetManager(models.Manager):
 
+    # def all_valid(self):
+    #     valid_papers = apps.get_model("papers", "Paper").objects.all_valid()
+    #     return self.filter(paper__in=valid_papers)
+
     def all_valid(self):
-        valid_papers = apps.get_model("papers", "Paper").objects.all_valid()
-        return self.filter(paper__in=valid_papers)
+        return self.filter(paper__latest_data_status__status__is_valid=True)
+
+    def all_loaded(self):
+        loaded_papers = apps.get_model("papers", "Paper").objects.all_loaded()
+        return self.filter(paper__in=loaded_papers)
 
 
 class Dataset(models.Model):
@@ -238,6 +266,35 @@ class Dataset(models.Model):
     class Meta:
         ordering = ["id"]
 
+    def get_data_availability(self):
+        availability = {}
+        num_available_data = self.data.count()
+        if self.tested_num > 0:
+            availability["tested_measured"] = '%s mutants' % intcomma(self.tested_num)
+        else:
+            availability["tested_measured"] = "unknown"
+        if self.tested_source:
+            if self.tested_source.sourcetype.shortname == "PC":
+                availability["tested_published"] = "no"
+            else:
+                availability["tested_published"] = '%s mutants' % intcomma(num_available_data)
+            availability["tested_available"] = mark_safe("%s mutants from %s" % (intcomma(num_available_data),
+                                                                                self.tested_source.html()))
+        else:
+            availability["tested_published"] = "no"
+            availability["tested_available"] = "no"
+
+        availability["data_measured"] = self.data_measured
+        availability["data_published"] = self.data_published
+        if self.data_source:
+            availability["data_available"] = mark_safe("%s; %s values from %s" % (self.data_available,
+                                                                                  intcomma(num_available_data),
+                                                                                  self.data_source.html()))
+        else:
+            availability["data_available"] = num_available_data
+
+        return availability
+
     def tested_genes_published(self):
         return self.tested_list_published
 
@@ -249,8 +306,8 @@ class Dataset(models.Model):
     tested_genes_available.boolean = True
 
     def tested_space(self):
-        if self.tested_source and self.data_set.exists():
-            tested_space = intcomma(self.data_set.count())
+        if self.tested_source and self.data.exists():
+            tested_space = intcomma(self.data.count())
         elif self.tested_num and self.tested_num > 0:
             tested_space = (
                 '<abbr title="The list of tested mutants is not available. '
@@ -265,10 +322,10 @@ class Dataset(models.Model):
         return self.observable.name
 
     def tags_link_list(self):
-        return mark_safe(", ".join([t.link_detail() for t in self.tags.all()]))
+        return mark_safe("; ".join([t.link_detail() for t in self.tags.all()]))
 
     def has_data_in_db(self):
-        return self.data_set.exists()
+        return self.data.exists()
 
     has_data_in_db.boolean = True
 
@@ -285,33 +342,25 @@ class Dataset(models.Model):
         )
         return mark_safe(html)
 
-    def get_data(self, reverse=False):
+    def get_scores(self, ascending=True):
         """Given a dataset, get a sorted list of scores."""
-        queryset = (
-            Data.objects.filter(dataset=self)
-            .filter(valuez__isnull=False)
-            .order_by("-valuez")
-        )
+        data = self.data.filter(valuez__isnull=False).values("valuez", "gene_id",
+                                                             gene_systematic_name=F("gene__systematic_name"),
+                                                             gene_common_name=F("gene__common_name"))
+        data = data.order_by("valuez") if ascending else data.order_by("-valuez")
+        data = update_values_with_percentile(data, "valuez")
+        return data
 
-        if reverse:
-            queryset = queryset.reverse()
-
-        return queryset
-
-    def get_ranked_similar(self, reverse=False):
+    def get_similarities(self, ascending=True):
         """Given a dataset, get a sorted listed of similar datasets.
         Assume each pair of datasets is represented twice (A-B and B-A).
         """
-        queryset = (
-            DatasetSimilarity.objects.filter(dataset1=self)
-            .filter(dataset2__data_source__release=True)
-            .order_by("-score")
-        )
-
-        if reverse:
-            queryset = queryset.reverse()
-
-        return queryset
+        data = self.similarities.filter(dataset2__data_source__release=True).values("score", "pvalue",
+                                                                                    "dataset2_id",
+                                                                                    dataset2_name=F("dataset2__name"))
+        data = data.order_by("score") if ascending else data.order_by("-score")
+        data = update_values_with_percentile(data, "score")
+        return data
 
 
 class DatasetSimilarity(models.Model):
@@ -320,7 +369,7 @@ class DatasetSimilarity(models.Model):
     """
 
     dataset1 = models.ForeignKey(
-        Dataset, on_delete=models.CASCADE, related_name="dataset_similarity1"
+        Dataset, on_delete=models.CASCADE, related_name="similarities"
     )
     dataset2 = models.ForeignKey(
         Dataset, on_delete=models.CASCADE, related_name="dataset_similarity2"
@@ -355,9 +404,9 @@ class DatasetSimilarity(models.Model):
 class Data(models.Model):
 
     gene = models.ForeignKey(
-        "genes.Gene", null=True, blank=True, on_delete=models.DO_NOTHING
+        "genes.Gene", null=True, blank=True, related_name="data", on_delete=models.DO_NOTHING
     )
-    dataset = models.ForeignKey(Dataset, on_delete=models.DO_NOTHING)
+    dataset = models.ForeignKey(Dataset, related_name="data", on_delete=models.DO_NOTHING)
 
     # Raw phenotypic score
     value = models.DecimalField(max_digits=20, decimal_places=10)

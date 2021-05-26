@@ -34,28 +34,31 @@ from yeastphenome.settings import (
 def dataset_detail(request, dataset_id):
 
     dataset = get_object_or_404(Dataset, pk=dataset_id)
+    data_availability = dataset.get_data_availability()
+    scores_lowest = dataset.get_scores(ascending=True)[:10]
+    scores_highest = dataset.get_scores(ascending=False)[:10]
+    similarities_lowest = dataset.get_similarities(ascending=True)[:10]
+    similarities_highest = dataset.get_similarities(ascending=False)[:10]
 
-    # Links should include the dataset detail page
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("datasets:index"), "name": "Datasets"},
+    navigation = [
+        {"url": reverse("common:search"), "name": "Search"},
         {
-            "url": reverse("datasets:dataset_detail", args=[dataset.id]),
+            "url": reverse("datasets:detail", args=[dataset.id]),
             "name": dataset.name,
         },
     ]
 
-    context = {"links": links, "active": "explorer", "dataset": dataset}
+    context = {
+        "dataset": dataset,
+        "data_availability": data_availability,
+        "scores_lowest": scores_lowest,
+        "scores_highest": scores_highest,
+        "similarities_lowest": similarities_lowest,
+        "similarities_highest": similarities_highest,
+        "navigation": navigation
+    }
 
-    # Get the top and bottom phenotypic scores
-    context["datasets_top"] = dataset.get_data(reverse=False)[:10]
-    context["datasets_bottom"] = dataset.get_data(reverse=True)[:10]
-
-    # Get the top and bottom correlations
-    context["sims_top"] = dataset.get_ranked_similar(reverse=False)[:10]
-    context["sims_bottom"] = dataset.get_ranked_similar(reverse=True)[:10]
-
-    return render(request, "datasets/detail.html", context)
+    return render(request, "datasets/detail_min.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
@@ -71,8 +74,8 @@ def similar_scatterplot(request, dataset1_id, dataset2_id):
     )
 
     # Get gene values across datasets 1 and 2
-    data1 = pandas.DataFrame(list(dataset1.data_set.values()))
-    data2 = pandas.DataFrame(list(dataset2.data_set.values()))
+    data1 = pandas.DataFrame(list(dataset1.data.values()))
+    data2 = pandas.DataFrame(list(dataset2.data.values()))
 
     # Join the 2 dataframes using gene_id as the key
     data = data1.merge(data2, on="gene_id")
@@ -123,115 +126,65 @@ def similar_scatterplot(request, dataset1_id, dataset2_id):
         "entry_type": "genes",
         "sim": sim.first(),
         "links": links,
-        "active": "explorer",
     }
     return render(request, "datasets/similar_scatterplot.html", context)
 
 
 @never_cache
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def dataset_plot(request, dataset_id):
-    """The dataset plot shows an interactive graph of the dataset, on which
-    the user can click bars to see genes (and values) within a particular
-    range
-    """
+def dataset_scores(request, dataset_id):
 
     dataset = get_object_or_404(Dataset, pk=dataset_id)
+    scores = dataset.get_scores(ascending=True)
 
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("datasets:index"), "name": "Datasets"},
+    navigation = [
+        {"url": reverse("common:search"), "name": "Search"},
         {
-            "url": reverse("datasets:dataset_detail", args=[dataset.id]),
+            "url": reverse("datasets:detail", args=[dataset.id]),
             "name": dataset.name,
         },
         {
-            "url": reverse("datasets:dataset_plot", args=[dataset.id]),
+            "url": reverse("datasets:scores", args=[dataset.id]),
             "name": "Phenotypic Scores",
         },
     ]
 
-    # prepare list of genes, plus genes and aliases
-    context = get_dataset_gene_table_context(dataset)
-    context.update({"dataset": dataset, "links": links, "active": "explorer"})
-    return render(request, "datasets/plot.html", context)
+    context = {
+        "dataset": dataset,
+        "scores": scores,
+        "navigation": navigation,
+    }
 
-
-def get_dataset_gene_table_context(dataset):
-    """this context is needed for the graph."""
-    context = {}
-    genes = (
-        dataset.data_set.exclude(valuez__isnull=True)
-        .order_by("-valuez")
-        .values_list("gene__systematic_name", "valuez", "gene__id", "gene__common_name")
-        .distinct()
-    )
-
-    # Calculate ranking
-    total_genes = genes.count()
-    ranks = [(1 - (idx / total_genes)) * 100 for idx, _ in enumerate(genes)]
-
-    gene_ids = [gene[2] for gene in genes]
-    genes = [
-        {
-            "label": x[0],
-            "gene_id": x[2],
-            "value": float(x[1]),
-            "name": x[3],
-            "rank": round(ranks[i], 3),
-        }
-        for i, x in enumerate(genes)
-        if x[3]
-    ]
-    context["aliases"] = (
-        GeneAlias.objects.filter(gene__id__in=gene_ids)
-        .values_list("gene__systematic_name", "name")
-        .distinct()
-    )
-    context["common_names"] = (
-        Gene.objects.filter(id__in=gene_ids)
-        .exclude(common_name=None)
-        .values_list("systematic_name", "common_name")
-        .distinct()
-    )
-    context["dataset_genes"] = sorted(genes, key=lambda i: i["value"])
-    context["active"] = "explorer"
-    return context
+    return render(request, "datasets/scores_min.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def similar_dataset_table(request, dataset_id):
+def dataset_similarities(request, dataset_id):
 
     dataset = get_object_or_404(Dataset, pk=dataset_id)
-
-    sims = (
-        dataset.get_ranked_similar()
-        .select_related("dataset2__name")
-        .values_list("dataset2_id", "dataset2__name", "score", "pvalue")
-    )
+    similarities = dataset.get_similarities(ascending=False)
 
     links = [
         {"url": reverse("common:explorer"), "name": "Explore data"},
         {"url": reverse("datasets:index"), "name": "Datasets"},
         {
-            "url": reverse("datasets:dataset_detail", args=[dataset.id]),
+            "url": reverse("datasets:detail", args=[dataset.id]),
             "name": dataset.name,
         },
         {
-            "url": reverse("datasets:similar_dataset_table", args=[dataset.id]),
+            "url": reverse("datasets:similarities", args=[dataset.id]),
             "name": "Similar Datasets",
         },
     ]
-    total = sims.count()
-    ranks = [(1 - (idx / total)) * 100 for idx, sim in enumerate(sims)]
+
     context = {
         "dataset": dataset,
-        "datasets": sims,
-        "ranks": ranks,
+        "similarities": similarities,
         "links": links,
         "active": "explorer",
     }
-    return render(request, "datasets/dataset_similarity_explorer.html", context)
+
+    return render(request, "datasets/similarities_min.html", context)
 
 
 # Datasets Explorer (also the datasets index)

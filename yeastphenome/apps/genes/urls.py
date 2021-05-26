@@ -4,7 +4,8 @@ from . import views
 urlpatterns = [
     path("", views.gene_explorer, name="index"),
     path("<int:gene_id>/", views.gene_detail, name="detail"),
-    path("<int:gene_id>/similar/", views.similar_genes, name="similar_genes"),
+    path("<int:gene_id>/scores/", views.scores, name="scores"),
+    path("<int:gene_id>/similarities/", views.similarities, name="similarities"),
     path(
         "<int:gene1_id>/similar/<int:gene2_id>/",
         views.similar_scatterplot,
@@ -15,7 +16,6 @@ urlpatterns = [
         views.download_gene_similarities,
         name="download_gene_similarities",
     ),
-    path("<int:gene_id>/scores/", views.gene_datasets, name="datasets"),
     path(
         "<int:gene_id>/scores/download/",
         views.download_gene_scores,

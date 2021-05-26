@@ -1,0 +1,20 @@
+{% extends "base/base_min.html" %}
+{% load static %}
+{% load my_filters %}
+{% load humanize %}
+{% block title %}Similarities | {{ dataset }} | Datasets | {{ SITE_NAME }}{% endblock %}
+{% block content %}
+    {%  if dataset.data_source.release == True %}
+        <div class="row mt-5">
+            <div class="col-md-12">
+                <h1>Phenotypic Similarities for {{ dataset.name }}</h1>
+                {% include "messages/data_warning.html"%}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                {% include "datasets/similarities_table_min.html" with similarities=similarities table_id="similarities" %}
+            </div>
+        </div>
+    {%  endif %}
+{% endblock %}

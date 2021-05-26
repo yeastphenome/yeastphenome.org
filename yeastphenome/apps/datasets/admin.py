@@ -179,8 +179,8 @@ class DatasetInlineData(DatasetInline):
 
 class SourceAdmin(ImprovedModelAdmin):
     model = Source
-    list_display = ("id", "sourcetype", "link_or_person")
-    fields = ("sourcetype", "link", "person", "date", "release", "acknowledge")
+    list_display = ("id", "sourcetype", "label", "url")
+    fields = ("sourcetype", "label", "url", "date", "release", "acknowledge")
     inlines = [DatasetInlineTested, DatasetInlineData]
 
 

@@ -1,0 +1,17 @@
+{% extends "base/base_min.html" %}
+{% load my_filters %}
+{% block title %}Datasets | {{ paper_systematic_name }} | Papers | {{ SITE_NAME }}{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mt-5 mb-4">Datasets from {{ paper_systematic_name }}</h1>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12">
+            {% include "datasets/datasets_table_min.html" with datasets=paper_datasets %}
+        </div>
+    </div>
+
+{% endblock %}

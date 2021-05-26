@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_extensions",
+    "debug_toolbar",
     "rest_framework",
     "drf_yasg",
 ]
@@ -71,6 +72,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 # Do we want to enable the cache?
@@ -237,3 +239,7 @@ VIEW_RATE_LIMIT_BLOCK = (
 
 # On any admin or plugin login redirect to standard social-auth entry point for agreement to terms
 LOGIN_REDIRECT_URL = "/login"
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+]

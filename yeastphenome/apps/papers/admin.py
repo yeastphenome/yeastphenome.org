@@ -5,6 +5,7 @@ from yeastphenome.apps.papers.forms import PaperModelForm
 from yeastphenome.apps.datasets.admin import DatasetInline
 
 from yeastphenome.apps.common.admin_util import ImprovedModelAdmin
+from yeastphenome.apps.common.utils_format import truncated_list_as_str
 
 
 class StatusdataInline(admin.TabularInline):
@@ -38,10 +39,12 @@ class PaperAdmin(ImprovedModelAdmin):
         ("first_author", "last_author", "pub_date", "pmid"),
         ("data_abstract",),
         ("notes", "private_notes"),
+        "observables_summary",
+        "conditiontypes_summary",
         "tags",
     ]
     raw_id_fields = ("tags",)
-    readonly_fields = ("systematic_name",)
+    readonly_fields = ("systematic_name","observables_summary", "conditiontypes_summary")
     inlines = (
         StatusdataInline,
         StatustestedInline,
@@ -78,8 +81,6 @@ class PaperAdmin(ImprovedModelAdmin):
             paper.latest_tested_status = paper.statustested_set.latest()
         else:
             paper.latest_tested_status = None
-
-        paper.systematic_name = '%s~%s, %s' % (paper.first_author, paper.last_author, paper.pub_date)
 
         super(PaperAdmin, self).save_model(request, paper, form, change)
 

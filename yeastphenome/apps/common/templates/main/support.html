@@ -1,17 +1,17 @@
-{% extends "base/wide.html" %}
+{% extends "base/base_min.html" %}
 {% load humanize %}
+{% block title %}Support | {{ SITE_NAME }}{% endblock %}
 {% block content %}
 <div class="row">
-    <div class="col-md-12">
-      <h1>Support</h1>
+    <div class="col-md">
+      <h1 class="mt-5 mb-4">Support</h1>
     </div>
 </div>
-<div class="col-xs-12 box-left" style="padding-bottom:50px">
 <div class="row">
-    <div class="col-md-12">
-       <p>For all general questions and data inquires, please contact <a href="mailto:{{ HELP_CONTACT_EMAIL }}">{{ HELP_CONTACT_EMAIL }}</a>.<br> Website issues can be opened on <a href="{{ GITHUB_REPOSITORY }}/issues" target="_blank">GitHub</a>.</p>
-    </div>
-</div>
+    <div class="col-md">
+        <p>Comments and suggestions about the website (including feature requests, bug reports etc.) can be provided by opening new issues on <a href="{{ GITHUB_REPOSITORY }}/issues" target="_blank">GitHub</a>.</p>
+        <p>For data inquires and other general questions, please contact <a href="mailto:{{ HELP_CONTACT_EMAIL }}">{{ HELP_CONTACT_EMAIL }}</a>.</p>
 
+    </div>
 </div>
 {% endblock %}

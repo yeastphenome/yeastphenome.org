@@ -1,27 +1,30 @@
-<div class="row">&nbsp;</div>
 <div class="row">
     <div class="col-md-12">
-        <h2>Conditions</h2>
+        <h2 class="mt-5 mb-4">Conditions</h2>
 
         {% include "search/pagination.html" with page_obj=conditions_page_obj %}
 
-        <table class="table table-striped">
+        <table class="table">
             <tr>
-                <th style="width: 15%">Name</th>
+                <th style="width: 20%">Name</th>
                 <th style="width: 15%">Other names</th>
                 <th style="width: 15%">Doses</th>
-                <th style="width: 15%">Phenotypes</th>
-                <th style="width: 15%">Papers</th>
+                <th style="width: 20%">Phenotypes</th>
+                <th style="width: 20%">Papers</th>
                 <th>Tags</th>
             </tr>
             {% for condition in conditions_page_obj %}
                 <tr>
-                    <td><a href="{% url 'conditions:detail' condition.pk  %}">{{ condition }}</a></td>
-                    <td>{{ condition.all_other_names_list_as_str }}</td>
-                    <td>{{ condition.doses_list_as_str }}</td>
-                    <td>{{ condition.observables_list_as_str }}</td>
-                    <td>{{ condition.papers_list_as_str }}</td>
-                    <td>{{ condition.tags_list_as_str }}</td>
+                    <td><a href="{% url 'conditions:detail' condition.id  %}">{{ condition.name }}</a></td>
+                    <td>{{ condition.other_names }}</td>
+                    <td>{{ condition.condition_doses }}</td>
+                    <td>{{ condition.phenotypes }}</td>
+                    <td>{{ condition.papers }}</td>
+                    <td>{{ condition.condition_tags }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 30px">No results match search criteria.</td>
                 </tr>
             {% endfor %}
         </table>

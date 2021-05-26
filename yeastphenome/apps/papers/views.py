@@ -1,6 +1,6 @@
 from django.views import generic
 from django.shortcuts import render, reverse
-
+from django.db.models import F
 from django.views.decorators.cache import never_cache
 
 from .graphs import get_papers_by_year
@@ -52,59 +52,124 @@ def paper_explorer(request, year=None):
     )
 
 
-class PaperDetailView(generic.DetailView, RatelimitMixin):
-    model = Paper
-    template_name = "papers/detail.html"
-    ratelimit_key = "ip"
-    ratelimit_rate = rl_rate
-    ratelimit_block = rl_block
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def paper_detail(request, paper_id):
+    p = get_object_or_404(Paper, pk=paper_id)
+    datasets_values = p.datasets.all().values("id",
+                                              paper_name=F("paper__systematic_name"),
+                                              phenotype_name=F("phenotype__name"),
+                                              conditionset_name=F("conditionset__display_name"),
+                                              medium_name=F("medium__display_name"),
+                                              collection_name=F("collection__shortname"),
+                                              data_name=F("data_available__name"))
 
-    def get_context_data(self, **kwargs):
-        context = super(PaperDetailView, self).get_context_data(**kwargs)
-        paper = context["object"]
+    navigation = [
+        {"url": reverse("common:search"), "name": "Search"},
+        {"url": reverse("papers:detail", args=[p.id]), "name": p.systematic_name},
+    ]
 
-        context["links"] = [
-            {"url": reverse("common:explorer"), "name": "Explore data"},
-            {"url": reverse("papers:all"), "name": "Papers"},
-            {
-                "url": reverse("papers:detail", args=[paper.id]),
-                "name": str(paper),
-            },
-        ]
+    context = {
+        "paper": p,
+        "datasets": datasets_values,
+        "navigation": navigation,
+    }
 
-        context["DOWNLOAD_PREFIX"] = settings.DOWNLOAD_PREFIX
-        context["USER_AUTH"] = self.request.user.is_authenticated
-        context["module"] = "papers"
-        context["id"] = paper.id
-        context["active"] = "explorer"
-
-        # Give credit if credit is due.
-        names = paper.acknowledgements_str_list()
-        to_acknowledge = []
-        if paper.acknowledge_data():
-            to_acknowledge.append("the data")
-        if paper.acknowledge_tested():
-            to_acknowledge.append("the list of tested strains")
-
-        if names:
-            thanks = (
+    # Give credit if credit is due.
+    names = p.acknowledgements_list_as_str()
+    to_acknowledge = []
+    if p.acknowledge_data():
+        to_acknowledge.append("the data")
+    if p.acknowledge_tested():
+        to_acknowledge.append("the list of tested strains")
+    if names:
+        thanks = (
                 " and ".join(to_acknowledge)
                 + " for this paper were kindly provided by "
                 + names
                 + "."
-            )
-            context["thanks"] = thanks
+        )
+        context["thanks"] = thanks
 
-        # Fetch article info from Pubmed, share data from one call
-        if paper.pmid != 0:
-            xml_data = get_pubmed_paper(paper.pmid)
-            context.update(get_pubmed_paper_context(paper.pmid, xml_data))
-            context.update(get_paper_references_context(paper, xml_data))
-        return context
+    # Fetch article info from Pubmed, share data from one call
+    if p.pmid != 0:
+        xml_data = get_pubmed_paper(p.pmid)
+        context.update(get_pubmed_paper_context(p.pmid, xml_data))
+        context.update(get_paper_references_context(p, xml_data))
+
+    return render(request, "papers/detail_min.html", context)
+
+
+# class PaperDetailView(generic.DetailView, RatelimitMixin):
+#     model = Paper
+#     template_name = "papers/detail_min.html"
+#     ratelimit_key = "ip"
+#     ratelimit_rate = rl_rate
+#     ratelimit_block = rl_block
+#
+#     def get_context_data(self, **kwargs):
+#         context = super(PaperDetailView, self).get_context_data(**kwargs)
+#         paper = context["object"]
+#
+#         context["links"] = [
+#             {"url": reverse("common:explorer"), "name": "Explore data"},
+#             {"url": reverse("papers:all"), "name": "Papers"},
+#             {
+#                 "url": reverse("papers:detail", args=[paper.id]),
+#                 "name": str(paper),
+#             },
+#         ]
+#
+#         context["DOWNLOAD_PREFIX"] = settings.DOWNLOAD_PREFIX
+#         context["USER_AUTH"] = self.request.user.is_authenticated
+#         context["module"] = "papers"
+#         context["id"] = paper.id
+#         context["active"] = "explorer"
+#         context["datasets"] = paper.datasets.all()[:10]
+#
+#         # Give credit if credit is due.
+#         names = paper.acknowledgements_list_as_str()
+#         to_acknowledge = []
+#         if paper.acknowledge_data():
+#             to_acknowledge.append("the data")
+#         if paper.acknowledge_tested():
+#             to_acknowledge.append("the list of tested strains")
+#
+#         if names:
+#             thanks = (
+#                 " and ".join(to_acknowledge)
+#                 + " for this paper were kindly provided by "
+#                 + names
+#                 + "."
+#             )
+#             context["thanks"] = thanks
+#
+#         # Fetch article info from Pubmed, share data from one call
+#         if paper.pmid != 0:
+#             xml_data = get_pubmed_paper(paper.pmid)
+#             context.update(get_pubmed_paper_context(paper.pmid, xml_data))
+#             context.update(get_paper_references_context(paper, xml_data))
+#         return context
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def paper_datasets(request, paper_id, pmid):
+def paper_datasets(request, paper_id):
+    p = get_object_or_404(Paper, pk=paper_id)
+    datasets_values = p.datasets.all().values("id",
+                                              paper_name=F("paper__systematic_name"),
+                                              phenotype_name=F("phenotype__name"),
+                                              conditionset_name=F("conditionset__display_name"),
+                                              medium_name=F("medium__display_name"),
+                                              collection_name=F("collection__shortname"),
+                                              data_name=F("data_available__name"))
+    context = {'paper_id': paper_id,
+               'paper_systematic_name': p.systematic_name,
+               'paper_datasets': datasets_values}
+    return render(request, "papers/datasets_min.html", context)
+
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def paper_datasets_list(request, paper_id):
     p = get_object_or_404(Paper, pk=paper_id)
 
     txt = "\n".join([(u"%s\t%s" % (d.id, d.name)) for d in p.datasets.all()])
@@ -118,7 +183,6 @@ def paper_datasets(request, paper_id, pmid):
     )
 
     return response
-
 
 # Graphs
 

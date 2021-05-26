@@ -1,0 +1,34 @@
+{% extends "base/base_min.html" %}
+{% load static %}
+{% block title %}{{ phenotype }} | Phenotypes | {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="row mt-5 mb-3">
+    <div class="col-md-12">
+        <h1>{{ phenotype }}</h1>
+        <table class="table">
+{#            {% if siblings %}<tr>#}
+{#                <th scope="row" width="20%" class="first">Sibling Phenotypes</th>#}
+{#                <td>{% for sibling in siblings %}{% if sibling.observable.id != object.id %}<a href="{% url 'phenotypes:detail' sibling.observable.id %}">{{ sibling.name }}</a>{% endif %}{% if forloop.last %}{% else %}, {% endif %}{% endfor %}</td>#}
+{#            </tr>{% endif %}#}
+            {% if object.tags.count > 0 %}
+                <tr>
+                <th scope="row" width="20%" class="first">Tags</th>
+                <td>{% for tag in sorted_tags %}<a href="{% url 'phenotypes:index'%}?query={{ tag.name }}">{{ tag.name }}</a>{% if forloop.last %}{% else %}, {% endif %}{% endfor %}{% if object.tags.count > 1 %}<span style="padding-left:8px; padding-right:5px">|</span> <a href="{% url 'phenotypes:index' %}?query={% for tag in object.tags.all %}{{ tag.name }}{% if forloop.last %}{% else %}|{% endif %}{% endfor %}">all</a>{% endif %}</td>
+                </tr>
+            {% endif %}
+            {% if similar.count > 0 %}<tr>
+                <th width="20%" scope="row" class="first">Similar Phenotypes (sharing >2 tags)</th>
+                <td>{% for p in similar.all %}{% if p.id != object.id %}<a href="{% url 'phenotypes:detail' p.id %}">{{ p.name }}</a>{% if forloop.last %}{% else %}, {% endif %}{% endif %}{% endfor %}</td>
+            </tr>{% endif %}
+        </table>
+    </div>
+</div>
+
+    <div class="row mt-5 mb-3">
+    <div class="col-md-12">
+    <h2>Datasets</h2>
+    {% include "datasets/datasets_table_min.html" with datasets=datasets %}
+{#    <a href="{% url 'datasets:download_observable_datasets' object.id %}" role="button" id="dataset_download" type="button" class="btn btn-primary">Download now</a>#}
+    </div>
+</div>
+{% endblock %}

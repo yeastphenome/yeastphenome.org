@@ -13,6 +13,7 @@ from yeastphenome.apps.tags.models import Tag
 from yeastphenome.apps.common.utils_format import truncated_list_as_str
 
 import os
+import itertools
 
 
 class Status(models.Model):
@@ -30,24 +31,37 @@ class Status(models.Model):
 class PaperManager(models.Manager):
 
     def all_valid(self):
-        # Valid = is relevant
-        return self.exclude(latest_data_status__status__name__in=["not relevant", "undefined"])
+        return self.filter(latest_data_status__status__is_valid=True)
+
+    def all_loaded(self):
+        f = Q(latest_data_status__status__name__exact="loaded") & Q(
+            latest_tested_status__status__name__in=[
+                "loaded",
+                "request abandoned",
+                "not available",
+            ]
+        )
+        return self.filter(f)
 
 
 class Paper(models.Model):
+
+    pmid = models.IntegerField(default=0)
+
     first_author = models.CharField(max_length=200)
     last_author = models.CharField(max_length=200, blank=True, null=True)
     pub_date = models.IntegerField(default=0)
     systematic_name = models.CharField(max_length=200, blank=False, null=False)
 
-    pmid = models.IntegerField(default=0)
-    notes = models.TextField(blank=True)
+    notes = models.TextField(blank=True, null=True)
     private_notes = models.TextField(blank=True)
     data_abstract = models.TextField(blank=True, null=True)
+    observables_summary = models.TextField(blank=True, null=True)
+    conditiontypes_summary = models.TextField(blank=True, null=True)
 
-    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.DO_NOTHING)
     tags = models.ManyToManyField(Tag, blank=True)
 
+    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.DO_NOTHING)
     modified_on = models.DateField(auto_now=True)
 
     data_statuses = models.ManyToManyField(
@@ -78,6 +92,16 @@ class Paper(models.Model):
         get_latest_by = "modified_on"
         ordering = ["pmid", "systematic_name"]
 
+    def save(self, *args, **kwargs):
+        self.systematic_name = '%s~%s, %s' % (self.first_author, self.last_author, self.pub_date)
+        observables_list = list(self.datasets.values_list("phenotype__observable__name",
+                                                          flat=True).order_by().distinct())
+        self.observables_summary = truncated_list_as_str(observables_list)
+        conditiontypes_list = list(self.datasets.values_list("conditionset__conditions__type__name",
+                                                             flat=True).order_by().distinct())
+        self.conditiontypes_summary = truncated_list_as_str(conditiontypes_list)
+        super(Paper, self).save(*args, **kwargs)
+
     def __str__(self):
         return self.systematic_name
 
@@ -85,24 +109,14 @@ class Paper(models.Model):
         collections = self.datasets.values_list("collection__shortname", flat=True).order_by().distinct()
         return "; ".join(collections)
 
-    # def phenotypes(self):
-    #     return (
-    #         Observable.objects.filter(phenotype__dataset__paper=self)
-    #         .distinct()
-    #         .order_by(Lower("name"))
-    #     )
-
     def phenotypes_list_as_str(self):
         phenotypes = self.datasets.values_list("phenotype__observable__name", flat=True).order_by().distinct()
+        phenotypes = [p for p in phenotypes if p is not None]
         return truncated_list_as_str(phenotypes)
-
-    # def conditiontypes(self):
-    #     return ConditionType.objects.filter(
-    #         conditions__conditionset__dataset__paper=self
-    #     ).distinct()
 
     def conditiontypes_list_as_str(self):
         conditiontypes = self.datasets.values_list("conditionset__conditions__type__name", flat=True).order_by().distinct()
+        conditiontypes = [c for c in conditiontypes if c is not None]
         return truncated_list_as_str(conditiontypes)
 
     def datasets_summary(self):
@@ -139,14 +153,13 @@ class Paper(models.Model):
             self.last_author.split(" ")[0],
         )
 
-    def acknowledgements_str_list(self):
-        return ", ".join(
-            Source.objects.filter(acknowledge=True)
-            .filter(Q(data_source__paper=self) | Q(tested_source__paper=self))
-            .exclude(Q(person=None))
-            .values_list("person", flat=True)
-            .distinct()
-        )
+    def acknowledgements_list_as_str(self):
+        people = self.datasets.values('data_source__person', 'tested_source__person').order_by().distinct()
+        people = [list(person.values()) for person in people]
+        people = list(set(list(itertools.chain.from_iterable(people))))
+        people = [person for person in people if not person == '' and person is not None]
+
+        return "; ".join(people)
 
     def acknowledge_data(self):
         return self.datasets.filter(data_source__acknowledge=True).exists()
