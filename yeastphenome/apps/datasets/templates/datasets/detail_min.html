@@ -1,9 +1,18 @@
 {% extends "base/base_min.html" %}
 {% load static %}
-{% load my_filters %}
+{% load cart_status %}
 {% load humanize %}
 {% block title %}{{ dataset.id }} | Datasets | {{ SITE_NAME }}{% endblock %}
+{% block css %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+{% endblock %}
 {% block content %}
+
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <span class="badge rounded-pill bg-secondary">Datasets</span>
+        </div>
+    </div>
 
     <div class="row mt-5 mb-3">
         <div class="col-md-12">
@@ -34,68 +43,24 @@
                     <th scope="row">Collection</th>
                     <td>{{ dataset.collection.shortname }}</td>
                 </tr>
-{#                <tr>#}
-{#                    <th scope="row">Tested mutants</th>#}
-{#                    <td>#}
-{#                        Number reported in the paper: {{ dataset.tested_num|intcomma }} mutants#}
-{#                        <br>Published: {{ dataset.tested_genes_published|yesno:'<span class="yes">✓</span>,<span class="no">&#65794;</span>,unknown'|safe }}#}
-{#                        <br>Available: {{ dataset.tested_genes_available|yesno:'<span class="yes">✓</span>,<span class="no">&#65794;</span>,unknown'|safe }}#}
-{#                        {% if dataset.tested_genes_available %}#}
-{#                            [{{ dataset.tested_space|intcomma }} mutants from {{ dataset.tested_source.html|safe }}]#}
-{#                        {% endif %}#}
-{#                    </td>#}
-{#                </tr>#}
-{#                <tr>#}
-{#                    <th scope="row">Data</th>#}
-{#                    <td>#}
-{#                        Measured: {{ dataset.data_measured }}#}
-{#                        <br>Published: {{ dataset.data_published }}#}
-{#                        <br>Available: {{ dataset.data_available }}#}
-{#                        {% if dataset.data_source > 0 %}#}
-{#                            &mdash; from {{ dataset.data_source.html|safe }}#}
-{#                        {% endif %}#}
-{#                    </td>#}
-{#                </tr>#}
+                <tr>
+                    <th scope="row">Data type</th>
+                    <td>{{ data_availability.type_data_available }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Source of data</th>
+                    <td>{{ data_availability.data_available }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Source of tested strains</th>
+                    <td>{{ data_availability.tested_available }}</td>
+                </tr>
                 {% if dataset.tags.count > 0 %}
                     <tr>
                         <th scope="row">Tags</th>
-                        <td>{{ dataset.tags_link_list|safe }}</td>
+                        <td>{{ dataset.tags_list_as_links|safe }}</td>
                     </tr>
                 {% endif %}
-            </table>
-        </div>
-    </div>
-
-    <div class="row mt-5 mb-3">
-        <div class="col-md-12">
-
-            <h2>Data types and sources</h2>
-
-            <table class="table">
-                <thead>
-                <tr>
-                    <th class="col-md-3">&nbsp;</th>
-                    <th scope="col">Tested</th>
-                    <th scope="col">Data</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <th scope="row">Measured</th>
-                    <td>{{ data_availability.tested_measured }}</td>
-                    <td>{{ data_availability.data_measured }}</td>
-                </tr>
-                <tr>
-                    <th scope="row">Published</th>
-                    <td>{{ data_availability.tested_published }}</td>
-                    <td>{{ data_availability.data_published }}</td>
-                </tr>
-                <tr>
-                    <th scope="row">Available</th>
-                    <td>{{ data_availability.tested_available }}</td>
-                    <td>{{ data_availability.data_available }}</td>
-                </tr>
-                </tbody>
             </table>
         </div>
     </div>
@@ -104,7 +69,7 @@
         {% if scores_highest or scores_lowest %}
             <div class="row mt-5 mb-3">
                 <div class="col-md-12">
-                    <h2>Phenotypic Scores</h2>
+                    <h2>Phenotypic scores</h2>
 
                     {% include "messages/data_warning.html"%}
 
@@ -133,8 +98,8 @@
                         </div>
                     </div>
 
-                    <a class="btn btn-primary" role="button" href="/datasets/download/?{{ dataset.id }}=on">Download now</a>
-                    <a class="btn btn-success" role="button" href="{% url 'datasets:scores' dataset.id %}">View all</a>
+                    <a class="btn btn-success" role="button" href="{% url 'datasets:scores' dataset.id %}">View all {{ num_scores|intcomma }} scores</a>
+                    {% download_button dataset.id %}
                 </div>
             </div>
         {% endif %}
@@ -142,7 +107,7 @@
         {% if similarities_lowest or similarities_highest %}
             <div class="row mt-5 mb-3">
                 <div class="col-md-12">
-                    <h2>Phenotypic Similarities</h2>
+                    <h2>Phenotypic similarities</h2>
 
                     {% include "messages/data_warning.html"%}
 
@@ -171,8 +136,8 @@
                         </div>
                     </div>
 
-                    <a class="btn btn-primary" href="{% url 'datasets:download_dataset_similarities' dataset.id %}" role="button">Download now</a>
-                    <a class="btn btn-success" href="{% url 'datasets:similarities' dataset.id %}" role="button">View all</a>
+                    <a class="btn btn-success" href="{% url 'datasets:similarities' dataset.id %}" role="button">View all {{ num_similarities|intcomma }} similarities</a>
+{#                    <a class="btn btn-primary" href="{% url 'datasets:download_dataset_similarities' dataset.id %}" role="button">Download now</a>#}
 
                 </div>
             </div>
@@ -180,4 +145,10 @@
 
     {% endif %}
 
+{% endblock %}
+
+{% block scripts %}
+    {% csrf_token %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    {% include "scripts/add_to_cart_functions.html" %}
 {% endblock %}

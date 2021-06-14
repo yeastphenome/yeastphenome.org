@@ -9,7 +9,7 @@
 }
 </style>
 
-    {% include "messages/message-block.html" %}
+    {% include "messages/download_cart_warning.html" %}
     {% csrf_token %}
     <table id="papersTable" class="tablesorter table table-condensed table-hover dt-body-center" width="100%">
         <thead>
@@ -25,4 +25,4 @@
     </table>
     <br>
 
-{% include "scripts/add_to_cart_functions.html" %}
+{% include "scripts/../../../downloads/scripts/downloads/../../../common/templates/scripts/add_to_cart_functions.html" %}

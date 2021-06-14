@@ -9,7 +9,7 @@
 }
 </style>
 
-{% include "messages/message-block.html" %}
+{% include "messages/download_cart_warning.html" %}
 <form action="{% url 'datasets:download_dataset_scores' %}" method="get">
     {% csrf_token %}
     <table id="papersTable" class="tablesorter table table-condensed table-hover dt-body-center" width="100%" {% if datasets %}{% else %}style="display:none"{% endif %}>
@@ -49,4 +49,4 @@
 
 </form>
 
-{% include "scripts/add_to_cart_functions.html" %}
+{% include "scripts/../../../downloads/scripts/downloads/../../../common/templates/scripts/add_to_cart_functions.html" %}

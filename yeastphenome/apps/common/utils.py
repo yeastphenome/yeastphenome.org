@@ -1,16 +1,10 @@
-from django.db.models import Q, F, Count, Sum, Case, When
-from django.db import models
+from django.db.models import Q, F
 
-import numpy as np
-
-from yeastphenome import settings
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.conditions.models import ConditionSet, ConditionType
-from yeastphenome.apps.phenotypes.models import Phenotype, Measurement
-from yeastphenome.apps.datasets.models import Dataset, Sourcetype
+from yeastphenome.apps.phenotypes.models import Phenotype, Observable
+from yeastphenome.apps.datasets.models import Dataset
 from yeastphenome.apps.genes.models import Gene
-
-import collections
 
 
 def escape_regex(value):
@@ -23,82 +17,22 @@ def escape_regex(value):
     return value
 
 
-# Downloads
-
-
-def check_download_space(request, datasets):
-    """The browser can only serialize 4096 bytes of cookies, so we cannot allow
-    the cart to exceed this number. We have some wiggle room because the session
-    is compressed, so we calculated 500 datasets (the list of ids) can go right
-    up to the limit. If other session data is added, this would need to be
-    decreased. Returns False if the cart cannot be added to, True otherwise
-    """
-    datasets_in_cart = len(request.session["cart"])
-    if datasets_in_cart + len(datasets) > settings.DOWNLOAD_CART_LIMIT:
-        return False
-    return True
-
-
-# Collections change over time
-
-
-def get_collections_by_year(collection):
-    """Show the change over time of a collection tyoe. This function returns
-    a lookup with single values, and also accumulated values.
-    This graph displays on a page for a single dataset. There is only one
-    dataset without a collection, and it was published in 2015 (and this
-    will return that one number).
-    """
-    counts = {}
-    for dataset in Dataset.objects.filter(collection=collection):
-        if dataset.paper.pub_date not in counts:
-            counts[dataset.paper.pub_date] = 0
-        counts[dataset.paper.pub_date] += 1
-
-    # Order by year before summing
-    counts = collections.OrderedDict(sorted(counts.items()))
-
-    # Generate accumulated counts
-    total = 0
-    summed = {}
-    for year, count in counts.items():
-        total += count
-        summed[year] = total
-    return {"summed": summed, "counts": counts}
-
-
-# Stats helper function
-
 def get_latest_stats_basic():
 
-    papers_qs = Paper.objects.all_valid()
+    conditions_qs = ConditionType.objects.all_valid()
+    datasets_qs = Dataset.objects.all_valid()
     genes_qs = Gene.objects.all_valid()
+    papers_qs = Paper.objects.all_valid()
+    phenotypes_qs = Observable.objects.all_valid()
 
-    # Number of papers processed and loaded
-    f = Q(latest_data_status__status__name__exact="loaded") & Q(
-        latest_tested_status__status__name__in=[
-            "loaded",
-            "request abandoned",
-            "not available",
-        ]
-    )
-    papers_processed_qs = papers_qs.filter(f)
-    papers_processed_nr = papers_processed_qs.count()
-
-    # Number of phenotypes
-    phenotypes_nr = papers_processed_qs.values("datasets__phenotype").distinct().count()
-
-    # Number of conditions
-    conditions_nr = papers_processed_qs.values("datasets__conditionset").distinct().count()
-
-    # Number of datasets
-    datasets_nr = papers_processed_qs.values("datasets").distinct().count()
-
-    # Number of genes
+    papers_nr = papers_qs.count()
+    phenotypes_nr = phenotypes_qs.count()
+    conditions_nr = conditions_qs.count()
+    datasets_nr = datasets_qs.count()
     genes_nr = genes_qs.count()
 
     context = {
-        "papers_nr": papers_processed_nr,
+        "papers_nr": papers_nr,
         "phenotypes_nr": phenotypes_nr,
         "conditions_nr": conditions_nr,
         "datasets_nr": datasets_nr,
@@ -144,7 +78,7 @@ def get_latest_stats():
     conditions_nr = papers_processed_qs.values("datasets__conditionset").distinct().count()
 
     # Number of datasets
-    datasets_nr = papers_processed_qs.values("datasets").distinct().count()
+    datasets_nr = datasets_qs.count()
 
     # Data recovery for haploid/homozygous diploid
     g1 = Q(
@@ -169,17 +103,12 @@ def get_latest_stats():
     c1 = Q(collection__shortname__in=["hap a", "hap a (post-SGA)"])
     c2 = Q(collection__shortname__in=["hap alpha", "hap alpha (post-SGA)"])
     c3 = Q(collection__shortname__in=["hom"])
-    c4 = Q(collection__shortname__in=["het"])
     c5 = Q(
         collection__shortname__in=[
             "hap ?",
             "hap a/hap alpha/hom",
             "hap a/hap alpha",
             "hap a/hom",
-            "hom/het?",
-            "hom/het",
-            "hap a/het",
-            "hap ?/hom/het",
         ]
     )
     d1 = Q(data_available__shortname="q")
@@ -188,7 +117,7 @@ def get_latest_stats():
 
     collectiontype_datatype = dict()
     collectiontype_datatype["total"] = 0
-    for ic, c in enumerate([c1, c2, c3, c4, c5]):
+    for ic, c in enumerate([c1, c2, c3, c5]):
         nr = datasets_qs.filter(c).count()
         label = "c" + str(ic)
         collectiontype_datatype[label] = nr
@@ -269,7 +198,7 @@ def get_latest_stats():
 
     collectiontype_phenotype = dict()
     collectiontype_phenotype["total"] = 0
-    for ic, c in enumerate([c1, c2, c3, c4, c5]):
+    for ic, c in enumerate([c1, c2, c3, c5]):
         nr = datasets_qs.filter(c).count()
         label = "c" + str(ic)
         collectiontype_phenotype[label] = nr

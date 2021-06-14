@@ -1,0 +1,39 @@
+<div class="row mt-5 mb-3">
+    <div class="col-md-12">
+        <h2>Datasets</h2>
+
+        {% include "search/pagination.html" with page_obj=datasets_page_obj %}
+
+        <table class="table my-4">
+            <tr>
+                <th style="width: 7%">Dataset ID</th>
+                <th style="width: 7%">Collection</th>
+                <th style="width: 15%">Phenotype</th>
+                <th style="width: 15%">Condition</th>
+                <th style="width: 15%">Medium</th>
+                <th style="width: 15%">Paper</th>
+                <th>Data</th>
+                <th>Tags</th>
+            </tr>
+            {% for dataset in datasets_page_obj %}
+                <tr>
+                    <td><a href="{% url 'datasets:detail' dataset.id  %}">{{ dataset.id }}</a></td>
+                    <td>{{ dataset.collection }}</td>
+                    <td>{{ dataset.phenotype }}</td>
+                    <td>{{ dataset.conditionset }}</td>
+                    <td>{{ dataset.medium }}</td>
+                    <td>{{ dataset.paper }}</td>
+                    <td>{{ dataset.data_available }}</td>
+                    <td>{{ dataset.tags_list_as_str|truncatewords:5 }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 30px">No results match search criteria.</td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        {% include "search/pagination.html" with page_obj=datasets_page_obj %}
+
+    </div>
+</div>

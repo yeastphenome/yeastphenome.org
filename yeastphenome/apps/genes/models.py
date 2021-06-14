@@ -2,16 +2,15 @@ from __future__ import unicode_literals
 
 from django.core.exceptions import FieldError
 from django.db import models
-from django.db.models import F
+from django.db.models import F, Q
 from django.urls import reverse
-from django.utils.safestring import mark_safe
 
-from yeastphenome.apps.datasets.models import Data
-from yeastphenome.apps.common.utils_format import update_values_with_percentile
+from django_elasticsearch_dsl_drf.wrappers import dict_to_obj
+
+from yeastphenome.apps.datasets.models import Data, Dataset
 
 
 class GeneAlias(models.Model):
-    """A GeneAlias is another name for a gene"""
 
     name = models.CharField(max_length=250, null=False, blank=False, unique=True)
 
@@ -47,31 +46,36 @@ class Gene(models.Model):
 
     objects = GeneManager()
 
-    # TODO: additional mutations resulting from perturbing gene
-    # genome_alterations, acquired_secondary_alterations
-
     def __str__(self):
         return "%s / %s" % (self.common_name, self.systematic_name)
 
+    def aliases_list(self):
+        return list(self.aliases.all().values_list("name", flat=True))
+
     def aliases_list_as_str(self):
-        return "; ".join([str(a) for a in self.aliases.all()])
+        return "; ".join(self.aliases_list())
+
+    def aliases_indexing(self):
+        aliases_list_as_str = self.aliases_list_as_str()
+        wrapper = dict_to_obj({
+            "list_as_str_txt": aliases_list_as_str,
+            "list_as_str_kwd": aliases_list_as_str
+        })
+        return wrapper
 
     def link_detail(self):
-        """Return the link for the gene detail"""
         return '<a href="%s">%s</a>' % (reverse("genes:detail", args=[self.id]), self)
 
-    def get_scores(self, ascending=True):
-        data = self.data.filter(dataset__data_source__release=True).filter(valuez__isnull=False)
+    def get_scores(self):
+        datasets = Dataset.objects.all_valid()
+        data = self.data.filter(dataset__in=datasets)
+        data = data.filter(valuez__isnull=False)
         data = data.values("valuez", "dataset_id",
                            dataset_name=F("dataset__name"))
-        data = data.order_by("valuez") if ascending else data.order_by("-valuez")
-        data = update_values_with_percentile(data, "valuez")
         return data
 
-    def get_similarities(self, ascending=True):
+    def get_similarities(self):
         data = self.similarities.values("score", "pvalue", "gene2_id", "gene2__systematic_name", "gene2__common_name")
-        data = data.order_by("score") if ascending else data.order_by("-score")
-        data = update_values_with_percentile(data, "score")
         return data
 
 

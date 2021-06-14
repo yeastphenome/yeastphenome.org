@@ -1,9 +1,10 @@
-{% include "messages/message-block.html" %}
+{% load cart_status %}
+{% include "messages/download_cart_warning.html" %}
 
-<table class="table mt-3">
+<table class="table mt-4 mb-4">
 
     <thead>
-    <th scope="col">Dataset</th>
+    <th scope="col">Dataset ID</th>
     <th scope="col">Paper</th>
     <th scope="col">Phenotype</th>
     <th scope="col">Condition</th>
@@ -16,18 +17,16 @@
     <tbody>
     {% for dataset in datasets %}
         <tr>
-            <td class="col-md-1"><a href="{% url 'datasets:detail' dataset.dataset_id %}">{{ dataset.dataset_id }}</a></td>
-            <td class="col-md-2">{{ dataset.dataset_paper_name }}</td>
-            <td class="col-md-2">{{ dataset.dataset_phenotype_name}}</td>
-            <td class="col-md-2">{{ dataset.dataset_conditionset_name }}</td>
-            <td class="col-md-1">{{ dataset.dataset_medium_name }}</td>
-            <td class="col-md-1">{{ dataset.dataset_collection_name }}</td>
-            <td class="col-md-1">{{ dataset.dataset_data_name }}</td>
-{#            <td class="col-md-1">{% if not request.session.cart %}<a id="dataset-cart-{{ dataset.id }}" type="button" class="btn btn-primary add-to-cart" data-id="{{ dataset.id }}" {% if dataset.has_data_in_db and dataset.data_source.release %}{% else %}disabled title="This dataset is not available for download."{% endif %}>Add</a>{% else %}{% if dataset.id not in request.session.cart %}<a id="dataset-cart-{{ dataset.id }}" type="button" data-id="{{ dataset.id }}" class="btn btn-primary add-to-cart" {% if dataset.has_data_in_db and dataset.data_source.release %}{% else %}disabled title="This dataset is not available for download."{% endif %}>Add</a>{% else %}<a id="dataset-cart-{{ dataset.id }}" type="button" class="btn btn-danger remove-from-cart" data-id="{{ dataset.id }}">Remove</a>{% endif %}{% endif %}#}
-            </td>
+            <td class="align-middle col-md-1"><a href="{% url 'datasets:detail' dataset.dataset_id %}">{{ dataset.dataset_id }}</a></td>
+            <td class="align-middle col-md-2">{{ dataset.dataset_paper_name }}</td>
+            <td class="align-middle col-md-2">{{ dataset.dataset_phenotype_name}}</td>
+            <td class="align-middle col-md-2">{{ dataset.dataset_conditionset_name }}</td>
+            <td class="align-middle col-md-1">{{ dataset.dataset_medium_name|default:"" }}</td>
+            <td class="align-middle col-md-1">{{ dataset.dataset_collection_name }}</td>
+            <td class="align-middle col-md-1">{{ dataset.dataset_data_name }}</td>
+            <td class="align-middle col-md-1">{% download_button dataset.dataset_id %}</td>
         </tr>
     {% endfor %}
     </tbody>
 </table>
 
-{#{% include "scripts/add_to_cart_functions.html" %}#}

@@ -24,9 +24,9 @@
                     <td>{% for author in authors %}
                         {% spaceless %}
                             {% if forloop.first %}
-                                <a href="/search/?q={{ object.first_author }}&tab=papers">{{ author }}</a>
+                                <a href="/apps/search/?q={{ object.first_author }}&tab=papers">{{ author }}</a>
                             {% elif forloop.last %}
-                                <a href="/search/?q={{ object.last_author }}&tab=papers">{{ author }}</a>
+                                <a href="/apps/search/?q={{ object.last_author }}&tab=papers">{{ author }}</a>
                             {% else %}
                                 {{ author }}
                             {% endif %}

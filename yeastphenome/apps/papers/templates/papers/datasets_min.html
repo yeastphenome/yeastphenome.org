@@ -1,17 +1,30 @@
 {% extends "base/base_min.html" %}
-{% load my_filters %}
 {% block title %}Datasets | {{ paper_systematic_name }} | Papers | {{ SITE_NAME }}{% endblock %}
+{% block css %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+{% endblock %}
 {% block content %}
-    <div class="row">
-        <div class="col-12">
-            <h1 class="mt-5 mb-4">Datasets from {{ paper_systematic_name }}</h1>
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <span class="badge rounded-pill bg-secondary">Papers</span>
+            <a href="{% url 'papers:detail' paper_id %}"><span class="badge rounded-pill bg-primary">{{ paper_systematic_name }}</span></a>
+        </div>
+    </div>
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <h1>Datasets from {{ paper_systematic_name }}</h1>
         </div>
     </div>
 
-    <div class="row mt-5">
-        <div class="col-12">
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
             {% include "datasets/datasets_table_min.html" with datasets=paper_datasets %}
         </div>
     </div>
 
+{% endblock %}
+{% block scripts %}
+    {% csrf_token %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    {% include "scripts/add_to_cart_functions.html" %}
 {% endblock %}

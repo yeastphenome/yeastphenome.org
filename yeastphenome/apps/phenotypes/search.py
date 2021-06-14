@@ -1,46 +1,28 @@
-from django.db.models import Q
+from yeastphenome.apps.phenotypes.models import Observable
 
-from yeastphenome.apps.phenotypes.models import Phenotype, Observable, Tag, Measurement
-from yeastphenome.apps.common.utils import escape_regex
-
-import itertools
+from tqdm import tqdm
 
 
-def get_search_tags():
-    """Return a list of tags, each with a name and icon, to return to the
-    phenotype explorer tag search
-    """
-    tags = set(
-        itertools.chain(
-            Observable.objects.values_list("name", flat=True),
-            Phenotype.objects.values_list("name", flat=True),
-            Tag.objects.values_list("name", flat=True),
-            Measurement.objects.values_list("name", flat=True),
-        )
-    )
+def define_document():
 
-    # Remove empty values and sort in alphabetical order
-    tags.discard(None)
-    tags = sorted(tags)
+    schema = {
+        "name": "text",
+        "description": "text",
+        "phenotypes_list_as_str": "text",
+        "reporters_list_as_str": "text",
+        "conditiontypes_list_as_str": "text",
+        "papers_list_as_str": "text",
+        "tags_list_as_str": "text"
+    }
 
-    return [{"value": x, "icon": "🌡️", "code": "query"} for x in tags if x]
+    observables = Observable.objects.all_valid()
 
+    print("Preparing JSON file for upload...")
 
-def run_search_tag_query(queries):
-    """take a query string and a taglist to run the phenotypes query."""
-    queries = queries or []
+    observables_json = []
+    for observable in tqdm(observables):
 
-    # A phenotype search actually returns observables
-    queryset = Observable.objects.all_valid()
+        json = observable.data_indexing()
+        observables_json.append(json)
 
-    for query in queries:
-        query = escape_regex(query)
-        f = (
-            Q(name__iregex=query)
-            | Q(tags__name__iregex=query)
-            | Q(phenotype__name__iregex=query)
-            | Q(phenotype__reporter__iregex=query)
-        )
-        queryset = queryset.filter(f)
-
-    return queryset.distinct().order_by("name")
+    return schema, observables_json

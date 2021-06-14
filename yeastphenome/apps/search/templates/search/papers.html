@@ -1,0 +1,27 @@
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="mt-5 mb-4">Papers</h2>
+
+        {% include "search/pagination.html" with page_obj=papers_page_obj %}
+
+        <table class="table my-4">
+            <tr>
+                <th width="25%">First Author~Last Author, Year</th>
+                <th>Tags</th>
+            </tr>
+            {% for paper in papers_page_obj %}
+                <tr>
+                    <td><a href="{% url 'papers:detail' paper.id  %}">{{ paper.systematic_name }}</a></td>
+                    <td>{{ paper.tags_list_as_str|truncatewords:10 }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3" style="text-align: center; padding: 30px">No results match search criteria.</td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        {% include "search/pagination.html" with page_obj=papers_page_obj %}
+
+    </div>
+</div>

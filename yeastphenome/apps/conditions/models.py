@@ -4,27 +4,29 @@ from django.apps import apps
 from django.db.models import Q
 from django.utils.safestring import mark_safe
 
-import re
+from django_elasticsearch_dsl_drf.wrappers import dict_to_obj
+from elastic_enterprise_search import AppSearch
 
-from yeastphenome.apps.common.utils_format import truncated_list_as_str
 from yeastphenome.apps.phenotypes.models import Phenotype
 from yeastphenome.apps.tags.models import Tag
+from yeastphenome.apps.datasets.models import Dataset
+from yeastphenome.settings import (
+    ELASTICSEARCH_HOST,
+    ELASTICSEARCH_AUTH
+)
+
 from libchebipy import ChebiEntity
+import re
+import itertools
+from urllib.parse import quote_plus
 
 
 class ConditionTypeManager(models.Manager):
 
-    # def all_valid(self):
-    #     # Valid = associated with at least 1 dataset from a relevant paper
-    #     valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
-    #     f = Q(conditions__conditionset__dataset__in=valid_datasets) \
-    #         | Q(conditions__medium__dataset__in=valid_datasets)
-    #     return self.filter(f).distinct()
-
     def all_valid(self):
-        f1 = Q(conditions__conditionset__dataset__paper__latest_data_status__status__is_valid=True)
-        f2 = Q(conditions__medium__dataset__paper__latest_data_status__status__is_valid=True)
-        return self.filter(f1 | f2)
+        valid_datasets = Dataset.objects.all_valid()
+        f1 = Q(conditions__conditionset__dataset__in=valid_datasets)
+        return self.filter(f1).distinct()
 
 
 class ConditionType(models.Model):
@@ -49,16 +51,20 @@ class ConditionType(models.Model):
     def __str__(self):
         return u"%s" % self.name
 
-    def all_other_names_list_as_str(self):
+    def aliases_list(self):
         if self.other_names:
             other_names = [name.strip() for name in re.split("[,\n]", self.other_names)]
         else:
             other_names = []
         other_names += [self.chebi_name, self.pubchem_name]
         other_names = list(
-            set([name for name in other_names if name and not name == ""])
+            set([name for name in other_names if name])
         )
-        return "; ".join(other_names)
+        other_names = [name for name in other_names if not name == self.name]
+        return other_names
+
+    def aliases_list_as_str(self):
+        return "; ".join(self.aliases_list())
 
     def definition(self):
         if self.chebi_id:
@@ -82,28 +88,30 @@ class ConditionType(models.Model):
             return ""
 
     def doses_list_as_str(self):
-        doses = self.conditions.values_list("dose", flat=True).order_by().distinct()
+        doses = self.conditions.all_valid().values_list("dose", flat=True).order_by().distinct()
+        doses = [dose for dose in doses if dose and not dose == "unknown"]
         return "; ".join(doses)
 
     def conditions_edit_list(self):
-        return mark_safe(", ".join([p.link_edit() for p in self.conditions]))
+        return mark_safe(", ".join([p.link_edit() for p in self.conditions.all()]))
 
     def observables_list_as_str(self):
-        observables1 = self.conditions.all_valid().values_list("conditionset__dataset__phenotype__observable__name", flat=True)
-        observables2 = self.conditions.all_valid().values_list("medium__dataset__phenotype__observable__name", flat=True)
-
-        observables = observables1.union(observables2).order_by().distinct()
-        observables = [o for o in observables if o is not None]
-        return truncated_list_as_str(observables)
+        observables1 = self.conditions.all_valid().values_list(
+            "conditionset__dataset__phenotype__observable__name", flat=True
+        )
+        # observables2 = self.conditions.all_valid().values_list("medium__dataset__phenotype__observable__name", flat=True)
+        # observables = observables1.union(observables2).order_by().distinct()
+        observables = observables1.order_by().distinct()
+        observables = [o for o in observables if o]
+        return "; ".join(observables)
 
     def papers_list_as_str(self):
-        papers1 = self.conditions.values_list("conditionset__dataset__paper__systematic_name", flat=True)
-        papers2 = self.conditions.values_list("medium__dataset__paper__systematic_name", flat=True)
-
-        papers = papers1.union(papers2).order_by().distinct()
-        papers = [p for p in papers if p is not None]
-
-        return truncated_list_as_str(papers)
+        papers = self.conditions.all_valid().values_list(
+            "conditionset__dataset__paper__systematic_name", flat=True
+        ).order_by().distinct()
+        papers = [p for p in papers if p]
+        papers_list = "; ".join(papers)
+        return papers_list
 
     def datasets(self):
         return (
@@ -111,21 +119,27 @@ class ConditionType(models.Model):
             .objects.all_valid().filter(
                 Q(conditionset__conditions__type=self)
                 | Q(medium__conditions__type=self)
-            )
-            .filter(data_source__release=True)
-            .distinct()
+            ).distinct()
         )
 
     def tags_edit_list(self):
         return mark_safe(", ".join([t.link_edit() for t in self.tags.all()]))
 
+    def tags_list(self):
+        return list(self.tags.values_list("name", flat=True))
+
     def tags_list_as_str(self):
-        tags_list = self.tags.values_list("name", flat=True)
-        return "; ".join(tags_list)
+        return "; ".join(self.tags_list())
+
+    def tags_indexing(self):
+        wrapper = dict_to_obj({
+            "list": self.tags_list(),
+            "list_as_str": self.tags_list_as_str()
+        })
+        return wrapper
 
     def link_detail(self):
-        html = '<a id="condition-%s" href="%s">%s</a>' % (
-            self.id,
+        html = '<a href="%s">%s</a>' % (
             reverse("conditions:detail", args=(self.id,)),
             self,
         )
@@ -137,6 +151,37 @@ class ConditionType(models.Model):
             self,
         )
         return mark_safe(html)
+
+    def data_indexing(self):
+        json = {"id": self.id,
+                "name": self.name,
+                "aliases_list_as_str": self.aliases_list_as_str(),
+                "doses_list_as_str": self.doses_list_as_str(),
+                "observables_list_as_str": self.observables_list_as_str(),
+                "papers_list_as_str": self.papers_list_as_str(),
+                "tags_list_as_str": self.tags_list_as_str()}
+        return json
+
+    def update_indexing(self):
+        app_search = AppSearch(
+            ELASTICSEARCH_HOST,
+            http_auth=ELASTICSEARCH_AUTH,
+        )
+        resp = app_search.put_documents(
+            engine_name="conditiontypes",
+            documents=[self.data_indexing()]
+        )
+        print(resp)
+
+    def delete_indexing(self):
+        app_search = AppSearch(
+            ELASTICSEARCH_HOST,
+            http_auth=ELASTICSEARCH_AUTH,
+        )
+        resp = app_search.delete_documents(
+            engine_name="conditiontypes",
+            document_ids=[self.id]
+        )
 
 
 class ConditionManager(models.Manager):
@@ -168,6 +213,14 @@ class Condition(models.Model):
             txt = u"%s [%s]" % (self.type, self.dose)
         return txt
 
+    def aliases_list(self):
+        aliases = [str(self)] + self.type.aliases_list()
+        aliases = list(set(aliases))
+        return aliases
+
+    def aliases_list_as_str(self):
+        return "; ".join(self.aliases_list())
+
     def conditionsets(self):
         return ConditionSet.objects.filter(conditions=self).all()
 
@@ -181,10 +234,7 @@ class Condition(models.Model):
         return mark_safe(", ".join([p.link_edit() for p in self.media()[:20]]))
 
     def link_detail(self):
-        html = '<a href="%s">%s</a>' % (
-            reverse("conditions:detail", args=(self.type.id,)),
-            self,
-        )
+        html = '%s [%s]' % (self.type.link_detail(), self.dose)
         return mark_safe(html)
 
     def link_edit(self):
@@ -193,6 +243,12 @@ class Condition(models.Model):
             self.dose,
         )
         return mark_safe(html)
+
+    def tags_list(self):
+        tags_list_self = list(self.tags.values_list("name", flat=True))
+        tags_list_conditiontype = self.type.tags_list()
+        tags_list = list(set(tags_list_self + tags_list_conditiontype))
+        return tags_list
 
     def tags_edit_list(self):
         return mark_safe(", ".join([t.link_edit() for t in self.tags.all()]))
@@ -220,10 +276,18 @@ class ConditionSet(models.Model):
     objects = ConditionSetManager()
 
     def __str__(self):
-        if self.display_name:
-            return self.display_name
-        else:
-            return ""
+        return self.display_name if self.display_name else self.systematic_name
+
+    def aliases_list(self):
+        aliases = [self.systematic_name, self.common_name, self.display_name]
+        conditions_aliases = list(
+            itertools.chain.from_iterable([condition.aliases_list() for condition in self.conditions.all()]))
+        aliases = list(set(aliases + conditions_aliases))
+        aliases = [alias for alias in aliases if alias]
+        return aliases
+
+    def aliases_list_as_str(self):
+        return "; ".join(self.aliases_list())
 
     # # Necessary to run database-wide updates of conditionset names
     # def save(self, *args, **kwargs):
@@ -280,10 +344,14 @@ class ConditionSet(models.Model):
         return Phenotype.objects.filter(dataset__conditionset=self).distinct()
 
     def link_detail(self):
-        html = '<a href="%s">%s</a>' % (
-            reverse("conditions:conditionset_detail", args=(self.id,)),
-            self,
-        )
+        conditions_link_details = [condition.link_detail() for condition in self.conditions.all()]
+        return mark_safe("; ".join(conditions_link_details))
+
+    def link_search(self):
+        q = quote_plus(str(self))
+        html = '<a class="search" ' \
+               'title="Search for other datasets associated with this condition" ' \
+               'href="/search/?q=%s&field=conditions&tab=datasets">%s</a>' % (q, self)
         return mark_safe(html)
 
     def link_edit(self):
@@ -292,6 +360,12 @@ class ConditionSet(models.Model):
             self,
         )
         return mark_safe(html)
+
+    def tags_list(self):
+        tags_list_self = list(self.tags.values_list("name", flat=True))
+        tags_list_conditions = list(itertools.chain.from_iterable([condition.tags_list() for condition in self.conditions.all()]))
+        tags_list = list(set(tags_list_self + tags_list_conditions))
+        return tags_list
 
 
 class MediumManager(models.Manager):
@@ -320,6 +394,13 @@ class Medium(models.Model):
             return self.display_name
         else:
             return ""
+
+    def aliases_list_as_str(self):
+        aliases = [self.systematic_name, self.common_name, self.display_name]
+        condition_aliases = list(itertools.chain(condition.aliases_list_as_str() for condition in self.conditions.all()))
+        aliases = list(set(aliases + condition_aliases))
+        aliases = [alias for alias in aliases if alias]
+        return "; ".join(aliases)
 
     def conditions_list_str(self):
         conditions_list = [str(c) for c in self.conditions.all()]
@@ -379,10 +460,8 @@ class Medium(models.Model):
         return Phenotype.objects.filter(dataset__medium=self).distinct()
 
     def link_detail(self):
-        html = '<a href="%s">%s</a>' % (
-            reverse("conditions:medium_detail", args=(self.id,)),
-            self,
-        )
+        q = quote_plus(str(self))
+        html = '<a class="search" href="/search/?q=%s&field=medium&tab=datasets">%s</a>' % (q, self)
         return mark_safe(html)
 
     def link_edit(self):

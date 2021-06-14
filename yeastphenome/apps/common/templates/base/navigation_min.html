@@ -18,10 +18,10 @@
                         <a class="nav-link" href="{% url 'common:support' %}" role="button" aria-expanded="false">Support</a>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="{% url 'common:view_cart' %}" role="button" aria-expanded="false">Downloads</a>
+                        <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="{% url 'downloads:view_cart' %}" role="button" aria-expanded="false">Downloads</a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{% url 'common:view_cart' %}">Download Cart</a></li>
-                            <li><a class="dropdown-item" href="{% url 'common:download_bundles' %}">Bundle Downloads</a></li>
+                            <li><a class="dropdown-item" href="{% url 'downloads:view_cart' %}">Download cart</a></li>
+                            <li><a class="dropdown-item" href="{% url 'downloads:download_bundles' %}">Bundle downloads</a></li>
                         </ul>
                     </li>
                 </ul>

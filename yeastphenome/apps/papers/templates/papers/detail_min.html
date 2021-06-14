@@ -1,16 +1,26 @@
 {% extends "base/base_min.html" %}
-{% load my_filters %}
+{% load cart_status %}
+{% load humanize %}
 {% block title %}{{ paper }} | Papers | {{ SITE_NAME }}{% endblock %}
+{% block css %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+{% endblock %}
 {% block content %}
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <span class="badge rounded-pill bg-secondary">Papers</span>
+        </div>
+    </div>
+
     <div class="row mt-5 mb-4">
-        <div class="col-12">
+        <div class="col-md-12">
             <h1>{{ paper }}</h1>
         </div>
     </div>
 
     {% if paper.pmid != 0 %}
-        <div class="row mt-5">
-            <div class="col-12">
+        <div class="row mt-5 mb-3">
+            <div class="col-md-12">
                 <table class="table">
                     <tr>
                         <th width="20%" scope="row">Pubmed ID</th>
@@ -27,9 +37,9 @@
                         <td>{% for author in authors %}
                             {% spaceless %}
                                 {% if forloop.first %}
-                                    <a href="/search/?q={{ paper.first_author }}&tab=papers">{{ author }}</a>
+                                    <a class="search" href="/search/?q={{ paper.first_author|urlencode }}&tab=papers&field=author">{{ author }}</a>
                                 {% elif forloop.last %}
-                                    <a href="/search/?q={{ paper.last_author }}&tab=papers">{{ author }}</a>
+                                    <a class="search" href="/search/?q={{ paper.last_author|urlencode }}&tab=papers&field=author">{{ author }}</a>
                                 {% else %}
                                     {{ author }}
                                 {% endif %}
@@ -77,18 +87,18 @@
         </div>
     {% endif %}
 
-    <div class="row mt-5">
-        <div class="col-12">
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
             <h2>Datasets</h2>
             {% include "datasets/datasets_table_min.html" with datasets=datasets %}
-            {% if paper.datasets.count > 10 %}
-                <a href="{% url 'papers:datasets' paper.id %}" class="btn btn-primary" role="button">Show all {{ paper.datasets.count }} datasets</a>
+            {% if num_datasets > 10 %}
+                <a href="{% url 'papers:datasets' paper.id %}" class="btn btn-success" role="button">View all {{ num_datasets|intcomma }} datasets</a>
             {% endif %}
         </div>
     </div>
 
-    <div class="row mt-5">
-        <div class="col-12">
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
             <h2>Curation History</h2>
             <div class="row mt-3">
                 {% for k, v in paper.history.items %}
@@ -104,4 +114,9 @@
             </div>
         </div>
     </div>
+{% endblock %}
+{% block scripts %}
+    {% csrf_token %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    {% include "scripts/add_to_cart_functions.html" %}
 {% endblock %}

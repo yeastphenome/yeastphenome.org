@@ -3,8 +3,8 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, reverse
 from django.conf import settings
-
 from django.views.decorators.cache import never_cache
+
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.datasets.models import (
     DatasetSimilarity,
@@ -12,11 +12,11 @@ from yeastphenome.apps.datasets.models import (
     Data,
     Tag,
 )
-from yeastphenome.apps.genes.models import Gene, GeneAlias
-from yeastphenome.apps.datasets.search import get_search_tags
+from yeastphenome.apps.genes.models import Gene
 from yeastphenome.apps.datasets.utils import send_file
 from yeastphenome.apps.conditions.models import ConditionType, Medium
 from yeastphenome.apps.phenotypes.models import Observable
+from yeastphenome.apps.common.utils_format import update_values_with_percentile
 
 from libchebipy import ChebiEntity
 import os
@@ -34,28 +34,28 @@ from yeastphenome.settings import (
 def dataset_detail(request, dataset_id):
 
     dataset = get_object_or_404(Dataset, pk=dataset_id)
-    data_availability = dataset.get_data_availability()
-    scores_lowest = dataset.get_scores(ascending=True)[:10]
-    scores_highest = dataset.get_scores(ascending=False)[:10]
-    similarities_lowest = dataset.get_similarities(ascending=True)[:10]
-    similarities_highest = dataset.get_similarities(ascending=False)[:10]
 
-    navigation = [
-        {"url": reverse("common:search"), "name": "Search"},
-        {
-            "url": reverse("datasets:detail", args=[dataset.id]),
-            "name": dataset.name,
-        },
-    ]
+    data_availability = dataset.get_data_availability()
+
+    scores = dataset.get_scores()
+    num_scores = scores.count()
+    scores_lowest = update_values_with_percentile(scores.order_by("valuez"), "valuez")[:10]
+    scores_highest = update_values_with_percentile(scores.order_by("-valuez"), "valuez")[:10]
+
+    similarities = dataset.get_similarities()
+    num_similarities = similarities.count()
+    similarities_lowest = update_values_with_percentile(similarities.order_by("score"), "score")[:10]
+    similarities_highest = update_values_with_percentile(similarities.order_by("-score"), "score")[:10]
 
     context = {
         "dataset": dataset,
         "data_availability": data_availability,
+        "num_scores": num_scores,
         "scores_lowest": scores_lowest,
         "scores_highest": scores_highest,
+        "num_similarities": num_similarities,
         "similarities_lowest": similarities_lowest,
-        "similarities_highest": similarities_highest,
-        "navigation": navigation
+        "similarities_highest": similarities_highest
     }
 
     return render(request, "datasets/detail_min.html", context)
@@ -135,24 +135,12 @@ def similar_scatterplot(request, dataset1_id, dataset2_id):
 def dataset_scores(request, dataset_id):
 
     dataset = get_object_or_404(Dataset, pk=dataset_id)
-    scores = dataset.get_scores(ascending=True)
-
-    navigation = [
-        {"url": reverse("common:search"), "name": "Search"},
-        {
-            "url": reverse("datasets:detail", args=[dataset.id]),
-            "name": dataset.name,
-        },
-        {
-            "url": reverse("datasets:scores", args=[dataset.id]),
-            "name": "Phenotypic Scores",
-        },
-    ]
+    scores = dataset.get_scores().order_by("valuez")
+    scores = update_values_with_percentile(scores, "valuez")
 
     context = {
         "dataset": dataset,
-        "scores": scores,
-        "navigation": navigation,
+        "scores": scores
     }
 
     return render(request, "datasets/scores_min.html", context)
@@ -162,26 +150,12 @@ def dataset_scores(request, dataset_id):
 def dataset_similarities(request, dataset_id):
 
     dataset = get_object_or_404(Dataset, pk=dataset_id)
-    similarities = dataset.get_similarities(ascending=False)
-
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("datasets:index"), "name": "Datasets"},
-        {
-            "url": reverse("datasets:detail", args=[dataset.id]),
-            "name": dataset.name,
-        },
-        {
-            "url": reverse("datasets:similarities", args=[dataset.id]),
-            "name": "Similar Datasets",
-        },
-    ]
+    similarities = dataset.get_similarities().order_by("-score")
+    similarities = update_values_with_percentile(similarities, "score")
 
     context = {
         "dataset": dataset,
         "similarities": similarities,
-        "links": links,
-        "active": "explorer",
     }
 
     return render(request, "datasets/similarities_min.html", context)
@@ -217,7 +191,6 @@ def data_explorer(request, collection_id=None):
         "collection_id": collection_id,
         "links": links,
         "active": "explorer",
-        "tags": get_search_tags(),
         "cart": request.session.get("cart", []),
         "DOWNLOAD_PREFIX": settings.DOWNLOAD_PREFIX,
     }

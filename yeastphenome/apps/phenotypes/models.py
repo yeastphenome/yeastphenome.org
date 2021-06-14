@@ -1,24 +1,31 @@
 from django.db import models
+from django.db.models import Q
 from django.urls import reverse
 from django.apps import apps
 from django.utils.safestring import mark_safe
+
+from django_elasticsearch_dsl_drf.wrappers import dict_to_obj
 
 from yeastphenome.apps.datasets.models import Dataset
 from yeastphenome.apps.tags.models import Tag
 from yeastphenome.apps.common.utils_format import truncated_list_as_str
 
+from urllib.parse import quote_plus
+
 
 class ObservableManager(models.Manager):
 
     def all_valid(self):
-        return self.filter(phenotype__dataset__paper__latest_data_status__status__is_valid=True)
+        valid_datasets = Dataset.objects.all_valid()
+        f = Q(phenotype__dataset__in=valid_datasets)
+        return self.filter(f).distinct()
 
 
 class Observable(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
     modified_on = models.DateField(auto_now=True, null=True)
-    tags = models.ManyToManyField(Tag, blank=True)
+    tags = models.ManyToManyField(Tag, blank=True, related_name="observables")
 
     objects = ObservableManager()
 
@@ -35,9 +42,31 @@ class Observable(models.Model):
         )
         return mark_safe(html)
 
+    def tags_list(self):
+        return list(self.tags.values_list("name", flat=True))
+
     def tags_list_as_str(self):
-        tags_list = self.tags.values_list("name", flat=True)
-        return "; ".join(tags_list)
+        return "; ".join(self.tags_list())
+
+    def tags_indexing(self):
+        wrapper = dict_to_obj({
+            "list": self.tags_list(),
+            "list_as_str": self.tags_list_as_str()
+        })
+        return wrapper
+
+    def tags_list_as_links(self):
+        link_template = '<a class="search" href="/search/?q=%s&field=tags&tab=phenotypes">%s</a>'
+        tags_list = self.tags_list()
+        tags_list_links = [(link_template % (quote_plus(tag), tag)) for tag in tags_list]
+        if len(tags_list) > 1:
+            tags_all = [link_template % (quote_plus(self.tags_list_as_str()), "all")]
+        else:
+            tags_all = []
+        html1 = ["; ".join(tags_list_links)]
+        html2 = tags_all
+        html = "   |   ".join(html1 + html2)
+        return mark_safe(html)
 
     def tags_edit_link_list(self):
         html = "<ul>"
@@ -46,14 +75,13 @@ class Observable(models.Model):
         return mark_safe(html)
 
     def phenotypes(self):
-        return (
-            apps.get_model("phenotypes", "Phenotype")
-            .objects.filter(observable=self)
-            .distinct()
-        )
+        return self.phenotype_set
 
     def phenotypes_list(self):
-        return "; ".join([str(p) for p in self.phenotypes()[:20]])
+        return self.phenotypes().values_list("name", flat=True)
+
+    def phenotypes_list_as_str(self):
+        return "; ".join(self.phenotypes_list())
 
     def phenotypes_edit_link_list(self):
         html = "<ul>"
@@ -66,8 +94,19 @@ class Observable(models.Model):
             "reporter", flat=True
         ).order_by().distinct()
 
+    def reporters_list(self):
+        return list(self.reporters())
+
     def reporters_list_as_str(self):
-        return "; ".join(self.reporters())
+        return "; ".join(self.reporters_list())
+
+    def reporters_indexing(self):
+        list_as_str = self.reporters_list_as_str()
+        wrapper = dict_to_obj({
+            "list_as_str_txt": list_as_str,
+            "list_as_str_kwd": list_as_str
+        })
+        return wrapper
 
     def datasets(self):
         return (
@@ -88,35 +127,29 @@ class Observable(models.Model):
         )
         return mark_safe(html)
 
-    def conditiontypes(self):
-        return (
-            apps.get_model("conditions", "ConditionType")
-            .objects.all_valid().filter(
-                condition__conditionset__dataset__phenotype__observable=self
-            )
-            .distinct()
-            .order_by("name")
-        )
-
     def conditiontypes_list_as_str(self):
-        conditiontypes_list = self.phenotype_set.all_valid().values_list("dataset__conditionset__conditions__type__name",
-                                                                         flat=True).order_by().distinct()
-        conditiontypes_list = [c for c in conditiontypes_list if c is not None]
-        return truncated_list_as_str(conditiontypes_list)
-
-    def papers(self):
-        return (
-            apps.get_model("papers", "Paper")
-            .objects.all_valid().filter(dataset__phenotype__observable=self)
-            .distinct()
-            .order_by("first_author")
-        )
+        conditiontypes = self.phenotype_set.all_valid().values_list(
+            "dataset__conditionset__conditions__type__name", flat=True).order_by().distinct()
+        conditiontypes = [c for c in conditiontypes if c]
+        return "; ".join(conditiontypes)
 
     def papers_list_as_str(self):
         # 2X faster than Paper.objects.all_valid().filter(dataset__phenotype__observable=self)
         papers = self.phenotype_set.all_valid().values_list("dataset__paper__systematic_name",
                                                             flat=True).order_by().distinct()
-        return truncated_list_as_str(papers)
+        papers = [p for p in papers if p]
+        return "; ".join(papers)
+
+    def data_indexing(self):
+        json = {"id": self.id,
+                "name": self.name,
+                "description": self.description,
+                "phenotypes_list_as_str": self.phenotypes_list_as_str(),
+                "reporters_list_as_str": self.reporters_list_as_str(),
+                "conditiontypes_list_as_str": self.conditiontypes_list_as_str(),
+                "papers_list_as_str": self.papers_list_as_str(),
+                "tags_list_as_str": self.tags_list_as_str()}
+        return json
 
 
 class Measurement(models.Model):
@@ -152,12 +185,11 @@ class Phenotype(models.Model):
     observable = models.ForeignKey(
         Observable, blank=False, null=False, on_delete=models.CASCADE
     )
-    # an entity that gives us evidence for an observable
     reporter = models.CharField(max_length=200, blank=True, null=True)
     measurement = models.ForeignKey(
         Measurement, blank=True, null=True, on_delete=models.DO_NOTHING
     )
-    tags = models.ManyToManyField(Tag, blank=True)
+    tags = models.ManyToManyField(Tag, blank=True, related_name="phenotypes")
     modified_on = models.DateField(auto_now=True, null=True)
 
     objects = PhenotypeManager()
@@ -167,6 +199,10 @@ class Phenotype(models.Model):
             return u"%s (%s)" % (self.observable, self.reporter)
         else:
             return u"%s" % self.observable
+
+    def aliases_list(self):
+        lst = list({str(self), self.name, self.observable.name})
+        return lst
 
     def link_detail(self):
         html = '<a href="%s">%s</a>' % (
@@ -219,6 +255,12 @@ class Phenotype(models.Model):
         html = html + "<li>".join([p.link_edit() for p in siblings[:50]])
         html = html + "</ul>"
         return mark_safe(html)
+
+    def tags_list(self):
+        tags_list_self = list(self.tags.values_list("name", flat=True))
+        tags_list_observable = self.observable.tags_list()
+        tags_list = list(set(tags_list_self + tags_list_observable))
+        return tags_list
 
 
 class MutantType(models.Model):

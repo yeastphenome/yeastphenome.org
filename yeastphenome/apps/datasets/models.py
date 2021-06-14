@@ -8,8 +8,9 @@ from django.contrib.humanize.templatetags.humanize import intcomma
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
+from django_elasticsearch_dsl_drf.wrappers import dict_to_obj
+
 from yeastphenome.apps.tags.models import Tag
-from yeastphenome.apps.common.utils_format import update_values_with_percentile
 
 import itertools
 
@@ -28,6 +29,7 @@ class Collection(models.Model):
     matingtype = models.CharField(max_length=200, null=True, blank=True)
     ploidy = models.IntegerField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
+    is_valid = models.BooleanField()
 
     objects = CollectionManager()
 
@@ -55,7 +57,7 @@ class SourceManager(models.Manager):
         sources = sources.filter(Q(data_source__in=valid_datasets)
                                  | Q(tested_source__in=valid_datasets)).order_by().distinct()
         people_list = sources.values_list("label", flat=True)
-        people_list = [person for person in people_list if not person=="" and person is not None]
+        people_list = [person for person in people_list if not person == "" and person is not None]
         people_list = [person.split(", ") for person in people_list]
         people_list = list(set(itertools.chain.from_iterable(people_list)))
         return people_list
@@ -126,16 +128,22 @@ class Datatype(models.Model):
 
 class DatasetManager(models.Manager):
 
-    # def all_valid(self):
-    #     valid_papers = apps.get_model("papers", "Paper").objects.all_valid()
-    #     return self.filter(paper__in=valid_papers)
-
     def all_valid(self):
-        return self.filter(paper__latest_data_status__status__is_valid=True)
+        datasets = self.filter(paper__latest_data_status__status__is_valid=True)
+        datasets = datasets.filter(collection__is_valid=True)
+        return datasets
 
     def all_loaded(self):
-        loaded_papers = apps.get_model("papers", "Paper").objects.all_loaded()
-        return self.filter(paper__in=loaded_papers)
+        datasets = self.all_valid()
+        f = Q(paper__latest_data_status__status__name__exact="loaded") & Q(
+            paper__latest_tested_status__status__name__in=[
+                "loaded",
+                "request abandoned",
+                "not available",
+            ]
+        )
+        datasets = datasets.filter(f)
+        return datasets
 
 
 class Dataset(models.Model):
@@ -235,9 +243,6 @@ class Dataset(models.Model):
     def __str__(self):
         return "%s" % self.name
 
-    def get_absolute_url(self):
-        return reverse("datasets:detail", args=[self.id])
-
     # Necessary to run database-wide updates of dataset names
     def save(self, *args, **kwargs):
         self.name = "%s | %s | %s | %s | %s" % (
@@ -269,29 +274,19 @@ class Dataset(models.Model):
     def get_data_availability(self):
         availability = {}
         num_available_data = self.data.count()
-        if self.tested_num > 0:
-            availability["tested_measured"] = '%s mutants' % intcomma(self.tested_num)
-        else:
-            availability["tested_measured"] = "unknown"
+        availability["type_data_available"] = self.data_available
+
         if self.tested_source:
-            if self.tested_source.sourcetype.shortname == "PC":
-                availability["tested_published"] = "no"
-            else:
-                availability["tested_published"] = '%s mutants' % intcomma(num_available_data)
-            availability["tested_available"] = mark_safe("%s mutants from %s" % (intcomma(num_available_data),
-                                                                                self.tested_source.html()))
+            availability["tested_available"] = mark_safe("%s (%s mutants)" % (self.tested_source.html(),
+                                                                              intcomma(num_available_data)))
         else:
-            availability["tested_published"] = "no"
             availability["tested_available"] = "no"
 
-        availability["data_measured"] = self.data_measured
-        availability["data_published"] = self.data_published
         if self.data_source:
-            availability["data_available"] = mark_safe("%s; %s values from %s" % (self.data_available,
-                                                                                  intcomma(num_available_data),
-                                                                                  self.data_source.html()))
+            availability["data_available"] = mark_safe("%s (%s mutants)" % (self.data_source.html(),
+                                                                            intcomma(num_available_data)))
         else:
-            availability["data_available"] = num_available_data
+            availability["data_available"] = "%s mutants" % num_available_data
 
         return availability
 
@@ -318,11 +313,63 @@ class Dataset(models.Model):
             tested_space = "N/A"
         return mark_safe(tested_space)
 
-    def phenotypes(self):
-        return self.observable.name
+    def phenotype_aliases_list(self):
+        aliases = self.phenotype.aliases_list() if self.phenotype else []
+        return aliases
 
-    def tags_link_list(self):
+    def phenotype_aliases_list_as_str(self):
+        return "; ".join(self.phenotype_aliases_list())
+
+    def phenotype_indexing(self):
+        wrapper = dict_to_obj({
+            "name_as_str": str(self.phenotype) if self.phenotype else "",
+            "list_as_str": self.phenotype_aliases_list_as_str()
+        })
+        return wrapper
+
+    def conditions_aliases_list(self):
+        conditionset_aliases = self.conditionset.aliases_list() if self.conditionset else []
+        medium_aliases = [str(self.medium)] if self.medium else []
+        aliases = list(set(conditionset_aliases + medium_aliases))
+        return aliases
+
+    def conditions_aliases_list_as_str(self):
+        return "; ".join(self.conditions_aliases_list())
+
+    def conditions_indexing(self):
+        wrapper = dict_to_obj({
+            "name_as_str": str(self.conditionset) if self.conditionset else "",
+            "list_as_str": self.conditions_aliases_list_as_str()
+        })
+        return wrapper
+
+    def medium_indexing(self):
+        name = str(self.medium) if self.medium else ""
+        wrapper = dict_to_obj({
+            "name_txt": name,
+            "name_kwd": name
+        })
+        return wrapper
+
+    def tags_list(self):
+        tags_list_self = list(self.tags.values_list("name", flat=True))
+        tags_list_phenotype = self.phenotype.tags_list() if self.phenotype else []
+        tags_list_conditionset = self.conditionset.tags_list() if self.conditionset else []
+        tags_list = list(set(tags_list_self + tags_list_phenotype + tags_list_conditionset))
+        return tags_list
+
+    def tags_list_as_str(self):
+        return "; ".join(self.tags_list())
+
+    def tags_list_as_links(self):
         return mark_safe("; ".join([t.link_detail() for t in self.tags.all()]))
+
+    def tags_indexing(self):
+        wrapper = dict_to_obj({
+            "list": self.tags_list(),
+            "list_as_str": self.tags_list_as_str()
+        })
+        return wrapper
 
     def has_data_in_db(self):
         return self.data.exists()
@@ -342,25 +389,35 @@ class Dataset(models.Model):
         )
         return mark_safe(html)
 
-    def get_scores(self, ascending=True):
-        """Given a dataset, get a sorted list of scores."""
+    def get_scores(self):
         data = self.data.filter(valuez__isnull=False).values("valuez", "gene_id",
                                                              gene_systematic_name=F("gene__systematic_name"),
                                                              gene_common_name=F("gene__common_name"))
-        data = data.order_by("valuez") if ascending else data.order_by("-valuez")
-        data = update_values_with_percentile(data, "valuez")
         return data
 
-    def get_similarities(self, ascending=True):
-        """Given a dataset, get a sorted listed of similar datasets.
-        Assume each pair of datasets is represented twice (A-B and B-A).
-        """
-        data = self.similarities.filter(dataset2__data_source__release=True).values("score", "pvalue",
-                                                                                    "dataset2_id",
-                                                                                    dataset2_name=F("dataset2__name"))
-        data = data.order_by("score") if ascending else data.order_by("-score")
-        data = update_values_with_percentile(data, "score")
+    def get_similarities(self):
+        data = self.similarities.filter(dataset2__data_source__release=True)
+        data = data.filter(~Q(dataset2__collection__shortname="het"))
+        data = data.values("score", "pvalue", "dataset2_id", dataset2_name=F("dataset2__name"))
         return data
+
+    def indexing_progress(self):
+        print(self.id)
+
+    def data_indexing(self):
+        json = {
+            "id": self.id,
+            "paper": self.paper.systematic_name if self.paper else "",
+            "collection": self.collection.shortname if self.collection else "",
+            "data_available": self.data_available.shortname if self.data_available else "",
+            "medium": self.medium.display_name if self.medium else "",
+            "conditionset": self.conditionset.display_name if self.conditionset else "",
+            "conditions_aliases_list_as_str": self.conditions_aliases_list_as_str(),
+            "phenotype": self.phenotype.name if self.phenotype else "",
+            "phenotype_aliases_list_as_str": self.phenotype_aliases_list_as_str(),
+            "tags_list_as_str": self.tags_list_as_str()
+        }
+        return json
 
 
 class DatasetSimilarity(models.Model):
@@ -401,6 +458,12 @@ class DatasetSimilarity(models.Model):
         )
 
 
+class DataManager(models.Manager):
+
+    def all_valid(self):
+        return self.all()
+
+
 class Data(models.Model):
 
     gene = models.ForeignKey(
@@ -413,6 +476,8 @@ class Data(models.Model):
 
     # Normalized phenotypic score
     valuez = models.DecimalField(max_digits=10, decimal_places=5)
+
+    objects = DataManager()
 
     def __str__(self):
         return "%s - %d" % (self.gene.systematic_name, self.dataset.id)

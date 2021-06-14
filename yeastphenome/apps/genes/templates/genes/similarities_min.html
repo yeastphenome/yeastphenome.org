@@ -4,15 +4,21 @@
 {% load humanize %}
 {% block title %}Similarities | {{ gene }} | Genes | {{ SITE_NAME }}{% endblock %}
 {% block content %}
-        <div class="row mt-5 mb-3">
-            <div class="col-md-12">
-                <h1>Phenotypic Similarities for {{ gene }}</h1>
-                {% include "messages/data_warning.html"%}
-            </div>
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <span class="badge rounded-pill bg-secondary">Genes</span>
+            <a href="{% url 'genes:detail' gene.id %}"><span class="badge rounded-pill bg-primary">{{ gene }}</span></a>
         </div>
-        <div class="row mt-3 mb-3">
-            <div class="col-md-12">
-                {% include "genes/similarities_table_min.html" with similarities=similarities %}
-            </div>
+    </div>
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <h1>Phenotypic similarities for {{ gene }}</h1>
+            {% include "messages/data_warning.html"%}
         </div>
+    </div>
+    <div class="row mt-3 mb-3">
+        <div class="col-md-12">
+            {% include "genes/similarities_table_min.html" with similarities=similarities %}
+        </div>
+    </div>
 {% endblock %}

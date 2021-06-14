@@ -4,20 +4,21 @@
 {% load humanize %}
 {% block title %}Scores | {{ gene }} | Genes | {{ SITE_NAME }}{% endblock %}
 {% block content %}
-        <div class="row mt-5 mb-3">
-            <div class="col-md-12">
-                <h1>Phenotypic Scores for {{ gene }}</h1>
-                {% include "messages/data_warning.html"%}
-            </div>
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <span class="badge rounded-pill bg-secondary">Genes</span>
+            <a href="{% url 'genes:detail' gene.id %}"><span class="badge rounded-pill bg-primary">{{ gene }}</span></a>
         </div>
-        <div class="row mt-3 mb-3">
-            <div class="col-md-12">
-                {% include "genes/scores_table_min.html" with scores=scores %}
-            </div>
+    </div>
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <h1>Phenotypic scores for {{ gene }}</h1>
+            {% include "messages/data_warning.html"%}
         </div>
-{#        <div class="row">#}
-{#            <div class="col-md-12">#}
-{#                {% include "graphs/dataset-genes/index.html" with hide_title="yes" %}#}
-{#            </div>#}
-{#        </div>#}
+    </div>
+    <div class="row mt-3 mb-3">
+        <div class="col-md-12">
+            {% include "genes/scores_table_min.html" with scores=scores %}
+        </div>
+    </div>
 {% endblock %}

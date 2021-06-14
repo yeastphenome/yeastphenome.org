@@ -7,58 +7,38 @@ import pandas
 
 from yeastphenome.apps.datasets.models import Data, Dataset
 from yeastphenome.apps.genes.models import Gene, GeneSimilarity
-from yeastphenome.apps.genes.search import get_search_tags
+from yeastphenome.apps.common.utils_format import update_values_with_percentile
+
 from ratelimit.decorators import ratelimit
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
     VIEW_RATE_LIMIT_BLOCK as rl_block,
 )
 
-import numpy as np
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def gene_explorer(request):
-
-    taglist = request.GET.get("query", "").split("|")
-
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("genes:index"), "name": "Genes"},
-    ]
-    context = {
-        "links": links,
-        "active": "explorer",
-        "tags": get_search_tags(),
-        "taglist": taglist,
-    }
-    return render(request, "genes/index.html", context)
-
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def gene_detail(request, gene_id):
 
     gene = get_object_or_404(Gene, pk=gene_id)
-    scores_lowest = gene.get_scores(ascending=True)[:10]
-    scores_highest = gene.get_scores(ascending=False)[:10]
-    similarities_lowest = gene.get_similarities(ascending=True)[:10]
-    similarities_highest = gene.get_similarities(ascending=False)[:10]
 
-    # Assemble links assuming on root of page
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("genes:index"), "name": "Genes"},
-        {"url": reverse("genes:detail", args=[gene.id]), "name": "%s" % gene},
-    ]
+    scores = gene.get_scores()
+    num_scores = scores.count()
+    scores_lowest = update_values_with_percentile(scores.order_by("valuez"), "valuez")[:10]
+    scores_highest = update_values_with_percentile(scores.order_by("-valuez"), "valuez")[:10]
+
+    similarities = gene.get_similarities()
+    num_similarities = similarities.count()
+    similarities_lowest = update_values_with_percentile(similarities.order_by("score"), "score")[:10]
+    similarities_highest = update_values_with_percentile(similarities.order_by("-score"), "score")[:10]
 
     context = {
         "gene": gene,
+        "num_scores": num_scores,
         "scores_lowest": scores_lowest,
         "scores_highest": scores_highest,
+        "num_similarities": num_similarities,
         "similarities_lowest": similarities_lowest,
         "similarities_highest": similarities_highest,
-        "links": links,
-        "active": "explorer",
     }
 
     return render(request, "genes/detail_min.html", context)
@@ -68,26 +48,12 @@ def gene_detail(request, gene_id):
 def scores(request, gene_id):
 
     gene = get_object_or_404(Gene, pk=gene_id)
-    scores = gene.get_scores(ascending=True)
-
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("genes:index"), "name": "Genes"},
-        {
-            "url": reverse("genes:detail", args=[gene.id]),
-            "name": "%s" % gene,
-        },
-        {
-            "url": reverse("genes:scores", args=[gene.id]),
-            "name": "Phenotypic Scores",
-        },
-    ]
+    scores = gene.get_scores().order_by("valuez")
+    scores = update_values_with_percentile(scores, "valuez")
 
     context = {
         "gene": gene,
         "scores": scores,
-        "links": links,
-        "active": "explorer"
     }
 
     return render(request, "genes/scores_min.html", context)
@@ -97,27 +63,14 @@ def scores(request, gene_id):
 def similarities(request, gene_id):
 
     gene = get_object_or_404(Gene, pk=gene_id)
-    similarities = gene.get_similarities(ascending=False)
-
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("genes:index"), "name": "Genes"},
-        {
-            "url": reverse("genes:detail", args=[gene.id]),
-            "name": "%s" % gene,
-        },
-        {
-            "url": reverse("genes:similarities", args=[gene.id]),
-            "name": "Phenotypic Similarities",
-        },
-    ]
+    similarities = gene.get_similarities().order_by("-score")
+    similarities = update_values_with_percentile(similarities, "score")
 
     context = {
         "gene": gene,
         "similarities": similarities,
-        "links": links,
-        "active": "explorer",
     }
+
     return render(request, "genes/similarities_min.html", context)
 
 

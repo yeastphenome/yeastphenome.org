@@ -51,6 +51,8 @@ INSTALLED_APPS = [
     "yeastphenome.apps.papers",
     "yeastphenome.apps.phenotypes",
     "yeastphenome.apps.tags",
+    "yeastphenome.apps.search",
+    "yeastphenome.apps.downloads",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -62,6 +64,8 @@ INSTALLED_APPS = [
     "debug_toolbar",
     "rest_framework",
     "drf_yasg",
+    "django_elasticsearch_dsl",
+    "django_elasticsearch_dsl_drf",
 ]
 
 MIDDLEWARE = [
@@ -240,6 +244,17 @@ VIEW_RATE_LIMIT_BLOCK = (
 # On any admin or plugin login redirect to standard social-auth entry point for agreement to terms
 LOGIN_REDIRECT_URL = "/login"
 
-INTERNAL_IPS = [
-    "127.0.0.1",
-]
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': 'localhost:9200'
+    },
+    'dev': {
+        'hosts': 'localhost:9200'
+    }
+}
+
+ELASTICSEARCH_HOST = os.environ.get("ELASTICSEARCH_HOST")
+ELASTICSEARCH_AUTH = os.environ.get("ELASTICSEARCH_AUTH")
+
+CSRF_USE_SESSIONS = True
+CSRF_COOKIE_HTTPONLY = True

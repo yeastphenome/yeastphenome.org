@@ -4,17 +4,27 @@
 {% load humanize %}
 {% block title %}Similarities | {{ dataset }} | Datasets | {{ SITE_NAME }}{% endblock %}
 {% block content %}
+
     {%  if dataset.data_source.release == True %}
-        <div class="row mt-5">
+
+        <div class="row mt-5 mb-3">
             <div class="col-md-12">
-                <h1>Phenotypic Similarities for {{ dataset.name }}</h1>
-                {% include "messages/data_warning.html"%}
+                <span class="badge rounded-pill bg-secondary">Datasets</span>
+                <a href="{% url 'datasets:detail' dataset.id %}"><span class="badge rounded-pill bg-primary">{{ dataset.name }}</span></a>
             </div>
         </div>
-        <div class="row">
+        <div class="row mt-5 mb-3">
             <div class="col-md-12">
+                <h1>Phenotypic similarities for {{ dataset.name }}</h1>
+            </div>
+        </div>
+        <div class="row mt-5 mb-3">
+            <div class="col-md-12">
+                {% include "messages/data_warning.html"%}
                 {% include "datasets/similarities_table_min.html" with similarities=similarities table_id="similarities" %}
             </div>
         </div>
+
     {%  endif %}
+
 {% endblock %}

@@ -1,16 +1,18 @@
 from django.db import models
-from django.db.models.functions import Lower
 from django.urls import reverse
-from django.db.models import Q
+from django.db.models import Q, CharField, Value
+from django.db.models.functions import Concat
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils.safestring import mark_safe
 
-from yeastphenome.apps.phenotypes.models import Observable
-from yeastphenome.apps.conditions.models import ConditionType
+from yeastphenome.apps.phenotypes.models import Observable, Phenotype
+from yeastphenome.apps.conditions.models import ConditionType, Condition, ConditionSet, Medium
 from yeastphenome.apps.datasets.models import Collection, Source
 from yeastphenome.apps.tags.models import Tag
 from yeastphenome.apps.common.utils_format import truncated_list_as_str
+
+from django_elasticsearch_dsl_drf.wrappers import dict_to_obj
 
 import os
 import itertools
@@ -31,9 +33,12 @@ class Status(models.Model):
 class PaperManager(models.Manager):
 
     def all_valid(self):
-        return self.filter(latest_data_status__status__is_valid=True)
+        papers = self.filter(latest_data_status__status__is_valid=True)
+        papers = papers.filter(datasets__collection__is_valid=True).distinct()
+        return papers
 
     def all_loaded(self):
+        papers = self.all_valid()
         f = Q(latest_data_status__status__name__exact="loaded") & Q(
             latest_tested_status__status__name__in=[
                 "loaded",
@@ -41,7 +46,8 @@ class PaperManager(models.Manager):
                 "not available",
             ]
         )
-        return self.filter(f)
+        papers = papers.filter(f)
+        return papers
 
 
 class Paper(models.Model):
@@ -103,61 +109,141 @@ class Paper(models.Model):
         super(Paper, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.systematic_name
+        return self.systematic_name if self.systematic_name else ""
 
     def collections_list_as_str(self):
         collections = self.datasets.values_list("collection__shortname", flat=True).order_by().distinct()
         return "; ".join(collections)
 
-    def phenotypes_list_as_str(self):
-        phenotypes = self.datasets.values_list("phenotype__observable__name", flat=True).order_by().distinct()
-        phenotypes = [p for p in phenotypes if p is not None]
-        return truncated_list_as_str(phenotypes)
+    def observables_list(self):
+        observables = self.datasets.all_valid()\
+            .values_list("phenotype__observable__name", flat=True).order_by().distinct()
+        observables = [o for o in observables if o]
+        return observables
+
+    def observables_list_as_str(self):
+        return "; ".join(self.observables_list())
+
+    def phenotypes_aliases_list(self):
+
+        datasets = self.datasets.all_valid()
+
+        fields = ["phenotype__name",
+                  "phenotype__observable__name",
+                  "phenotype__reporter"]
+
+        all_names = list(datasets.values(*fields))
+
+        aliases = []
+        for f in fields:
+            names = [d[f] for d in all_names]
+            aliases += names
+
+        aliases = list(set(aliases))
+        aliases = [alias for alias in aliases if alias]
+        return aliases
+
+    def phenotypes_aliases_list_as_str(self):
+        return "; ".join(self.phenotypes_aliases_list())
+
+    def phenotypes_indexing(self):
+        wrapper = dict_to_obj({
+            "list_as_str": self.phenotypes_aliases_list_as_str(),
+            "summary": self.observables_summary
+        })
+        return wrapper
+
+    def conditiontypes_list(self):
+        conditiontypes = self.datasets.values_list("conditionset__conditions__type__name",
+                                                   flat=True).order_by().distinct()
+        conditiontypes = [c for c in conditiontypes if c]
+        return conditiontypes
 
     def conditiontypes_list_as_str(self):
-        conditiontypes = self.datasets.values_list("conditionset__conditions__type__name", flat=True).order_by().distinct()
-        conditiontypes = [c for c in conditiontypes if c is not None]
-        return truncated_list_as_str(conditiontypes)
+        return "; ".join(self.conditiontypes_list())
+
+    def conditions_aliases_list(self):
+
+        datasets = self.datasets.all_valid()
+
+        fields = ["conditionset__display_name",
+                  "conditionset__systematic_name",
+                  "conditionset__conditions__type__name",
+                  "conditionset__conditions__type__chebi_name",
+                  "conditionset__conditions__type__pubchem_name",
+                  "medium__display_name"]
+
+        all_names = list(datasets.values(*fields))
+
+        aliases = []
+        for f in fields:
+            names = [d[f] for d in all_names]
+            aliases += names
+
+        aliases = list(set(aliases))
+        aliases = [alias for alias in aliases if alias]
+        return aliases
+
+    def conditions_aliases_list_as_str(self):
+        return "; ".join(self.conditions_aliases_list())
+
+    def conditions_indexing(self):
+        wrapper = dict_to_obj({
+            "list_as_str": self.conditions_aliases_list_as_str(),
+            "summary": self.conditiontypes_summary
+        })
+        return wrapper
+
+    def tags_list(self):
+
+        tags = Tag.objects.all_valid()
+
+        tags_list_self = Q(paper=self)
+        tags_list_datasets = Q(dataset__paper=self)
+        tags_list_conditionset = Q(conditionset__dataset__paper=self)
+        tags_list_condition = Q(condition__conditionset__dataset__paper=self)
+        tags_list_conditiontype = Q(conditiontype__conditions__conditionset__dataset__paper=self)
+        tags_list_medium = Q(medium__dataset__paper=self)
+        tags_list_phenotype = Q(phenotypes__dataset__paper=self)
+        tags_list_observable = Q(observables__phenotype__dataset__paper=self)
+
+        tags = tags.filter(tags_list_self
+                           | tags_list_datasets
+                           | tags_list_conditionset
+                           | tags_list_condition
+                           | tags_list_conditiontype
+                           | tags_list_medium
+                           | tags_list_phenotype
+                           | tags_list_observable)
+        tags_list = list(tags.values_list("name", flat=True).order_by().distinct())
+        return tags_list
+
+    def tags_list_as_str(self):
+        return "; ".join(self.tags_list())
+
+    def tags_list_as_links(self):
+        return mark_safe("; ".join([t.link_detail() for t in self.tags.all()]))
+
+    def tags_indexing(self):
+        wrapper = dict_to_obj({
+            "list": self.tags_list(),
+            "list_as_str": self.tags_list_as_str()
+        })
+        return wrapper
 
     def datasets_summary(self):
-        str_list = [self.collections_list_as_str(), self.phenotypes_list_as_str(), self.conditiontypes_list_as_str()]
+        str_list = [self.collections_list_as_str(), self.observables_summary, self.conditiontypes_summary]
         return mark_safe("<br>".join(str_list))
 
     @property
     def datasets_number(self):
         return self.datasets.count()
 
-    def should_have_data(self):
-        # Returns True if data has been loaded from data files
-        return self.latest_data_status and "loaded" == str(
-            self.latest_data_status.status.name
-        )
-
-    def raw_available_data(self):
-        # Returns True if it should have data, and has access to raw data
-        return self.should_have_data() and self.download_path_exists
-
-    def download_path(self):
-        # Returns a path of where datafiles should be, regardless if it has data files or not
-        return os.path.join(settings.DATA_DIR, str(self.pmid))
-
-    @property
-    def download_path_exists(self):
-        # Regardless if the paper should have data, returns True or False if there is a data directory for this paper
-        return os.path.isdir(self.download_path())
-
-    def static_dir_name(self):
-        return "%s_%s~%s" % (
-            self.pub_date,
-            self.first_author.split(" ")[0],
-            self.last_author.split(" ")[0],
-        )
-
     def acknowledgements_list_as_str(self):
-        people = self.datasets.values('data_source__person', 'tested_source__person').order_by().distinct()
+        people = self.datasets.values('data_source__label', 'tested_source__label').order_by().distinct()
         people = [list(person.values()) for person in people]
         people = list(set(list(itertools.chain.from_iterable(people))))
-        people = [person for person in people if not person == '' and person is not None]
+        people = [person for person in people if person]
 
         return "; ".join(people)
 
@@ -198,10 +284,7 @@ class Paper(models.Model):
         return {"data": queryset_data, "tested strains": queryset_tested}
 
     def link_detail(self):
-        return mark_safe('<a href="%s">%s</a>' % (self.get_absolute_url(), self))
-
-    def get_absolute_url(self):
-        return reverse("papers:detail", args=(self.id,))
+        return mark_safe('<a href="%s">%s</a>' % (reverse("papers:detail", args=(self.id,)), self))
 
     def link_edit(self):
         html = '<a href="%s">%s</a>' % (
@@ -216,6 +299,19 @@ class Paper(models.Model):
                 self,
             )
         return mark_safe(html)
+
+    def data_indexing(self):
+        json = {"id": self.id,
+                "systematic_name": self.systematic_name,
+                "pmid": self.pmid,
+                "pub_date": self.pub_date,
+                # "observables_list_as_str": self.observables_list_as_str(),
+                # "phenotypes_aliases_list_as_str": self.phenotypes_aliases_list_as_str(),
+                # "conditiontypes_list_as_str": self.conditiontypes_list_as_str(),
+                # "conditions_aliases_list_as_str": self.conditions_aliases_list_as_str(),
+                "tags_list_as_str": self.tags_list_as_str()
+                }
+        return json
 
 
 class Statusdata(models.Model):

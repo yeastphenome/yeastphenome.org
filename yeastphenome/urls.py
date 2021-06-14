@@ -9,7 +9,8 @@ from yeastphenome.apps.phenotypes import urls as phenotypes_urls
 from yeastphenome.apps.conditions import urls as conditions_urls
 from yeastphenome.apps.datasets import urls as datasets_urls
 from yeastphenome.apps.genes import urls as gene_urls
-from yeastphenome.apps.api import urls as api_urls
+from yeastphenome.apps.search import urls as search_urls
+from yeastphenome.apps.downloads import urls as downloads_urls
 
 import debug_toolbar
 
@@ -21,7 +22,8 @@ admin.autodiscover()
 urlpatterns = [
     url(r"^admin/", admin.site.urls),
     url(r"^", include(common_urls)),
-    url(r"^api/", include(api_urls)),
+    url(r"^search/", include(search_urls)),
+    url(r"^downloads/", include(downloads_urls, namespace="downloads")),
     url(r"^papers/", include(papers_urls, namespace="papers")),
     url(r"^phenotypes/", include(phenotypes_urls, namespace="phenotypes")),
     url(r"^conditions/", include(conditions_urls, namespace="conditions")),

@@ -1,0 +1,35 @@
+a.search::after {
+  content: "search";
+  white-space: nowrap;
+  padding-left: .7ex;
+  text-decoration: none;
+  display: inline-block;
+  color: #000000;
+  vertical-align: super;
+  font-size: 50%;
+  font-style: italic;
+}
+
+a.external::after {
+  content: url('../images/external-link-blue-medium.png');
+  white-space: nowrap;
+  padding-left: .7ex;
+  text-decoration: none;
+  display: inline-block;
+  vertical-align: super;
+  font-size: 50%;
+}
+
+/*a.nav-link:active {*/
+/*  font-weight: bold;*/
+/*}*/
+
+
+
+/*a.search {*/
+/*  color: #117A65;*/
+/*}*/
+
+a.download_button {
+    width: 120px !important;;
+}
