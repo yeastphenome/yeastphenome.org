@@ -1,1 +1,1 @@
-default_app_config = 'yeastphenome.apps.phenotypes.apps.PhenotypesConfig'
+default_app_config = "yeastphenome.apps.phenotypes.apps.PhenotypesConfig"

@@ -4,10 +4,8 @@ from django.dispatch import receiver
 from elastic_enterprise_search import AppSearch
 
 from yeastphenome.apps.papers.models import Paper
-from yeastphenome.settings import (
-    ELASTICSEARCH_HOST,
-    ELASTICSEARCH_AUTH
-)
+from yeastphenome.settings import ELASTICSEARCH_HOST, ELASTICSEARCH_AUTH
+
 
 @receiver(post_save, sender=Paper)
 def update_index(sender, instance, created, **kwargs):
@@ -19,8 +17,7 @@ def update_index(sender, instance, created, **kwargs):
         )
 
         resp = app_search.get_documents(
-            engine_name="papers",
-            document_ids=[instance.id]
+            engine_name="papers", document_ids=[instance.id]
         )
 
         if not resp[0]:

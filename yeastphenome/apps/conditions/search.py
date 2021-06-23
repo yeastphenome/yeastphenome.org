@@ -11,7 +11,7 @@ def define_document():
         "doses_list_as_str": "text",
         "observables_list_as_str": "text",
         "papers_list_as_str": "text",
-        "tags_list_as_str": "text"
+        "tags_list_as_str": "text",
     }
 
     conditiontypes = ConditionType.objects.all_valid()

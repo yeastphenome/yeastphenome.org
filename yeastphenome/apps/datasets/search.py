@@ -12,7 +12,7 @@ def define_document():
         "phenotype": "text",
         "conditions": "text",
         "medium": "text",
-        "tags_list_as_str": "text"
+        "tags_list_as_str": "text",
     }
 
     datasets = Dataset.objects.all_valid()

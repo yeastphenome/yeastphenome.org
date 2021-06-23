@@ -1,5 +1,4 @@
-from django.db.models import Q
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, reverse
 from django.conf import settings
@@ -7,10 +6,8 @@ from django.views.decorators.cache import never_cache
 
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.datasets.models import (
-    DatasetSimilarity,
     Dataset,
     Data,
-    Tag,
 )
 from yeastphenome.apps.genes.models import Gene
 from yeastphenome.apps.datasets.utils import send_file
@@ -42,13 +39,21 @@ def detail(request, dataset_id):
 
     scores = dataset.get_scores()
     num_scores = scores.count()
-    scores_lowest = update_values_with_percentile(scores.order_by("valuez"), "valuez")[:10]
-    scores_highest = update_values_with_percentile(scores.order_by("-valuez"), "valuez")[:10]
+    scores_lowest = update_values_with_percentile(scores.order_by("valuez"), "valuez")[
+        :10
+    ]
+    scores_highest = update_values_with_percentile(
+        scores.order_by("-valuez"), "valuez"
+    )[:10]
 
     similarities = dataset.get_similarities()
     num_similarities = similarities.count()
-    similarities_lowest = update_values_with_percentile(similarities.order_by("score"), "score")[:10]
-    similarities_highest = update_values_with_percentile(similarities.order_by("-score"), "score")[:10]
+    similarities_lowest = update_values_with_percentile(
+        similarities.order_by("score"), "score"
+    )[:10]
+    similarities_highest = update_values_with_percentile(
+        similarities.order_by("-score"), "score"
+    )[:10]
 
     context = {
         "dataset": dataset,
@@ -58,7 +63,7 @@ def detail(request, dataset_id):
         "scores_highest": scores_highest,
         "num_similarities": num_similarities,
         "similarities_lowest": similarities_lowest,
-        "similarities_highest": similarities_highest
+        "similarities_highest": similarities_highest,
     }
 
     return render(request, "datasets/detail_min.html", context)
@@ -74,16 +79,30 @@ def scatterplot(request, dataset1_id, dataset2_id):
     data = data.values("gene_id", "dataset_id", "valuez")
 
     df = pd.DataFrame(list(data))
-    df = df.loc[df['valuez'].notnull()]
-    df['valuez'] = pd.to_numeric(df['valuez'])
+    df = df.loc[df["valuez"].notnull()]
+    df["valuez"] = pd.to_numeric(df["valuez"])
 
-    df_matrix = pd.pivot_table(df, index='gene_id', columns='dataset_id', values='valuez')
+    df_matrix = pd.pivot_table(
+        df, index="gene_id", columns="dataset_id", values="valuez"
+    )
 
-    genes = pd.DataFrame(list(Gene.objects.all_valid().values("id", "systematic_name", "common_name", "description")))
+    genes = pd.DataFrame(
+        list(
+            Gene.objects.all_valid().values(
+                "id", "systematic_name", "common_name", "description"
+            )
+        )
+    )
     genes["name"] = genes["common_name"] + " / " + genes["systematic_name"]
-    genes["description"] = genes["description"].apply(lambda x: "<br>".join(textwrap.wrap(x, width=40)))
-    genes["link"] = genes.apply(lambda row: reverse("genes:detail", args=[row["id"]]), axis=1)
-    genes["gene_link"] = genes.apply(lambda row: '<a href="' + row["link"] + '">' + row["name"] + '</a>', axis=1)
+    genes["description"] = genes["description"].apply(
+        lambda x: "<br>".join(textwrap.wrap(x, width=40))
+    )
+    genes["link"] = genes.apply(
+        lambda row: reverse("genes:detail", args=[row["id"]]), axis=1
+    )
+    genes["gene_link"] = genes.apply(
+        lambda row: '<a href="' + row["link"] + '">' + row["name"] + "</a>", axis=1
+    )
     genes.set_index("id", inplace=True)
 
     df_matrix["gene_name"] = genes["name"]
@@ -96,67 +115,78 @@ def scatterplot(request, dataset1_id, dataset2_id):
 
     fig = go.Figure()
 
-    scatter = go.Scatter(x=df_matrix[dataset1_id],
-                         y=df_matrix[dataset2_id],
-                         text=df_matrix["gene_name"],
-                         mode='markers',
-                         marker=dict(size=10, opacity=0.5),
-                         name='Normalized phenotypic scores',
-                         hovertemplate =
-                         "<b>%{text}</b><br><br>" +
-                         "x: %{x}<br>" +
-                         "y: %{y}<br><br>" +
-                         "(Click for more info)"
-                         "<extra></extra>",
-                         )
+    scatter = go.Scatter(
+        x=df_matrix[dataset1_id],
+        y=df_matrix[dataset2_id],
+        text=df_matrix["gene_name"],
+        mode="markers",
+        marker=dict(size=10, opacity=0.5),
+        name="Normalized phenotypic scores",
+        hovertemplate="<b>%{text}</b><br><br>"
+        + "x: %{x}<br>"
+        + "y: %{y}<br><br>"
+        + "(Click for more info)"
+        "<extra></extra>",
+    )
     fig.add_trace(scatter)
 
-    xy = go.Scatter(x=[min_axis, max_axis],
-                    y=[min_axis, max_axis],
-                    mode='lines',
-                    name='y=x')
+    xy = go.Scatter(
+        x=[min_axis, max_axis], y=[min_axis, max_axis], mode="lines", name="y=x"
+    )
     fig.add_trace(xy)
 
-    annotations = [dict(xclick=df_matrix.loc[gene, dataset1_id],
-                        yclick=df_matrix.loc[gene, dataset2_id],
-                        x=max_axis+1,
-                        y=(max_axis+min_axis)/2,
-                        xanchor="left",
-                        yanchor="middle",
-                        text=df_matrix.loc[gene, "gene_link"],
-                        align="left",
-                        bgcolor="white",
-                        visible=False,
-                        showarrow=False,
-                        clicktoshow="onout") for gene in df_matrix["gene_name"].values]
+    annotations = [
+        dict(
+            xclick=df_matrix.loc[gene, dataset1_id],
+            yclick=df_matrix.loc[gene, dataset2_id],
+            x=max_axis + 1,
+            y=(max_axis + min_axis) / 2,
+            xanchor="left",
+            yanchor="middle",
+            text=df_matrix.loc[gene, "gene_link"],
+            align="left",
+            bgcolor="white",
+            visible=False,
+            showarrow=False,
+            clicktoshow="onout",
+        )
+        for gene in df_matrix["gene_name"].values
+    ]
     fig.update_layout(margin=dict(r=300, b=300), annotations=annotations)
 
     num_ticks = 10
-    dtick = np.int((max_axis-min_axis)/num_ticks)
-    tickvals = np.concatenate((np.arange(0, min_axis, -dtick), np.arange(0, max_axis, dtick)))
+    dtick = np.int((max_axis - min_axis) / num_ticks)
+    tickvals = np.concatenate(
+        (np.arange(0, min_axis, -dtick), np.arange(0, max_axis, dtick))
+    )
 
-    fig.update_xaxes(range=[min_axis-1, max_axis*1.5],
-                     tickvals=tickvals,
-                     showgrid=True,
-                     title_text="<br>".join(textwrap.wrap(dataset1.name, width=50)))
-    fig.update_yaxes(range=[min_axis-1, max_axis+1],
-                     tickvals=tickvals,
-                     showgrid=True,
-                     scaleanchor="x",
-                     scaleratio=1,
-                     title_text="<br>".join(textwrap.wrap(dataset2.name, width=50)))
-    fig.update_layout(template='simple_white',
-                      hovermode="closest",
-                      hoverlabel=dict(
-                          bgcolor="white",
-                          bordercolor="#2471A3",
-                          font=dict(
-                              color="black",
-                          )
-                      ),
-                      showlegend=False,
-                      legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01))
-
+    fig.update_xaxes(
+        range=[min_axis - 1, max_axis * 1.5],
+        tickvals=tickvals,
+        showgrid=True,
+        title_text="<br>".join(textwrap.wrap(dataset1.name, width=50)),
+    )
+    fig.update_yaxes(
+        range=[min_axis - 1, max_axis + 1],
+        tickvals=tickvals,
+        showgrid=True,
+        scaleanchor="x",
+        scaleratio=1,
+        title_text="<br>".join(textwrap.wrap(dataset2.name, width=50)),
+    )
+    fig.update_layout(
+        template="simple_white",
+        hovermode="closest",
+        hoverlabel=dict(
+            bgcolor="white",
+            bordercolor="#2471A3",
+            font=dict(
+                color="black",
+            ),
+        ),
+        showlegend=False,
+        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
+    )
 
     graph = fig.to_html(full_html=False, default_height=900, default_width=900)
 
@@ -176,10 +206,7 @@ def scores(request, dataset_id):
     scores = dataset.get_scores().order_by("valuez")
     scores = update_values_with_percentile(scores, "valuez")
 
-    context = {
-        "dataset": dataset,
-        "scores": scores
-    }
+    context = {"dataset": dataset, "scores": scores}
 
     return render(request, "datasets/scores_min.html", context)
 

@@ -114,7 +114,7 @@ class ConditionTypeAdmin(ImprovedModelAdmin):
         "chebi_name",
         "pubchem_id",
         "pubchem_name",
-        "tags__name"
+        "tags__name",
     )
     fields = (
         "name",
@@ -183,7 +183,7 @@ class ConditionSetAdmin(ImprovedModelAdmin):
         "conditions__type__other_names",
         "conditions__type__pubchem_name",
         "conditions__type__chebi_name",
-        "tags__name"
+        "tags__name",
     )
     ordering = (
         "id",
@@ -246,7 +246,7 @@ class MediumAdmin(ImprovedModelAdmin):
         "conditions__type__other_names",
         "conditions__type__pubchem_name",
         "conditions__type__chebi_name",
-        "tags__name"
+        "tags__name",
     )
     ordering = (
         "id",

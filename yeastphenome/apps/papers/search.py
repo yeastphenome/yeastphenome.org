@@ -9,7 +9,7 @@ def define_document():
         "systematic_name": "text",
         "pmid": "number",
         "pub_date": "number",
-        "tags_list_as_str": "text"
+        "tags_list_as_str": "text",
     }
 
     papers = Paper.objects.all_valid()

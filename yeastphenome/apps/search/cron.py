@@ -3,23 +3,26 @@ from django.http import HttpResponse, HttpResponseForbidden
 from elastic_enterprise_search import AppSearch
 
 from yeastphenome.apps.genes.search import define_document as genes_define_document
-from yeastphenome.apps.conditions.search import define_document as conditiontypes_define_document
-from yeastphenome.apps.phenotypes.search import define_document as observables_define_document
-from yeastphenome.apps.datasets.search import define_document as datasets_define_document
-from yeastphenome.apps.papers.search import define_document as papers_define_document
-from yeastphenome.settings import (
-    ELASTICSEARCH_HOST,
-    ELASTICSEARCH_AUTH
+from yeastphenome.apps.conditions.search import (
+    define_document as conditiontypes_define_document,
 )
+from yeastphenome.apps.phenotypes.search import (
+    define_document as observables_define_document,
+)
+from yeastphenome.apps.datasets.search import (
+    define_document as datasets_define_document,
+)
+from yeastphenome.apps.papers.search import define_document as papers_define_document
+from yeastphenome.settings import ELASTICSEARCH_HOST, ELASTICSEARCH_AUTH
 
 import numpy as np
 
 
 def update(request):
     # If the request come from the AppEngine cron service
-    if 'HTTP_X_APPENGINE_CRON' in request.META:
+    if "HTTP_X_APPENGINE_CRON" in request.META:
 
-        if request.META['HTTP_X_APPENGINE_CRON'] == 'true':
+        if request.META["HTTP_X_APPENGINE_CRON"] == "true":
 
             engines = ["genes", "conditiontypes", "observables", "datasets", "papers"]
 
@@ -50,16 +53,10 @@ def update(request):
                     ix_end = ix_start + batch_size - 1
                     batch = json[ix_start:ix_end]
 
-                    app_search.index_documents(
-                        engine_name=engine,
-                        documents=batch
-                    )
+                    app_search.index_documents(engine_name=engine, documents=batch)
 
-                resp = app_search.put_schema(
-                    engine_name=engine,
-                    schema=schema
-                )
+                _ = app_search.put_schema(engine_name=engine, schema=schema)
 
-                return HttpResponse('', status=200)
+                return HttpResponse("", status=200)
     else:
         return HttpResponseForbidden()

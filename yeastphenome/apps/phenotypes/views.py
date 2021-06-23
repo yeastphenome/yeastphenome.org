@@ -48,6 +48,7 @@ def index(request):
         },
     )
 
+
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def phenotype_detail(request, phenotype_id):
     observable = get_object_or_404(Observable, pk=phenotype_id)
@@ -82,12 +83,13 @@ def get_datasets(observable):
 
     datasets = Dataset.objects.all_valid()
     datasets = datasets.filter(phenotype__observable=observable)
-    datasets = datasets.values(dataset_id=F("id"),
-                               dataset_paper_name=F("paper__systematic_name"),
-                               dataset_phenotype_name=F("phenotype__name"),
-                               dataset_conditionset_name=F("conditionset__display_name"),
-                               dataset_medium_name=F("medium__display_name"),
-                               dataset_collection_name=F("collection__shortname"),
-                               dataset_data_name=F("data_available__name"))
+    datasets = datasets.values(
+        dataset_id=F("id"),
+        dataset_paper_name=F("paper__systematic_name"),
+        dataset_phenotype_name=F("phenotype__name"),
+        dataset_conditionset_name=F("conditionset__display_name"),
+        dataset_medium_name=F("medium__display_name"),
+        dataset_collection_name=F("collection__shortname"),
+        dataset_data_name=F("data_available__name"),
+    )
     return datasets
-

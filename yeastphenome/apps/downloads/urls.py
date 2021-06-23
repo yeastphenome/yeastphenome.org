@@ -1,6 +1,4 @@
-from django.views.generic.base import TemplateView
 from django.urls import path
-from django.conf.urls import url
 
 from . import views
 
@@ -15,6 +13,6 @@ urlpatterns = [
     ),
     path("cart/download/", views.download_cart, name="download_cart"),
     path("cart/clear/", views.clear_cart, name="clear_cart"),
-    ]
+]
 
 app_name = "downloads"

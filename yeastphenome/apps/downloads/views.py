@@ -1,6 +1,6 @@
-from django.shortcuts import render, redirect, reverse
+from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.cache import never_cache
 from django.db.models import F
 
@@ -11,7 +11,7 @@ from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
     VIEW_RATE_LIMIT_BLOCK as rl_block,
     DOWNLOAD_CART_LIMIT,
-    DOWNLOAD_PREFIX
+    DOWNLOAD_PREFIX,
 )
 
 import pandas as pd
@@ -33,13 +33,15 @@ def view_cart(request):
     dataset_ids = request.session["cart"]
 
     datasets = Dataset.objects.all_valid().filter(id__in=dataset_ids)
-    datasets = datasets.values(dataset_id=F("id"),
-                               dataset_paper_name=F("paper__systematic_name"),
-                               dataset_phenotype_name=F("phenotype__name"),
-                               dataset_conditionset_name=F("conditionset__display_name"),
-                               dataset_medium_name=F("medium__display_name"),
-                               dataset_collection_name=F("collection__shortname"),
-                               dataset_data_name=F("data_available__name"))
+    datasets = datasets.values(
+        dataset_id=F("id"),
+        dataset_paper_name=F("paper__systematic_name"),
+        dataset_phenotype_name=F("phenotype__name"),
+        dataset_conditionset_name=F("conditionset__display_name"),
+        dataset_medium_name=F("medium__display_name"),
+        dataset_collection_name=F("collection__shortname"),
+        dataset_data_name=F("data_available__name"),
+    )
     num_datasets = datasets.count()
 
     context = {
@@ -88,7 +90,9 @@ def remove_from_cart(request, datasets_to_remove):
         datasets_to_remove = [datasets_to_remove]
 
     datasets_in_cart = request.session["cart"] if "cart" in request.session else []
-    datasets_in_cart = [dataset for dataset in datasets_in_cart if dataset not in datasets_to_remove]
+    datasets_in_cart = [
+        dataset for dataset in datasets_in_cart if dataset not in datasets_to_remove
+    ]
     request.session["cart"] = datasets_in_cart
     request.session.modified = True
 
@@ -103,13 +107,17 @@ def download_cart(request):
     datasets_in_cart = request.session["cart"] if "cart" in request.session else []
     data = Data.objects.all_valid().filter(dataset_id__in=datasets_in_cart)
 
-    data = data.values(dataset_name=F("dataset__name"),
-                       gene_name=F("gene__systematic_name"),
-                       score=F("valuez"))
+    data = data.values(
+        dataset_name=F("dataset__name"),
+        gene_name=F("gene__systematic_name"),
+        score=F("valuez"),
+    )
     data_df = pd.DataFrame(list(data))
-    data_df["score"] = pd.to_numeric(data_df["score"], errors='coerce')
+    data_df["score"] = pd.to_numeric(data_df["score"], errors="coerce")
 
-    data_df_matrix = pd.pivot_table(data_df, index='gene_name', columns='dataset_name', values="score")
+    data_df_matrix = pd.pivot_table(
+        data_df, index="gene_name", columns="dataset_name", values="score"
+    )
 
     filename = "%s_datasets.txt" % (DOWNLOAD_PREFIX)
 
@@ -130,6 +138,3 @@ def clear_cart(request):
     if "cart" in request.session:
         del request.session["cart"]
     return redirect("downloads:view_cart")
-
-
-

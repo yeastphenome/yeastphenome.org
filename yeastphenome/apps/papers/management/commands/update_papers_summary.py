@@ -16,9 +16,7 @@ class Command(BaseCommand):
             try:
                 paper.save()
             except:
-                self.stdout.write(
-                    "Paper %d couldn't be saved." % paper.id
-                )
+                self.stdout.write("Paper %d couldn't be saved." % paper.id)
                 pass
 
         self.stdout.write("Finished.")

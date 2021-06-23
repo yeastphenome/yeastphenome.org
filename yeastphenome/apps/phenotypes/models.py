@@ -6,10 +6,7 @@ from django.utils.safestring import mark_safe
 
 from yeastphenome.apps.datasets.models import Dataset
 from yeastphenome.apps.tags.models import Tag
-from yeastphenome.settings import (
-    ELASTICSEARCH_HOST,
-    ELASTICSEARCH_AUTH
-)
+from yeastphenome.settings import ELASTICSEARCH_HOST, ELASTICSEARCH_AUTH
 
 from elastic_enterprise_search import AppSearch
 
@@ -17,7 +14,6 @@ from urllib.parse import quote_plus
 
 
 class ObservableManager(models.Manager):
-
     def all_valid(self):
         valid_datasets = Dataset.objects.all_valid()
         f = Q(phenotype__dataset__in=valid_datasets)
@@ -57,9 +53,13 @@ class Observable(models.Model):
         return "; ".join(self.tags_list())
 
     def tags_list_as_links(self):
-        link_template = '<a class="search" href="/search/?q=%s&field=tags&tab=phenotypes">%s</a>'
+        link_template = (
+            '<a class="search" href="/search/?q=%s&field=tags&tab=phenotypes">%s</a>'
+        )
         tags_list = self.tags_list()
-        tags_list_links = [(link_template % (quote_plus(tag), tag)) for tag in tags_list]
+        tags_list_links = [
+            (link_template % (quote_plus(tag), tag)) for tag in tags_list
+        ]
         if len(tags_list) > 1:
             tags_all = [link_template % (quote_plus(self.tags_list_as_str()), "all")]
         else:
@@ -91,9 +91,14 @@ class Observable(models.Model):
         return mark_safe(html)
 
     def reporters(self):
-        return self.phenotype_set.all_valid().exclude(reporter=None).exclude(reporter="").values_list(
-            "reporter", flat=True
-        ).order_by().distinct()
+        return (
+            self.phenotype_set.all_valid()
+            .exclude(reporter=None)
+            .exclude(reporter="")
+            .values_list("reporter", flat=True)
+            .order_by()
+            .distinct()
+        )
 
     def reporters_list(self):
         return list(self.reporters())
@@ -104,7 +109,8 @@ class Observable(models.Model):
     def datasets(self):
         return (
             apps.get_model("datasets", "Dataset")
-            .objects.all_valid().filter(phenotype__observable=self)
+            .objects.all_valid()
+            .filter(phenotype__observable=self)
         )
 
     def datasets_edit_link_list(self):
@@ -121,27 +127,37 @@ class Observable(models.Model):
         return mark_safe(html)
 
     def conditiontypes_list_as_str(self):
-        conditiontypes = self.phenotype_set.all_valid().values_list(
-            "dataset__conditionset__conditions__type__name", flat=True).order_by().distinct()
+        conditiontypes = (
+            self.phenotype_set.all_valid()
+            .values_list("dataset__conditionset__conditions__type__name", flat=True)
+            .order_by()
+            .distinct()
+        )
         conditiontypes = [c for c in conditiontypes if c]
         return "; ".join(conditiontypes)
 
     def papers_list_as_str(self):
         # 2X faster than Paper.objects.all_valid().filter(dataset__phenotype__observable=self)
-        papers = self.phenotype_set.all_valid().values_list("dataset__paper__systematic_name",
-                                                            flat=True).order_by().distinct()
+        papers = (
+            self.phenotype_set.all_valid()
+            .values_list("dataset__paper__systematic_name", flat=True)
+            .order_by()
+            .distinct()
+        )
         papers = [p for p in papers if p]
         return "; ".join(papers)
 
     def data_indexing(self):
-        json = {"id": self.id,
-                "name": self.name,
-                "description": self.description,
-                "phenotypes_list_as_str": self.phenotypes_list_as_str(),
-                "reporters_list_as_str": self.reporters_list_as_str(),
-                "conditiontypes_list_as_str": self.conditiontypes_list_as_str(),
-                "papers_list_as_str": self.papers_list_as_str(),
-                "tags_list_as_str": self.tags_list_as_str()}
+        json = {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "phenotypes_list_as_str": self.phenotypes_list_as_str(),
+            "reporters_list_as_str": self.reporters_list_as_str(),
+            "conditiontypes_list_as_str": self.conditiontypes_list_as_str(),
+            "papers_list_as_str": self.papers_list_as_str(),
+            "tags_list_as_str": self.tags_list_as_str(),
+        }
         return json
 
     def update_indexing(self, mode="create"):
@@ -152,39 +168,35 @@ class Observable(models.Model):
         )
 
         if mode == "update":
-            resp = app_search.put_documents(
-                engine_name="observables",
-                documents=[self.data_indexing()]
+            _ = app_search.put_documents(
+                engine_name="observables", documents=[self.data_indexing()]
             )
         elif mode == "delete":
-            resp = app_search.delete_documents(
-                engine_name="observables",
-                document_ids=[self.id]
+            _ = app_search.delete_documents(
+                engine_name="observables", document_ids=[self.id]
             )
         elif mode == "create":
-            resp = app_search.index_documents(
-                engine_name="observables",
-                documents=[self.data_indexing()]
+            _ = app_search.index_documents(
+                engine_name="observables", documents=[self.data_indexing()]
             )
 
         # Update related indices
         datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
         datasets = datasets.filter(phenotype__observable=self).distinct()
         documents = [dataset.data_indexing() for dataset in datasets]
-        resp = app_search.put_documents(
-            engine_name="datasets", documents=documents)
+        _ = app_search.put_documents(engine_name="datasets", documents=documents)
 
         conditiontypes = apps.get_model("conditions", "ConditionType").objects.all()
-        conditiontypes = conditiontypes.filter(conditions__conditionset__dataset__in=datasets).distinct()
+        conditiontypes = conditiontypes.filter(
+            conditions__conditionset__dataset__in=datasets
+        ).distinct()
         documents = [conditiontype.data_indexing() for conditiontype in conditiontypes]
-        resp = app_search.put_documents(
-            engine_name="conditiontypes", documents=documents)
+        _ = app_search.put_documents(engine_name="conditiontypes", documents=documents)
 
         papers = apps.get_model("papers", "Paper").objects.all_valid()
         papers = papers.filter(datasets__in=datasets).distinct()
         documents = [paper.data_indexing() for paper in papers]
-        resp = app_search.put_documents(
-            engine_name="papers", documents=documents)
+        _ = app_search.put_documents(engine_name="papers", documents=documents)
         # print(resp)
 
 
@@ -196,8 +208,10 @@ class Measurement(models.Model):
         return u"%s" % self.name
 
     def phenotypes(self):
-        return apps.get_model("phenotypes", "Phenotype").objects.all_valid().filter(
-            measurement=self
+        return (
+            apps.get_model("phenotypes", "Phenotype")
+            .objects.all_valid()
+            .filter(measurement=self)
         )
 
     def phenotypes_edit_link_list(self):
@@ -208,7 +222,6 @@ class Measurement(models.Model):
 
 
 class PhenotypeManager(models.Manager):
-
     def all_valid(self):
         # Valid = is associated with >=1 valid dataset
         valid_datasets = Dataset.objects.all_valid()
@@ -260,7 +273,8 @@ class Phenotype(models.Model):
     def papers(self):
         return (
             apps.get_model("papers", "Paper")
-            .objects.all_valid().filter(datasets__phenotype=self)
+            .objects.all_valid()
+            .filter(datasets__phenotype=self)
             .distinct()
         )
 
@@ -276,7 +290,10 @@ class Phenotype(models.Model):
 
     def datasets(self):
         return (
-            apps.get_model("datasets", "Dataset").objects.all_valid().filter(phenotype=self).all()
+            apps.get_model("datasets", "Dataset")
+            .objects.all_valid()
+            .filter(phenotype=self)
+            .all()
         )
 
     def datasets_edit_link_list(self):

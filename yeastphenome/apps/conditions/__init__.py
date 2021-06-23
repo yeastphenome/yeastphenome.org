@@ -1,1 +1,1 @@
-default_app_config = 'yeastphenome.apps.conditions.apps.ConditionsConfig'
+default_app_config = "yeastphenome.apps.conditions.apps.ConditionsConfig"

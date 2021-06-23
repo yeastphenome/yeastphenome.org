@@ -25,19 +25,17 @@ def detail(request, paper_id):
     datasets = p.datasets.all_valid()
     num_datasets = datasets.count()
 
-    datasets = datasets[:10].values(dataset_id=F("id"),
-                                    dataset_paper_name=F("paper__systematic_name"),
-                                    dataset_phenotype_name=F("phenotype__name"),
-                                    dataset_conditionset_name=F("conditionset__display_name"),
-                                    dataset_medium_name=F("medium__display_name"),
-                                    dataset_collection_name=F("collection__shortname"),
-                                    dataset_data_name=F("data_available__name"))
+    datasets = datasets[:10].values(
+        dataset_id=F("id"),
+        dataset_paper_name=F("paper__systematic_name"),
+        dataset_phenotype_name=F("phenotype__name"),
+        dataset_conditionset_name=F("conditionset__display_name"),
+        dataset_medium_name=F("medium__display_name"),
+        dataset_collection_name=F("collection__shortname"),
+        dataset_data_name=F("data_available__name"),
+    )
 
-    context = {
-        "paper": p,
-        "datasets": datasets,
-        "num_datasets": num_datasets
-    }
+    context = {"paper": p, "datasets": datasets, "num_datasets": num_datasets}
 
     # Give credit if credit is due.
     names = p.acknowledgements_list_as_str()
@@ -48,10 +46,10 @@ def detail(request, paper_id):
         to_acknowledge.append("the list of tested strains")
     if names:
         thanks = (
-                " and ".join(to_acknowledge)
-                + " for this paper were kindly provided by "
-                + names
-                + "."
+            " and ".join(to_acknowledge)
+            + " for this paper were kindly provided by "
+            + names
+            + "."
         )
         context["thanks"] = thanks
 
@@ -67,16 +65,20 @@ def detail(request, paper_id):
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def datasets(request, paper_id):
     p = get_object_or_404(Paper, pk=paper_id)
-    datasets_values = p.datasets.all_valid().values(dataset_id=F("id"),
-                                                    dataset_paper_name=F("paper__systematic_name"),
-                                                    dataset_phenotype_name=F("phenotype__name"),
-                                                    dataset_conditionset_name=F("conditionset__display_name"),
-                                                    dataset_medium_name=F("medium__display_name"),
-                                                    dataset_collection_name=F("collection__shortname"),
-                                                    dataset_data_name=F("data_available__name"))
-    context = {'paper_id': paper_id,
-               'paper_systematic_name': p.systematic_name,
-               'paper_datasets': datasets_values}
+    datasets_values = p.datasets.all_valid().values(
+        dataset_id=F("id"),
+        dataset_paper_name=F("paper__systematic_name"),
+        dataset_phenotype_name=F("phenotype__name"),
+        dataset_conditionset_name=F("conditionset__display_name"),
+        dataset_medium_name=F("medium__display_name"),
+        dataset_collection_name=F("collection__shortname"),
+        dataset_data_name=F("data_available__name"),
+    )
+    context = {
+        "paper_id": paper_id,
+        "paper_systematic_name": p.systematic_name,
+        "paper_datasets": datasets_values,
+    }
     return render(request, "papers/datasets_min.html", context)
 
 
@@ -95,4 +97,3 @@ def datasets_list(request, paper_id):
     )
 
     return response
-

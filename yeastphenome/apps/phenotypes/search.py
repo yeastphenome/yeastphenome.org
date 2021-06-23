@@ -12,7 +12,7 @@ def define_document():
         "reporters_list_as_str": "text",
         "conditiontypes_list_as_str": "text",
         "papers_list_as_str": "text",
-        "tags_list_as_str": "text"
+        "tags_list_as_str": "text",
     }
 
     observables = Observable.objects.all_valid()

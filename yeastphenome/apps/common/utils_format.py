@@ -16,12 +16,7 @@ def truncated_list_as_str(lst, num=10, sort=False):
         lst_as_str = "; ".join(lst)
     else:
         num_remaining = lst_len - num
-        lst_as_str = (
-                "; ".join(lst[:num])
-                + " ... and "
-                + str(num_remaining)
-                + " more"
-        )
+        lst_as_str = "; ".join(lst[:num]) + " ... and " + str(num_remaining) + " more"
 
     return lst_as_str
 

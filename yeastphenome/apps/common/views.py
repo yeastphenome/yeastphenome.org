@@ -1,6 +1,5 @@
-from django.shortcuts import render, redirect, reverse, get_object_or_404
-from django.contrib import messages
-from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
+from django.shortcuts import render, reverse
+from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 from django.db.models import Q
 from django.contrib.postgres.aggregates.general import StringAgg, BoolOr
@@ -9,17 +8,14 @@ from yeastphenome.apps.common.utils import (
     get_latest_stats_basic,
     get_latest_stats,
 )
-from yeastphenome.apps.datasets.models import Dataset, Source
+from yeastphenome.apps.datasets.models import Source
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.papers.graphs import get_papers_by_year
-from yeastphenome.apps.conditions.models import ConditionType, Medium
-from yeastphenome.apps.phenotypes.models import Observable
 
 from ratelimit.decorators import ratelimit
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
     VIEW_RATE_LIMIT_BLOCK as rl_block,
-    DOWNLOAD_CART_LIMIT,
 )
 
 import itertools
@@ -77,30 +73,42 @@ def authors(request):
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def data_contributors(request):
-    papers = Paper.objects.all_valid().filter(
-        Q(datasets__data_source__acknowledge=True)
-        | Q(datasets__tested_source__acknowledge=True)
-    ).distinct()
+    papers = (
+        Paper.objects.all_valid()
+        .filter(
+            Q(datasets__data_source__acknowledge=True)
+            | Q(datasets__tested_source__acknowledge=True)
+        )
+        .distinct()
+    )
 
     # Using queryset annotation to pre-fetch all the relevant data and speed up the loading of the page
     agg_field1 = "datasets__data_source__label"
     agg_field2 = "datasets__tested_source__label"
     agg_field3 = "datasets__data_source__acknowledge"
     agg_field4 = "datasets__tested_source__acknowledge"
-    papers = papers.annotate(people1=StringAgg(agg_field1, delimiter=", ", distinct=True))
-    papers = papers.annotate(people2=StringAgg(agg_field2, delimiter=", ", distinct=True))
+    papers = papers.annotate(
+        people1=StringAgg(agg_field1, delimiter=", ", distinct=True)
+    )
+    papers = papers.annotate(
+        people2=StringAgg(agg_field2, delimiter=", ", distinct=True)
+    )
     papers = papers.annotate(data_ack=BoolOr(agg_field3))
     papers = papers.annotate(tested_ack=BoolOr(agg_field4))
 
-    papers_values = list(papers.values("id", "systematic_name",
-                                  "people1", "people2",
-                                  "data_ack", "tested_ack"))
+    papers_values = list(
+        papers.values(
+            "id", "systematic_name", "people1", "people2", "data_ack", "tested_ack"
+        )
+    )
 
     def merge_people(paper_dict):
-        people1 = paper_dict["people1"].split(', ')
-        people2 = paper_dict["people2"].split(', ')
+        people1 = paper_dict["people1"].split(", ")
+        people2 = paper_dict["people2"].split(", ")
         people = list(itertools.chain.from_iterable([people1, people2]))
-        people = [person for person in people if not person == "" and person is not None]
+        people = [
+            person for person in people if not person == "" and person is not None
+        ]
         people = list(set(people))
         paper_dict["people"] = "; ".join(people)
         return paper_dict
@@ -109,13 +117,15 @@ def data_contributors(request):
 
     num_people_to_ack = len(Source.objects.people_to_acknowledge())
 
-    context = {"active": "about",
-               "papers_list": papers_values,
-               "num_people_to_ack": num_people_to_ack,
-               "links": [
-                   {"url": reverse("common:about"), "name": "About"},
-                   {"url": reverse("common:data_contributors"), "name": "Data Contributors"},
-               ]}
+    context = {
+        "active": "about",
+        "papers_list": papers_values,
+        "num_people_to_ack": num_people_to_ack,
+        "links": [
+            {"url": reverse("common:about"), "name": "About"},
+            {"url": reverse("common:data_contributors"), "name": "Data Contributors"},
+        ],
+    }
 
     return render(request, "main/data_contributors.html", context)
 
@@ -131,9 +141,3 @@ def explorer(request):
     links = [{"url": reverse("common:explorer"), "name": "Explore data"}]
     context = {"active": "explorer", "links": links}
     return render(request, "main/explorer.html", context)
-
-
-
-
-
-

@@ -1,14 +1,16 @@
-from django.shortcuts import render, reverse, get_object_or_404
-from django.db.models import F, Q
+from django.shortcuts import render, get_object_or_404
+from django.db.models import Q
 
 from yeastphenome.apps.tags.models import Tag
-from yeastphenome.apps.phenotypes.models import Observable, Phenotype
+from yeastphenome.apps.phenotypes.models import Observable
 
 
 def tag_detail(request, tag_id):
 
     tag = get_object_or_404(Tag, pk=tag_id)
-    observables = Observable.objects.filter(Q(tags=tag) | Q(phenotype__tags=tag)).values()
+    observables = Observable.objects.filter(
+        Q(tags=tag) | Q(phenotype__tags=tag)
+    ).values()
 
     context = {
         "tag": tag,

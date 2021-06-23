@@ -9,20 +9,15 @@ from elastic_enterprise_search import AppSearch
 from yeastphenome.apps.phenotypes.models import Phenotype
 from yeastphenome.apps.tags.models import Tag
 from yeastphenome.apps.datasets.models import Dataset
-from yeastphenome.settings import (
-    ELASTICSEARCH_HOST,
-    ELASTICSEARCH_AUTH
-)
+from yeastphenome.settings import ELASTICSEARCH_HOST, ELASTICSEARCH_AUTH
 
 from libchebipy import ChebiEntity
 import re
 import itertools
 from urllib.parse import quote_plus
-import time
 
 
 class ConditionTypeManager(models.Manager):
-
     def all_valid(self):
         valid_datasets = Dataset.objects.all_valid()
         f1 = Q(conditions__conditionset__dataset__in=valid_datasets)
@@ -53,7 +48,9 @@ class ConditionType(models.Model):
 
     def is_valid(self):
         valid_datasets = Dataset.objects.all_valid()
-        valid_conditions = self.conditions.filter(conditionset__dataset__in=valid_datasets)
+        valid_conditions = self.conditions.filter(
+            conditionset__dataset__in=valid_datasets
+        )
         return valid_conditions.exists()
 
     def aliases_list(self):
@@ -61,10 +58,13 @@ class ConditionType(models.Model):
             other_names = [name.strip() for name in re.split("[,\n]", self.other_names)]
         else:
             other_names = []
-        other_names += [self.chebi_name, self.pubchem_name, str(self.chebi_id), str(self.pubchem_id)]
-        other_names = list(
-            set([name for name in other_names if name])
-        )
+        other_names += [
+            self.chebi_name,
+            self.pubchem_name,
+            str(self.chebi_id),
+            str(self.pubchem_id),
+        ]
+        other_names = list(set([name for name in other_names if name]))
         other_names = [name for name in other_names if not name == self.name]
         return other_names
 
@@ -93,7 +93,12 @@ class ConditionType(models.Model):
             return ""
 
     def doses_list_as_str(self):
-        doses = self.conditions.all_valid().values_list("dose", flat=True).order_by().distinct()
+        doses = (
+            self.conditions.all_valid()
+            .values_list("dose", flat=True)
+            .order_by()
+            .distinct()
+        )
         doses = [dose for dose in doses if dose and not dose == "unknown"]
         return "; ".join(doses)
 
@@ -109,9 +114,12 @@ class ConditionType(models.Model):
         return "; ".join(observables)
 
     def papers_list_as_str(self):
-        papers = self.conditions.all_valid().values_list(
-            "conditionset__dataset__paper__systematic_name", flat=True
-        ).order_by().distinct()
+        papers = (
+            self.conditions.all_valid()
+            .values_list("conditionset__dataset__paper__systematic_name", flat=True)
+            .order_by()
+            .distinct()
+        )
 
         papers = [p for p in papers if p]
         papers_list = "; ".join(papers)
@@ -120,10 +128,12 @@ class ConditionType(models.Model):
     def datasets(self):
         return (
             apps.get_model("datasets", "Dataset")
-            .objects.all_valid().filter(
+            .objects.all_valid()
+            .filter(
                 Q(conditionset__conditions__type=self)
                 | Q(medium__conditions__type=self)
-            ).distinct()
+            )
+            .distinct()
         )
 
     def tags_edit_list(self):
@@ -150,13 +160,15 @@ class ConditionType(models.Model):
         return mark_safe(html)
 
     def data_indexing(self):
-        json = {"id": self.id,
-                "name": self.name,
-                "aliases_list_as_str": self.aliases_list_as_str(),
-                "doses_list_as_str": self.doses_list_as_str(),
-                "observables_list_as_str": self.observables_list_as_str(),
-                "papers_list_as_str": self.papers_list_as_str(),
-                "tags_list_as_str": self.tags_list_as_str()}
+        json = {
+            "id": self.id,
+            "name": self.name,
+            "aliases_list_as_str": self.aliases_list_as_str(),
+            "doses_list_as_str": self.doses_list_as_str(),
+            "observables_list_as_str": self.observables_list_as_str(),
+            "papers_list_as_str": self.papers_list_as_str(),
+            "tags_list_as_str": self.tags_list_as_str(),
+        }
         return json
 
     def update_indexing(self, mode="create"):
@@ -168,58 +180,50 @@ class ConditionType(models.Model):
 
         if mode == "update":
             if self.is_valid():
-                resp = app_search.put_documents(
-                    engine_name="conditiontypes",
-                    documents=[self.data_indexing()]
+                _ = app_search.put_documents(
+                    engine_name="conditiontypes", documents=[self.data_indexing()]
                 )
         elif mode == "delete":
-            resp = app_search.delete_documents(
-                engine_name="conditiontypes",
-                document_ids=[self.id]
+            _ = app_search.delete_documents(
+                engine_name="conditiontypes", document_ids=[self.id]
             )
         elif mode == "create":
             if self.is_valid():
-                resp = app_search.index_documents(
-                    engine_name="conditiontypes",
-                    documents=[self.data_indexing()]
+                _ = app_search.index_documents(
+                    engine_name="conditiontypes", documents=[self.data_indexing()]
                 )
 
         # Update related indices
         datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
         datasets = datasets.filter(conditionset__conditions__type=self).distinct()
         documents = [dataset.data_indexing() for dataset in datasets]
-        resp = app_search.put_documents(
-            engine_name="datasets", documents=documents
-        )
+        _ = app_search.put_documents(engine_name="datasets", documents=documents)
 
         observables = apps.get_model("phenotypes", "Observable").objects.all()
         observables = observables.filter(phenotype__dataset__in=datasets).distinct()
         documents = [observable.data_indexing() for observable in observables]
-        resp = app_search.put_documents(
-            engine_name="observables", documents=documents
-        )
+        _ = app_search.put_documents(engine_name="observables", documents=documents)
 
         papers = apps.get_model("papers", "Paper").objects.all_valid()
         papers = papers.filter(datasets__in=datasets).distinct()
         documents = [paper.data_indexing() for paper in papers]
-        resp = app_search.put_documents(
-            engine_name="papers",
-            documents=documents
-        )
+        _ = app_search.put_documents(engine_name="papers", documents=documents)
 
 
 class ConditionManager(models.Manager):
-
     def all_valid(self):
         # Valid = associated with at least 1 dataset from a relevant paper
         valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
-        f = Q(conditionset__dataset__in=valid_datasets) \
-            | Q(medium__dataset__in=valid_datasets)
+        f = Q(conditionset__dataset__in=valid_datasets) | Q(
+            medium__dataset__in=valid_datasets
+        )
         return self.filter(f).distinct()
 
 
 class Condition(models.Model):
-    type = models.ForeignKey(ConditionType, related_name="conditions", on_delete=models.DO_NOTHING)
+    type = models.ForeignKey(
+        ConditionType, related_name="conditions", on_delete=models.DO_NOTHING
+    )
     dose = models.CharField(max_length=200, null=False, blank=False)
     description = models.TextField(blank=True, null=True)
     modified_on = models.DateField(auto_now=True, null=True)
@@ -258,7 +262,7 @@ class Condition(models.Model):
         return mark_safe(", ".join([p.link_edit() for p in self.media()[:20]]))
 
     def link_detail(self):
-        html = '%s [%s]' % (self.type.link_detail(), self.dose)
+        html = "%s [%s]" % (self.type.link_detail(), self.dose)
         return mark_safe(html)
 
     def link_edit(self):
@@ -279,7 +283,6 @@ class Condition(models.Model):
 
 
 class ConditionSetManager(models.Manager):
-
     def all_valid(self):
         # Valid = associated with at least 1 dataset from a relevant paper
         valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
@@ -305,7 +308,10 @@ class ConditionSet(models.Model):
     def aliases_list(self):
         aliases = [self.systematic_name, self.common_name, self.display_name]
         conditions_aliases = list(
-            itertools.chain.from_iterable([condition.aliases_list() for condition in self.conditions.all()]))
+            itertools.chain.from_iterable(
+                [condition.aliases_list() for condition in self.conditions.all()]
+            )
+        )
         aliases = list(set(aliases + conditions_aliases))
         aliases = [alias for alias in aliases if alias]
         return aliases
@@ -329,9 +335,11 @@ class ConditionSet(models.Model):
     def papers(self):
         return (
             apps.get_model("papers", "Paper")
-            .objects.all_valid().filter(
+            .objects.all_valid()
+            .filter(
                 Q(datasets__conditionset=self) | Q(datasets__control_conditionset=self)
-            ).distinct()
+            )
+            .distinct()
         )
 
     def papers_all(self):
@@ -339,7 +347,8 @@ class ConditionSet(models.Model):
             apps.get_model("papers", "Paper")
             .objects.filter(
                 Q(datasets__conditionset=self) | Q(datasets__control_conditionset=self)
-            ).distinct()
+            )
+            .distinct()
         )
         return ps
 
@@ -347,15 +356,13 @@ class ConditionSet(models.Model):
         return mark_safe(", ".join([p.link_edit() for p in self.papers_all()]))
 
     def datasets_all(self):
-        return (
-            apps.get_model("datasets", "Dataset")
-            .objects.filter(conditionset=self)
-        )
+        return apps.get_model("datasets", "Dataset").objects.filter(conditionset=self)
 
     def datasets(self):
         return (
             apps.get_model("datasets", "Dataset")
-            .objects.all_valid().filter(conditionset=self)
+            .objects.all_valid()
+            .filter(conditionset=self)
         )
 
     def datasets_edit_list(self):
@@ -368,14 +375,18 @@ class ConditionSet(models.Model):
         return Phenotype.objects.filter(dataset__conditionset=self).distinct()
 
     def link_detail(self):
-        conditions_link_details = [condition.link_detail() for condition in self.conditions.all()]
+        conditions_link_details = [
+            condition.link_detail() for condition in self.conditions.all()
+        ]
         return mark_safe("; ".join(conditions_link_details))
 
     def link_search(self):
         q = quote_plus(str(self))
-        html = '<a class="search" ' \
-               'title="Search for other datasets associated with this condition" ' \
-               'href="/search/?q=%s&field=conditions&tab=datasets">%s</a>' % (q, self)
+        html = (
+            '<a class="search" '
+            'title="Search for other datasets associated with this condition" '
+            'href="/search/?q=%s&field=conditions&tab=datasets">%s</a>' % (q, self)
+        )
         return mark_safe(html)
 
     def link_edit(self):
@@ -387,13 +398,16 @@ class ConditionSet(models.Model):
 
     def tags_list(self):
         tags_list_self = list(self.tags.values_list("name", flat=True))
-        tags_list_conditions = list(itertools.chain.from_iterable([condition.tags_list() for condition in self.conditions.all()]))
+        tags_list_conditions = list(
+            itertools.chain.from_iterable(
+                [condition.tags_list() for condition in self.conditions.all()]
+            )
+        )
         tags_list = list(set(tags_list_self + tags_list_conditions))
         return tags_list
 
 
 class MediumManager(models.Manager):
-
     def all_valid(self):
         # Valid = associated with at least 1 dataset from a relevant paper
         valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
@@ -421,7 +435,11 @@ class Medium(models.Model):
 
     def aliases_list_as_str(self):
         aliases = [self.systematic_name, self.common_name, self.display_name]
-        condition_aliases = list(itertools.chain(condition.aliases_list_as_str() for condition in self.conditions.all()))
+        condition_aliases = list(
+            itertools.chain(
+                condition.aliases_list_as_str() for condition in self.conditions.all()
+            )
+        )
         aliases = list(set(aliases + condition_aliases))
         aliases = [alias for alias in aliases if alias]
         return "; ".join(aliases)
@@ -433,7 +451,8 @@ class Medium(models.Model):
     def papers(self):
         return (
             apps.get_model("papers", "Paper")
-            .objects.all_valid().filter(Q(datasets__medium=self) | Q(datasets__control_medium=self))
+            .objects.all_valid()
+            .filter(Q(datasets__medium=self) | Q(datasets__control_medium=self))
             .distinct()
         )
 
@@ -455,7 +474,8 @@ class Medium(models.Model):
     def datasets(self, num=None):
         qs = (
             apps.get_model("datasets", "Dataset")
-            .objects.all_valid().filter(medium=self)
+            .objects.all_valid()
+            .filter(medium=self)
             .distinct()
         )
         if num:
@@ -485,7 +505,10 @@ class Medium(models.Model):
 
     def link_detail(self):
         q = quote_plus(str(self))
-        html = '<a class="search" href="/search/?q=%s&field=medium&tab=datasets">%s</a>' % (q, self)
+        html = (
+            '<a class="search" href="/search/?q=%s&field=medium&tab=datasets">%s</a>'
+            % (q, self)
+        )
         return mark_safe(html)
 
     def link_edit(self):

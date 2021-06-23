@@ -6,20 +6,29 @@ from django.apps import apps
 
 
 class TagManager(models.Manager):
-
     def all_valid(self, **kwargs):
         obj = self.all()
         if "type" in kwargs:
             if kwargs["type"] == "conditions":
-                valid_conditiontypes = apps.get_model("conditions", "Conditiontype").objects.all_valid()
-                valid_conditions = apps.get_model("conditions", "Condition").objects.all_valid()
-                obj = obj.filter(Q(condition__in=valid_conditions)
-                                 | Q(conditiontype__in=valid_conditiontypes)).distinct()
+                valid_conditiontypes = apps.get_model(
+                    "conditions", "Conditiontype"
+                ).objects.all_valid()
+                valid_conditions = apps.get_model(
+                    "conditions", "Condition"
+                ).objects.all_valid()
+                obj = obj.filter(
+                    Q(condition__in=valid_conditions)
+                    | Q(conditiontype__in=valid_conditiontypes)
+                ).distinct()
             elif kwargs["type"] == "datasets":
-                valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
+                valid_datasets = apps.get_model(
+                    "datasets", "Dataset"
+                ).objects.all_valid()
                 obj = obj.filter(dataset__in=valid_datasets)
             elif kwargs["type"] == "phenotypes":
-                valid_observables = apps.get_model("phenotype", "Observable").objects.all_valid()
+                valid_observables = apps.get_model(
+                    "phenotype", "Observable"
+                ).objects.all_valid()
                 obj = obj.filter(observable__in=valid_observables)
         return obj
 

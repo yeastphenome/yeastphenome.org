@@ -5,15 +5,9 @@ from django.apps import apps
 from django.contrib.auth.models import User
 from django.utils.safestring import mark_safe
 
-from yeastphenome.apps.phenotypes.models import Observable, Phenotype
-from yeastphenome.apps.conditions.models import ConditionType, Condition, ConditionSet, Medium
-from yeastphenome.apps.datasets.models import Collection, Source
 from yeastphenome.apps.tags.models import Tag
 from yeastphenome.apps.common.utils_format import truncated_list_as_str
-from yeastphenome.settings import (
-    ELASTICSEARCH_HOST,
-    ELASTICSEARCH_AUTH
-)
+from yeastphenome.settings import ELASTICSEARCH_HOST, ELASTICSEARCH_AUTH
 
 from elastic_enterprise_search import AppSearch
 
@@ -33,7 +27,6 @@ class Status(models.Model):
 
 
 class PaperManager(models.Manager):
-
     def all_valid(self):
         papers = self.filter(latest_data_status__status__is_valid=True)
         papers = papers.filter(datasets__collection__is_valid=True).distinct()
@@ -101,12 +94,22 @@ class Paper(models.Model):
         ordering = ["pmid", "systematic_name"]
 
     def save(self, *args, **kwargs):
-        self.systematic_name = '%s~%s, %s' % (self.first_author, self.last_author, self.pub_date)
-        observables_list = list(self.datasets.values_list("phenotype__observable__name",
-                                                          flat=True).order_by().distinct())
+        self.systematic_name = "%s~%s, %s" % (
+            self.first_author,
+            self.last_author,
+            self.pub_date,
+        )
+        observables_list = list(
+            self.datasets.values_list("phenotype__observable__name", flat=True)
+            .order_by()
+            .distinct()
+        )
         self.observables_summary = truncated_list_as_str(observables_list)
-        conditiontypes_list = list(self.datasets.values_list("conditionset__conditions__type__name",
-                                                             flat=True).order_by().distinct())
+        conditiontypes_list = list(
+            self.datasets.values_list("conditionset__conditions__type__name", flat=True)
+            .order_by()
+            .distinct()
+        )
         self.conditiontypes_summary = truncated_list_as_str(conditiontypes_list)
         super(Paper, self).save(*args, **kwargs)
 
@@ -119,12 +122,20 @@ class Paper(models.Model):
         return cond1 & cond2
 
     def collections_list_as_str(self):
-        collections = self.datasets.values_list("collection__shortname", flat=True).order_by().distinct()
+        collections = (
+            self.datasets.values_list("collection__shortname", flat=True)
+            .order_by()
+            .distinct()
+        )
         return "; ".join(collections)
 
     def observables_list(self):
-        observables = self.datasets.all_valid()\
-            .values_list("phenotype__observable__name", flat=True).order_by().distinct()
+        observables = (
+            self.datasets.all_valid()
+            .values_list("phenotype__observable__name", flat=True)
+            .order_by()
+            .distinct()
+        )
         observables = [o for o in observables if o]
         return observables
 
@@ -135,9 +146,11 @@ class Paper(models.Model):
 
         datasets = self.datasets.all_valid()
 
-        fields = ["phenotype__name",
-                  "phenotype__observable__name",
-                  "phenotype__reporter"]
+        fields = [
+            "phenotype__name",
+            "phenotype__observable__name",
+            "phenotype__reporter",
+        ]
 
         all_names = list(datasets.values(*fields))
 
@@ -154,8 +167,11 @@ class Paper(models.Model):
         return "; ".join(self.phenotypes_aliases_list())
 
     def conditiontypes_list(self):
-        conditiontypes = self.datasets.values_list("conditionset__conditions__type__name",
-                                                   flat=True).order_by().distinct()
+        conditiontypes = (
+            self.datasets.values_list("conditionset__conditions__type__name", flat=True)
+            .order_by()
+            .distinct()
+        )
         conditiontypes = [c for c in conditiontypes if c]
         return conditiontypes
 
@@ -166,12 +182,14 @@ class Paper(models.Model):
 
         datasets = self.datasets.all_valid()
 
-        fields = ["conditionset__display_name",
-                  "conditionset__systematic_name",
-                  "conditionset__conditions__type__name",
-                  "conditionset__conditions__type__chebi_name",
-                  "conditionset__conditions__type__pubchem_name",
-                  "medium__display_name"]
+        fields = [
+            "conditionset__display_name",
+            "conditionset__systematic_name",
+            "conditionset__conditions__type__name",
+            "conditionset__conditions__type__chebi_name",
+            "conditionset__conditions__type__pubchem_name",
+            "medium__display_name",
+        ]
 
         all_names = list(datasets.values(*fields))
 
@@ -195,19 +213,23 @@ class Paper(models.Model):
         tags_list_datasets = Q(dataset__paper=self)
         tags_list_conditionset = Q(conditionset__dataset__paper=self)
         tags_list_condition = Q(condition__conditionset__dataset__paper=self)
-        tags_list_conditiontype = Q(conditiontype__conditions__conditionset__dataset__paper=self)
+        tags_list_conditiontype = Q(
+            conditiontype__conditions__conditionset__dataset__paper=self
+        )
         tags_list_medium = Q(medium__dataset__paper=self)
         tags_list_phenotype = Q(phenotypes__dataset__paper=self)
         tags_list_observable = Q(observables__phenotype__dataset__paper=self)
 
-        tags = tags.filter(tags_list_self
-                           | tags_list_datasets
-                           | tags_list_conditionset
-                           | tags_list_condition
-                           | tags_list_conditiontype
-                           | tags_list_medium
-                           | tags_list_phenotype
-                           | tags_list_observable)
+        tags = tags.filter(
+            tags_list_self
+            | tags_list_datasets
+            | tags_list_conditionset
+            | tags_list_condition
+            | tags_list_conditiontype
+            | tags_list_medium
+            | tags_list_phenotype
+            | tags_list_observable
+        )
         tags_list = list(tags.values_list("name", flat=True).order_by().distinct())
         return tags_list
 
@@ -218,7 +240,11 @@ class Paper(models.Model):
         return mark_safe("; ".join([t.link_detail() for t in self.tags.all()]))
 
     def datasets_summary(self):
-        str_list = [self.collections_list_as_str(), self.observables_summary, self.conditiontypes_summary]
+        str_list = [
+            self.collections_list_as_str(),
+            self.observables_summary,
+            self.conditiontypes_summary,
+        ]
         str_list = [s for s in str_list if s]
         return mark_safe("<br>".join(str_list))
 
@@ -227,7 +253,11 @@ class Paper(models.Model):
         return self.datasets.count()
 
     def acknowledgements_list_as_str(self):
-        people = self.datasets.values('data_source__label', 'tested_source__label').order_by().distinct()
+        people = (
+            self.datasets.values("data_source__label", "tested_source__label")
+            .order_by()
+            .distinct()
+        )
         people = [list(person.values()) for person in people]
         people = list(set(list(itertools.chain.from_iterable(people))))
         people = [person for person in people if person]
@@ -271,7 +301,9 @@ class Paper(models.Model):
         return {"data": queryset_data, "tested strains": queryset_tested}
 
     def link_detail(self):
-        return mark_safe('<a href="%s">%s</a>' % (reverse("papers:detail", args=(self.id,)), self))
+        return mark_safe(
+            '<a href="%s">%s</a>' % (reverse("papers:detail", args=(self.id,)), self)
+        )
 
     def link_edit(self):
         html = '<a href="%s">%s</a>' % (
@@ -288,12 +320,13 @@ class Paper(models.Model):
         return mark_safe(html)
 
     def data_indexing(self):
-        json = {"id": self.id,
-                "systematic_name": self.systematic_name,
-                "pmid": self.pmid,
-                "pub_date": self.pub_date,
-                "tags_list_as_str": self.tags_list_as_str()
-                }
+        json = {
+            "id": self.id,
+            "systematic_name": self.systematic_name,
+            "pmid": self.pmid,
+            "pub_date": self.pub_date,
+            "tags_list_as_str": self.tags_list_as_str(),
+        }
         return json
 
     def update_indexing(self, mode="create"):
@@ -304,19 +337,16 @@ class Paper(models.Model):
         )
 
         if mode == "update":
-            resp = app_search.put_documents(
-                engine_name="papers",
-                documents=[self.data_indexing()]
+            _ = app_search.put_documents(
+                engine_name="papers", documents=[self.data_indexing()]
             )
         elif mode == "delete":
-            resp = app_search.delete_documents(
-                engine_name="papers",
-                document_ids=[self.id]
+            _ = app_search.delete_documents(
+                engine_name="papers", document_ids=[self.id]
             )
         elif mode == "create":
-            resp = app_search.index_documents(
-                engine_name="papers",
-                documents=[self.data_indexing()]
+            _ = app_search.index_documents(
+                engine_name="papers", documents=[self.data_indexing()]
             )
 
         if not mode == "delete":
@@ -324,20 +354,20 @@ class Paper(models.Model):
             datasets = self.datasets.all()
 
             conditiontypes = apps.get_model("conditions", "ConditionType").objects.all()
-            conditiontypes = conditiontypes.filter(conditions__conditionset__dataset__in=datasets).distinct()
-            documents = [conditiontype.data_indexing() for conditiontype in conditiontypes]
-            resp = app_search.put_documents(
-                engine_name="conditiontypes",
-                documents=documents
+            conditiontypes = conditiontypes.filter(
+                conditions__conditionset__dataset__in=datasets
+            ).distinct()
+            documents = [
+                conditiontype.data_indexing() for conditiontype in conditiontypes
+            ]
+            _ = app_search.put_documents(
+                engine_name="conditiontypes", documents=documents
             )
 
             observables = apps.get_model("phenotypes", "Observable").objects.all()
             observables = observables.filter(phenotype__dataset__in=datasets).distinct()
             documents = [observable.data_indexing() for observable in observables]
-            resp = app_search.put_documents(
-                engine_name="observables",
-                documents=documents
-            )
+            _ = app_search.put_documents(engine_name="observables", documents=documents)
 
 
 class Statusdata(models.Model):

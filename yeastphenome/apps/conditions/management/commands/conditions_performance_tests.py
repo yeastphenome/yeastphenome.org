@@ -1,7 +1,4 @@
 from django.core.management.base import BaseCommand
-from django.db.models import Q, Count
-from django.db.models.functions import Concat
-from django.apps import apps
 
 import time
 
@@ -15,13 +12,13 @@ class Command(BaseCommand):
 
         # Option 1
         start_time = time.time()
-        ps = obj.papers()
+        _ = obj.papers()
         duration = time.time() - start_time
         self.stdout.write("Option 1: %.3f." % duration)
 
         # option 2
         start_time = time.time()
-        ps = obj.papers2()
+        _ = obj.papers2()
         duration = time.time() - start_time
         self.stdout.write("Option 2: %.3f." % duration)
 
@@ -49,4 +46,3 @@ class Command(BaseCommand):
         # ps_list_str = "; ".join(ps)
         # duration = time.time() - start_time
         # self.stdout.write("Option 3: %3f." % duration)
-

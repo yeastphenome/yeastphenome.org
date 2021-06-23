@@ -9,7 +9,7 @@ register = template.Library()
 @register.simple_tag(name="download_button", takes_context=True)
 def download_button(context, dataset_id):
 
-    request = context['request']
+    request = context["request"]
 
     if "cart" in request.session:
         datasets_in_cart = request.session["cart"]
@@ -30,6 +30,12 @@ def download_button(context, dataset_id):
         button_class = "btn-danger remove-from-cart"
         button_label = '<i class="bi bi-download"></i>&nbsp; Remove'
 
-    button = button_template % (str(dataset_id), button_class, button_status, str(dataset_id), button_label)
+    button = button_template % (
+        str(dataset_id),
+        button_class,
+        button_status,
+        str(dataset_id),
+        button_label,
+    )
 
     return mark_safe(button)

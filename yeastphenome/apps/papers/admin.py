@@ -43,13 +43,23 @@ class PaperAdmin(ImprovedModelAdmin):
         "tags",
     ]
     raw_id_fields = ("tags",)
-    readonly_fields = ("systematic_name","observables_summary", "conditiontypes_summary")
+    readonly_fields = (
+        "systematic_name",
+        "observables_summary",
+        "conditiontypes_summary",
+    )
     inlines = (
         StatusdataInline,
         StatustestedInline,
         DatasetInline,
     )
-    search_fields = ("pmid", "first_author", "last_author", "private_notes", "tags__name")
+    search_fields = (
+        "pmid",
+        "first_author",
+        "last_author",
+        "private_notes",
+        "tags__name",
+    )
 
     form = PaperModelForm
 

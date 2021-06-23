@@ -1,8 +1,8 @@
 from django.db.models import Q, F
 
 from yeastphenome.apps.papers.models import Paper
-from yeastphenome.apps.conditions.models import ConditionSet, ConditionType
-from yeastphenome.apps.phenotypes.models import Phenotype, Observable
+from yeastphenome.apps.conditions.models import ConditionType
+from yeastphenome.apps.phenotypes.models import Observable
 from yeastphenome.apps.datasets.models import Dataset
 from yeastphenome.apps.genes.models import Gene
 
@@ -49,9 +49,9 @@ def get_latest_stats():
     papers_qs = Paper.objects.all_valid()
     papers_processed_qs = Paper.objects.all_loaded()
 
-    phenotypes_qs = Phenotype.objects.all_valid()
-    conditions_qs = ConditionSet.objects.all_valid()
-    conditiontypes_qs = ConditionType.objects.all_valid()
+    # phenotypes_qs = Phenotype.objects.all_valid()
+    # conditions_qs = ConditionSet.objects.all_valid()
+    # conditiontypes_qs = ConditionType.objects.all_valid()
 
     datasets_qs = Dataset.objects.all_loaded()
     genes_qs = Gene.objects.all_valid()
@@ -75,7 +75,9 @@ def get_latest_stats():
     phenotypes_nr = papers_processed_qs.values("datasets__phenotype").distinct().count()
 
     # Number of conditions
-    conditions_nr = papers_processed_qs.values("datasets__conditionset").distinct().count()
+    conditions_nr = (
+        papers_processed_qs.values("datasets__conditionset").distinct().count()
+    )
 
     # Number of datasets
     datasets_nr = datasets_qs.count()
@@ -89,7 +91,9 @@ def get_latest_stats():
     )  # datasets with recovered data
 
     h1 = Q(tested_list_published=False)  # datasets in need of tested list recovery
-    h2 = Q(tested_list_published=False) & Q(tested_source_id__isnull=False)  # datasets with recovered tested list
+    h2 = Q(tested_list_published=False) & Q(
+        tested_source_id__isnull=False
+    )  # datasets with recovered tested list
 
     datasets_nr_need_data = datasets_qs.filter(g1).distinct().count()
     datasets_nr_recovered_data = datasets_qs.filter(g2).distinct().count()
@@ -130,7 +134,6 @@ def get_latest_stats():
             nr = datasets_qs.filter(c & d).count()
             label = "c" + str(ic) + "d" + str(id)
             collectiontype_datatype[label] = nr
-
 
     # # --- Conditions ---
     # top_conditiontypes = (
@@ -194,7 +197,9 @@ def get_latest_stats():
     # --- Phenotypes ----
     p1 = Q(phenotype__name__contains="growth")
     p2 = Q(phenotype__name__contains="expression of")
-    p3 = ~Q(phenotype__name__contains="growth") & ~Q(phenotype__name__contains="expression of")
+    p3 = ~Q(phenotype__name__contains="growth") & ~Q(
+        phenotype__name__contains="expression of"
+    )
 
     collectiontype_phenotype = dict()
     collectiontype_phenotype["total"] = 0

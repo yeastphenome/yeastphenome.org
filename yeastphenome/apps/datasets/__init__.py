@@ -1,1 +1,1 @@
-default_app_config = 'yeastphenome.apps.datasets.apps.DatasetsConfig'
+default_app_config = "yeastphenome.apps.datasets.apps.DatasetsConfig"

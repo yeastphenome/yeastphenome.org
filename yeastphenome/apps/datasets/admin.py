@@ -204,7 +204,7 @@ class CollectionForm(forms.ModelForm):
 
 class CollectionAdmin(ImprovedModelAdmin):
     form = CollectionForm
-    list_display = ("__str__", 'is_valid')
+    list_display = ("__str__", "is_valid")
 
 
 class StatusAdmin(ImprovedModelAdmin):

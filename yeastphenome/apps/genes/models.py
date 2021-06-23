@@ -4,12 +4,9 @@ from django.core.exceptions import FieldError
 from django.db import models
 from django.db.models import F
 
-from yeastphenome.apps.datasets.models import Data, Dataset
+from yeastphenome.apps.datasets.models import Dataset
 
-from yeastphenome.settings import (
-    ELASTICSEARCH_HOST,
-    ELASTICSEARCH_AUTH
-)
+from yeastphenome.settings import ELASTICSEARCH_HOST, ELASTICSEARCH_AUTH
 
 from elastic_enterprise_search import AppSearch
 
@@ -23,7 +20,6 @@ class GeneAlias(models.Model):
 
 
 class GeneManager(models.Manager):
-
     def all_valid(self):
         return self.all()
 
@@ -63,12 +59,17 @@ class Gene(models.Model):
         datasets = Dataset.objects.all_valid()
         data = self.data.filter(dataset__in=datasets)
         data = data.filter(valuez__isnull=False)
-        data = data.values("valuez", "dataset_id",
-                           dataset_name=F("dataset__name"))
+        data = data.values("valuez", "dataset_id", dataset_name=F("dataset__name"))
         return data
 
     def get_similarities(self):
-        data = self.similarities.values("score", "pvalue", "gene2_id", "gene2__systematic_name", "gene2__common_name")
+        data = self.similarities.values(
+            "score",
+            "pvalue",
+            "gene2_id",
+            "gene2__systematic_name",
+            "gene2__common_name",
+        )
         return data
 
     def data_indexing(self):
@@ -77,7 +78,7 @@ class Gene(models.Model):
             "systematic_name": self.systematic_name,
             "common_name": self.common_name,
             "aliases_list_as_str": self.aliases_list_as_str(),
-            "description": self.description
+            "description": self.description,
         }
         return json
 
@@ -89,19 +90,14 @@ class Gene(models.Model):
         )
 
         if mode == "update":
-            resp = app_search.put_documents(
-                engine_name="genes",
-                documents=[self.data_indexing()]
+            _ = app_search.put_documents(
+                engine_name="genes", documents=[self.data_indexing()]
             )
         elif mode == "delete":
-            resp = app_search.delete_documents(
-                engine_name="genes",
-                document_ids=[self.id]
-            )
+            _ = app_search.delete_documents(engine_name="genes", document_ids=[self.id])
         elif mode == "create":
-            resp = app_search.index_documents(
-                engine_name="genes",
-                documents=[self.data_indexing()]
+            _ = app_search.index_documents(
+                engine_name="genes", documents=[self.data_indexing()]
             )
         # print(resp)
 
@@ -117,9 +113,7 @@ class GeneSimilarity(models.Model):
     gene2 = models.ForeignKey(
         Gene, on_delete=models.CASCADE, related_name="gene_similarity2"
     )
-    score = models.DecimalField(
-        max_digits=10, decimal_places=3
-    )
+    score = models.DecimalField(max_digits=10, decimal_places=3)
     # IMPORTANT: this is actually a standard deviation
     pvalue = models.DecimalField(max_digits=10, decimal_places=6)
 

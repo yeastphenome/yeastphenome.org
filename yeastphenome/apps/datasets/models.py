@@ -10,10 +10,7 @@ from django.utils.safestring import mark_safe
 
 from yeastphenome.apps.tags.models import Tag
 
-from yeastphenome.settings import (
-    ELASTICSEARCH_HOST,
-    ELASTICSEARCH_AUTH
-)
+from yeastphenome.settings import ELASTICSEARCH_HOST, ELASTICSEARCH_AUTH
 
 from elastic_enterprise_search import AppSearch
 
@@ -21,7 +18,6 @@ import itertools
 
 
 class CollectionManager(models.Manager):
-
     def all_valid(self):
         # Valid = associated with at least 1 dataset from a relevant paper
         valid_datasets = Dataset.objects.all_valid()
@@ -51,18 +47,30 @@ class Sourcetype(models.Model):
 
 
 class SourceManager(models.Manager):
-
     def all_valid(self):
         valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
-        return self.filter(Q(data_source__in=valid_datasets) | Q(tested_source__in=valid_datasets)).order_by().distinct()
+        return (
+            self.filter(
+                Q(data_source__in=valid_datasets) | Q(tested_source__in=valid_datasets)
+            )
+            .order_by()
+            .distinct()
+        )
 
     def people_to_acknowledge(self):
         valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
         sources = self.filter(sourcetype_id=5).filter(acknowledge=True)
-        sources = sources.filter(Q(data_source__in=valid_datasets)
-                                 | Q(tested_source__in=valid_datasets)).order_by().distinct()
+        sources = (
+            sources.filter(
+                Q(data_source__in=valid_datasets) | Q(tested_source__in=valid_datasets)
+            )
+            .order_by()
+            .distinct()
+        )
         people_list = sources.values_list("label", flat=True)
-        people_list = [person for person in people_list if not person == "" and person is not None]
+        people_list = [
+            person for person in people_list if not person == "" and person is not None
+        ]
         people_list = [person.split(", ") for person in people_list]
         people_list = list(set(itertools.chain.from_iterable(people_list)))
         return people_list
@@ -132,7 +140,6 @@ class Datatype(models.Model):
 
 
 class DatasetManager(models.Manager):
-
     def all_valid(self):
         datasets = self.filter(paper__latest_data_status__status__is_valid=True)
         datasets = datasets.filter(collection__is_valid=True)
@@ -276,14 +283,18 @@ class Dataset(models.Model):
         availability["type_data_available"] = self.data_available
 
         if self.tested_source:
-            availability["tested_available"] = mark_safe("%s (%s mutants)" % (self.tested_source.html(),
-                                                                              intcomma(num_available_data)))
+            availability["tested_available"] = mark_safe(
+                "%s (%s mutants)"
+                % (self.tested_source.html(), intcomma(num_available_data))
+            )
         else:
             availability["tested_available"] = "no"
 
         if self.data_source:
-            availability["data_available"] = mark_safe("%s (%s mutants)" % (self.data_source.html(),
-                                                                            intcomma(num_available_data)))
+            availability["data_available"] = mark_safe(
+                "%s (%s mutants)"
+                % (self.data_source.html(), intcomma(num_available_data))
+            )
         else:
             availability["data_available"] = "%s mutants" % num_available_data
 
@@ -320,7 +331,9 @@ class Dataset(models.Model):
         return "; ".join(self.phenotype_aliases_list())
 
     def conditions_aliases_list(self):
-        conditionset_aliases = self.conditionset.aliases_list() if self.conditionset else []
+        conditionset_aliases = (
+            self.conditionset.aliases_list() if self.conditionset else []
+        )
         medium_aliases = [str(self.medium)] if self.medium else []
         aliases = list(set(conditionset_aliases + medium_aliases))
         return aliases
@@ -331,8 +344,12 @@ class Dataset(models.Model):
     def tags_list(self):
         tags_list_self = list(self.tags.values_list("name", flat=True))
         tags_list_phenotype = self.phenotype.tags_list() if self.phenotype else []
-        tags_list_conditionset = self.conditionset.tags_list() if self.conditionset else []
-        tags_list = list(set(tags_list_self + tags_list_phenotype + tags_list_conditionset))
+        tags_list_conditionset = (
+            self.conditionset.tags_list() if self.conditionset else []
+        )
+        tags_list = list(
+            set(tags_list_self + tags_list_phenotype + tags_list_conditionset)
+        )
         return tags_list
 
     def tags_list_as_str(self):
@@ -360,15 +377,20 @@ class Dataset(models.Model):
         return mark_safe(html)
 
     def get_scores(self):
-        data = self.data.filter(valuez__isnull=False).values("valuez", "gene_id",
-                                                             gene_systematic_name=F("gene__systematic_name"),
-                                                             gene_common_name=F("gene__common_name"))
+        data = self.data.filter(valuez__isnull=False).values(
+            "valuez",
+            "gene_id",
+            gene_systematic_name=F("gene__systematic_name"),
+            gene_common_name=F("gene__common_name"),
+        )
         return data
 
     def get_similarities(self):
         data = self.similarities.filter(dataset2__data_source__release=True)
         data = data.filter(~Q(dataset2__collection__shortname="het"))
-        data = data.values("score", "pvalue", "dataset2_id", dataset2_name=F("dataset2__name"))
+        data = data.values(
+            "score", "pvalue", "dataset2_id", dataset2_name=F("dataset2__name")
+        )
         return data
 
     def indexing_progress(self):
@@ -379,13 +401,15 @@ class Dataset(models.Model):
             "id": self.id,
             "paper": self.paper.systematic_name if self.paper else "",
             "collection": self.collection.shortname if self.collection else "",
-            "data_available": self.data_available.shortname if self.data_available else "",
+            "data_available": self.data_available.shortname
+            if self.data_available
+            else "",
             "medium": self.medium.display_name if self.medium else "",
             "conditionset": self.conditionset.display_name if self.conditionset else "",
             "conditions_aliases_list_as_str": self.conditions_aliases_list_as_str(),
             "phenotype": self.phenotype.name if self.phenotype else "",
             "phenotype_aliases_list_as_str": self.phenotype_aliases_list_as_str(),
-            "tags_list_as_str": self.tags_list_as_str()
+            "tags_list_as_str": self.tags_list_as_str(),
         }
         return json
 
@@ -397,37 +421,29 @@ class Dataset(models.Model):
         )
 
         if mode == "update":
-            resp = app_search.put_documents(
-                engine_name="datasets",
-                documents=[self.data_indexing()]
+            _ = app_search.put_documents(
+                engine_name="datasets", documents=[self.data_indexing()]
             )
         elif mode == "delete":
-            resp = app_search.delete_documents(
-                engine_name="datasets",
-                document_ids=[self.id]
+            _ = app_search.delete_documents(
+                engine_name="datasets", document_ids=[self.id]
             )
         elif mode == "create":
-            resp = app_search.index_documents(
-                engine_name="datasets",
-                documents=[self.data_indexing()]
+            _ = app_search.index_documents(
+                engine_name="datasets", documents=[self.data_indexing()]
             )
 
         # Update related indices
         conditions = self.conditionset.conditions.all()
         documents = [condition.type.data_indexing() for condition in conditions]
-        resp = app_search.put_documents(
-            engine_name="conditiontypes",
-            documents=documents
-        )
+        _ = app_search.put_documents(engine_name="conditiontypes", documents=documents)
         observable = self.phenotype.observable
-        resp = app_search.put_documents(
-            engine_name="observables",
-            documents=[observable.data_indexing()]
+        _ = app_search.put_documents(
+            engine_name="observables", documents=[observable.data_indexing()]
         )
         paper = self.paper
-        resp = app_search.put_documents(
-            engine_name="papers",
-            documents=[paper.data_indexing()]
+        _ = app_search.put_documents(
+            engine_name="papers", documents=[paper.data_indexing()]
         )
 
 
@@ -470,7 +486,6 @@ class DatasetSimilarity(models.Model):
 
 
 class DataManager(models.Manager):
-
     def all_valid(self):
         valid_datasets = Dataset.objects.all_valid()
         return self.filter(dataset__in=valid_datasets)
@@ -479,9 +494,15 @@ class DataManager(models.Manager):
 class Data(models.Model):
 
     gene = models.ForeignKey(
-        "genes.Gene", null=True, blank=True, related_name="data", on_delete=models.DO_NOTHING
+        "genes.Gene",
+        null=True,
+        blank=True,
+        related_name="data",
+        on_delete=models.DO_NOTHING,
     )
-    dataset = models.ForeignKey(Dataset, related_name="data", on_delete=models.DO_NOTHING)
+    dataset = models.ForeignKey(
+        Dataset, related_name="data", on_delete=models.DO_NOTHING
+    )
 
     # Raw phenotypic score
     value = models.DecimalField(max_digits=20, decimal_places=10)
