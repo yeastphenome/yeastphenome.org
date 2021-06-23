@@ -4,8 +4,6 @@ from django.shortcuts import render
 from elastic_enterprise_search import AppSearch
 
 from yeastphenome.apps.common.forms import GlobalSearchForm
-
-from ratelimit.decorators import ratelimit
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
     VIEW_RATE_LIMIT_BLOCK as rl_block,
@@ -13,13 +11,15 @@ from yeastphenome.settings import (
     ELASTICSEARCH_AUTH
 )
 
+from ratelimit.decorators import ratelimit
+
 import numpy as np
 import re
 
 
 @never_cache
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def index2(request):
+def index(request):
 
     context = dict()
 
@@ -253,4 +253,5 @@ def flatten_response(response, fields):
             x[f] = int(x[f]) if f == "id" else x[f]
         flat_response.append(x)
     return flat_response
+
 

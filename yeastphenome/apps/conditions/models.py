@@ -4,7 +4,6 @@ from django.apps import apps
 from django.db.models import Q
 from django.utils.safestring import mark_safe
 
-from django_elasticsearch_dsl_drf.wrappers import dict_to_obj
 from elastic_enterprise_search import AppSearch
 
 from yeastphenome.apps.phenotypes.models import Phenotype
@@ -19,6 +18,7 @@ from libchebipy import ChebiEntity
 import re
 import itertools
 from urllib.parse import quote_plus
+import time
 
 
 class ConditionTypeManager(models.Manager):
@@ -51,12 +51,17 @@ class ConditionType(models.Model):
     def __str__(self):
         return u"%s" % self.name
 
+    def is_valid(self):
+        valid_datasets = Dataset.objects.all_valid()
+        valid_conditions = self.conditions.filter(conditionset__dataset__in=valid_datasets)
+        return valid_conditions.exists()
+
     def aliases_list(self):
         if self.other_names:
             other_names = [name.strip() for name in re.split("[,\n]", self.other_names)]
         else:
             other_names = []
-        other_names += [self.chebi_name, self.pubchem_name]
+        other_names += [self.chebi_name, self.pubchem_name, str(self.chebi_id), str(self.pubchem_id)]
         other_names = list(
             set([name for name in other_names if name])
         )
@@ -99,8 +104,6 @@ class ConditionType(models.Model):
         observables1 = self.conditions.all_valid().values_list(
             "conditionset__dataset__phenotype__observable__name", flat=True
         )
-        # observables2 = self.conditions.all_valid().values_list("medium__dataset__phenotype__observable__name", flat=True)
-        # observables = observables1.union(observables2).order_by().distinct()
         observables = observables1.order_by().distinct()
         observables = [o for o in observables if o]
         return "; ".join(observables)
@@ -109,6 +112,7 @@ class ConditionType(models.Model):
         papers = self.conditions.all_valid().values_list(
             "conditionset__dataset__paper__systematic_name", flat=True
         ).order_by().distinct()
+
         papers = [p for p in papers if p]
         papers_list = "; ".join(papers)
         return papers_list
@@ -130,13 +134,6 @@ class ConditionType(models.Model):
 
     def tags_list_as_str(self):
         return "; ".join(self.tags_list())
-
-    def tags_indexing(self):
-        wrapper = dict_to_obj({
-            "list": self.tags_list(),
-            "list_as_str": self.tags_list_as_str()
-        })
-        return wrapper
 
     def link_detail(self):
         html = '<a href="%s">%s</a>' % (
@@ -162,25 +159,52 @@ class ConditionType(models.Model):
                 "tags_list_as_str": self.tags_list_as_str()}
         return json
 
-    def update_indexing(self):
-        app_search = AppSearch(
-            ELASTICSEARCH_HOST,
-            http_auth=ELASTICSEARCH_AUTH,
-        )
-        resp = app_search.put_documents(
-            engine_name="conditiontypes",
-            documents=[self.data_indexing()]
-        )
-        print(resp)
+    def update_indexing(self, mode="create"):
 
-    def delete_indexing(self):
         app_search = AppSearch(
             ELASTICSEARCH_HOST,
             http_auth=ELASTICSEARCH_AUTH,
         )
-        resp = app_search.delete_documents(
-            engine_name="conditiontypes",
-            document_ids=[self.id]
+
+        if mode == "update":
+            if self.is_valid():
+                resp = app_search.put_documents(
+                    engine_name="conditiontypes",
+                    documents=[self.data_indexing()]
+                )
+        elif mode == "delete":
+            resp = app_search.delete_documents(
+                engine_name="conditiontypes",
+                document_ids=[self.id]
+            )
+        elif mode == "create":
+            if self.is_valid():
+                resp = app_search.index_documents(
+                    engine_name="conditiontypes",
+                    documents=[self.data_indexing()]
+                )
+
+        # Update related indices
+        datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
+        datasets = datasets.filter(conditionset__conditions__type=self).distinct()
+        documents = [dataset.data_indexing() for dataset in datasets]
+        resp = app_search.put_documents(
+            engine_name="datasets", documents=documents
+        )
+
+        observables = apps.get_model("phenotypes", "Observable").objects.all()
+        observables = observables.filter(phenotype__dataset__in=datasets).distinct()
+        documents = [observable.data_indexing() for observable in observables]
+        resp = app_search.put_documents(
+            engine_name="observables", documents=documents
+        )
+
+        papers = apps.get_model("papers", "Paper").objects.all_valid()
+        papers = papers.filter(datasets__in=datasets).distinct()
+        documents = [paper.data_indexing() for paper in papers]
+        resp = app_search.put_documents(
+            engine_name="papers",
+            documents=documents
         )
 
 

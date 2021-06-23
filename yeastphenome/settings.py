@@ -61,11 +61,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_extensions",
-    "debug_toolbar",
     "rest_framework",
     "drf_yasg",
-    "django_elasticsearch_dsl",
-    "django_elasticsearch_dsl_drf",
 ]
 
 MIDDLEWARE = [
@@ -76,7 +73,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 # Do we want to enable the cache?
@@ -243,15 +239,6 @@ VIEW_RATE_LIMIT_BLOCK = (
 
 # On any admin or plugin login redirect to standard social-auth entry point for agreement to terms
 LOGIN_REDIRECT_URL = "/login"
-
-ELASTICSEARCH_DSL = {
-    'default': {
-        'hosts': 'localhost:9200'
-    },
-    'dev': {
-        'hosts': 'localhost:9200'
-    }
-}
 
 ELASTICSEARCH_HOST = os.environ.get("ELASTICSEARCH_HOST")
 ELASTICSEARCH_AUTH = os.environ.get("ELASTICSEARCH_AUTH")

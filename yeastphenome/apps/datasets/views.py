@@ -20,8 +20,11 @@ from yeastphenome.apps.common.utils_format import update_values_with_percentile
 
 from libchebipy import ChebiEntity
 import os
-import pandas
+import pandas as pd
+import numpy as np
+import plotly.graph_objects as go
 import tempfile
+import textwrap
 
 from ratelimit.decorators import ratelimit
 from yeastphenome.settings import (
@@ -31,7 +34,7 @@ from yeastphenome.settings import (
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def dataset_detail(request, dataset_id):
+def detail(request, dataset_id):
 
     dataset = get_object_or_404(Dataset, pk=dataset_id)
 
@@ -62,77 +65,112 @@ def dataset_detail(request, dataset_id):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def similar_scatterplot(request, dataset1_id, dataset2_id):
-    """Generate a scatterplot to compare two datasets based on phenotypic scores."""
+def scatterplot(request, dataset1_id, dataset2_id):
+
     dataset1 = get_object_or_404(Dataset, pk=dataset1_id)
     dataset2 = get_object_or_404(Dataset, pk=dataset2_id)
 
-    # Get the correlation to add
-    sim = DatasetSimilarity.objects.filter(
-        Q(dataset1=dataset1, dataset2=dataset2)
-        | Q(dataset1=dataset2, dataset2=dataset1)
-    )
+    data = Data.objects.filter(dataset_id__in=[dataset1_id, dataset2_id])
+    data = data.values("gene_id", "dataset_id", "valuez")
 
-    # Get gene values across datasets 1 and 2
-    data1 = pandas.DataFrame(list(dataset1.data.values()))
-    data2 = pandas.DataFrame(list(dataset2.data.values()))
+    df = pd.DataFrame(list(data))
+    df = df.loc[df['valuez'].notnull()]
+    df['valuez'] = pd.to_numeric(df['valuez'])
 
-    # Join the 2 dataframes using gene_id as the key
-    data = data1.merge(data2, on="gene_id")
+    df_matrix = pd.pivot_table(df, index='gene_id', columns='dataset_id', values='valuez')
 
-    # Only keep rows where both genes have values (are not null)
-    data = data.loc[data["valuez_x"].notnull() & data["valuez_y"].notnull()]
+    genes = pd.DataFrame(list(Gene.objects.all_valid().values("id", "systematic_name", "common_name", "description")))
+    genes["name"] = genes["common_name"] + " / " + genes["systematic_name"]
+    genes["description"] = genes["description"].apply(lambda x: "<br>".join(textwrap.wrap(x, width=40)))
+    genes["link"] = genes.apply(lambda row: reverse("genes:detail", args=[row["id"]]), axis=1)
+    genes["gene_link"] = genes.apply(lambda row: '<a href="' + row["link"] + '">' + row["name"] + '</a>', axis=1)
+    genes.set_index("id", inplace=True)
 
-    # Get gene names
-    names = pandas.DataFrame(
-        list(Gene.objects.filter(id__in=data["gene_id"].values).values())
-    )
+    df_matrix["gene_name"] = genes["name"]
+    df_matrix["gene_description"] = genes["description"]
+    df_matrix["gene_link"] = genes["gene_link"] + "<br><br>" + genes["description"]
+    df_matrix.set_index("gene_name", inplace=True, drop=False)
 
-    # Add them to the data dataframe
-    data = data.merge(
-        names[["id", "systematic_name", "common_name"]],
-        left_on="gene_id",
-        right_on="id",
-    )
+    min_axis = np.floor(np.nanmin(df_matrix[[dataset1_id, dataset2_id]].min(axis=0)))
+    max_axis = np.ceil(np.nanmax(df_matrix[[dataset1_id, dataset2_id]].max(axis=0)))
 
-    # Convert to scores dictionary for view
-    scores = data[["gene_id", "valuez_x", "valuez_y", "systematic_name", "common_name"]]
+    fig = go.Figure()
 
-    # This creates a warning that doesn't seem to be fixable
-    scores["name"] = scores["common_name"] + "/" + scores["systematic_name"]
-    scores = scores.rename(columns={"gene_id": "entry_id"})
-    scores = scores.to_dict(orient="index")
+    scatter = go.Scatter(x=df_matrix[dataset1_id],
+                         y=df_matrix[dataset2_id],
+                         text=df_matrix["gene_name"],
+                         mode='markers',
+                         marker=dict(size=10, opacity=0.5),
+                         name='Normalized phenotypic scores',
+                         hovertemplate =
+                         "<b>%{text}</b><br><br>" +
+                         "x: %{x}<br>" +
+                         "y: %{y}<br><br>" +
+                         "(Click for more info)"
+                         "<extra></extra>",
+                         )
+    fig.add_trace(scatter)
 
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("datasets:index"), "name": "Datasets"},
-        {
-            "url": reverse("datasets:dataset_detail", args=[dataset1.id]),
-            "name": dataset1.short_name,
-        },
-        {
-            "url": reverse("datasets:similar_dataset_table", args=[dataset1.id]),
-            "name": "Similar Datasets",
-        },
-        {
-            "url": reverse("datasets:dataset_detail", args=[dataset2.id]),
-            "name": dataset2.short_name,
-        },
-    ]
+    xy = go.Scatter(x=[min_axis, max_axis],
+                    y=[min_axis, max_axis],
+                    mode='lines',
+                    name='y=x')
+    fig.add_trace(xy)
+
+    annotations = [dict(xclick=df_matrix.loc[gene, dataset1_id],
+                        yclick=df_matrix.loc[gene, dataset2_id],
+                        x=max_axis+1,
+                        y=(max_axis+min_axis)/2,
+                        xanchor="left",
+                        yanchor="middle",
+                        text=df_matrix.loc[gene, "gene_link"],
+                        align="left",
+                        bgcolor="white",
+                        visible=False,
+                        showarrow=False,
+                        clicktoshow="onout") for gene in df_matrix["gene_name"].values]
+    fig.update_layout(margin=dict(r=300, b=300), annotations=annotations)
+
+    num_ticks = 10
+    dtick = np.int((max_axis-min_axis)/num_ticks)
+    tickvals = np.concatenate((np.arange(0, min_axis, -dtick), np.arange(0, max_axis, dtick)))
+
+    fig.update_xaxes(range=[min_axis-1, max_axis*1.5],
+                     tickvals=tickvals,
+                     showgrid=True,
+                     title_text="<br>".join(textwrap.wrap(dataset1.name, width=50)))
+    fig.update_yaxes(range=[min_axis-1, max_axis+1],
+                     tickvals=tickvals,
+                     showgrid=True,
+                     scaleanchor="x",
+                     scaleratio=1,
+                     title_text="<br>".join(textwrap.wrap(dataset2.name, width=50)))
+    fig.update_layout(template='simple_white',
+                      hovermode="closest",
+                      hoverlabel=dict(
+                          bgcolor="white",
+                          bordercolor="#2471A3",
+                          font=dict(
+                              color="black",
+                          )
+                      ),
+                      showlegend=False,
+                      legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01))
+
+
+    graph = fig.to_html(full_html=False, default_height=900, default_width=900)
+
     context = {
-        "title1": dataset1.short_name,
-        "title2": dataset2.short_name,
-        "scores": scores,
-        "entry_type": "genes",
-        "sim": sim.first(),
-        "links": links,
+        "dataset": dataset1,
+        "dataset2": dataset2,
+        "graph": graph,
     }
-    return render(request, "datasets/similar_scatterplot.html", context)
+    return render(request, "datasets/scatterplot.html", context)
 
 
 @never_cache
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def dataset_scores(request, dataset_id):
+def scores(request, dataset_id):
 
     dataset = get_object_or_404(Dataset, pk=dataset_id)
     scores = dataset.get_scores().order_by("valuez")
@@ -147,7 +185,7 @@ def dataset_scores(request, dataset_id):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def dataset_similarities(request, dataset_id):
+def similarities(request, dataset_id):
 
     dataset = get_object_or_404(Dataset, pk=dataset_id)
     similarities = dataset.get_similarities().order_by("-score")
@@ -159,74 +197,6 @@ def dataset_similarities(request, dataset_id):
     }
 
     return render(request, "datasets/similarities_min.html", context)
-
-
-# Datasets Explorer (also the datasets index)
-@never_cache
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def data_explorer_redirect(request, query):
-    return redirect("%s?query=%s" % (reverse("datasets:index"), query))
-
-
-@never_cache
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def data_explorer(request, collection_id=None):
-    """Dataset search is equivalent to the API version, but instead takes GET
-    parameters to derive tags and a query. This will enable users to copy
-    a particular search and share it with colleagues.
-    """
-    # Table will be rendered server side, and we pass query parameters
-    taglist = []
-    for tag in request.GET.get("query", "").split("|"):
-        if not tag:
-            continue
-        taglist.append({"value": tag, "code": "query"})
-
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("datasets:index"), "name": "Datasets"},
-    ]
-    context = {
-        "taglist": taglist,
-        "collection_id": collection_id,
-        "links": links,
-        "active": "explorer",
-        "cart": request.session.get("cart", []),
-        "DOWNLOAD_PREFIX": settings.DOWNLOAD_PREFIX,
-    }
-    return render(request, "datasets/explorer.html", context)
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def tag(request, id):
-
-    t = get_object_or_404(Tag, pk=id)
-
-    datasets = (
-        Dataset.objects.all_valid().filter(tags=id)
-    )
-
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("datasets:index"), "name": "Datasets"},
-        {
-            "url": "%s?query=%s" % (reverse("datasets:index"), t.name),
-            "name": "Tag %s" % t.name,
-        },
-    ]
-
-    return render(
-        request,
-        "datasets/tag.html",
-        {
-            "links": links,
-            "active": "explorer",
-            "tag": t,
-            "datasets": datasets,
-            "DOWNLOAD_PREFIX": settings.DOWNLOAD_PREFIX,
-            "USER_AUTH": request.user.is_authenticated,
-        },
-    )
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)

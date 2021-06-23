@@ -4,4 +4,8 @@ from django.apps import AppConfig
 
 
 class DatasetsConfig(AppConfig):
-    name = "datasets"
+    name = "yeastphenome.apps.datasets"
+    default = True
+
+    def ready(self):
+        import yeastphenome.apps.datasets.signals

@@ -9,9 +9,11 @@ from yeastphenome.settings import (
     VIEW_RATE_LIMIT_BLOCK as rl_block,
 )
 
+import numpy as np
+
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def conditiontype_detail(request, conditiontype_id):
+def detail(request, conditiontype_id):
 
     conditiontype = get_object_or_404(ConditionType, pk=conditiontype_id)
 
@@ -23,18 +25,20 @@ def conditiontype_detail(request, conditiontype_id):
                                                dataset_collection_name=F("collection__shortname"),
                                                dataset_data_name=F("data_available__name"))
     num_datasets = datasets.count()
+    num_datasets_showing = np.minimum(num_datasets, 10)
 
     context = {
         "conditiontype": conditiontype,
         "datasets": datasets[:10],
         "num_datasets": num_datasets,
+        "num_datasets_showing": num_datasets_showing
     }
 
     return render(request, "conditions/detail_min.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def conditiontype_datasets(request, conditiontype_id):
+def datasets(request, conditiontype_id):
 
     conditiontype = get_object_or_404(ConditionType, pk=conditiontype_id)
 

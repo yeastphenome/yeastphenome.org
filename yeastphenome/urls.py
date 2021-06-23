@@ -1,5 +1,4 @@
 from django.conf.urls import include, url
-from django.urls import path
 from django.contrib import admin
 from django.views.generic.base import TemplateView
 
@@ -11,8 +10,6 @@ from yeastphenome.apps.datasets import urls as datasets_urls
 from yeastphenome.apps.genes import urls as gene_urls
 from yeastphenome.apps.search import urls as search_urls
 from yeastphenome.apps.downloads import urls as downloads_urls
-
-import debug_toolbar
 
 # Custom 404 page
 handler404 = "yeastphenome.apps.common.views.handler404"
@@ -35,5 +32,4 @@ urlpatterns = [
             template_name="base/robots.txt", content_type="text/plain"
         ),
     ),
-    path('__debug__/', include(debug_toolbar.urls)),
 ]

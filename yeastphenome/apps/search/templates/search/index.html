@@ -25,27 +25,27 @@
                     <li class="nav-item" {% if tab == 'papers' %}class="active"{% endif %}>
                         <a class="nav-link {% if tab == 'papers' %}active{% endif %}"
                            aria-current="page"
-                           href="/search/?q={{ request.GET.q|urlencode }}&tab=papers">Papers &nbsp; <span class="badge rounded-pill bg-secondary">{{ num_papers }}</span></a>
+                           href="/search/?q={{ request.GET.q|urlencode }}&field={{ request.GET.field|urlencode }}&tab=papers">Papers &nbsp; <span class="badge rounded-pill bg-secondary">{{ num_papers }}</span></a>
                     </li>
                     <li class="nav-item" {% if tab == 'datasets' %}class="active"{% endif %}>
                         <a class="nav-link {% if tab == 'datasets' %}active{% endif %}"
                            aria-current="page"
-                           href="/search/?q={{ request.GET.q|urlencode }}&tab=datasets">Datasets &nbsp; <span class="badge rounded-pill bg-secondary">{{ num_datasets }}</span></a>
+                           href="/search/?q={{ request.GET.q|urlencode }}&field={{ request.GET.field|urlencode }}&tab=datasets">Datasets &nbsp; <span class="badge rounded-pill bg-secondary">{{ num_datasets }}</span></a>
                     </li>
                     <li class="nav-item" {% if tab == 'conditions' %}class="active"{% endif %}>
                         <a class="nav-link {% if tab == 'conditions' %}active{% endif %}"
                            aria-current="page"
-                           href="/search/?q={{ request.GET.q|urlencode }}&tab=conditions">Conditions &nbsp; <span class="badge rounded-pill bg-secondary">{{ num_conditions }}</span></a>
+                           href="/search/?q={{ request.GET.q|urlencode }}&field={{ request.GET.field|urlencode }}&tab=conditions">Conditions &nbsp; <span class="badge rounded-pill bg-secondary">{{ num_conditions }}</span></a>
                     </li>
                     <li class="nav-item" {% if tab == 'phenotypes' %}class="active"{% endif %}>
                         <a class="nav-link {% if tab == 'phenotypes' %}active{% endif %}"
                            aria-current="page"
-                           href="/search/?q={{ request.GET.q|urlencode }}&tab=phenotypes">Phenotypes &nbsp; <span class="badge rounded-pill bg-secondary">{{ num_phenotypes }}</span></a>
+                           href="/search/?q={{ request.GET.q|urlencode }}&field={{ request.GET.field|urlencode }}&tab=phenotypes">Phenotypes &nbsp; <span class="badge rounded-pill bg-secondary">{{ num_phenotypes }}</span></a>
                     </li>
                     <li class="nav-item" {% if tab == 'genes' %}class="active"{% endif %}>
                         <a class="nav-link {% if tab == 'genes' %}active{% endif %}"
                            aria-current="page"
-                           href="/search/?q={{ request.GET.q|urlencode }}&tab=genes">Genes &nbsp; <span class="badge rounded-pill bg-secondary">{{ num_genes }}</span></a>
+                           href="/search/?q={{ request.GET.q|urlencode }}&field={{ request.GET.field|urlencode }}&tab=genes">Genes &nbsp; <span class="badge rounded-pill bg-secondary">{{ num_genes }}</span></a>
                     </li>
                 </ul>
             </div>

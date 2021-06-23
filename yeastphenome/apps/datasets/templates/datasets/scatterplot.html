@@ -1,0 +1,30 @@
+{% extends "base/base_min.html" %}
+{% load static %}
+{% load my_filters %}
+{% block title %}{{ SITE_NAME }}{% endblock %}
+{% block content %}
+
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <span class="badge rounded-pill bg-secondary">Datasets</span>
+            <a href="{% url 'datasets:detail' dataset.id %}"><span class="badge rounded-pill bg-primary">{{ dataset.name }}</span></a>
+        </div>
+    </div>
+
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <h1>Compare datasets</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <strong>x-axis:</strong> <a href="{% url 'datasets:detail' dataset.id %}">{{ dataset.name }}</a>
+            <br><strong>y-axis:</strong> <a href="{%  url 'datasets:detail' dataset2.id %}">{{ dataset2.name }}</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 d-flex justify-content-center">
+            {{ graph|safe }}
+        </div>
+    </div>
+{% endblock %}

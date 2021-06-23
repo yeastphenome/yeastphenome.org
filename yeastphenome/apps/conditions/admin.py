@@ -134,6 +134,12 @@ class ConditionTypeAdmin(ImprovedModelAdmin):
     inlines = (ConditionInline,)
 
     def save_model(self, request, obj, form, change):
+
+        # To update ES indexing immediately: save related fields (e.g., tags)
+        if not obj.id:
+            super().save_model(request, obj, form, change)
+        form.save_m2m()
+
         # Moved from global import, causes multiple warnings / errors per worker
         from pubchempy import Compound
 
@@ -159,7 +165,8 @@ class ConditionTypeAdmin(ImprovedModelAdmin):
                 obj.pubchem_name = comp.iupac_name
         else:
             obj.pubchem_name = None
-        obj.save()
+
+        super().save_model(request, obj, form, change)
 
 
 class ConditionSetAdmin(ImprovedModelAdmin):

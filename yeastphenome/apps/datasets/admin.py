@@ -98,6 +98,15 @@ class DatasetAdmin(ImprovedModelAdmin):
             )
         return initial
 
+    def save_model(self, request, obj, form, change):
+
+        # To update ES indexing immediately: save related fields (e.g., tags)
+        if not obj.id:
+            super().save_model(request, obj, form, change)
+        form.save_m2m()
+
+        super(DatasetAdmin, self).save_model(request, obj, form, change)
+
 
 class DatasetInline(ImprovedTabularInline):
     model = Dataset

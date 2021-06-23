@@ -1,8 +1,7 @@
 from django.db import models
 from django.urls import reverse
-from django.db.models import Q, CharField, Value
-from django.db.models.functions import Concat
-from django.conf import settings
+from django.db.models import Q
+from django.apps import apps
 from django.contrib.auth.models import User
 from django.utils.safestring import mark_safe
 
@@ -11,10 +10,13 @@ from yeastphenome.apps.conditions.models import ConditionType, Condition, Condit
 from yeastphenome.apps.datasets.models import Collection, Source
 from yeastphenome.apps.tags.models import Tag
 from yeastphenome.apps.common.utils_format import truncated_list_as_str
+from yeastphenome.settings import (
+    ELASTICSEARCH_HOST,
+    ELASTICSEARCH_AUTH
+)
 
-from django_elasticsearch_dsl_drf.wrappers import dict_to_obj
+from elastic_enterprise_search import AppSearch
 
-import os
 import itertools
 
 
@@ -111,6 +113,11 @@ class Paper(models.Model):
     def __str__(self):
         return self.systematic_name if self.systematic_name else ""
 
+    def is_valid(self):
+        cond1 = self.latest_data_status.status.is_valid
+        cond2 = self.datasets.all_valid().exists()
+        return cond1 & cond2
+
     def collections_list_as_str(self):
         collections = self.datasets.values_list("collection__shortname", flat=True).order_by().distinct()
         return "; ".join(collections)
@@ -146,13 +153,6 @@ class Paper(models.Model):
     def phenotypes_aliases_list_as_str(self):
         return "; ".join(self.phenotypes_aliases_list())
 
-    def phenotypes_indexing(self):
-        wrapper = dict_to_obj({
-            "list_as_str": self.phenotypes_aliases_list_as_str(),
-            "summary": self.observables_summary
-        })
-        return wrapper
-
     def conditiontypes_list(self):
         conditiontypes = self.datasets.values_list("conditionset__conditions__type__name",
                                                    flat=True).order_by().distinct()
@@ -187,13 +187,6 @@ class Paper(models.Model):
     def conditions_aliases_list_as_str(self):
         return "; ".join(self.conditions_aliases_list())
 
-    def conditions_indexing(self):
-        wrapper = dict_to_obj({
-            "list_as_str": self.conditions_aliases_list_as_str(),
-            "summary": self.conditiontypes_summary
-        })
-        return wrapper
-
     def tags_list(self):
 
         tags = Tag.objects.all_valid()
@@ -224,15 +217,9 @@ class Paper(models.Model):
     def tags_list_as_links(self):
         return mark_safe("; ".join([t.link_detail() for t in self.tags.all()]))
 
-    def tags_indexing(self):
-        wrapper = dict_to_obj({
-            "list": self.tags_list(),
-            "list_as_str": self.tags_list_as_str()
-        })
-        return wrapper
-
     def datasets_summary(self):
         str_list = [self.collections_list_as_str(), self.observables_summary, self.conditiontypes_summary]
+        str_list = [s for s in str_list if s]
         return mark_safe("<br>".join(str_list))
 
     @property
@@ -305,13 +292,52 @@ class Paper(models.Model):
                 "systematic_name": self.systematic_name,
                 "pmid": self.pmid,
                 "pub_date": self.pub_date,
-                # "observables_list_as_str": self.observables_list_as_str(),
-                # "phenotypes_aliases_list_as_str": self.phenotypes_aliases_list_as_str(),
-                # "conditiontypes_list_as_str": self.conditiontypes_list_as_str(),
-                # "conditions_aliases_list_as_str": self.conditions_aliases_list_as_str(),
                 "tags_list_as_str": self.tags_list_as_str()
                 }
         return json
+
+    def update_indexing(self, mode="create"):
+
+        app_search = AppSearch(
+            ELASTICSEARCH_HOST,
+            http_auth=ELASTICSEARCH_AUTH,
+        )
+
+        if mode == "update":
+            resp = app_search.put_documents(
+                engine_name="papers",
+                documents=[self.data_indexing()]
+            )
+        elif mode == "delete":
+            resp = app_search.delete_documents(
+                engine_name="papers",
+                document_ids=[self.id]
+            )
+        elif mode == "create":
+            resp = app_search.index_documents(
+                engine_name="papers",
+                documents=[self.data_indexing()]
+            )
+
+        if not mode == "delete":
+            # Update related indices
+            datasets = self.datasets.all()
+
+            conditiontypes = apps.get_model("conditions", "ConditionType").objects.all()
+            conditiontypes = conditiontypes.filter(conditions__conditionset__dataset__in=datasets).distinct()
+            documents = [conditiontype.data_indexing() for conditiontype in conditiontypes]
+            resp = app_search.put_documents(
+                engine_name="conditiontypes",
+                documents=documents
+            )
+
+            observables = apps.get_model("phenotypes", "Observable").objects.all()
+            observables = observables.filter(phenotype__dataset__in=datasets).distinct()
+            documents = [observable.data_indexing() for observable in observables]
+            resp = app_search.put_documents(
+                engine_name="observables",
+                documents=documents
+            )
 
 
 class Statusdata(models.Model):

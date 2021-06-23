@@ -2,11 +2,9 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, reverse
 from django.conf import settings
-from django.db.models import Q
-import pandas
 
 from yeastphenome.apps.datasets.models import Data, Dataset
-from yeastphenome.apps.genes.models import Gene, GeneSimilarity
+from yeastphenome.apps.genes.models import Gene
 from yeastphenome.apps.common.utils_format import update_values_with_percentile
 
 from ratelimit.decorators import ratelimit
@@ -15,9 +13,13 @@ from yeastphenome.settings import (
     VIEW_RATE_LIMIT_BLOCK as rl_block,
 )
 
+import pandas as pd
+import numpy as np
+import plotly.graph_objects as go
+
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def gene_detail(request, gene_id):
+def detail(request, gene_id):
 
     gene = get_object_or_404(Gene, pk=gene_id)
 
@@ -75,137 +77,108 @@ def similarities(request, gene_id):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def similar_scatterplot(request, gene1_id, gene2_id):
-    """Generate a scatterplot to compare two genes across datasets. You can
-    interchange gene1 and gene2 and they will produce the same plot (but switched
-    axes). This makes the view flexible to any combination of genes.
-    """
+def scatterplot(request, gene1_id, gene2_id):
+
     gene1 = get_object_or_404(Gene, pk=gene1_id)
     gene2 = get_object_or_404(Gene, pk=gene2_id)
 
-    # Get the correlation to add
-    sim = GeneSimilarity.objects.filter(
-        Q(gene1=gene1, gene2=gene2) | Q(gene1=gene2, gene2=gene1)
-    )
+    data = Data.objects.all_valid().filter(gene_id__in=[gene1_id, gene2_id])
+    data = data.values("gene_id", "dataset_id", "valuez")
 
-    # Get data for gene1 and gene2 as pandas dataframes
-    data1 = pandas.DataFrame(list(Data.objects.filter(gene_id=gene1.id).values()))
-    data2 = pandas.DataFrame(list(Data.objects.filter(gene_id=gene2.id).values()))
+    df = pd.DataFrame(list(data))
+    df = df.loc[df['valuez'].notnull()]
+    df['valuez'] = pd.to_numeric(df['valuez'])
 
-    # Join the 2 dataframes using dataset_id as the key
-    data = data1.merge(data2, on="dataset_id")
+    df_matrix = pd.pivot_table(df, index='dataset_id', columns='gene_id', values='valuez')
 
-    # Only keep rows where both genes have values (are not null)
-    data = data.loc[data["valuez_x"].notnull() & data["valuez_y"].notnull()]
+    datasets = Dataset.objects.all_valid().values("id", "name")
+    datasets_df = pd.DataFrame(list(datasets))
 
-    # Get datasets names
-    datasets = pandas.DataFrame(
-        list(Dataset.objects.filter(id__in=data["dataset_id"].values).values())
-    )
+    datasets_df["name2"] = datasets_df["name"].apply(lambda x: "<br>".join(x.split(" | ")))
 
-    # Add them to the data dataframe
-    data = data.merge(datasets[["id", "name"]], left_on="dataset_id", right_on="id")
-    data = data.rename(columns={"dataset_id": "entry_id"})
+    datasets_df["link"] = datasets_df.apply(lambda row: reverse("datasets:detail", args=[row["id"]]), axis=1)
+    datasets_df["dataset_link"] = datasets_df.apply(lambda row: '<a href="' + row["link"] + '">' + row["name2"] + '</a>', axis=1)
+    datasets_df.set_index("id", inplace=True)
 
-    # Convert to scores dictionary for view
-    scores = data[["entry_id", "valuez_x", "valuez_y", "name"]].to_dict(orient="index")
+    df_matrix["dataset_name"] = datasets_df["name"]
+    df_matrix["dataset_name2"] = datasets_df["name2"]
+    df_matrix["dataset_link"] = datasets_df["dataset_link"]
 
-    # Explore data > Genes > YHR045 / YHR045W > Similar genes > DAP1 / YPL170W
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("genes:index"), "name": "Genes"},
-        {
-            "url": reverse("genes:detail", args=[gene1.id]),
-            "name": "%s" % gene1,
-        },
-        {
-            "url": reverse("genes:similar_genes", args=[gene1.id]),
-            "name": "Similar Genes",
-        },
-        {
-            "url": reverse("genes:similar_scatterplot", args=[gene1.id, gene2.id]),
-            "name": "%s" % gene2,
-        },
-    ]
+    df_matrix.set_index("dataset_name", inplace=True, drop=False)
+
+    min_axis = np.floor(np.nanmin(df_matrix[[gene1_id, gene2_id]].min(axis=0)))
+    max_axis = np.ceil(np.nanmax(df_matrix[[gene2_id, gene2_id]].max(axis=0)))
+
+    fig = go.Figure()
+
+    scatter = go.Scatter(x=df_matrix[gene1_id],
+                         y=df_matrix[gene2_id],
+                         text=df_matrix["dataset_name2"],
+                         mode='markers',
+                         marker=dict(size=10, opacity=0.5),
+                         name='Normalized phenotypic scores',
+                         hovertemplate =
+                         "<b>%{text}</b><br><br>" +
+                         "x: %{x}<br>" +
+                         "y: %{y}<br><br>" +
+                         "(Click for more info)"
+                         "<extra></extra>",
+                         )
+    fig.add_trace(scatter)
+
+    xy = go.Scatter(x=[min_axis, max_axis],
+                    y=[min_axis, max_axis],
+                    mode='lines',
+                    name='y=x')
+    fig.add_trace(xy)
+
+    annotations = [dict(xclick=df_matrix.loc[dataset_name, gene1_id],
+                        yclick=df_matrix.loc[dataset_name, gene2_id],
+                        x=max_axis+1,
+                        y=(max_axis+min_axis)/2,
+                        xanchor="left",
+                        yanchor="middle",
+                        text=df_matrix.loc[dataset_name, "dataset_link"],
+                        align="left",
+                        bgcolor="white",
+                        visible=False,
+                        showarrow=False,
+                        clicktoshow="onout") for dataset_name in df_matrix["dataset_name"].values]
+    fig.update_layout(margin=dict(r=300, b=300), annotations=annotations)
+
+    num_ticks = 10
+    dtick = np.int((max_axis-min_axis)/num_ticks)
+    tickvals = np.concatenate((np.arange(0, min_axis, -dtick), np.arange(0, max_axis, dtick)))
+
+    fig.update_xaxes(range=[min_axis-1, max_axis+1],
+                     tickvals=tickvals,
+                     showgrid=True,
+                     title_text=str(gene1))
+    fig.update_yaxes(range=[min_axis-1, max_axis+1],
+                     tickvals=tickvals,
+                     showgrid=True,
+                     scaleanchor="x",
+                     scaleratio=1,
+                     title_text=str(gene2))
+    fig.update_layout(template='simple_white',
+                      hovermode="closest",
+                      hoverlabel=dict(
+                          bgcolor="white",
+                          bordercolor="#2471A3",
+                          font=dict(
+                              color="black",
+                          )
+                      ),
+                      showlegend=False,
+                      legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01))
+
+
+    graph = fig.to_html(full_html=False, default_height=900, default_width=900)
 
     context = {
-        "title1": gene1,
-        "title2": gene2,
-        "entry_type": "datasets",
-        "scores": scores,
-        "sim": sim.first(),
-        "links": links,
-        "active": "explorer",
+        "gene": gene1,
+        "gene2": gene2,
+        "graph": graph,
     }
-    return render(request, "genes/similar_scatterplot.html", context)
+    return render(request, "genes/scatterplot.html", context)
 
-
-
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def download_gene_similarities(request, gene_id):
-    """Download all GeneSimilarity values for a given gene"""
-
-    import pandas as pd
-
-    gene = get_object_or_404(Gene, pk=gene_id)
-
-    sims = (
-        gene.get_ranked_similar()
-        .select_related("gene1__systematic_name", "gene2__systematic_name")
-        .values_list(
-            "gene1__systematic_name", "gene2__systematic_name", "score", "pvalue"
-        )
-    )
-
-    df = pd.DataFrame(sims)
-    df.columns = ["Gene1", "Gene2", "Correlation mean", "Correlation std. dev."]
-
-    filename = "%s_gene_similarities_%s.txt" % (
-        settings.DOWNLOAD_PREFIX,
-        gene.systematic_name,
-    )
-
-    # Prepare the HttpResponse
-    response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = "attachment; filename=%s" % filename
-
-    # Print data matrix to response buffer
-    df.to_csv(path_or_buf=response, sep="\t", index=False)
-
-    return response
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def download_gene_scores(request, gene_id=None):
-    """Download all datasets. If a gene name is provided, filter to those"""
-
-    import pandas as pd
-
-    gene = get_object_or_404(Gene, pk=gene_id)
-
-    scores = (
-        gene.get_data()
-        .select_related("dataset__name")
-        .values_list("dataset__name", "valuez")
-    )
-    scores_df = pd.DataFrame(
-        scores, columns=["Dataset name", "Normalized Phenotypic Score"]
-    )
-    scores_df["Gene"] = gene.systematic_name
-    scores_df = scores_df.reindex(
-        columns=["Gene", "Dataset name", "Normalized Phenotypic Score"]
-    )
-
-    # Prepare the HttpResponse
-    response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = 'attachment; filename="%s_%s_scores.txt"' % (
-        settings.DOWNLOAD_PREFIX,
-        gene.systematic_name,
-    )
-
-    # Print data matrix to response buffer
-    scores_df.to_csv(path_or_buf=response, sep="\t", index=False)
-
-    return response

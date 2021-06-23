@@ -8,9 +8,14 @@ from django.contrib.humanize.templatetags.humanize import intcomma
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
-from django_elasticsearch_dsl_drf.wrappers import dict_to_obj
-
 from yeastphenome.apps.tags.models import Tag
+
+from yeastphenome.settings import (
+    ELASTICSEARCH_HOST,
+    ELASTICSEARCH_AUTH
+)
+
+from elastic_enterprise_search import AppSearch
 
 import itertools
 
@@ -229,19 +234,13 @@ class Dataset(models.Model):
 
     objects = DatasetManager()
 
-    @property
-    def short_name(self):
-        """Break the dataset name into words, and return the first 16. If the
-        dataset name is longer than that, return those first 8 plus ... then
-        the last 8.
-        """
-        words = self.name.split(" ")
-        if len(words) <= 16:
-            return " ".join(words)
-        return " ".join(words[0:8]) + " ... " + " ".join(words[-8:])
-
     def __str__(self):
         return "%s" % self.name
+
+    def is_valid(self):
+        cond1 = self.paper.latest_data_status.status.is_valid
+        cond2 = self.collection.is_valid
+        return cond1 & cond2
 
     # Necessary to run database-wide updates of dataset names
     def save(self, *args, **kwargs):
@@ -320,13 +319,6 @@ class Dataset(models.Model):
     def phenotype_aliases_list_as_str(self):
         return "; ".join(self.phenotype_aliases_list())
 
-    def phenotype_indexing(self):
-        wrapper = dict_to_obj({
-            "name_as_str": str(self.phenotype) if self.phenotype else "",
-            "list_as_str": self.phenotype_aliases_list_as_str()
-        })
-        return wrapper
-
     def conditions_aliases_list(self):
         conditionset_aliases = self.conditionset.aliases_list() if self.conditionset else []
         medium_aliases = [str(self.medium)] if self.medium else []
@@ -335,21 +327,6 @@ class Dataset(models.Model):
 
     def conditions_aliases_list_as_str(self):
         return "; ".join(self.conditions_aliases_list())
-
-    def conditions_indexing(self):
-        wrapper = dict_to_obj({
-            "name_as_str": str(self.conditionset) if self.conditionset else "",
-            "list_as_str": self.conditions_aliases_list_as_str()
-        })
-        return wrapper
-
-    def medium_indexing(self):
-        name = str(self.medium) if self.medium else ""
-        wrapper = dict_to_obj({
-            "name_txt": name,
-            "name_kwd": name
-        })
-        return wrapper
 
     def tags_list(self):
         tags_list_self = list(self.tags.values_list("name", flat=True))
@@ -363,13 +340,6 @@ class Dataset(models.Model):
 
     def tags_list_as_links(self):
         return mark_safe("; ".join([t.link_detail() for t in self.tags.all()]))
-
-    def tags_indexing(self):
-        wrapper = dict_to_obj({
-            "list": self.tags_list(),
-            "list_as_str": self.tags_list_as_str()
-        })
-        return wrapper
 
     def has_data_in_db(self):
         return self.data.exists()
@@ -419,6 +389,47 @@ class Dataset(models.Model):
         }
         return json
 
+    def update_indexing(self, mode="create"):
+
+        app_search = AppSearch(
+            ELASTICSEARCH_HOST,
+            http_auth=ELASTICSEARCH_AUTH,
+        )
+
+        if mode == "update":
+            resp = app_search.put_documents(
+                engine_name="datasets",
+                documents=[self.data_indexing()]
+            )
+        elif mode == "delete":
+            resp = app_search.delete_documents(
+                engine_name="datasets",
+                document_ids=[self.id]
+            )
+        elif mode == "create":
+            resp = app_search.index_documents(
+                engine_name="datasets",
+                documents=[self.data_indexing()]
+            )
+
+        # Update related indices
+        conditions = self.conditionset.conditions.all()
+        documents = [condition.type.data_indexing() for condition in conditions]
+        resp = app_search.put_documents(
+            engine_name="conditiontypes",
+            documents=documents
+        )
+        observable = self.phenotype.observable
+        resp = app_search.put_documents(
+            engine_name="observables",
+            documents=[observable.data_indexing()]
+        )
+        paper = self.paper
+        resp = app_search.put_documents(
+            engine_name="papers",
+            documents=[paper.data_indexing()]
+        )
+
 
 class DatasetSimilarity(models.Model):
     """A dataset similarity is a similarity metric calculated to compare datasets
@@ -461,7 +472,8 @@ class DatasetSimilarity(models.Model):
 class DataManager(models.Manager):
 
     def all_valid(self):
-        return self.all()
+        valid_datasets = Dataset.objects.all_valid()
+        return self.filter(dataset__in=valid_datasets)
 
 
 class Data(models.Model):

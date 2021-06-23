@@ -2,23 +2,13 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path("<int:gene_id>/", views.gene_detail, name="detail"),
+    path("<int:gene_id>/", views.detail, name="detail"),
     path("<int:gene_id>/scores/", views.scores, name="scores"),
     path("<int:gene_id>/similarities/", views.similarities, name="similarities"),
     path(
-        "<int:gene1_id>/similar/<int:gene2_id>/",
-        views.similar_scatterplot,
-        name="similar_scatterplot",
-    ),
-    path(
-        "<int:gene_id>/similar/download/",
-        views.download_gene_similarities,
-        name="download_gene_similarities",
-    ),
-    path(
-        "<int:gene_id>/scores/download/",
-        views.download_gene_scores,
-        name="download_gene_scores",
+        "<int:gene1_id>/similarities/<int:gene2_id>/",
+        views.scatterplot,
+        name="scatterplot",
     ),
 ]
 

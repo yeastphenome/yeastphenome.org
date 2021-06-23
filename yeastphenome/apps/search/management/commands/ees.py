@@ -7,6 +7,10 @@ from yeastphenome.apps.conditions.search import define_document as conditiontype
 from yeastphenome.apps.phenotypes.search import define_document as observables_define_document
 from yeastphenome.apps.datasets.search import define_document as datasets_define_document
 from yeastphenome.apps.papers.search import define_document as papers_define_document
+from yeastphenome.settings import (
+    ELASTICSEARCH_HOST,
+    ELASTICSEARCH_AUTH
+)
 
 import numpy as np
 
@@ -21,8 +25,8 @@ class Command(BaseCommand):
         engine = options["engine"]
 
         app_search = AppSearch(
-            "https://yeastphenome-search-deployment.ent.us-west1.gcp.cloud.es.io",
-            http_auth="private-3gp3qgshpfc7n3eppqz7wpmf",
+            ELASTICSEARCH_HOST,
+            http_auth=ELASTICSEARCH_AUTH,
         )
 
         if engine == "genes":

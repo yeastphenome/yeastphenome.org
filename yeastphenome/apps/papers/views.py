@@ -1,67 +1,37 @@
-from django.shortcuts import render, reverse
+from django.shortcuts import render
 from django.db.models import F
-from django.views.decorators.cache import never_cache
-
-from .graphs import get_papers_by_year
-from .models import Paper
-from .utils import (
-    get_pubmed_paper_context,
-    get_pubmed_paper,
-    get_paper_references_context,
-)
-
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 
-from ratelimit.decorators import ratelimit
-
+from yeastphenome.apps.papers.models import Paper
+from yeastphenome.apps.papers.utils import (
+    get_pubmed_paper_context,
+    get_pubmed_paper,
+    get_paper_references_context,
+)
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
     VIEW_RATE_LIMIT_BLOCK as rl_block,
 )
 
-
-@never_cache
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def paper_explorer(request, year=None):
-    """Return a paginated list of papers with the data explorer."""
-    taglist = []
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("papers:all"), "name": "Papers"},
-    ]
-    for tag in request.GET.get("query", "").split("|"):
-        if not tag:
-            continue
-        taglist.append({"value": tag, "code": "query"})
-
-    return render(
-        request,
-        "papers/explorer.html",
-        {
-            "year": year,
-            "taglist": taglist,
-            "links": links,
-            "active": "explorer",
-        },
-    )
+from ratelimit.decorators import ratelimit
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def paper_detail(request, paper_id):
+def detail(request, paper_id):
     p = get_object_or_404(Paper, pk=paper_id)
 
     datasets = p.datasets.all_valid()
     num_datasets = datasets.count()
 
     datasets = datasets[:10].values(dataset_id=F("id"),
-                               dataset_paper_name=F("paper__systematic_name"),
-                               dataset_phenotype_name=F("phenotype__name"),
-                               dataset_conditionset_name=F("conditionset__display_name"),
-                               dataset_medium_name=F("medium__display_name"),
-                               dataset_collection_name=F("collection__shortname"),
-                               dataset_data_name=F("data_available__name"))
+                                    dataset_paper_name=F("paper__systematic_name"),
+                                    dataset_phenotype_name=F("phenotype__name"),
+                                    dataset_conditionset_name=F("conditionset__display_name"),
+                                    dataset_medium_name=F("medium__display_name"),
+                                    dataset_collection_name=F("collection__shortname"),
+                                    dataset_data_name=F("data_available__name"))
 
     context = {
         "paper": p,
@@ -95,15 +65,15 @@ def paper_detail(request, paper_id):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def paper_datasets(request, paper_id):
+def datasets(request, paper_id):
     p = get_object_or_404(Paper, pk=paper_id)
     datasets_values = p.datasets.all_valid().values(dataset_id=F("id"),
-                                              dataset_paper_name=F("paper__systematic_name"),
-                                              dataset_phenotype_name=F("phenotype__name"),
-                                              dataset_conditionset_name=F("conditionset__display_name"),
-                                              dataset_medium_name=F("medium__display_name"),
-                                              dataset_collection_name=F("collection__shortname"),
-                                              dataset_data_name=F("data_available__name"))
+                                                    dataset_paper_name=F("paper__systematic_name"),
+                                                    dataset_phenotype_name=F("phenotype__name"),
+                                                    dataset_conditionset_name=F("conditionset__display_name"),
+                                                    dataset_medium_name=F("medium__display_name"),
+                                                    dataset_collection_name=F("collection__shortname"),
+                                                    dataset_data_name=F("data_available__name"))
     context = {'paper_id': paper_id,
                'paper_systematic_name': p.systematic_name,
                'paper_datasets': datasets_values}
@@ -111,7 +81,7 @@ def paper_datasets(request, paper_id):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def paper_datasets_list(request, paper_id):
+def datasets_list(request, paper_id):
     p = get_object_or_404(Paper, pk=paper_id)
 
     txt = "\n".join([(u"%s\t%s" % (d.id, d.name)) for d in p.datasets.all()])
@@ -126,11 +96,3 @@ def paper_datasets_list(request, paper_id):
 
     return response
 
-# Graphs
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def papers_by_year(request):
-    """Render a chart.js visualization for papers by year. Color by year"""
-    context = {"paper_counts": get_papers_by_year()}
-    return render(request, "graphs/papers-by-year-wrapper.html", context)

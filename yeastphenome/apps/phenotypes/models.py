@@ -4,11 +4,14 @@ from django.urls import reverse
 from django.apps import apps
 from django.utils.safestring import mark_safe
 
-from django_elasticsearch_dsl_drf.wrappers import dict_to_obj
-
 from yeastphenome.apps.datasets.models import Dataset
 from yeastphenome.apps.tags.models import Tag
-from yeastphenome.apps.common.utils_format import truncated_list_as_str
+from yeastphenome.settings import (
+    ELASTICSEARCH_HOST,
+    ELASTICSEARCH_AUTH
+)
+
+from elastic_enterprise_search import AppSearch
 
 from urllib.parse import quote_plus
 
@@ -35,6 +38,11 @@ class Observable(models.Model):
     def __str__(self):
         return u"%s" % self.name
 
+    def is_valid(self):
+        valid_datasets = Dataset.objects.all_valid()
+        valid_phenotypes = self.phenotype_set.filter(dataset__in=valid_datasets)
+        return valid_phenotypes.exists()
+
     def link_edit(self):
         html = '<a href="%s">%s</a>' % (
             reverse("admin:phenotypes_observable_change", args=(self.id,)),
@@ -47,13 +55,6 @@ class Observable(models.Model):
 
     def tags_list_as_str(self):
         return "; ".join(self.tags_list())
-
-    def tags_indexing(self):
-        wrapper = dict_to_obj({
-            "list": self.tags_list(),
-            "list_as_str": self.tags_list_as_str()
-        })
-        return wrapper
 
     def tags_list_as_links(self):
         link_template = '<a class="search" href="/search/?q=%s&field=tags&tab=phenotypes">%s</a>'
@@ -75,7 +76,7 @@ class Observable(models.Model):
         return mark_safe(html)
 
     def phenotypes(self):
-        return self.phenotype_set
+        return self.phenotype_set.all()
 
     def phenotypes_list(self):
         return self.phenotypes().values_list("name", flat=True)
@@ -99,14 +100,6 @@ class Observable(models.Model):
 
     def reporters_list_as_str(self):
         return "; ".join(self.reporters_list())
-
-    def reporters_indexing(self):
-        list_as_str = self.reporters_list_as_str()
-        wrapper = dict_to_obj({
-            "list_as_str_txt": list_as_str,
-            "list_as_str_kwd": list_as_str
-        })
-        return wrapper
 
     def datasets(self):
         return (
@@ -150,6 +143,49 @@ class Observable(models.Model):
                 "papers_list_as_str": self.papers_list_as_str(),
                 "tags_list_as_str": self.tags_list_as_str()}
         return json
+
+    def update_indexing(self, mode="create"):
+
+        app_search = AppSearch(
+            ELASTICSEARCH_HOST,
+            http_auth=ELASTICSEARCH_AUTH,
+        )
+
+        if mode == "update":
+            resp = app_search.put_documents(
+                engine_name="observables",
+                documents=[self.data_indexing()]
+            )
+        elif mode == "delete":
+            resp = app_search.delete_documents(
+                engine_name="observables",
+                document_ids=[self.id]
+            )
+        elif mode == "create":
+            resp = app_search.index_documents(
+                engine_name="observables",
+                documents=[self.data_indexing()]
+            )
+
+        # Update related indices
+        datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
+        datasets = datasets.filter(phenotype__observable=self).distinct()
+        documents = [dataset.data_indexing() for dataset in datasets]
+        resp = app_search.put_documents(
+            engine_name="datasets", documents=documents)
+
+        conditiontypes = apps.get_model("conditions", "ConditionType").objects.all()
+        conditiontypes = conditiontypes.filter(conditions__conditionset__dataset__in=datasets).distinct()
+        documents = [conditiontype.data_indexing() for conditiontype in conditiontypes]
+        resp = app_search.put_documents(
+            engine_name="conditiontypes", documents=documents)
+
+        papers = apps.get_model("papers", "Paper").objects.all_valid()
+        papers = papers.filter(datasets__in=datasets).distinct()
+        documents = [paper.data_indexing() for paper in papers]
+        resp = app_search.put_documents(
+            engine_name="papers", documents=documents)
+        # print(resp)
 
 
 class Measurement(models.Model):

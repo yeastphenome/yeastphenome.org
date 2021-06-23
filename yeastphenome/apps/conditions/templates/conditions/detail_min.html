@@ -72,7 +72,7 @@
         <div class="col-md-12">
             <h2>Datasets</h2>
             <div class="mt-5">
-                Showing 1-10 of {{ num_datasets|intcomma }} datasets
+                Showing 1-{{ num_datasets_showing }} of {{ num_datasets|intcomma }} datasets
                 {% include "datasets/datasets_table_min.html" with datasets=datasets %}
                 {% if num_datasets > 10 %}
                     <a class="btn btn-success"

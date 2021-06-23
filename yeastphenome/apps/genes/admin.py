@@ -21,6 +21,15 @@ class GeneAdmin(ImprovedModelAdmin):
         "description",
     )
 
+    def save_model(self, request, obj, form, change):
+
+        # To update ES indexing immediately: save related fields (e.g., tags)
+        if not obj.id:
+            super().save_model(request, obj, form, change)
+        form.save_m2m()
+
+        super(GeneAdmin, self).save_model(request, obj, form, change)
+
 
 class GeneAliasAdmin(ImprovedModelAdmin):
     model = GeneAlias
