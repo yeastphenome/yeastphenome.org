@@ -41,10 +41,7 @@ def index(request):
         field = request.GET.get("field")
 
         page_number = int(request.GET.get("page", "1"))
-        tab = request.GET.get("tab", "papers")
-        if tab == "":
-            tab = "papers"
-        context["tab"] = tab
+        tab = request.GET.get("tab", "")
 
         app_search = AppSearch(
             ELASTICSEARCH_HOST,
@@ -52,16 +49,7 @@ def index(request):
         )
 
         # GENES
-
-        search_fields = [
-            "id",
-            "systematic_name",
-            "common_name",
-            "aliases_list_as_str",
-            "description",
-        ]
-
-        response = app_search.search(
+        response_genes = app_search.search(
             engine_name="genes",
             body={
                 "query": q_lucene,
@@ -70,35 +58,17 @@ def index(request):
                 },
             },
         )
-        pagination = response["meta"]["page"]
-        context["num_genes"] = pagination["total_results"]
-        if tab == "genes":
-            context["genes_page_obj"] = flatten_response(
-                response["results"], search_fields
-            )
-            [page_range, results_range] = get_page_range(page_number, pagination)
-            context["page_range"] = page_range
-            context["results_range"] = results_range
-            context["num_pages"] = pagination["total_pages"]
+        pagination_genes = response_genes["meta"]["page"]
+        context["num_genes"] = pagination_genes["total_results"]
 
         # CONDITIONS
-
-        results_fields = [
-            "id",
-            "name",
-            "aliases_list_as_str",
-            "doses_list_as_str",
-            "observables_list_as_str",
-            "papers_list_as_str",
-            "tags_list_as_str",
-        ]
         search_fields = [
             "name",
             "aliases_list_as_str",
             "doses_list_as_str",
             "tags_list_as_str",
         ]
-        response = app_search.search(
+        response_conditions = app_search.search(
             engine_name="conditiontypes",
             body={
                 "query": q_lucene,
@@ -108,36 +78,16 @@ def index(request):
                 },
             },
         )
-        pagination = response["meta"]["page"]
-        context["num_conditions"] = pagination["total_results"]
-        if tab == "conditions":
-            context["conditions_page_obj"] = flatten_response(
-                response["results"], results_fields
-            )
-            [page_range, results_range] = get_page_range(page_number, pagination)
-            context["page_range"] = page_range
-            context["results_range"] = results_range
-            context["num_pages"] = pagination["total_pages"]
+        pagination_conditions = response_conditions["meta"]["page"]
+        context["num_conditions"] = pagination_conditions["total_results"]
 
         # PHENOTYPES
-
         if field == "tags":
             search_fields = ["tags_list_as_str"]
         else:
             search_fields = ["name", "description", "tags_list_as_str"]
 
-        results_fields = [
-            "id",
-            "name",
-            "description",
-            "phenotypes_list_as_str",
-            "reporters_list_as_str",
-            "conditiontypes_list_as_str",
-            "papers_list_as_str",
-            "tags_list_as_str",
-        ]
-
-        response = app_search.search(
+        response_phenotypes = app_search.search(
             engine_name="observables",
             body={
                 "query": q_lucene,
@@ -148,19 +98,10 @@ def index(request):
             },
         )
 
-        pagination = response["meta"]["page"]
-        context["num_phenotypes"] = pagination["total_results"]
-        if tab == "phenotypes":
-            context["phenotypes_page_obj"] = flatten_response(
-                response["results"], results_fields
-            )
-            [page_range, results_range] = get_page_range(page_number, pagination)
-            context["page_range"] = page_range
-            context["results_range"] = results_range
-            context["num_pages"] = pagination["total_pages"]
+        pagination_phenotypes = response_phenotypes["meta"]["page"]
+        context["num_phenotypes"] = pagination_phenotypes["total_results"]
 
         # DATASETS
-
         if field == "medium":
             search_fields = ["medium"]
         else:
@@ -177,20 +118,7 @@ def index(request):
                 "tags_list_as_str",
             ]
 
-        results_fields = [
-            "id",
-            "paper",
-            "collection",
-            "phenotype_aliases_list_as_str",
-            "conditions_aliases_list_as_str",
-            "medium",
-            "conditionset",
-            "phenotype",
-            # "data_available",
-            "tags_list_as_str",
-        ]
-
-        response = app_search.search(
+        response_datasets = app_search.search(
             engine_name="datasets",
             body={
                 "query": q_lucene,
@@ -201,28 +129,11 @@ def index(request):
             },
         )
 
-        pagination = response["meta"]["page"]
-        context["num_datasets"] = pagination["total_results"]
-        if tab == "datasets":
-            context["datasets_page_obj"] = flatten_response(
-                response["results"], results_fields
-            )
-            [page_range, results_range] = get_page_range(page_number, pagination)
-            context["page_range"] = page_range
-            context["results_range"] = results_range
-            context["num_pages"] = pagination["total_pages"]
+        pagination_datasets = response_datasets["meta"]["page"]
+        context["num_datasets"] = pagination_datasets["total_results"]
 
         # PAPERS
-
-        search_fields = [
-            "id",
-            "systematic_name",
-            "pmid",
-            "pub_date",
-            "tags_list_as_str",
-        ]
-
-        response = app_search.search(
+        response_papers = app_search.search(
             engine_name="papers",
             body={
                 "query": q_lucene,
@@ -231,17 +142,105 @@ def index(request):
                 },
             },
         )
+        pagination_papers = response_papers["meta"]["page"]
+        context["num_papers"] = pagination_papers["total_results"]
 
-        pagination = response["meta"]["page"]
-        context["num_papers"] = pagination["total_results"]
-        if tab == "papers":
-            context["papers_page_obj"] = flatten_response(
-                response["results"], search_fields
+        # If no tab is specified, pick the one with the highest number of results
+        if tab == "":
+            num_results = {'genes': context['num_genes'],
+                           'conditions': context['num_conditions'],
+                           'phenotypes': context['num_phenotypes'],
+                           'datasets': context['num_datasets'],
+                           'papers': context['num_papers']}
+            tab = max(num_results, key=(lambda key: num_results[key]))
+
+        context["tab"] = tab
+
+        if tab == "genes":
+            search_fields = [
+                "id",
+                "systematic_name",
+                "common_name",
+                "aliases_list_as_str",
+                "description",
+            ]
+            context["genes_page_obj"] = flatten_response(
+                response_genes["results"], search_fields
             )
-            [page_range, results_range] = get_page_range(page_number, pagination)
+            [page_range, results_range] = get_page_range(page_number, pagination_genes)
             context["page_range"] = page_range
             context["results_range"] = results_range
-            context["num_pages"] = pagination["total_pages"]
+            context["num_pages"] = pagination_genes["total_pages"]
+        elif tab == "conditions":
+            results_fields = [
+                "id",
+                "name",
+                "aliases_list_as_str",
+                "doses_list_as_str",
+                "observables_list_as_str",
+                "papers_list_as_str",
+                "tags_list_as_str",
+            ]
+            context["conditions_page_obj"] = flatten_response(
+                response_conditions["results"], results_fields
+            )
+            [page_range, results_range] = get_page_range(page_number, pagination_conditions)
+            context["page_range"] = page_range
+            context["results_range"] = results_range
+            context["num_pages"] = pagination_conditions["total_pages"]
+        elif tab == "phenotypes":
+            results_fields = [
+                "id",
+                "name",
+                "description",
+                "phenotypes_list_as_str",
+                "reporters_list_as_str",
+                "conditiontypes_list_as_str",
+                "papers_list_as_str",
+                "tags_list_as_str",
+            ]
+            context["phenotypes_page_obj"] = flatten_response(
+                response_phenotypes["results"], results_fields
+            )
+            [page_range, results_range] = get_page_range(page_number, pagination_phenotypes)
+            context["page_range"] = page_range
+            context["results_range"] = results_range
+            context["num_pages"] = pagination_phenotypes["total_pages"]
+        elif tab == "datasets":
+            results_fields = [
+                "id",
+                "paper",
+                "collection",
+                "phenotype_aliases_list_as_str",
+                "conditions_aliases_list_as_str",
+                "medium",
+                "conditionset",
+                "phenotype",
+                # "data_available",
+                "tags_list_as_str",
+            ]
+            context["datasets_page_obj"] = flatten_response(
+                response_datasets["results"], results_fields
+            )
+            [page_range, results_range] = get_page_range(page_number, pagination_datasets)
+            context["page_range"] = page_range
+            context["results_range"] = results_range
+            context["num_pages"] = pagination_datasets["total_pages"]
+        else:
+            search_fields = [
+                "id",
+                "systematic_name",
+                "pmid",
+                "pub_date",
+                "tags_list_as_str",
+            ]
+            context["papers_page_obj"] = flatten_response(
+                response_papers["results"], search_fields
+            )
+            [page_range, results_range] = get_page_range(page_number, pagination_papers)
+            context["page_range"] = page_range
+            context["results_range"] = results_range
+            context["num_pages"] = pagination_papers["total_pages"]
 
     else:
         form = GlobalSearchForm()

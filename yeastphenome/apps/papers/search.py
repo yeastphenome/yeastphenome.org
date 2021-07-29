@@ -9,6 +9,7 @@ def define_document():
         "systematic_name": "text",
         "pmid": "number",
         "pub_date": "number",
+        "data_abstract": "text",
         "tags_list_as_str": "text",
     }
 

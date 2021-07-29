@@ -1,3 +1,9 @@
+{% load cart_status %}
+{% include "messages/download_cart_warning.html" %}
+{% block css %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+{% endblock %}
+
 <div class="row mt-5 mb-3">
     <div class="col-md-12">
         <h2>Datasets</h2>
@@ -5,26 +11,28 @@
         {% include "search/pagination.html" with page_obj=datasets_page_obj %}
 
         <table class="table my-4">
-            <tr>
-                <th style="width: 7%">Dataset ID</th>
-                <th style="width: 7%">Collection</th>
-                <th style="width: 15%">Phenotype</th>
-                <th style="width: 15%">Condition</th>
-                <th style="width: 15%">Medium</th>
-                <th style="width: 15%">Paper</th>
-                <th>Data</th>
-                <th>Tags</th>
-            </tr>
+            <thead>
+                <th scope="col" style="width: 7%">ID</th>
+                <th scope="col" style="width: 7%">Collection</th>
+                <th scope="col" style="width: 15%">Phenotype</th>
+                <th scope="col" style="width: 15%">Condition</th>
+                <th scope="col" style="width: 15%">Medium</th>
+                <th scope="col" style="width: 15%">Paper</th>
+                <th scope="col">Data</th>
+                <th scope="col">Tags</th>
+                <th scope="col">Downloads</th>
+            </thead>
             {% for dataset in datasets_page_obj %}
                 <tr>
-                    <td><a href="{% url 'datasets:detail' dataset.id  %}">{{ dataset.id }}</a></td>
-                    <td>{{ dataset.collection }}</td>
-                    <td>{{ dataset.phenotype }}</td>
-                    <td>{{ dataset.conditionset }}</td>
-                    <td>{{ dataset.medium }}</td>
-                    <td>{{ dataset.paper }}</td>
-                    <td>{{ dataset.data_available }}</td>
-                    <td>{{ dataset.tags_list_as_str|truncatewords:5 }}</td>
+                    <td class="align-middle"><a href="{% url 'datasets:detail' dataset.id  %}">{{ dataset.id }}</a></td>
+                    <td class="align-middle">{{ dataset.collection }}</td>
+                    <td class="align-middle">{{ dataset.phenotype }}</td>
+                    <td class="align-middle">{{ dataset.conditionset }}</td>
+                    <td class="align-middle">{{ dataset.medium }}</td>
+                    <td class="align-middle">{{ dataset.paper }}</td>
+                    <td class="align-middle">{{ dataset.data_available }}</td>
+                    <td class="align-middle">{{ dataset.tags_list_as_str|truncatewords:5 }}</td>
+                    <td class="align-middle col-md-1">{% download_button dataset.id %}</td>
                 </tr>
             {% empty %}
                 <tr>
@@ -37,3 +45,9 @@
 
     </div>
 </div>
+
+{% block scripts %}
+    {% csrf_token %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    {% include "scripts/add_to_cart_functions.html" %}
+{% endblock %}

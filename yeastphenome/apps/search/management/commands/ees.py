@@ -48,11 +48,11 @@ class Command(BaseCommand):
         batch_size = 100
         nr_batches = int(np.ceil(nr_docs / batch_size))
         for ix_batch in np.arange(nr_batches):
-            print("Uploading batch %d of %d" % (ix_batch, nr_batches))
-            ix_start = (ix_batch - 1) * batch_size
-            ix_end = ix_start + batch_size - 1
+            ix_start = ix_batch * batch_size
+            ix_end = ix_start + batch_size
             batch = json[ix_start:ix_end]
 
+            print("Uploading batch %d of %d (documents %d-%d)" % (ix_batch, nr_batches, ix_start, ix_end))
             app_search.index_documents(engine_name=engine, documents=batch)
 
         resp = app_search.put_schema(engine_name=engine, schema=schema)

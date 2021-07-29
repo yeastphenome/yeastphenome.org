@@ -27,9 +27,9 @@ class TagManager(models.Manager):
                 obj = obj.filter(dataset__in=valid_datasets)
             elif kwargs["type"] == "phenotypes":
                 valid_observables = apps.get_model(
-                    "phenotype", "Observable"
+                    "phenotypes", "Observable"
                 ).objects.all_valid()
-                obj = obj.filter(observable__in=valid_observables)
+                obj = obj.filter(observables__in=valid_observables)
         return obj
 
 

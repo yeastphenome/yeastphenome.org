@@ -210,26 +210,25 @@ class Paper(models.Model):
         tags = Tag.objects.all_valid()
 
         tags_list_self = Q(paper=self)
-        tags_list_datasets = Q(dataset__paper=self)
-        tags_list_conditionset = Q(conditionset__dataset__paper=self)
-        tags_list_condition = Q(condition__conditionset__dataset__paper=self)
-        tags_list_conditiontype = Q(
+        tags_list_datasets = (Q(dataset__paper=self) & Q(dataset__collection__is_valid=True))
+        tags_list_conditionset = (Q(conditionset__dataset__paper=self) & Q(conditionset__dataset__collection__is_valid=True))
+        tags_list_condition = (Q(condition__conditionset__dataset__paper=self) & Q(condition__conditionset__dataset__collection__is_valid=True))
+        tags_list_conditiontype = (Q(
             conditiontype__conditions__conditionset__dataset__paper=self
-        )
-        tags_list_medium = Q(medium__dataset__paper=self)
-        tags_list_phenotype = Q(phenotypes__dataset__paper=self)
-        tags_list_observable = Q(observables__phenotype__dataset__paper=self)
+        ) & Q(conditiontype__conditions__conditionset__dataset__collection__is_valid=True))
+        tags_list_medium = (Q(medium__dataset__paper=self) & Q(medium__dataset__collection__is_valid=True))
+        tags_list_phenotype = (Q(phenotypes__dataset__paper=self) & Q(phenotypes__dataset__collection__is_valid=True))
+        tags_list_observable = (Q(observables__phenotype__dataset__paper=self) & Q(observables__phenotype__dataset__collection__is_valid=True))
 
-        tags = tags.filter(
-            tags_list_self
-            | tags_list_datasets
-            | tags_list_conditionset
-            | tags_list_condition
-            | tags_list_conditiontype
-            | tags_list_medium
-            | tags_list_phenotype
-            | tags_list_observable
-        )
+        tags = tags.filter(tags_list_self
+                            | tags_list_datasets
+                            | tags_list_conditionset
+                            | tags_list_condition
+                            | tags_list_conditiontype
+                            | tags_list_medium
+                            | tags_list_phenotype
+                            | tags_list_observable
+                           )
         tags_list = list(tags.values_list("name", flat=True).order_by().distinct())
         return tags_list
 
@@ -325,6 +324,7 @@ class Paper(models.Model):
             "systematic_name": self.systematic_name,
             "pmid": self.pmid,
             "pub_date": self.pub_date,
+            "data_abstract": self.data_abstract,
             "tags_list_as_str": self.tags_list_as_str(),
         }
         return json
