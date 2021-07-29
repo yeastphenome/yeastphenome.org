@@ -34,6 +34,7 @@ DOWNLOAD_CART_LIMIT = 50
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if os.getenv("DEBUG") != "false" else False
+DISABLE_CACHE = True if os.getenv("DISABLE_CACHE") != "false" else False
 
 # SECURITY WARNING: App Engine's security features ensure that it is safe to
 # have ALLOWED_HOSTS = ['*'] when the app is deployed. If you deploy a Django
@@ -77,7 +78,7 @@ MIDDLEWARE = [
 
 # Do we want to enable the cache?
 
-if not os.environ.get("DISABLE_CACHE"):
+if not DISABLE_CACHE:
     MIDDLEWARE += [
         "django.middleware.cache.UpdateCacheMiddleware",
         "django.middleware.common.CommonMiddleware",
