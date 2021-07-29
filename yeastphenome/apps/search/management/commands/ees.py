@@ -52,7 +52,10 @@ class Command(BaseCommand):
             ix_end = ix_start + batch_size
             batch = json[ix_start:ix_end]
 
-            print("Uploading batch %d of %d (documents %d-%d)" % (ix_batch, nr_batches, ix_start, ix_end))
+            print(
+                "Uploading batch %d of %d (documents %d-%d)"
+                % (ix_batch, nr_batches, ix_start, ix_end)
+            )
             app_search.index_documents(engine_name=engine, documents=batch)
 
         resp = app_search.put_schema(engine_name=engine, schema=schema)

@@ -147,11 +147,13 @@ def index(request):
 
         # If no tab is specified, pick the one with the highest number of results
         if tab == "":
-            num_results = {'genes': context['num_genes'],
-                           'conditions': context['num_conditions'],
-                           'phenotypes': context['num_phenotypes'],
-                           'datasets': context['num_datasets'],
-                           'papers': context['num_papers']}
+            num_results = {
+                "genes": context["num_genes"],
+                "conditions": context["num_conditions"],
+                "phenotypes": context["num_phenotypes"],
+                "datasets": context["num_datasets"],
+                "papers": context["num_papers"],
+            }
             tab = max(num_results, key=(lambda key: num_results[key]))
 
         context["tab"] = tab
@@ -184,7 +186,9 @@ def index(request):
             context["conditions_page_obj"] = flatten_response(
                 response_conditions["results"], results_fields
             )
-            [page_range, results_range] = get_page_range(page_number, pagination_conditions)
+            [page_range, results_range] = get_page_range(
+                page_number, pagination_conditions
+            )
             context["page_range"] = page_range
             context["results_range"] = results_range
             context["num_pages"] = pagination_conditions["total_pages"]
@@ -202,7 +206,9 @@ def index(request):
             context["phenotypes_page_obj"] = flatten_response(
                 response_phenotypes["results"], results_fields
             )
-            [page_range, results_range] = get_page_range(page_number, pagination_phenotypes)
+            [page_range, results_range] = get_page_range(
+                page_number, pagination_phenotypes
+            )
             context["page_range"] = page_range
             context["results_range"] = results_range
             context["num_pages"] = pagination_phenotypes["total_pages"]
@@ -222,7 +228,9 @@ def index(request):
             context["datasets_page_obj"] = flatten_response(
                 response_datasets["results"], results_fields
             )
-            [page_range, results_range] = get_page_range(page_number, pagination_datasets)
+            [page_range, results_range] = get_page_range(
+                page_number, pagination_datasets
+            )
             context["page_range"] = page_range
             context["results_range"] = results_range
             context["num_pages"] = pagination_datasets["total_pages"]

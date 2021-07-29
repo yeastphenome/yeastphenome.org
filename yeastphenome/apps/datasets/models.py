@@ -401,7 +401,9 @@ class Dataset(models.Model):
             "id": self.id,
             "paper": self.paper.systematic_name if self.paper else "",
             "collection": self.collection.shortname if self.collection else "",
-            "data_available": self.data_available.shortname if self.data_available else "",
+            "data_available": self.data_available.shortname
+            if self.data_available
+            else "",
             "medium": self.medium.display_name if self.medium else "",
             "conditionset": self.conditionset.display_name if self.conditionset else "",
             "conditions_aliases_list_as_str": self.conditions_aliases_list_as_str(),
