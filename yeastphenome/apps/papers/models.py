@@ -127,6 +127,7 @@ class Paper(models.Model):
             .order_by()
             .distinct()
         )
+        collections = [c for c in collections if c]
         return "; ".join(collections)
 
     def observables_list(self):
