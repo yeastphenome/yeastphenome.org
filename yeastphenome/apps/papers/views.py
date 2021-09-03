@@ -83,7 +83,7 @@ def datasets(request, paper_id):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def datasets_list(request, paper_id):
+def datasets_list(request, paper_id, pmid):
     p = get_object_or_404(Paper, pk=paper_id)
 
     txt = "\n".join([(u"%s\t%s" % (d.id, d.name)) for d in p.datasets.all()])
@@ -93,7 +93,7 @@ def datasets_list(request, paper_id):
         "Content-Disposition"
     ] = 'attachment; filename="%s_%d_datasets_list.txt"' % (
         settings.DOWNLOAD_PREFIX,
-        p.pmid,
+        pmid,
     )
 
     return response
