@@ -245,8 +245,8 @@ class Dataset(models.Model):
         return "%s" % self.name
 
     def is_valid(self):
-        cond1 = self.paper.latest_data_status.status.is_valid
-        cond2 = self.collection.is_valid
+        cond1 = self.paper.latest_data_status.status.is_valid if self.paper.latest_data_status.status.is_valid else False
+        cond2 = self.collection.is_valid if self.collection.is_valid else False
         return cond1 & cond2
 
     # Necessary to run database-wide updates of dataset names
