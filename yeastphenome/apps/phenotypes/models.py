@@ -184,19 +184,22 @@ class Observable(models.Model):
         datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
         datasets = datasets.filter(phenotype__observable=self).distinct()
         documents = [dataset.data_indexing() for dataset in datasets]
-        _ = app_search.put_documents(engine_name="datasets", documents=documents)
+        if documents:
+            _ = app_search.put_documents(engine_name="datasets", documents=documents)
 
         conditiontypes = apps.get_model("conditions", "ConditionType").objects.all()
         conditiontypes = conditiontypes.filter(
             conditions__conditionset__dataset__in=datasets
         ).distinct()
         documents = [conditiontype.data_indexing() for conditiontype in conditiontypes]
-        _ = app_search.put_documents(engine_name="conditiontypes", documents=documents)
+        if documents:
+            _ = app_search.put_documents(engine_name="conditiontypes", documents=documents)
 
         papers = apps.get_model("papers", "Paper").objects.all_valid()
         papers = papers.filter(datasets__in=datasets).distinct()
         documents = [paper.data_indexing() for paper in papers]
-        _ = app_search.put_documents(engine_name="papers", documents=documents)
+        if documents:
+            _ = app_search.put_documents(engine_name="papers", documents=documents)
         # print(resp)
 
 
