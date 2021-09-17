@@ -110,7 +110,13 @@ def data_contributors(request):
             person for person in people if not person == "" and person is not None
         ]
         # A hack to avoid showing other sources (that don't need to be acknowledged) by accident (to be fixed)
-        people = [person for person in people if not person.startswith('Table') and not person.startswith('T1-T2') and not person.startswith('MOESM')]
+        people = [
+            person
+            for person in people
+            if not person.startswith("Table")
+            and not person.startswith("T1-T2")
+            and not person.startswith("MOESM")
+        ]
         people = list(set(people))
         paper_dict["people"] = "; ".join(people)
         return paper_dict

@@ -193,7 +193,9 @@ class Observable(models.Model):
         ).distinct()
         documents = [conditiontype.data_indexing() for conditiontype in conditiontypes]
         if documents:
-            _ = app_search.put_documents(engine_name="conditiontypes", documents=documents)
+            _ = app_search.put_documents(
+                engine_name="conditiontypes", documents=documents
+            )
 
         papers = apps.get_model("papers", "Paper").objects.all_valid()
         papers = papers.filter(datasets__in=datasets).distinct()

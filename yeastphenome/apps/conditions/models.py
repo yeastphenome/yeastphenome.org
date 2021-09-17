@@ -65,7 +65,11 @@ class ConditionType(models.Model):
             str(self.pubchem_id),
         ]
         other_names = list(set([name for name in other_names if name]))
-        other_names = [name for name in other_names if name and not name == self.name and not name == 'None']
+        other_names = [
+            name
+            for name in other_names
+            if name and not name == self.name and not name == "None"
+        ]
         return other_names
 
     def aliases_list_as_str(self):
