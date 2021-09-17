@@ -197,17 +197,20 @@ class ConditionType(models.Model):
         datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
         datasets = datasets.filter(conditionset__conditions__type=self).distinct()
         documents = [dataset.data_indexing() for dataset in datasets]
-        _ = app_search.put_documents(engine_name="datasets", documents=documents)
+        if documents:
+            _ = app_search.put_documents(engine_name="datasets", documents=documents)
 
         observables = apps.get_model("phenotypes", "Observable").objects.all()
         observables = observables.filter(phenotype__dataset__in=datasets).distinct()
         documents = [observable.data_indexing() for observable in observables]
-        _ = app_search.put_documents(engine_name="observables", documents=documents)
+        if documents:
+            _ = app_search.put_documents(engine_name="observables", documents=documents)
 
         papers = apps.get_model("papers", "Paper").objects.all_valid()
         papers = papers.filter(datasets__in=datasets).distinct()
         documents = [paper.data_indexing() for paper in papers]
-        _ = app_search.put_documents(engine_name="papers", documents=documents)
+        if documents:
+            _ = app_search.put_documents(engine_name="papers", documents=documents)
 
 
 class ConditionManager(models.Manager):

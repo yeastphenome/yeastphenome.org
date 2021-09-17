@@ -22,12 +22,12 @@ def delete_index_conditiontype(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Condition)
 @receiver(post_delete, sender=Condition)
-def update_index_condition(sender, instance, created, **kwargs):
-    update_index_conditiontype(ConditionType, instance.type, False)
+def update_index_condition(sender, instance, created=False, **kwargs):
+    update_index_conditiontype(ConditionType, instance.type, created)
 
 
 @receiver(post_save, sender=ConditionSet)
 @receiver(post_delete, sender=ConditionSet)
-def update_index_conditionset(sender, instance, created, **kwargs):
-    for condition in instance.conditions:
+def update_index_conditionset(sender, instance, created=False, **kwargs):
+    for condition in instance.conditions.all():
         update_index_condition(Condition, condition, False)

@@ -117,7 +117,7 @@ class Paper(models.Model):
         return self.systematic_name if self.systematic_name else ""
 
     def is_valid(self):
-        cond1 = self.latest_data_status.status.is_valid
+        cond1 = False if not self.latest_data_status else self.latest_data_status.status.is_valid
         cond2 = self.datasets.all_valid().exists()
         return cond1 & cond2
 
