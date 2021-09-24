@@ -94,11 +94,16 @@ class Paper(models.Model):
         ordering = ["pmid", "systematic_name"]
 
     def save(self, *args, **kwargs):
-        self.systematic_name = "%s~%s, %s" % (
-            self.first_author,
-            self.last_author,
-            self.pub_date,
-        )
+        if self.last_author:
+            systematic_name = "%s~%s, %s" % (
+                self.first_author,
+                self.last_author,
+                self.pub_date,
+            )
+        else:
+            systematic_name = "%s, %s" % (self.first_author, self.pub_date)
+        self.systematic_name = systematic_name
+
         observables_list = list(
             self.datasets.values_list("phenotype__observable__name", flat=True)
             .order_by()
