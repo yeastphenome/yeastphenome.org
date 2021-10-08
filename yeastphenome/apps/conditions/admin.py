@@ -145,22 +145,12 @@ class ConditionTypeAdmin(ImprovedModelAdmin):
 
         if form.cleaned_data["chebi_id"]:
             chebi_id = form.cleaned_data["chebi_id"]
-            try:
-                # Try once
-                chebi_comb = ChebiEntity("CHEBI:" + str(chebi_id))
-            except ValueError:
-                # Try a second time (for some reasons, this fixes the ValueError in the first try)
-                chebi_comb = ChebiEntity("CHEBI:" + str(chebi_id))
+            chebi_comb = ChebiEntity("CHEBI:" + str(chebi_id))
             parent_id = chebi_comb.get_parent_id()
             if parent_id:
                 s = re.findall(r"\d+", parent_id)
                 chebi_id = int(s[0])
-                try:
-                    # Same as above
-                    chebi_comb = ChebiEntity("CHEBI:" + str(chebi_id))
-                except ValueError:
-                    # Same as above
-                    chebi_comb = ChebiEntity("CHEBI:" + str(chebi_id))
+                chebi_comb = ChebiEntity("CHEBI:" + str(chebi_id))
             obj.chebi_id = chebi_id
             obj.chebi_name = chebi_comb.get_name()
         else:
