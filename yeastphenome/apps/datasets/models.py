@@ -250,7 +250,9 @@ class Dataset(models.Model):
             if self.paper.latest_data_status.status.is_valid
             else False
         )
-        cond2 = self.collection.is_valid if self.collection.is_valid else False
+        cond2 = False
+        if self.collection:
+            cond2 = self.collection.is_valid if self.collection.is_valid else False
         return cond1 & cond2
 
     # Necessary to run database-wide updates of dataset names
