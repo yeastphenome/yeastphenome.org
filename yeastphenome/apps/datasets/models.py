@@ -438,17 +438,20 @@ class Dataset(models.Model):
             )
 
         # Update related indices
-        conditions = self.conditionset.conditions.all()
-        documents = [condition.type.data_indexing() for condition in conditions]
-        _ = app_search.put_documents(engine_name="conditiontypes", documents=documents)
-        observable = self.phenotype.observable
-        _ = app_search.put_documents(
-            engine_name="observables", documents=[observable.data_indexing()]
-        )
-        paper = self.paper
-        _ = app_search.put_documents(
-            engine_name="papers", documents=[paper.data_indexing()]
-        )
+        if self.conditionset:
+            conditions = self.conditionset.conditions.all()
+            documents = [condition.type.data_indexing() for condition in conditions]
+            _ = app_search.put_documents(engine_name="conditiontypes", documents=documents)
+        if self.phenotype:
+            observable = self.phenotype.observable
+            _ = app_search.put_documents(
+                engine_name="observables", documents=[observable.data_indexing()]
+            )
+        if self.paper:
+            paper = self.paper
+            _ = app_search.put_documents(
+                engine_name="papers", documents=[paper.data_indexing()]
+            )
 
 
 class DatasetSimilarity(models.Model):
