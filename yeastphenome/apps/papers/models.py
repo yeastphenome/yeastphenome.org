@@ -393,7 +393,9 @@ class Paper(models.Model):
             observables = observables.filter(phenotype__dataset__in=datasets).distinct()
             if observables:
                 documents = [observable.data_indexing() for observable in observables]
-                _ = app_search.put_documents(engine_name="observables", documents=documents)
+                _ = app_search.put_documents(
+                    engine_name="observables", documents=documents
+                )
 
 
 class Statusdata(models.Model):

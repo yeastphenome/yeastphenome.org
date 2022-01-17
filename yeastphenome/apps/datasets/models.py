@@ -443,7 +443,9 @@ class Dataset(models.Model):
         if self.conditionset:
             conditions = self.conditionset.conditions.all()
             documents = [condition.type.data_indexing() for condition in conditions]
-            _ = app_search.put_documents(engine_name="conditiontypes", documents=documents)
+            _ = app_search.put_documents(
+                engine_name="conditiontypes", documents=documents
+            )
         if self.phenotype:
             observable = self.phenotype.observable
             _ = app_search.put_documents(
