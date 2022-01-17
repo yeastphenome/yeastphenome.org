@@ -1,16 +1,15 @@
 libChEBIpy==1.0.8
 numpy==1.19.0
 PubChemPy==1.0.4
-tqdm==4.11.2
+tqdm
 Django==3.0.8
-Bio
+bio
 django-ratelimit==3.0.0
 django-extensions==3.0.2
 sendgrid==6.4.3
-biopython==1.78
+biopython
 pyflakes==2.3.1
-black
-# just for postgres
+black==21.5b1
 psycopg2-binary==2.8.5
 djangorestframework==3.11.1
 markdown==3.2.2
