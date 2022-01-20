@@ -350,6 +350,8 @@ class Paper(models.Model):
             "pmid": self.pmid,
             "pub_date": self.pub_date,
             "data_abstract": self.data_abstract,
+            "conditiontypes_summary": self.conditiontypes_summary,
+            "observables_summary": self.observables_summary,
             "tags_list_as_str": self.tags_list_as_str(),
         }
         return json

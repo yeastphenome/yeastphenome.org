@@ -235,15 +235,17 @@ def index(request):
             context["results_range"] = results_range
             context["num_pages"] = pagination_datasets["total_pages"]
         else:
-            search_fields = [
+            results_fields = [
                 "id",
                 "systematic_name",
                 "pmid",
                 "pub_date",
+                "conditiontypes_summary",
+                "observables_summary",
                 "tags_list_as_str",
             ]
             context["papers_page_obj"] = flatten_response(
-                response_papers["results"], search_fields
+                response_papers["results"], results_fields
             )
             [page_range, results_range] = get_page_range(page_number, pagination_papers)
             context["page_range"] = page_range

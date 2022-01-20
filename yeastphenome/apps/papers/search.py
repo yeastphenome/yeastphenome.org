@@ -10,6 +10,8 @@ def define_document():
         "pmid": "number",
         "pub_date": "number",
         "data_abstract": "text",
+        "conditiontypes_summary": "text",
+        "observables_summary": "text",
         "tags_list_as_str": "text",
     }
 
