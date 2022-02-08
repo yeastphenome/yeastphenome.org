@@ -202,7 +202,11 @@ class ConditionType(models.Model):
         datasets = datasets.filter(conditionset__conditions__type=self).distinct()
         documents = [dataset.data_indexing() for dataset in datasets]
         if documents:
-            _ = app_search.put_documents(engine_name="datasets", documents=documents)
+            # Split list into chunks of 100 (max allowed by ElasticSearch)
+            n = 100  # chunk size
+            documents_chunks = [documents[i:i+n] for i in range(0, len(documents), n)]
+            for documents_chunk in documents_chunks:
+                _ = app_search.put_documents(engine_name="datasets", documents=documents_chunk)
 
         observables = apps.get_model("phenotypes", "Observable").objects.all()
         observables = observables.filter(phenotype__dataset__in=datasets).distinct()
@@ -524,3 +528,13 @@ class Medium(models.Model):
             self,
         )
         return mark_safe(html)
+
+    def tags_list(self):
+        tags_list_self = list(self.tags.values_list("name", flat=True))
+        tags_list_conditions = list(
+            itertools.chain.from_iterable(
+                [condition.tags_list() for condition in self.conditions.all()]
+            )
+        )
+        tags_list = list(set(tags_list_self + tags_list_conditions))
+        return tags_list

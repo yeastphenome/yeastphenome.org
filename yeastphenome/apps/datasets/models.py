@@ -353,8 +353,9 @@ class Dataset(models.Model):
         tags_list_conditionset = (
             self.conditionset.tags_list() if self.conditionset else []
         )
+        tags_list_medium = (self.medium.tags_list() if self.medium else [])
         tags_list = list(
-            set(tags_list_self + tags_list_phenotype + tags_list_conditionset)
+            set(tags_list_self + tags_list_phenotype + tags_list_conditionset + tags_list_medium)
         )
         return tags_list
 
