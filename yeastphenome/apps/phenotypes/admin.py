@@ -41,6 +41,7 @@ class PhenotypeAdmin(ImprovedModelAdmin):
         "description",
         "reporter",
         "observable__name",
+        "observable__tags__name",
         "tags__name",
     ]
     fields = (
