@@ -68,11 +68,11 @@ class SourceManager(models.Manager):
             .distinct()
         )
         people_list = sources.values_list("label", flat=True)
-        people_list = [
-            person for person in people_list if not person == "" and person is not None
-        ]
         people_list = [person.split(", ") for person in people_list]
         people_list = list(set(itertools.chain.from_iterable(people_list)))
+        people_list = [
+            person for person in people_list if person not in [None, "", "Anastasia Baryshnikova"]
+        ]
         return people_list
 
 
@@ -440,23 +440,24 @@ class Dataset(models.Model):
                 engine_name="datasets", documents=[self.data_indexing()]
             )
 
-        # Update related indices
-        if self.conditionset:
-            conditions = self.conditionset.conditions.all()
-            documents = [condition.type.data_indexing() for condition in conditions]
-            _ = app_search.put_documents(
-                engine_name="conditiontypes", documents=documents
-            )
-        if self.phenotype:
-            observable = self.phenotype.observable
-            _ = app_search.put_documents(
-                engine_name="observables", documents=[observable.data_indexing()]
-            )
-        if self.paper:
-            paper = self.paper
-            _ = app_search.put_documents(
-                engine_name="papers", documents=[paper.data_indexing()]
-            )
+        # COMMENTED OUT because taken care once daily by cron job
+        # # Update related indices
+        # if self.conditionset:
+        #     conditions = self.conditionset.conditions.all()
+        #     documents = [condition.type.data_indexing() for condition in conditions]
+        #     _ = app_search.put_documents(
+        #         engine_name="conditiontypes", documents=documents
+        #     )
+        # if self.phenotype:
+        #     observable = self.phenotype.observable
+        #     _ = app_search.put_documents(
+        #         engine_name="observables", documents=[observable.data_indexing()]
+        #     )
+        # if self.paper:
+        #     paper = self.paper
+        #     _ = app_search.put_documents(
+        #         engine_name="papers", documents=[paper.data_indexing()]
+        #     )
 
 
 class DatasetSimilarity(models.Model):
