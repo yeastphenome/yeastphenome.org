@@ -44,6 +44,8 @@ class Gene(models.Model):
     common_name_explanation = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 
+    puddu = models.CharField(max_length=50, null=True, blank=True)
+
     objects = GeneManager()
 
     def __str__(self):

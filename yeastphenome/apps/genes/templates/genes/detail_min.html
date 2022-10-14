@@ -37,13 +37,19 @@
                     <td>{{ gene.aliases_list_as_str }}</td>
                 </tr>
                 <tr>
-                    <th width="20%" scope="row">Description</th>
+                    <th width="20%" scope="row">Description:</th>
                     <td>{{ gene.description }}</td>
                 </tr>
                 {% if gene.common_name_explanation %}
                     <tr>
-                        <th width="20%" scope="row">Name description</th>
+                        <th width="20%" scope="row">Name description:</th>
                         <td>{{ gene.common_name_explanation }}</td>
+                    </tr>
+                {% endif %}
+                {% if gene.puddu %}
+                    <tr>
+                        <th width="20%" scope="row">Knock-out genome sequence:</th>
+                        <td><a class="external" target="_blank" href="https://www.sgv.gurdon.cam.ac.uk/gene_page.php?gene={{ gene.puddu }}"><em>Saccharomyces</em> Genome Variation DB</a></td>
                     </tr>
                 {% endif %}
             </table>
