@@ -52,6 +52,12 @@
                         <td><a class="external" target="_blank" href="https://www.sgv.gurdon.cam.ac.uk/gene_page.php?gene={{ gene.puddu }}"><em>Saccharomyces</em> Genome Variation DB</a></td>
                     </tr>
                 {% endif %}
+                {% if gene.qc_comments %}
+                    <tr>
+                        <th width="20%" scope="row">QC comments:</th>
+                        <td>{{ gene.qc_comments }}</td>
+                    </tr>
+                {% endif %}
             </table>
         </div>
     </div>

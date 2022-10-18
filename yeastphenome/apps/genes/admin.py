@@ -19,6 +19,15 @@ class GeneAdmin(ImprovedModelAdmin):
         "primary_sgdid",
         "common_name_explanation",
         "description",
+        "qc_comments",
+    )
+    search_fields = (
+        "systematic_name",
+        "common_name",
+        "primary_sgdid",
+        "common_name_explanation",
+        "description",
+        "qc_comments",
     )
 
     def save_model(self, request, obj, form, change):

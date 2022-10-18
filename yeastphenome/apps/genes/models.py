@@ -46,6 +46,8 @@ class Gene(models.Model):
 
     puddu = models.CharField(max_length=50, null=True, blank=True)
 
+    qc_comments = models.TextField(null=True, blank=True)
+
     objects = GeneManager()
 
     def __str__(self):
