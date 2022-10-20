@@ -10,8 +10,51 @@
 
     <div class="row mt-5 mb-3">
         <div class="col-md-12">
-            <p class="alert alert-info">Prepared downloads will be available shortly. Raw data will be made available on <a href="https://github.com/baryshnikova-lab/yeastphenome-data/tree/master/Datasets/" target="_blank" class="external inactive" onclick="return false;" disabled>GitHub (coming soon!)</a></p>
+            <h2 class="mt-5 mb-4" id="about">Haploid/homozygous diploid data</h2>
         </div>
     </div>
+
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <h2 class="mt-5 mb-4" id="about">Heterozygous diploid data</h2>
+
+            <div class="card">
+                <div class="card-header">
+                    yp_screens_het_20221018.txt
+                </div>
+                <div class="card-body">
+                    <p>Format: tab-delimited</p>
+                    <p>Description: A list of heterozygous diploid screens with relevant metadata (README file included).</p>
+                    <a href="https://storage.cloud.google.com/yeastphenome_downloads/yp_screens_het_20221018.tar.gz"
+                       download class="btn btn-primary">Download (105 KB)</a>
+                </div>
+            </div>
+            <p></p>
+            <div class="card">
+                <div class="card-header">
+                    yp_matrix_het_20221018.txt
+                </div>
+                <div class="card-body">
+                    <p>Format: tab-delimited</p>
+                    <p>Description: A gene x screen matrix of cleaned but unnormalized phenotypic scores (README file included).</p>
+                    <a href="https://storage.cloud.google.com/yeastphenome_downloads/yp_matrix_het_20221018.tar.gz"
+                       download class="btn btn-primary">Download (119 MB)</a>
+                </div>
+            </div>
+            <p></p>
+            <div class="card">
+                <div class="card-header">
+                    yp_matrix_het_z_20221018.txt
+                </div>
+                <div class="card-body">
+                    <p>Format: tab-delimited</p>
+                    <p>Description: A gene x screen matrix of cleaned and normalized phenotypic scores (README file included).</p>
+                    <a href="https://storage.cloud.google.com/yeastphenome_downloads/yp_matrix_het_z_20221018.tar.gz"
+                       download class="btn btn-primary">Download (193 MB)</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 {% endblock %}
