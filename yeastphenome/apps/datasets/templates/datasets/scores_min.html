@@ -2,7 +2,7 @@
 {% load static %}
 {% load cart_status %}
 {% load humanize %}
-{% block title %}Scores | {{ dataset }} | Datasets | {{ SITE_NAME }}{% endblock %}
+{% block title %}Scores | {{ dataset }} | Screens | {{ SITE_NAME }}{% endblock %}
 {% block css %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
 {% endblock %}
@@ -12,7 +12,7 @@
 
         <div class="row mt-5 mb-3">
             <div class="col-md-12">
-                <span class="badge rounded-pill bg-secondary">Datasets</span>
+                <span class="badge rounded-pill bg-secondary">Screens</span>
                 <a href="{% url 'datasets:detail' dataset.id %}"><span class="badge rounded-pill bg-primary">{{ dataset.name }}</span></a>
             </div>
         </div>

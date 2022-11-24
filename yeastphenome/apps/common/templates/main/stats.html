@@ -19,19 +19,19 @@
                         <li>Publications: {{ papers_processed_nr|intcomma }} of {{ papers_hopeful_nr|intcomma }} ({% widthratio papers_processed_nr papers_hopeful_nr 100 %}%)</li>
                         <li>Phenotypes: {{ phenotypes_nr|intcomma }}</li>
                         <li>Environments: {{ conditions_nr|intcomma }}</li>
-                        <li>Datasets: {{ datasets_nr|intcomma }} </li>
+                        <li>Screens: {{ datasets_nr|intcomma }} </li>
                     </ul>
                     <li>Recovered unpublished information for:
                         <ul>
-                            <li>Datasets: {{ datasets_nr_recovered_any|intcomma }} of {{ datasets_nr|intcomma }} ({% widthratio datasets_nr_recovered_any datasets_nr 100 %}%)</li>
-                            <li>More complete data: {{ datasets_nr_recovered_data|intcomma }} datasets ({% widthratio datasets_nr_recovered_data datasets_nr_need_data 100 %}% of those that needed it)</li>
-                            <li>List of tested strains: {{ datasets_nr_recovered_tested|intcomma }} datasets ({% widthratio datasets_nr_recovered_tested datasets_nr_need_tested 100 %}% of those that needed it)</li>
+                            <li>Screens: {{ datasets_nr_recovered_any|intcomma }} of {{ datasets_nr|intcomma }} ({% widthratio datasets_nr_recovered_any datasets_nr 100 %}%)</li>
+                            <li>More complete data: {{ datasets_nr_recovered_data|intcomma }} screens ({% widthratio datasets_nr_recovered_data datasets_nr_need_data 100 %}% of those that needed it)</li>
+                            <li>List of tested strains: {{ datasets_nr_recovered_tested|intcomma }} screens ({% widthratio datasets_nr_recovered_tested datasets_nr_need_tested 100 %}% of those that needed it)</li>
                         </ul>
                     </li>
                 </ul>
             </div>
 
-            <h2 class="mt-5 mb-4">Number of datasets per data class</h2>
+            <h2 class="mt-5 mb-4">Number of screens per data class</h2>
             <div class="container">
                 <table class="table">
                     <thead>
@@ -104,7 +104,7 @@
             {#            </table>#}
             {##}
 
-            <h2 class="mt-5 mb-4">Number of datasets per phenotype class</h2>
+            <h2 class="mt-5 mb-4">Number of screens per phenotype class</h2>
             <div class="container">
                 <table class="table">
                     <thead>
