@@ -26,7 +26,7 @@ def download_button(context, dataset_id):
         button_class = "btn-primary add-to-cart"
         button_label = '<i class="bi bi-download"></i>&nbsp; Add'
 
-        if (len(datasets_in_cart) >= DOWNLOAD_CART_LIMIT) or (not dataset.data_source.release):
+        if (len(datasets_in_cart) >= DOWNLOAD_CART_LIMIT) or (not dataset.data_source) or (not dataset.data_source.release):
             button_status = "disabled"
 
     else:
