@@ -18,13 +18,13 @@ admin.autodiscover()
 
 urlpatterns = [
     url(r"^admin/", admin.site.urls),
-    url(r"^", include(common_urls)),
-    url(r"^search/", include(search_urls)),
+    url(r"^", include(common_urls, namespace="common")),
+    url(r"^search/", include(search_urls, namespace="search")),
     url(r"^downloads/", include(downloads_urls, namespace="downloads")),
     url(r"^papers/", include(papers_urls, namespace="papers")),
     url(r"^phenotypes/", include(phenotypes_urls, namespace="phenotypes")),
     url(r"^conditions/", include(conditions_urls, namespace="conditions")),
-    url(r"^datasets/", include(datasets_urls, namespace="datasets")),
+    url(r"^screens/", include(datasets_urls, namespace="datasets")),
     url(r"^genes/", include(gene_urls, namespace="genes")),
     url(
         r"^robots\.txt?/$",

@@ -32,7 +32,7 @@
                     <li class="nav-item" {% if tab == 'datasets' %}class="active"{% endif %}>
                         <a class="nav-link {% if tab == 'datasets' %}active{% endif %} {% if num_datasets == 0 %}disabled{% endif %}"
                            aria-current="page"
-                           href="/search/?q={{ request.GET.q|urlencode }}&field={{ request.GET.field|urlencode }}&tab=datasets">
+                           href="/search/?q={{ request.GET.q|urlencode }}&field={{ request.GET.field|urlencode }}&tab=screens">
                             Screens &nbsp; <span class="badge rounded-pill {% if num_datasets > 0 %}bg-danger{% else %}bg-secondary{% endif %}">{{ num_datasets }}</span>
                         </a>
                     </li>
@@ -67,7 +67,7 @@
             {% include "search/conditions.html" %}
         {% elif tab == 'phenotypes' %}
             {% include "search/phenotypes.html" %}
-        {% elif tab == 'datasets' %}
+        {% elif tab == 'screens' %}
             {% include "search/datasets.html" %}
         {% elif tab == 'papers' %}
             {% include "search/papers.html" %}

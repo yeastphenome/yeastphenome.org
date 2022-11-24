@@ -212,7 +212,7 @@ def index(request):
             context["page_range"] = page_range
             context["results_range"] = results_range
             context["num_pages"] = pagination_phenotypes["total_pages"]
-        elif tab == "datasets":
+        elif tab == "screens":
             results_fields = [
                 "id",
                 "paper",

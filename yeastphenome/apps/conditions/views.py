@@ -1,5 +1,5 @@
 from django.db.models import F
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 
 from yeastphenome.apps.conditions.models import ConditionType
 
@@ -10,6 +10,11 @@ from yeastphenome.settings import (
 )
 
 import numpy as np
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def index(request):
+    return redirect("search:search")
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)

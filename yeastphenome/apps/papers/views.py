@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.db.models import F
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -16,6 +16,11 @@ from yeastphenome.settings import (
 )
 
 from ratelimit.decorators import ratelimit
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def index(request):
+    return redirect("search:search")
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)

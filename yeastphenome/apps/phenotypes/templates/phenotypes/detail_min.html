@@ -36,10 +36,10 @@
 
     <div class="row mt-5 mb-3">
         <div class="col-md-12">
-            <h2>Datasets</h2>
+            <h2>Screens</h2>
             {% include "datasets/datasets_table_min.html" with datasets=datasets %}
             {% if num_datasets > 10 %}
-                <a href="{% url 'phenotypes:datasets' observable.id %}" class="btn btn-success" role="button">View all {{ num_datasets|intcomma }} datasets</a>
+                <a href="{% url 'phenotypes:datasets' observable.id %}" class="btn btn-success" role="button">View all {{ num_datasets|intcomma }} screens</a>
             {% endif %}
         </div>
     </div>

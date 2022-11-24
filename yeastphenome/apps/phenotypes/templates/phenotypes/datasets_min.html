@@ -2,7 +2,7 @@
 {% load static %}
 {% load my_filters %}
 {% load humanize %}
-{% block title %}Datasets | {{ observable }} | Phenotypes | {{ SITE_NAME }}{% endblock %}
+{% block title %}Screens | {{ observable }} | Phenotypes | {{ SITE_NAME }}{% endblock %}
 {% block css %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
 {% endblock %}
@@ -15,12 +15,12 @@
     </div>
     <div class="row mt-5 mb-3">
         <div class="col-md-12">
-            <h1>Datasets for {{ observable }}</h1>
+            <h1>Screens for {{ observable }}</h1>
         </div>
     </div>
     <div class="row mt-3 mb-3">
         <div class="col-md-12">
-            Total: {{ num_datasets }} datasets
+            Total: {{ num_datasets }} screens
             {% include "datasets/datasets_table_min.html" with datasets=datasets %}
         </div>
     </div>

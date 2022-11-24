@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, reverse
 from django.conf import settings
@@ -28,6 +28,11 @@ from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
     VIEW_RATE_LIMIT_BLOCK as rl_block,
 )
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def index(request):
+    return redirect("search:search")
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)

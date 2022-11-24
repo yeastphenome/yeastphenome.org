@@ -1,4 +1,4 @@
-from django.shortcuts import render, reverse, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import F
 
 from yeastphenome.apps.phenotypes.models import Observable
@@ -19,34 +19,7 @@ def redirect_index(request):
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def index(request):
-
-    taglist = []
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("phenotypes:index"), "name": "Phenotypes"},
-    ]
-    for key in [
-        "observable",
-        "tags",
-        "phenotype",
-        "measurement",
-        "query",
-    ]:
-        for tag in request.GET.get(key, "").split("|"):
-            if not tag:
-                continue
-            taglist.append({"value": tag, "code": key})
-
-    print(taglist)
-    return render(
-        request,
-        "phenotypes/explorer.html",
-        {
-            "taglist": taglist,
-            "links": links,
-            "active": "explorer",
-        },
-    )
+    return redirect("search:search")
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)

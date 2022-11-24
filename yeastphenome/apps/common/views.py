@@ -1,4 +1,4 @@
-from django.shortcuts import render, reverse
+from django.shortcuts import render, reverse, redirect
 from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 from django.db.models import Q
@@ -42,8 +42,7 @@ def support(request):
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def about(request):
-    context = {}
-    return render(request, "main/about.html", context)
+    return redirect("common:project")
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
@@ -142,10 +141,3 @@ def data_contributors(request):
 def warmup():
     return HttpResponse(status=200)
 
-
-# Explorer Home
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def explorer(request):
-    links = [{"url": reverse("common:explorer"), "name": "Explore data"}]
-    context = {"active": "explorer", "links": links}
-    return render(request, "main/explorer.html", context)

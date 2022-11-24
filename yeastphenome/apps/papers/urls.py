@@ -4,6 +4,7 @@ from yeastphenome import settings
 from . import views
 
 urlpatterns = [
+    path("", views.index, name="index"),
     path("<int:paper_id>/", views.detail, name="detail"),
     path("<int:paper_id>/datasets/", views.datasets, name="datasets"),
     path(

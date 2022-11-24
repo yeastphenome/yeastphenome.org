@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.shortcuts import get_object_or_404, reverse
 
 from yeastphenome.apps.datasets.models import Data, Dataset
@@ -14,6 +14,11 @@ from yeastphenome.settings import (
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def index(request):
+    return redirect("search:search")
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
