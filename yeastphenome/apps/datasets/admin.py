@@ -6,7 +6,7 @@ from django.utils.http import urlencode
 from django.utils.safestring import mark_safe
 
 from yeastphenome.apps.datasets.models import Dataset, Collection, Source
-from yeastphenome.apps.common.admin_util import (
+from yeastphenome.apps.common.utils_admin import (
     ImprovedModelAdmin,
     ImprovedTabularInline,
     LimitedInlineFormSet,

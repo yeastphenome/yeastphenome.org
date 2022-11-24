@@ -14,7 +14,7 @@ from yeastphenome.apps.conditions.models import (
     ConditionType,
     Medium,
 )
-from yeastphenome.apps.common.admin_util import (
+from yeastphenome.apps.common.utils_admin import (
     ImprovedTabularInline,
     ImprovedModelAdmin,
 )

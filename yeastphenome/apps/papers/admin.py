@@ -4,7 +4,7 @@ from yeastphenome.apps.papers.models import Paper, Status, Statusdata, Statustes
 from yeastphenome.apps.papers.forms import PaperModelForm
 from yeastphenome.apps.datasets.admin import DatasetInline
 
-from yeastphenome.apps.common.admin_util import ImprovedModelAdmin
+from yeastphenome.apps.common.utils_admin import ImprovedModelAdmin
 
 
 class StatusdataInline(admin.TabularInline):
