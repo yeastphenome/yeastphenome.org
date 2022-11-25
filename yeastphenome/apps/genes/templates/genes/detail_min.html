@@ -66,9 +66,8 @@
 
         <div class="row mt-5 mb-3">
             <div class="col-md-12">
-                <h2>Phenotypic scores</h2>
 
-                {% include "messages/data_warning.html"%}
+                <h2 class="mb-4">Phenotypic scores</h2>
 
                 <ul class="nav nav-tabs" id="phenotypic_scores" role="tablist">
                     <li class="nav-item" role="presentation">
@@ -95,8 +94,9 @@
                     </div>
                 </div>
 
-                <a class="btn btn-success" role="button" href="{% url 'genes:scores' gene.id %}">View all {{ num_scores|intcomma }} scores</a>
-{#                <a class="btn btn-primary" role="button" href="{% url 'genes:download_gene_scores' gene.id %}">Download now</a>#}
+                <a class="btn btn-success" role="button" href="{% url 'genes:scores' gene.id %}">View all</a>
+                <a class="btn btn-primary" role="button" href="{% url 'genes:download_scores' gene.id %}">Download all</a>
+                <span> &nbsp; ({{ num_scores|intcomma }} NPVs)</span>
 
             </div>
         </div>
@@ -105,9 +105,8 @@
     {% if similarities_lowest or similarities_highest %}
         <div class="row mt-5 mb-3">
             <div class="col-md-12">
-                <h2>Phenotypic similarities</h2>
 
-                {% include "messages/data_warning.html"%}
+                <h2 class="mb-4">Phenotypic similarities</h2>
 
                 <ul class="nav nav-tabs" id="phenotypic_similarities" role="tablist">
                     <li class="nav-item" role="presentation">
@@ -134,8 +133,9 @@
                     </div>
                 </div>
 
-                <a class="btn btn-success" role="button" href="{% url 'genes:similarities' gene.id %}">View all {{ num_similarities|intcomma }} similarities</a>
-{#                <a class="btn btn-primary" role="button" href="{% url 'genes:download_gene_scores' gene.id %}">Download now</a>#}
+                <a class="btn btn-success" role="button" href="{% url 'genes:similarities' gene.id %}">View all</a>
+                <a class="btn btn-primary" role="button" href="{% url 'genes:download_similarities' gene.id %}">Download all</a>
+                <span> &nbsp; ({{ num_similarities|intcomma }} similarities)</span>
 
             </div>
         </div>

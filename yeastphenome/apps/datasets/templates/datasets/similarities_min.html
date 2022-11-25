@@ -2,14 +2,14 @@
 {% load static %}
 {% load my_filters %}
 {% load humanize %}
-{% block title %}Similarities | {{ dataset }} | Datasets | {{ SITE_NAME }}{% endblock %}
+{% block title %}Similarities | {{ dataset }} | Screens | {{ SITE_NAME }}{% endblock %}
 {% block content %}
 
     {%  if dataset.data_source.release == True %}
 
         <div class="row mt-5 mb-3">
             <div class="col-md-12">
-                <span class="badge rounded-pill bg-secondary">Datasets</span>
+                <span class="badge rounded-pill bg-secondary">Screens</span>
                 <a href="{% url 'datasets:detail' dataset.id %}"><span class="badge rounded-pill bg-primary">{{ dataset.name }}</span></a>
             </div>
         </div>
@@ -20,7 +20,9 @@
         </div>
         <div class="row mt-5 mb-3">
             <div class="col-md-12">
-                {% include "messages/data_warning.html"%}
+                <div class="d-md-flex justify-content-md-start mt-auto align-self-start">
+                    <a class="btn btn-primary" role="button" href="{% url 'datasets:download_similarities' dataset.id %}">Download all</a>
+                </div>
                 {% include "datasets/similarities_table_min.html" with similarities=similarities table_id="similarities" %}
             </div>
         </div>

@@ -15,7 +15,7 @@
                 <td><a href="{% url 'genes:detail' similarity.gene2_id %}">{{ similarity.gene2__common_name }} / {{ similarity.gene2__systematic_name }}</a></td>
                 <td>{{ similarity.score|floatformat:2 }} &#177; {{ similarity.pvalue|floatformat:2 }}</td>
                 <td>{{ similarity.percentile|floatformat:2 }}%</td>
-                <td><a href="{% url 'genes:scatterplot' gene.id similarity.gene2_id %}">Show</a></td>
+                <td><a href="{% url 'genes:scatterplot_gc' gene.id similarity.gene2_id %}">Show</a></td>
             </tr>
         {% endfor %}
         </tbody>

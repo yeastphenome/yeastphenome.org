@@ -20,13 +20,12 @@
         <div class="row mt-5 mb-3">
             <div class="col-md-12">
                 <h1>Phenotypic scores for {{ dataset.name }}</h1>
-                {% include "messages/data_warning.html"%}
             </div>
         </div>
         <div class="row mt-5 mb-3">
             <div class="col-md-12">
-                <div class="d-md-flex justify-content-md-end mt-auto align-self-end">
-                    {% download_button dataset.id %}
+                <div class="d-md-flex justify-content-md-start mt-auto align-self-start">
+                    <a class="btn btn-primary" role="button" href="{% url 'datasets:download_scores' dataset.id %}">Download all</a>
                 </div>
                 {% include "datasets/scores_table_min.html" with scores=scores %}
             </div>

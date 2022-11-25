@@ -29,8 +29,8 @@
                             Papers &nbsp; <span class="badge rounded-pill {% if num_papers > 0 %}bg-danger{% else %}bg-secondary{% endif %}">{{ num_papers }}</span>
                         </a>
                     </li>
-                    <li class="nav-item" {% if tab == 'datasets' %}class="active"{% endif %}>
-                        <a class="nav-link {% if tab == 'datasets' %}active{% endif %} {% if num_datasets == 0 %}disabled{% endif %}"
+                    <li class="nav-item" {% if tab == 'screens' %}class="active"{% endif %}>
+                        <a class="nav-link {% if tab == 'screens' %}active{% endif %} {% if num_datasets == 0 %}disabled{% endif %}"
                            aria-current="page"
                            href="/search/?q={{ request.GET.q|urlencode }}&field={{ request.GET.field|urlencode }}&tab=screens">
                             Screens &nbsp; <span class="badge rounded-pill {% if num_datasets > 0 %}bg-danger{% else %}bg-secondary{% endif %}">{{ num_datasets }}</span>

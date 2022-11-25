@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+import re
 from django.core.exceptions import FieldError
 from django.db import models
 from django.db.models import F
@@ -53,6 +54,11 @@ class Gene(models.Model):
     def __str__(self):
         return "%s / %s" % (self.common_name, self.systematic_name)
 
+    def urlencode(self):
+        # Remove all non-alphanumeric characters from the gene's common name
+        common_name = re.sub(r'[^a-zA-Z0-9]', '', self.common_name)
+        return "%s_%s" % (common_name, self.systematic_name)
+
     def aliases_list(self):
         return list(self.aliases.all().values_list("name", flat=True))
 
@@ -74,6 +80,10 @@ class Gene(models.Model):
             "gene2__systematic_name",
             "gene2__common_name",
         )
+        return data
+
+    def get_similarity_to(self, gene2):
+        data = self.similarities.filter(gene2=gene2).first()
         return data
 
     def data_indexing(self):
@@ -107,9 +117,6 @@ class Gene(models.Model):
 
 
 class GeneSimilarity(models.Model):
-    """A gene similarity is a similarity metric calculated to compare genes
-    based on datasets.
-    """
 
     gene1 = models.ForeignKey(
         Gene, on_delete=models.CASCADE, related_name="similarities"
@@ -121,9 +128,8 @@ class GeneSimilarity(models.Model):
     # IMPORTANT: this is actually a standard deviation
     pvalue = models.DecimalField(max_digits=10, decimal_places=6)
 
-    @property
-    def pvalue_scientific_notation(self):
-        pass
+    def __str__(self):
+        return "%s &#177; %s" % (self.score, self.pvalue)
 
     def save(self, *args, **kwargs):
         """Override the save function to ensure that only one similarity score

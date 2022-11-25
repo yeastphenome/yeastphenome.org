@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.shortcuts import get_object_or_404, reverse
+from django.http import HttpResponse
 
 from yeastphenome.apps.datasets.models import Data, Dataset
 from yeastphenome.apps.genes.models import Gene
@@ -9,11 +10,11 @@ from ratelimit.decorators import ratelimit
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
     VIEW_RATE_LIMIT_BLOCK as rl_block,
+    DOWNLOAD_PREFIX
 )
 
 import pandas as pd
 import numpy as np
-import plotly.graph_objects as go
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
@@ -73,6 +74,36 @@ def scores(request, gene_id):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def download_scores(request, gene1_id, gene2_id=None):
+
+    gene1 = get_object_or_404(Gene, pk=gene1_id)
+    scores1 = gene1.get_scores().order_by("valuez")
+    scores1_df = pd.DataFrame(list(scores1))
+
+    if gene2_id:
+        gene2 = get_object_or_404(Gene, pk=gene2_id)
+        scores2 = gene2.get_scores().order_by("valuez")
+        scores2_df = pd.DataFrame(list(scores2))
+
+        scores_df = scores1_df.merge(scores2_df, how="outer", on="dataset_id", suffixes=('_gene1', '_gene2'))
+        scores_df = scores_df[['dataset_id', 'dataset_name_gene1', 'valuez_gene1', 'valuez_gene2']]
+        scores_df.columns = ['Screen ID', 'Screen name', 'NPV ' + str(gene1), 'NPV ' + str(gene2)]
+        filename = "%s_%s_%s_NPVs.txt" % (DOWNLOAD_PREFIX, gene1.urlencode(), gene2.urlencode())
+    else:
+        scores_df = scores1_df
+        scores_df = scores_df[['dataset_id', 'dataset_name', 'valuez']]
+        scores_df.columns = ['Screen ID', 'Screen name', 'NPV ' + str(gene1)]
+        filename = "%s_%s_NPVs.txt" % (DOWNLOAD_PREFIX, gene1.urlencode())
+
+    # Prepare the HttpResponse
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="%s"' % filename
+
+    scores_df.to_csv(path_or_buf=response, sep="\t", index=False)
+
+    return response
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def similarities(request, gene_id):
 
     gene = get_object_or_404(Gene, pk=gene_id)
@@ -88,10 +119,34 @@ def similarities(request, gene_id):
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def scatterplot(request, gene1_id, gene2_id):
+def download_similarities(request, gene_id):
+
+    gene = get_object_or_404(Gene, pk=gene_id)
+    similarities = gene.get_similarities().order_by("-score")
+    similarities_df = pd.DataFrame(list(similarities))
+    similarities_df.columns = ['Correlation mean', 'Correlation std. dev.',
+                               'Gene ID', 'Gene systematic name', 'Gene common name']
+
+    # Prepare the HttpResponse
+    filename = "%s_%s_similarities.txt" % (DOWNLOAD_PREFIX, gene.urlencode())
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="%s"' % filename
+
+    similarities_df.to_csv(path_or_buf=response, sep="\t", index=False)
+
+    return response
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def scatterplot_gc(request, gene1_id, gene2_id):
 
     gene1 = get_object_or_404(Gene, pk=gene1_id)
     gene2 = get_object_or_404(Gene, pk=gene2_id)
+
+    gene1_link = reverse("genes:detail", args=[gene1_id])
+    gene2_link = reverse("genes:detail", args=[gene2_id])
+
+    similarity = gene1.get_similarity_to(gene2)
 
     data = Data.objects.all_valid().filter(gene_id__in=[gene1_id, gene2_id])
     data = data.values("gene_id", "dataset_id", "valuez")
@@ -103,111 +158,42 @@ def scatterplot(request, gene1_id, gene2_id):
     df_matrix = pd.pivot_table(
         df, index="dataset_id", columns="gene_id", values="valuez"
     )
+    df_matrix = df_matrix.loc[df_matrix.isnull().sum(axis=1) == 0, ]
 
+    # Get dataset names
     datasets = Dataset.objects.all_valid().values("id", "name")
     datasets_df = pd.DataFrame(list(datasets))
-
-    datasets_df["name2"] = datasets_df["name"].apply(
-        lambda x: "<br>".join(x.split(" | "))
-    )
-
-    datasets_df["link"] = datasets_df.apply(
-        lambda row: reverse("datasets:detail", args=[row["id"]]), axis=1
-    )
-    datasets_df["dataset_link"] = datasets_df.apply(
-        lambda row: '<a href="' + row["link"] + '">' + row["name2"] + "</a>", axis=1
-    )
     datasets_df.set_index("id", inplace=True)
 
     df_matrix["dataset_name"] = datasets_df["name"]
-    df_matrix["dataset_name2"] = datasets_df["name2"]
-    df_matrix["dataset_link"] = datasets_df["dataset_link"]
+    df_matrix["dataset_link"] = df_matrix.apply(
+        lambda row: reverse("datasets:detail", args=[row.name]), axis=1
+    )
+    df_matrix["tooltip"] = df_matrix.apply(
+        lambda row: '<div class="alert alert-light" role="alert">'
+                    + '<p><strong>Screen:</strong> '
+                    + '<a href="' + row["dataset_link"] + '">' + row["dataset_name"] + '</a></p>'
+                    + '<p><strong>Normalized phenotypic values (NPVs):</strong>'
+                    + '<br><a href="' + gene1_link + '">' + str(gene1) + '</a>: '
+                    + '{:.2f}'.format(row[gene1_id])
+                    + '<br><a href="' + gene2_link + '">' + str(gene2) + '</a>: '
+                    + '{:.2f}'.format(row[gene2_id]) + '</p>'
+                    + "</div>", axis=1
+    )
 
     df_matrix.set_index("dataset_name", inplace=True, drop=False)
 
     min_axis = np.floor(np.nanmin(df_matrix[[gene1_id, gene2_id]].min(axis=0)))
     max_axis = np.ceil(np.nanmax(df_matrix[[gene2_id, gene2_id]].max(axis=0)))
 
-    fig = go.Figure()
-
-    scatter = go.Scatter(
-        x=df_matrix[gene1_id],
-        y=df_matrix[gene2_id],
-        text=df_matrix["dataset_name2"],
-        mode="markers",
-        marker=dict(size=10, opacity=0.5),
-        name="Normalized phenotypic scores",
-        hovertemplate="<b>%{text}</b><br><br>"
-        + "x: %{x}<br>"
-        + "y: %{y}<br><br>"
-        + "(Click for more info)"
-        "<extra></extra>",
-    )
-    fig.add_trace(scatter)
-
-    xy = go.Scatter(
-        x=[min_axis, max_axis], y=[min_axis, max_axis], mode="lines", name="y=x"
-    )
-    fig.add_trace(xy)
-
-    annotations = [
-        dict(
-            xclick=df_matrix.loc[dataset_name, gene1_id],
-            yclick=df_matrix.loc[dataset_name, gene2_id],
-            x=max_axis + 1,
-            y=(max_axis + min_axis) / 2,
-            xanchor="left",
-            yanchor="middle",
-            text=df_matrix.loc[dataset_name, "dataset_link"],
-            align="left",
-            bgcolor="white",
-            visible=False,
-            showarrow=False,
-            clicktoshow="onout",
-        )
-        for dataset_name in df_matrix["dataset_name"].values
-    ]
-    fig.update_layout(margin=dict(r=300, b=300), annotations=annotations)
-
-    num_ticks = 10
-    dtick = np.int((max_axis - min_axis) / num_ticks)
-    tickvals = np.concatenate(
-        (np.arange(0, min_axis, -dtick), np.arange(0, max_axis, dtick))
-    )
-
-    fig.update_xaxes(
-        range=[min_axis - 1, max_axis + 1],
-        tickvals=tickvals,
-        showgrid=True,
-        title_text=str(gene1),
-    )
-    fig.update_yaxes(
-        range=[min_axis - 1, max_axis + 1],
-        tickvals=tickvals,
-        showgrid=True,
-        scaleanchor="x",
-        scaleratio=1,
-        title_text=str(gene2),
-    )
-    fig.update_layout(
-        template="simple_white",
-        hovermode="closest",
-        hoverlabel=dict(
-            bgcolor="white",
-            bordercolor="#2471A3",
-            font=dict(
-                color="black",
-            ),
-        ),
-        showlegend=False,
-        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
-    )
-
-    graph = fig.to_html(full_html=False, default_height=900, default_width=900)
+    values = df_matrix[[gene1_id, gene2_id, "tooltip"]].values.tolist()
 
     context = {
-        "gene": gene1,
+        "gene1": gene1,
         "gene2": gene2,
-        "graph": graph,
+        "values": values,
+        "min_axis": min_axis,
+        "max_axis": max_axis,
+        "similarity": similarity
     }
-    return render(request, "genes/scatterplot.html", context)
+    return render(request, "genes/scatterplot_gc.html", context)

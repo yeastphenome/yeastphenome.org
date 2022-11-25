@@ -400,6 +400,10 @@ class Dataset(models.Model):
         )
         return data
 
+    def get_similarity_to(self, dataset2):
+        data = self.similarities.filter(dataset2=dataset2).first()
+        return data
+
     def indexing_progress(self):
         print(self.id)
 

@@ -16,7 +16,7 @@
                 <td>{{ similarity.score|floatformat:2 }} &#177; {{ similarity.pvalue|floatformat:2 }}</td>
                 <td>{{ similarity.percentile|floatformat:2 }}%</td>
                 <td>
-                    <a href="{%  url 'datasets:scatterplot' dataset1_id=dataset.id dataset2_id=similarity.dataset2_id %}">Show</a>
+                    <a href="{%  url 'datasets:scatterplot_gc' dataset1_id=dataset.id dataset2_id=similarity.dataset2_id %}">Show</a>
                 </td>
             </tr>
         {% endfor %}
