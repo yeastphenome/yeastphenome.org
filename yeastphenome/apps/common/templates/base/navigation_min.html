@@ -17,12 +17,8 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'common:support' %}" role="button" aria-expanded="false">Support</a>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="{% url 'downloads:view_cart' %}" role="button" aria-expanded="false">Downloads</a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{% url 'downloads:view_cart' %}">Download cart</a></li>
-                            <li><a class="dropdown-item" href="{% url 'downloads:download_bundles' %}">Bundle downloads</a></li>
-                        </ul>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'downloads:download_bundles' %}" role="button" aria-expanded="false">Downloads</a>
                     </li>
                 </ul>
                 {% if not request.path == '/' %}

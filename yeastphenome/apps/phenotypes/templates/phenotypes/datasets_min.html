@@ -3,9 +3,6 @@
 {% load my_filters %}
 {% load humanize %}
 {% block title %}Screens | {{ observable }} | Phenotypes | {{ SITE_NAME }}{% endblock %}
-{% block css %}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
-{% endblock %}
 {% block content %}
     <div class="row mt-5 mb-3">
         <div class="col-md-12">
@@ -26,8 +23,3 @@
     </div>
 {% endblock %}
 
-{% block scripts %}
-    {% csrf_token %}
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    {% include "scripts/add_to_cart_functions.html" %}
-{% endblock %}

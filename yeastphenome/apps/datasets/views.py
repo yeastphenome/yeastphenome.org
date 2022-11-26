@@ -155,12 +155,22 @@ def download_scores(request, dataset1_id, dataset2_id=None):
 
     dataset1 = get_object_or_404(Dataset, pk=dataset1_id)
     scores1 = dataset1.get_scores().order_by("valuez")
-    scores1_df = pd.DataFrame(list(scores1))
+
+    expected_columns = ['gene_id', 'gene_systematic_name', 'gene_common_name', 'valuez']
+
+    # If no scores retrieved, create an empty dataframe with the relevant fields
+    if scores1.count() == 0:
+        scores1_df = pd.DataFrame(columns=expected_columns)
+    else:
+        scores1_df = pd.DataFrame(list(scores1))
 
     if dataset2_id:
         dataset2 = get_object_or_404(Dataset, pk=dataset2_id)
         scores2 = dataset2.get_scores().order_by("valuez")
-        scores2_df = pd.DataFrame(list(scores2))
+        if scores2.count() == 0:
+            scores2_df = pd.DataFrame(columns=expected_columns)
+        else:
+            scores2_df = pd.DataFrame(list(scores2))
 
         scores_df = scores1_df.merge(scores2_df, how="outer", on="gene_id", suffixes=('_dataset1', '_dataset2'))
         scores_df = scores_df[['gene_id', 'gene_systematic_name_dataset1',
@@ -242,20 +252,6 @@ def download_observable_datasets_list(request, observable_id):
     if not os.path.exists(exported_file):
         df.to_csv(exported_file, sep="\t", index=None)
     return send_file(exported_file)
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def download_dataset_cart(request):
-    """download all the dataset objects in the user's cart"""
-    # Get dataset ids from cart
-    datasets = request.session.get("cart", [])
-    response = download_dataset_scores(request, datasets)
-
-    # Clear the cart on download
-    if "cart" in request.session:
-        del request.session["cart"]
-
-    return response
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)

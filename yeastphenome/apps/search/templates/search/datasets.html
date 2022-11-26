@@ -1,9 +1,3 @@
-{% load cart_status %}
-{% include "messages/download_cart_warning.html" %}
-{% block css %}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
-{% endblock %}
-
 <div class="row mt-5 mb-3">
     <div class="col-md-12">
         <h2>Screens</h2>
@@ -18,9 +12,12 @@
                 <th scope="col" style="width: 15%">Condition</th>
                 <th scope="col" style="width: 15%">Medium</th>
                 <th scope="col" style="width: 15%">Paper</th>
-                <th scope="col">Data</th>
+{#                <th scope="col">Data</th>#}
                 <th scope="col">Tags</th>
-                <th scope="col">Downloads</th>
+                <th scope="col">
+                    <a class="info" data-bs-toggle="tooltip"
+                       title="{% include 'base/nps_explanation.html' %}">NPVs</a>
+                </th>
             </thead>
             {% for dataset in datasets_page_obj %}
                 <tr>
@@ -30,9 +27,11 @@
                     <td class="align-middle">{{ dataset.conditionset }}</td>
                     <td class="align-middle">{{ dataset.medium }}</td>
                     <td class="align-middle">{{ dataset.paper }}</td>
-                    <td class="align-middle">{{ dataset.data_available }}</td>
+{#                    <td class="align-middle">{{ dataset.data_available }}</td>#}
                     <td class="align-middle">{{ dataset.tags_list_as_str|truncatewords:5 }}</td>
-                    <td class="align-middle col-md-1">{% download_button dataset.id %}</td>
+                    <td class="align-middle col-md-1">
+                        <a class="btn btn-primary" role="button" href="{% url 'datasets:download_scores' dataset.id %}">Download</a>
+                    </td>
                 </tr>
             {% empty %}
                 <tr>
@@ -45,9 +44,3 @@
 
     </div>
 </div>
-
-{% block scripts %}
-    {% csrf_token %}
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    {% include "scripts/add_to_cart_functions.html" %}
-{% endblock %}

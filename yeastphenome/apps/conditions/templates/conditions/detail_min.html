@@ -1,9 +1,6 @@
 {% extends "base/base_min.html" %}
 {% load humanize %}
 {% block title %}{{ conditiontype }} | Conditions | {{ SITE_NAME }}{% endblock %}
-{% block css %}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
-{% endblock %}
 {% block content %}
     <div class="row mt-5 mb-3">
         <div class="col-md-12">
@@ -70,22 +67,18 @@
 
     <div class="row mt-5 mb-3">
         <div class="col-md-12">
-            <h2>Datasets</h2>
+            <h2>Screens</h2>
             <div class="mt-5">
-                Showing 1-{{ num_datasets_showing }} of {{ num_datasets|intcomma }} datasets
+                Showing 1-{{ num_datasets_showing }} of {{ num_datasets|intcomma }} screens
                 {% include "datasets/datasets_table_min.html" with datasets=datasets %}
                 {% if num_datasets > 10 %}
                     <a class="btn btn-success"
                        role="button"
-                       href="{% url 'conditions:datasets' conditiontype.id %}">View all {{ num_datasets|intcomma }} datasets</a>
+                       href="{% url 'conditions:datasets' conditiontype.id %}">View all</a> &nbsp; ({{ num_datasets|intcomma }} screens)</a>
                 {% endif %}
             </div>
         </div>
     </div>
 
 {% endblock %}
-{% block scripts %}
-    {% csrf_token %}
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    {% include "scripts/add_to_cart_functions.html" %}
-{% endblock %}
+

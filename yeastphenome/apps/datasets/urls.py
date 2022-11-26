@@ -17,7 +17,6 @@ urlpatterns = [
     url(r"^(?P<domain>conditions)/(?P<id>\d+)/", views.data, name="data"),
     url(r"^conditions/(?P<domain>chebi)/(?P<id>\d+)/", views.data, name="data"),
     url(r"^(?P<domain>phenotypes)/(?P<id>\d+)/", views.data, name="data"),
-    url(r"^download/cart/$", views.download_dataset_cart, name="download_dataset_cart"),
 ]
 
 app_name = "datasets"
