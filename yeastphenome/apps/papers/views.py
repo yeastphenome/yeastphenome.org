@@ -8,7 +8,6 @@ from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.papers.utils import (
     get_pubmed_paper_context,
     get_pubmed_paper,
-    get_paper_references_context,
 )
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
@@ -62,7 +61,6 @@ def detail(request, paper_id):
     if p.pmid != 0:
         xml_data = get_pubmed_paper(p.pmid)
         context.update(get_pubmed_paper_context(p.pmid, xml_data))
-        context.update(get_paper_references_context(p, xml_data))
 
     return render(request, "papers/detail_min.html", context)
 
