@@ -19,17 +19,20 @@ def escape_regex(value):
 
 def get_latest_stats_basic():
 
-    conditions_qs = ConditionType.objects.all_valid()
-    datasets_qs = Dataset.objects.all_valid()
-    genes_qs = Gene.objects.all_valid()
-    papers_qs = Paper.objects.all_valid()
-    phenotypes_qs = Observable.objects.all_valid()
+    datasets_qs = Dataset.objects.all_loaded()
+    papers_qs = Paper.objects.all_loaded()
 
     papers_nr = papers_qs.count()
-    phenotypes_nr = phenotypes_qs.count()
-    conditions_nr = conditions_qs.count()
     datasets_nr = datasets_qs.count()
-    genes_nr = genes_qs.count()
+    genes_nr = 4554
+
+    # Number of phenotypes
+    phenotypes_nr = papers_qs.values("datasets__phenotype").distinct().count()
+
+    # Number of conditions
+    conditions_nr = (
+        papers_qs.values("datasets__conditionset").distinct().count()
+    )
 
     context = {
         "papers_nr": papers_nr,
