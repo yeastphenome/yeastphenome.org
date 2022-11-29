@@ -8,14 +8,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GOOGLE_ANALYTICS_SITE = os.environ.get("GOOGLE_ANALYTICS_SITE")
 GOOGLE_ANALYTICS_ID = os.environ.get("GOOGLE_ANALYTICS_ID")
 TWITTER_USERNAME = os.environ.get("TWITTER_USERNAME")
-INSTAGRAM_USERNAME = os.environ.get("INSTAGRAM_USERNAME")
-FACEBOOK_USERNAME = os.environ.get("FACEBOOK_USERNAME")
 GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY")
 
-# SendGrid and Help Contact Email
+# Email Addresses
 HELP_CONTACT_EMAIL = os.environ.get("HELP_CONTACT_EMAIL")
-SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY")
-SENDGRID_SENDER_EMAIL = os.environ.get("SENDGRID_SENDER_EMAIL", HELP_CONTACT_EMAIL)
 ENTREZ_EMAIL = os.environ.get("ENTREZ_EMAIL", HELP_CONTACT_EMAIL)
 
 # You likely will need to set the domain name after it's been allocated
@@ -30,8 +26,8 @@ DOMAIN_NAME = os.environ.get("DOMAIN_NAME", "http://127.0.0.1:8000")
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True if os.getenv("DEBUG") != "false" else False
-DISABLE_CACHE = True if os.getenv("DISABLE_CACHE") != "false" else False
+DEBUG = True
+DISABLE_CACHE = True
 
 # SECURITY WARNING: App Engine's security features ensure that it is safe to
 # have ALLOWED_HOSTS = ['*'] when the app is deployed. If you deploy a Django
@@ -123,6 +119,7 @@ if not os.path.exists(CACHE_LOCATION):
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
+
 # Case 1: we are running locally but want to do migration, etc. (set False to True)
 if True and os.getenv("APP_ENGINE_HOST") != None:
     print("Warning: connecting to production database.")
@@ -159,29 +156,11 @@ elif os.getenv("APP_ENGINE_CONNECTION_NAME") != None:
     }
 
     # If we are on app engine, ensure https only
-    SECURE_SSL_REDIRECT = True
+    SECURE_SSL_REDIRECT = False
+    # But on the staging service, allow http (needed for Google Cloud Scheduler to run)
+    if os.getenv("APP_ENGINE_SERVICE") != "staging":
+        SECURE_SSL_REDIRECT = True
 
-
-# Case 3: Database local development uses DATABASE_* variables
-elif os.getenv("DATABASE_HOST") is not None:
-    # Make sure to export all of these in your .env file
-    DATABASES = {
-        "default": {
-            "ENGINE": os.environ.get("DATABASE_ENGINE", "django.db.backends.mysql"),
-            "HOST": os.environ.get("DATABASE_HOST"),
-            "USER": os.environ.get("DATABASE_USER"),
-            "PASSWORD": os.environ.get("DATABASE_PASSWORD"),
-            "NAME": os.environ.get("DATABASE_NAME"),
-        }
-    }
-else:
-    # Use sqlite when testing locally
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
-        }
-    }
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -206,13 +185,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "UTC"
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
 
 
