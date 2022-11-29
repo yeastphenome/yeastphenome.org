@@ -6,8 +6,8 @@ from yeastphenome.apps.search import cron
 
 urlpatterns = [
     url(r"^$", views.index, name="search"),
-    url(r"^update/$", cron.update, name="update"),
-    path("update/<str:engines>/", cron.update, name="update"),
+    # url(r"^update/$", cron.update, name="update"),
+    path("update/<str:engine>/", cron.update, name="update"),
 ]
 
 app_name = "search"

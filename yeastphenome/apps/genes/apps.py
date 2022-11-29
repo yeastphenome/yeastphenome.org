@@ -7,5 +7,3 @@ class GenesConfig(AppConfig):
     name = "yeastphenome.apps.genes"
     default = True
 
-    def ready(self):
-        import yeastphenome.apps.genes.signals

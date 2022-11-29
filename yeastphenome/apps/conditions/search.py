@@ -1,10 +1,9 @@
 from yeastphenome.apps.conditions.models import ConditionType
 
-from tqdm import tqdm
-
 
 def define_document():
 
+    # "id" included by default
     schema = {
         "name": "text",
         "aliases_list_as_str": "text",
@@ -14,14 +13,7 @@ def define_document():
         "tags_list_as_str": "text",
     }
 
-    conditiontypes = ConditionType.objects.all_valid()
-
-    print("Preparing JSON file for upload...")
-
-    conditiontypes_json = []
-    for conditiontype in tqdm(conditiontypes):
-
-        json = conditiontype.data_indexing()
-        conditiontypes_json.append(json)
+    conditiontypes = ConditionType.objects.all_valid_as_df()
+    conditiontypes_json = conditiontypes.to_dict(orient="records")
 
     return schema, conditiontypes_json

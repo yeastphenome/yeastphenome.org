@@ -7,5 +7,3 @@ class PhenotypesConfig(AppConfig):
     name = "yeastphenome.apps.phenotypes"
     default = True
 
-    def ready(self):
-        import yeastphenome.apps.phenotypes.signals

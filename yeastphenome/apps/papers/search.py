@@ -1,7 +1,5 @@
 from yeastphenome.apps.papers.models import Paper
 
-from tqdm import tqdm
-
 
 def define_document():
 
@@ -15,14 +13,7 @@ def define_document():
         "tags_list_as_str": "text",
     }
 
-    papers = Paper.objects.all_valid()
-
-    print("Preparing JSON file for upload...")
-
-    papers_json = []
-    for paper in tqdm(papers):
-
-        json = paper.data_indexing()
-        papers_json.append(json)
+    papers_df = Paper.objects.all_valid_as_df()
+    papers_json = papers_df.to_dict(orient="records")
 
     return schema, papers_json

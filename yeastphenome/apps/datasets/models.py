@@ -9,19 +9,7 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from yeastphenome.apps.tags.models import Tag
-
-from yeastphenome.settings import ELASTICSEARCH_HOST, ELASTICSEARCH_AUTH
-
-from elastic_enterprise_search import AppSearch
-
-import itertools
-
-
-class CollectionManager(models.Manager):
-    def all_valid(self):
-        # Valid = associated with at least 1 dataset from a relevant paper
-        valid_datasets = Dataset.objects.all_valid()
-        return self.filter(dataset__in=valid_datasets)
+from yeastphenome.apps.datasets.managers import CollectionManager, SourceManager, DatasetManager, DataManager
 
 
 class Collection(models.Model):
@@ -44,36 +32,6 @@ class Sourcetype(models.Model):
 
     def __str__(self):
         return "%s" % self.name
-
-
-class SourceManager(models.Manager):
-    def all_valid(self):
-        valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
-        return (
-            self.filter(
-                Q(data_source__in=valid_datasets) | Q(tested_source__in=valid_datasets)
-            )
-            .order_by()
-            .distinct()
-        )
-
-    def people_to_acknowledge(self):
-        valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
-        sources = self.filter(sourcetype_id=5).filter(acknowledge=True)
-        sources = (
-            sources.filter(
-                Q(data_source__in=valid_datasets) | Q(tested_source__in=valid_datasets)
-            )
-            .order_by()
-            .distinct()
-        )
-        people_list = sources.values_list("label", flat=True)
-        people_list = [person.split(", ") for person in people_list]
-        people_list = list(set(itertools.chain.from_iterable(people_list)))
-        people_list = [
-            person for person in people_list if person not in [None, "", "Anastasia Baryshnikova"]
-        ]
-        return people_list
 
 
 class Source(models.Model):
@@ -137,25 +95,6 @@ class Datatype(models.Model):
 
     def __str__(self):
         return "%s" % self.name
-
-
-class DatasetManager(models.Manager):
-    def all_valid(self):
-        datasets = self.filter(paper__latest_data_status__status__is_valid=True)
-        datasets = datasets.filter(collection__is_valid=True)
-        return datasets
-
-    def all_loaded(self):
-        datasets = self.all_valid()
-        f = Q(paper__latest_data_status__status__name__exact="loaded") & Q(
-            paper__latest_tested_status__status__name__in=[
-                "loaded",
-                "request abandoned",
-                "not available",
-            ]
-        )
-        datasets = datasets.filter(f)
-        return datasets
 
 
 class Dataset(models.Model):
@@ -404,65 +343,6 @@ class Dataset(models.Model):
         data = self.similarities.filter(dataset2=dataset2).first()
         return data
 
-    def indexing_progress(self):
-        print(self.id)
-
-    def data_indexing(self):
-        json = {
-            "id": self.id,
-            "paper": self.paper.systematic_name if self.paper else "",
-            "collection": self.collection.shortname if self.collection else "",
-            "data_available": self.data_available.shortname
-            if self.data_available
-            else "",
-            "medium": self.medium.display_name if self.medium else "",
-            "conditionset": self.conditionset.display_name if self.conditionset else "",
-            "conditions_aliases_list_as_str": self.conditions_aliases_list_as_str(),
-            "phenotype": self.phenotype.name if self.phenotype else "",
-            "phenotype_aliases_list_as_str": self.phenotype_aliases_list_as_str(),
-            "tags_list_as_str": self.tags_list_as_str(),
-        }
-        return json
-
-    def update_indexing(self, mode="create"):
-
-        app_search = AppSearch(
-            ELASTICSEARCH_HOST,
-            http_auth=ELASTICSEARCH_AUTH,
-        )
-
-        if mode == "update":
-            _ = app_search.put_documents(
-                engine_name="datasets", documents=[self.data_indexing()]
-            )
-        elif mode == "delete":
-            _ = app_search.delete_documents(
-                engine_name="datasets", document_ids=[self.id]
-            )
-        elif mode == "create":
-            _ = app_search.index_documents(
-                engine_name="datasets", documents=[self.data_indexing()]
-            )
-
-        # COMMENTED OUT because taken care once daily by cron job
-        # # Update related indices
-        # if self.conditionset:
-        #     conditions = self.conditionset.conditions.all()
-        #     documents = [condition.type.data_indexing() for condition in conditions]
-        #     _ = app_search.put_documents(
-        #         engine_name="conditiontypes", documents=documents
-        #     )
-        # if self.phenotype:
-        #     observable = self.phenotype.observable
-        #     _ = app_search.put_documents(
-        #         engine_name="observables", documents=[observable.data_indexing()]
-        #     )
-        # if self.paper:
-        #     paper = self.paper
-        #     _ = app_search.put_documents(
-        #         engine_name="papers", documents=[paper.data_indexing()]
-        #     )
-
 
 class DatasetSimilarity(models.Model):
     """A dataset similarity is a similarity metric calculated to compare datasets
@@ -500,12 +380,6 @@ class DatasetSimilarity(models.Model):
             "dataset1",
             "dataset2",
         )
-
-
-class DataManager(models.Manager):
-    def all_valid(self):
-        valid_datasets = Dataset.objects.all_valid()
-        return self.filter(dataset__in=valid_datasets)
 
 
 class Data(models.Model):

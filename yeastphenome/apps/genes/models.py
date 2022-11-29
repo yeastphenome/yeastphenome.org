@@ -1,28 +1,22 @@
 from __future__ import unicode_literals
 
-import re
+from django.apps import apps
 from django.core.exceptions import FieldError
 from django.db import models
 from django.db.models import F
 
-from yeastphenome.apps.datasets.models import Dataset
+from yeastphenome.apps.genes.managers import GeneManager, GeneAliasManager
 
-from yeastphenome.settings import ELASTICSEARCH_HOST, ELASTICSEARCH_AUTH
-
-from elastic_enterprise_search import AppSearch
+import re
 
 
 class GeneAlias(models.Model):
 
     name = models.CharField(max_length=250, null=False, blank=False, unique=True)
+    objects = GeneAliasManager()
 
     def __str__(self):
         return "%s" % self.name
-
-
-class GeneManager(models.Manager):
-    def all_valid(self):
-        return self.all()
 
 
 class Gene(models.Model):
@@ -66,7 +60,7 @@ class Gene(models.Model):
         return "; ".join(self.aliases_list())
 
     def get_scores(self):
-        datasets = Dataset.objects.all_valid()
+        datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
         data = self.data.filter(dataset__in=datasets)
         data = data.filter(valuez__isnull=False)
         data = data.values("valuez", "dataset_id", dataset_name=F("dataset__name"))
@@ -85,35 +79,6 @@ class Gene(models.Model):
     def get_similarity_to(self, gene2):
         data = self.similarities.filter(gene2=gene2).first()
         return data
-
-    def data_indexing(self):
-        json = {
-            "id": self.id,
-            "systematic_name": self.systematic_name,
-            "common_name": self.common_name,
-            "aliases_list_as_str": self.aliases_list_as_str(),
-            "description": self.description,
-        }
-        return json
-
-    def update_indexing(self, mode="create"):
-
-        app_search = AppSearch(
-            ELASTICSEARCH_HOST,
-            http_auth=ELASTICSEARCH_AUTH,
-        )
-
-        if mode == "update":
-            _ = app_search.put_documents(
-                engine_name="genes", documents=[self.data_indexing()]
-            )
-        elif mode == "delete":
-            _ = app_search.delete_documents(engine_name="genes", document_ids=[self.id])
-        elif mode == "create":
-            _ = app_search.index_documents(
-                engine_name="genes", documents=[self.data_indexing()]
-            )
-        # print(resp)
 
 
 class GeneSimilarity(models.Model):

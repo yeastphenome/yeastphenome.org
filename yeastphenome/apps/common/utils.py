@@ -1,10 +1,9 @@
+from django.apps import apps
 from django.db.models import Q, F
 
-from yeastphenome.apps.papers.models import Paper
-from yeastphenome.apps.conditions.models import ConditionType
-from yeastphenome.apps.phenotypes.models import Observable
-from yeastphenome.apps.datasets.models import Dataset
 from yeastphenome.apps.genes.models import Gene
+
+import numpy as np
 
 
 def escape_regex(value):
@@ -17,10 +16,16 @@ def escape_regex(value):
     return value
 
 
+def unique_clean_sorted(xs):
+    remove_items = [None, np.nan, "nan", "NaN", ""]
+    lst = sorted(list(set(xi for x in xs for xi in x if xi not in remove_items)))
+    return lst
+
+
 def get_latest_stats_basic():
 
-    datasets_qs = Dataset.objects.all_loaded()
-    papers_qs = Paper.objects.all_loaded()
+    datasets_qs = apps.get_model("datasets", "Dataset").objects.all_loaded()
+    papers_qs = apps.get_model("papers", "Paper").objects.all_loaded()
 
     papers_nr = papers_qs.count()
     datasets_nr = datasets_qs.count()
@@ -49,14 +54,14 @@ def get_latest_stats():
     """Return number of papers, phenotypes, and datasets to display in the index
     view. If no entries are found, display counts of zero.
     """
-    papers_qs = Paper.objects.all_valid()
-    papers_processed_qs = Paper.objects.all_loaded()
+    papers_qs = apps.get_model("papers", "Paper").objects.all_valid()
+    papers_processed_qs = apps.get_model("papers", "Paper").objects.all_loaded()
 
     # phenotypes_qs = Phenotype.objects.all_valid()
     # conditions_qs = ConditionSet.objects.all_valid()
     # conditiontypes_qs = ConditionType.objects.all_valid()
 
-    datasets_qs = Dataset.objects.all_loaded()
+    datasets_qs = apps.get_model("datasets", "Dataset").objects.all_loaded()
     genes_qs = Gene.objects.all_valid()
 
     # Total number of papers to process

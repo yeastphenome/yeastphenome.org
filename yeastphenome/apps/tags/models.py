@@ -1,36 +1,8 @@
 from django.db import models
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from django.db.models import Q
-from django.apps import apps
 
-
-class TagManager(models.Manager):
-    def all_valid(self, **kwargs):
-        obj = self.all()
-        if "type" in kwargs:
-            if kwargs["type"] == "conditions":
-                valid_conditiontypes = apps.get_model(
-                    "conditions", "Conditiontype"
-                ).objects.all_valid()
-                valid_conditions = apps.get_model(
-                    "conditions", "Condition"
-                ).objects.all_valid()
-                obj = obj.filter(
-                    Q(condition__in=valid_conditions)
-                    | Q(conditiontype__in=valid_conditiontypes)
-                ).distinct()
-            elif kwargs["type"] == "datasets":
-                valid_datasets = apps.get_model(
-                    "datasets", "Dataset"
-                ).objects.all_valid()
-                obj = obj.filter(dataset__in=valid_datasets)
-            elif kwargs["type"] == "phenotypes":
-                valid_observables = apps.get_model(
-                    "phenotypes", "Observable"
-                ).objects.all_valid()
-                obj = obj.filter(observables__in=valid_observables)
-        return obj
+from yeastphenome.apps.tags.managers import TagManager
 
 
 class Tag(models.Model):

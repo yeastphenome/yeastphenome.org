@@ -28,7 +28,7 @@ class Command(BaseCommand):
 
         app_search = AppSearch(
             ELASTICSEARCH_HOST,
-            http_auth=ELASTICSEARCH_AUTH,
+            http_auth=ELASTICSEARCH_AUTH
         )
 
         if engine == "genes":

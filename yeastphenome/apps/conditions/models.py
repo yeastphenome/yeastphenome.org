@@ -4,24 +4,17 @@ from django.apps import apps
 from django.db.models import Q
 from django.utils.safestring import mark_safe
 
-from elastic_enterprise_search import AppSearch
-
 from yeastphenome.apps.phenotypes.models import Phenotype
 from yeastphenome.apps.tags.models import Tag
-from yeastphenome.apps.datasets.models import Dataset
-from yeastphenome.settings import ELASTICSEARCH_HOST, ELASTICSEARCH_AUTH
+
+from yeastphenome.apps.conditions.managers import (
+    ConditionTypeManager, ConditionManager, ConditionSetManager, MediumManager
+)
 
 from libchebipy import ChebiEntity
 import re
 import itertools
 from urllib.parse import quote_plus
-
-
-class ConditionTypeManager(models.Manager):
-    def all_valid(self):
-        valid_datasets = Dataset.objects.all_valid()
-        f1 = Q(conditions__conditionset__dataset__in=valid_datasets)
-        return self.filter(f1).distinct()
 
 
 class ConditionType(models.Model):
@@ -47,7 +40,7 @@ class ConditionType(models.Model):
         return u"%s" % self.name
 
     def is_valid(self):
-        valid_datasets = Dataset.objects.all_valid()
+        valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
         valid_conditions = self.conditions.filter(
             conditionset__dataset__in=valid_datasets
         )
@@ -124,7 +117,6 @@ class ConditionType(models.Model):
             .order_by()
             .distinct()
         )
-
         papers = [p for p in papers if p]
         papers_list = "; ".join(papers)
         return papers_list
@@ -162,73 +154,6 @@ class ConditionType(models.Model):
             self,
         )
         return mark_safe(html)
-
-    def data_indexing(self):
-        json = {
-            "id": self.id,
-            "name": self.name,
-            "aliases_list_as_str": self.aliases_list_as_str(),
-            "doses_list_as_str": self.doses_list_as_str(),
-            "observables_list_as_str": self.observables_list_as_str(),
-            "papers_list_as_str": self.papers_list_as_str(),
-            "tags_list_as_str": self.tags_list_as_str(),
-        }
-        return json
-
-    def update_indexing(self, mode="create"):
-
-        app_search = AppSearch(
-            ELASTICSEARCH_HOST,
-            http_auth=ELASTICSEARCH_AUTH,
-        )
-
-        if mode == "update":
-            if self.is_valid():
-                _ = app_search.put_documents(
-                    engine_name="conditiontypes", documents=[self.data_indexing()]
-                )
-        elif mode == "delete":
-            _ = app_search.delete_documents(
-                engine_name="conditiontypes", document_ids=[self.id]
-            )
-        elif mode == "create":
-            if self.is_valid():
-                _ = app_search.index_documents(
-                    engine_name="conditiontypes", documents=[self.data_indexing()]
-                )
-
-        # Update related indices
-        datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
-        datasets = datasets.filter(conditionset__conditions__type=self).distinct()
-        documents = [dataset.data_indexing() for dataset in datasets]
-        if documents:
-            # Split list into chunks of 100 (max allowed by ElasticSearch)
-            n = 100  # chunk size
-            documents_chunks = [documents[i:i+n] for i in range(0, len(documents), n)]
-            for documents_chunk in documents_chunks:
-                _ = app_search.put_documents(engine_name="datasets", documents=documents_chunk)
-
-        observables = apps.get_model("phenotypes", "Observable").objects.all()
-        observables = observables.filter(phenotype__dataset__in=datasets).distinct()
-        documents = [observable.data_indexing() for observable in observables]
-        if documents:
-            _ = app_search.put_documents(engine_name="observables", documents=documents)
-
-        papers = apps.get_model("papers", "Paper").objects.all_valid()
-        papers = papers.filter(datasets__in=datasets).distinct()
-        documents = [paper.data_indexing() for paper in papers]
-        if documents:
-            _ = app_search.put_documents(engine_name="papers", documents=documents)
-
-
-class ConditionManager(models.Manager):
-    def all_valid(self):
-        # Valid = associated with at least 1 dataset from a relevant paper
-        valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
-        f = Q(conditionset__dataset__in=valid_datasets) | Q(
-            medium__dataset__in=valid_datasets
-        )
-        return self.filter(f).distinct()
 
 
 class Condition(models.Model):
@@ -291,13 +216,6 @@ class Condition(models.Model):
 
     def tags_edit_list(self):
         return mark_safe(", ".join([t.link_edit() for t in self.tags.all()]))
-
-
-class ConditionSetManager(models.Manager):
-    def all_valid(self):
-        # Valid = associated with at least 1 dataset from a relevant paper
-        valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
-        return self.filter(dataset__in=valid_datasets).distinct()
 
 
 class ConditionSet(models.Model):
@@ -416,13 +334,6 @@ class ConditionSet(models.Model):
         )
         tags_list = list(set(tags_list_self + tags_list_conditions))
         return tags_list
-
-
-class MediumManager(models.Manager):
-    def all_valid(self):
-        # Valid = associated with at least 1 dataset from a relevant paper
-        valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
-        return self.filter(dataset__in=valid_datasets).distinct()
 
 
 class Medium(models.Model):

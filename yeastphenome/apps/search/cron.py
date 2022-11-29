@@ -1,4 +1,5 @@
 from django.http import HttpResponse, HttpResponseForbidden
+from django.views.decorators.csrf import csrf_exempt
 
 from elastic_enterprise_search import AppSearch
 
@@ -18,18 +19,22 @@ from yeastphenome.settings import ELASTICSEARCH_HOST, ELASTICSEARCH_AUTH
 import numpy as np
 
 
-def update(request):
+@csrf_exempt
+def update(request, engine=""):
+
+    response = HttpResponseForbidden()
+
     # If the request come from the AppEngine cron service
-    if "HTTP_X_APPENGINE_CRON" in request.META:
+    if "HTTP_USER_AGENT" in request.META:
 
-        if request.META["HTTP_X_APPENGINE_CRON"] == "true":
+        if "Google-Cloud-Scheduler" in request.META["HTTP_USER_AGENT"]:
+        # if "Safari" in request.META["HTTP_USER_AGENT"]:
 
-            engines = ["genes", "conditiontypes", "observables", "datasets", "papers"]
-
-            app_search = AppSearch(
-                ELASTICSEARCH_HOST,
-                http_auth=ELASTICSEARCH_AUTH,
-            )
+            if engine == "":
+                # genes not included because doesn't involve updating related indices
+                engines = ["conditiontypes", "observables", "datasets", "papers"]
+            else:
+                engines = [engine]
 
             for engine in engines:
 
@@ -44,6 +49,11 @@ def update(request):
                 else:
                     [schema, json] = papers_define_document()
 
+                app_search = AppSearch(
+                    ELASTICSEARCH_HOST,
+                    http_auth=ELASTICSEARCH_AUTH,
+                )
+
                 nr_docs = len(json)
                 batch_size = 100
                 nr_batches = int(np.ceil(nr_docs / batch_size))
@@ -57,6 +67,9 @@ def update(request):
 
                 _ = app_search.put_schema(engine_name=engine, schema=schema)
 
-                return HttpResponse("", status=200)
-    else:
-        return HttpResponseForbidden()
+                response = HttpResponse("OK", status=200)
+        else:
+            response = HttpResponse("", status=301)
+
+    return response
+

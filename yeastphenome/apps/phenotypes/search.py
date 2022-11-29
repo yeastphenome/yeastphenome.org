@@ -1,7 +1,5 @@
 from yeastphenome.apps.phenotypes.models import Observable
 
-from tqdm import tqdm
-
 
 def define_document():
 
@@ -15,14 +13,7 @@ def define_document():
         "tags_list_as_str": "text",
     }
 
-    observables = Observable.objects.all_valid()
-
-    print("Preparing JSON file for upload...")
-
-    observables_json = []
-    for observable in tqdm(observables):
-
-        json = observable.data_indexing()
-        observables_json.append(json)
+    observables_df = Observable.objects.all_valid_as_df()
+    observables_json = observables_df.to_dict(orient="records")
 
     return schema, observables_json

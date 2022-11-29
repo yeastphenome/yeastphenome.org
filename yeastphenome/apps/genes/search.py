@@ -1,5 +1,3 @@
-from django.contrib.postgres.aggregates import StringAgg
-
 from yeastphenome.apps.genes.models import Gene
 
 
@@ -12,19 +10,7 @@ def define_document():
         "description": "text",
     }
 
-    genes = Gene.objects.all_valid()
+    genes = Gene.objects.all_valid_as_df()
+    genes_json = genes.to_dict(orient="records")
 
-    agg_field = "aliases__name"
-    genes = genes.annotate(
-        aliases_list_as_str=StringAgg(
-            agg_field, "; ", distinct=True, ordering=agg_field
-        )
-    )
-
-    genes_vals = list(
-        genes.values(
-            "id", "systematic_name", "common_name", "aliases_list_as_str", "description"
-        )
-    )
-
-    return schema, genes_vals
+    return schema, genes_json

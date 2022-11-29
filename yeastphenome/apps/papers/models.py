@@ -1,15 +1,12 @@
-from django.db import models
-from django.urls import reverse
-from django.db.models import Q
-from django.apps import apps
 from django.contrib.auth.models import User
+from django.db import models
+from django.db.models import Q
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from yeastphenome.apps.tags.models import Tag
+from yeastphenome.apps.papers.managers import PaperManager
 from yeastphenome.apps.common.utils_format import truncated_list_as_str
-from yeastphenome.settings import ELASTICSEARCH_HOST, ELASTICSEARCH_AUTH
-
-from elastic_enterprise_search import AppSearch
 
 import itertools
 
@@ -24,25 +21,6 @@ class Status(models.Model):
 
     class Meta:
         ordering = ["name"]
-
-
-class PaperManager(models.Manager):
-    def all_valid(self):
-        papers = self.filter(latest_data_status__status__is_valid=True)
-        papers = papers.filter(datasets__collection__is_valid=True).distinct()
-        return papers
-
-    def all_loaded(self):
-        papers = self.all_valid()
-        f = Q(latest_data_status__status__name__exact="loaded") & Q(
-            latest_tested_status__status__name__in=[
-                "loaded",
-                "request abandoned",
-                "not available",
-            ]
-        )
-        papers = papers.filter(f)
-        return papers
 
 
 class Paper(models.Model):
@@ -342,62 +320,6 @@ class Paper(models.Model):
                 self,
             )
         return mark_safe(html)
-
-    def data_indexing(self):
-        json = {
-            "id": self.id,
-            "systematic_name": self.systematic_name,
-            "pmid": self.pmid,
-            "pub_date": self.pub_date,
-            "data_abstract": self.data_abstract,
-            "conditiontypes_summary": self.conditiontypes_summary,
-            "observables_summary": self.observables_summary,
-            "tags_list_as_str": self.tags_list_as_str(),
-        }
-        return json
-
-    def update_indexing(self, mode="create"):
-
-        app_search = AppSearch(
-            ELASTICSEARCH_HOST,
-            http_auth=ELASTICSEARCH_AUTH,
-        )
-
-        if mode == "update":
-            _ = app_search.put_documents(
-                engine_name="papers", documents=[self.data_indexing()]
-            )
-        elif mode == "delete":
-            _ = app_search.delete_documents(
-                engine_name="papers", document_ids=[self.id]
-            )
-        elif mode == "create":
-            _ = app_search.index_documents(
-                engine_name="papers", documents=[self.data_indexing()]
-            )
-
-        if not mode == "delete":
-            # Update related indices
-            datasets = self.datasets.all()
-
-            conditiontypes = apps.get_model("conditions", "ConditionType").objects.all()
-            conditiontypes = conditiontypes.filter(
-                conditions__conditionset__dataset__in=datasets
-            ).distinct()
-            documents = [
-                conditiontype.data_indexing() for conditiontype in conditiontypes
-            ]
-            _ = app_search.put_documents(
-                engine_name="conditiontypes", documents=documents
-            )
-
-            observables = apps.get_model("phenotypes", "Observable").objects.all()
-            observables = observables.filter(phenotype__dataset__in=datasets).distinct()
-            if observables:
-                documents = [observable.data_indexing() for observable in observables]
-                _ = app_search.put_documents(
-                    engine_name="observables", documents=documents
-                )
 
 
 class Statusdata(models.Model):

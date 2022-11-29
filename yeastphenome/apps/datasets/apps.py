@@ -7,5 +7,3 @@ class DatasetsConfig(AppConfig):
     name = "yeastphenome.apps.datasets"
     default = True
 
-    def ready(self):
-        import yeastphenome.apps.datasets.signals

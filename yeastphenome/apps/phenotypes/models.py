@@ -1,23 +1,12 @@
 from django.db import models
-from django.db.models import Q
 from django.urls import reverse
 from django.apps import apps
 from django.utils.safestring import mark_safe
 
-from yeastphenome.apps.datasets.models import Dataset
 from yeastphenome.apps.tags.models import Tag
-from yeastphenome.settings import ELASTICSEARCH_HOST, ELASTICSEARCH_AUTH
-
-from elastic_enterprise_search import AppSearch
+from yeastphenome.apps.phenotypes.managers import ObservableManager, PhenotypeManager
 
 from urllib.parse import quote_plus
-
-
-class ObservableManager(models.Manager):
-    def all_valid(self):
-        valid_datasets = Dataset.objects.all_valid()
-        f = Q(phenotype__dataset__in=valid_datasets)
-        return self.filter(f).distinct()
 
 
 class Observable(models.Model):
@@ -35,7 +24,7 @@ class Observable(models.Model):
         return u"%s" % self.name
 
     def is_valid(self):
-        valid_datasets = Dataset.objects.all_valid()
+        valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
         valid_phenotypes = self.phenotype_set.filter(dataset__in=valid_datasets)
         return valid_phenotypes.exists()
 
@@ -147,63 +136,6 @@ class Observable(models.Model):
         papers = [p for p in papers if p]
         return "; ".join(papers)
 
-    def data_indexing(self):
-        json = {
-            "id": self.id,
-            "name": self.name,
-            "description": self.description,
-            "phenotypes_list_as_str": self.phenotypes_list_as_str(),
-            "reporters_list_as_str": self.reporters_list_as_str(),
-            "conditiontypes_list_as_str": self.conditiontypes_list_as_str(),
-            "papers_list_as_str": self.papers_list_as_str(),
-            "tags_list_as_str": self.tags_list_as_str(),
-        }
-        return json
-
-    def update_indexing(self, mode="create"):
-
-        app_search = AppSearch(
-            ELASTICSEARCH_HOST,
-            http_auth=ELASTICSEARCH_AUTH,
-        )
-
-        if mode == "update":
-            _ = app_search.put_documents(
-                engine_name="observables", documents=[self.data_indexing()]
-            )
-        elif mode == "delete":
-            _ = app_search.delete_documents(
-                engine_name="observables", document_ids=[self.id]
-            )
-        elif mode == "create":
-            _ = app_search.index_documents(
-                engine_name="observables", documents=[self.data_indexing()]
-            )
-
-        # Update related indices
-        datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
-        datasets = datasets.filter(phenotype__observable=self).distinct()
-        documents = [dataset.data_indexing() for dataset in datasets]
-        if documents:
-            _ = app_search.put_documents(engine_name="datasets", documents=documents)
-
-        conditiontypes = apps.get_model("conditions", "ConditionType").objects.all()
-        conditiontypes = conditiontypes.filter(
-            conditions__conditionset__dataset__in=datasets
-        ).distinct()
-        documents = [conditiontype.data_indexing() for conditiontype in conditiontypes]
-        if documents:
-            _ = app_search.put_documents(
-                engine_name="conditiontypes", documents=documents
-            )
-
-        papers = apps.get_model("papers", "Paper").objects.all_valid()
-        papers = papers.filter(datasets__in=datasets).distinct()
-        documents = [paper.data_indexing() for paper in papers]
-        if documents:
-            _ = app_search.put_documents(engine_name="papers", documents=documents)
-        # print(resp)
-
 
 class Measurement(models.Model):
     name = models.CharField(max_length=200)
@@ -224,13 +156,6 @@ class Measurement(models.Model):
         html = html + "<li>".join([ph.link_edit() for ph in self.phenotypes()[:20]])
         html = html + "</ul>"
         return mark_safe(html)
-
-
-class PhenotypeManager(models.Manager):
-    def all_valid(self):
-        # Valid = is associated with >=1 valid dataset
-        valid_datasets = Dataset.objects.all_valid()
-        return self.filter(dataset__in=valid_datasets)
 
 
 class Phenotype(models.Model):

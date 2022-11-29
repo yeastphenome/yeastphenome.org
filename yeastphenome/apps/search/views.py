@@ -85,7 +85,9 @@ def index(request):
         if field == "tags":
             search_fields = ["tags_list_as_str"]
         else:
-            search_fields = ["name", "description", "tags_list_as_str"]
+            search_fields = ["name",
+                             "description",
+                             "tags_list_as_str"]
 
         response_phenotypes = app_search.search(
             engine_name="observables",
@@ -109,12 +111,11 @@ def index(request):
                 "id",
                 "paper",
                 "collection",
-                "phenotype_aliases_list_as_str",
-                "conditions_aliases_list_as_str",
-                "medium",
-                "conditionset",
                 "phenotype",
-                # "data_available",
+                "phenotype_aliases_list_as_str",
+                "conditionset",
+                "conditionset_aliases_list_as_str",
+                "medium",
                 "tags_list_as_str",
             ]
 
@@ -151,7 +152,7 @@ def index(request):
                 "genes": context["num_genes"],
                 "conditions": context["num_conditions"],
                 "phenotypes": context["num_phenotypes"],
-                "datasets": context["num_datasets"],
+                "screens": context["num_datasets"],
                 "papers": context["num_papers"],
             }
             tab = max(num_results, key=(lambda key: num_results[key]))
@@ -159,7 +160,7 @@ def index(request):
         context["tab"] = tab
 
         if tab == "genes":
-            search_fields = [
+            results_fields = [
                 "id",
                 "systematic_name",
                 "common_name",
@@ -167,7 +168,7 @@ def index(request):
                 "description",
             ]
             context["genes_page_obj"] = flatten_response(
-                response_genes["results"], search_fields
+                response_genes["results"], results_fields
             )
             [page_range, results_range] = get_page_range(page_number, pagination_genes)
             context["page_range"] = page_range
@@ -217,12 +218,12 @@ def index(request):
                 "id",
                 "paper",
                 "collection",
-                "phenotype_aliases_list_as_str",
-                "conditions_aliases_list_as_str",
+                "data_available",
                 "medium",
                 "conditionset",
+                "conditionset_aliases_list_as_str",
                 "phenotype",
-                # "data_available",
+                "phenotype_aliases_list_as_str",
                 "tags_list_as_str",
             ]
             context["datasets_page_obj"] = flatten_response(
