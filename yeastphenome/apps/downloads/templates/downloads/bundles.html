@@ -10,24 +10,87 @@
 
     <div class="row mt-5 mb-3">
         <div class="col-md-12">
-            <h2 class="mt-5 mb-4" id="about">Haploid/homozygous diploid data</h2>
+            <h2 class="mt-5 mb-4" id="notes">General notes</h2>
+            <ol>
+                <li class="mb-3">Relative to the data accessible online, the data available for bulk download have undergone additional filtering to make them compatible with global analyses.
+                    For example, in the 2022-10-25 haploid/homozygous diploid dataset, 46 screens reported data for 100-652 <strong>essential genes</strong>, even if the screens were performed using haploid or homozygous diploid YKO collections that should not include essential genes.
+                    For consistency, we removed all essential genes from the data matrix. The data, however, remains in the database and is accessible/downloadable from the corresponding screen's page.
+                    Similarly, we removed 394 <strong>dubious ORFs</strong> and 214 <strong>"rare" ORFs</strong>, i.e. those that have reported values in less than 25 publications.
+                    If you're interested in a more unfiltered version of the data, please reach out to <a href="mailto:abaryshnikova@calicolabs.com">abaryshnikova@calicolabs.com</a>.</li>
+                <li class="mb-3">We did our best at recovering a list of <strong>tested strains</strong> for as many screens as possible.
+                    Whenever the list was not released as part of the original publication, we contacted the authors via email.
+                    If the authors were unable to provide the list, we estimated the screen’s tested space from the tested spaces of all other screens.
+                    The estimate was based on a consensus list, i.e. the list of strains that have been tested in at least 50% of all screens that did declare their tested space (screens were excluded from the estimate if their declared tested space was considerably lower than other screens).
+                    If a screen reported values outside of the consensus tested space, those values were retained.</li>
+            </ol>
+        </div>
+    </div>
 
-            <div class="card">
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <h2 class="mt-5 mb-4" id="haphom">Haploid/homozygous diploid data</h2>
+
+            <div class="card mb-4">
                 <div class="card-header">
-                    yp_hom_20221025.tar.gz
+                    <button class="btn btn-light dropdown-toggle"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#yp_hom_20221025"
+                            aria-expanded="false"
+                            aria-controls="yp_hom_20221025">Version 2022-10-25 (latest)
+                    </button>
+
                 </div>
-                <div class="card-body">
-                    <p>Format: tab-delimited</p>
-                    <p>Contains:
+                <div class="collapse" id="yp_hom_20221025">
+                    <div class="card-body">
+                        <p>Format: tab-delimited</p>
+                        <p>Contents:
                         <ol>
                             <li>A README file</li>
                             <li>A list of 14,495 haploid/homozygous diploid screens with relevant metadata</li>
-                            <li>A gene x screen matrix (4,554 x 14,495) of harmonized but not normalized phenotypic values</li>
-                            <li>A gene x screen matrix (4,554 x 14,495) of harmonized and normalized phenotypic values (NPVs)</li>
+                            <li>A gene x screen matrix (4,554 x 14,495) of harmonized but not normalized phenotypic
+                                values
+                            </li>
+                            <li>A gene x screen matrix (4,554 x 14,495) of harmonized and normalized phenotypic values
+                                (NPVs)
+                            </li>
                         </ol>
-                    </p>
-                    <a href="#"
-                       class="btn btn-primary disabled">Download (coming soon)</a>
+                        </p>
+                        <a href="#"
+                           class="btn btn-primary disabled">Download (coming soon)</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <button class="btn btn-light dropdown-toggle"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#yp_hom_20220208"
+                            aria-expanded="false"
+                            aria-controls="yp_hom_20220208">Version 2022-02-08
+                    </button>
+
+                </div>
+                <div class="collapse" id="yp_hom_20220208">
+                    <div class="card-body">
+                        <p>Format: tab-delimited</p>
+                        <p>Contents:
+                        <ol>
+                            <li>A README file</li>
+                            <li>A list of 14,372 haploid/homozygous diploid screens with relevant metadata</li>
+                            <li>A gene x screen matrix (4,554 x 14,372) of harmonized but not normalized phenotypic
+                                values
+                            </li>
+                            <li>A gene x screen matrix (4,554 x 14,372) of harmonized and normalized phenotypic values
+                                (NPVs)
+                            </li>
+                        </ol>
+                        </p>
+                        <a href="#"
+                           class="btn btn-primary disabled">Download (coming soon)</a>
+                    </div>
                 </div>
             </div>
 
@@ -36,25 +99,38 @@
 
     <div class="row mt-5 mb-3">
         <div class="col-md-12">
-            <h2 class="mt-5 mb-4" id="about">Heterozygous diploid data</h2>
+            <h2 class="mt-5 mb-4" id="het">Heterozygous diploid data</h2>
 
             <div class="card">
                 <div class="card-header">
-                    yp_het_20221018.tar.gz
+                    <button class="btn btn-light dropdown-toggle"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#yp_het_20221018"
+                            aria-expanded="false"
+                            aria-controls="yp_het_20221018">Version 2022-10-18 (latest)
+                    </button>
+
                 </div>
-                <div class="card-body">
-                    <p>Format: tab-delimited</p>
-                    <p>Contains:
+                <div class="collapse" id="yp_het_20221018">
+                    <div class="card-body">
+                        <p>Format: tab-delimited</p>
+                        <p>Contents:
                         <ol>
                             <li>A README file</li>
                             <li>A list of 7,011 heterozygous diploid screens with relevant metadata</li>
-                            <li>A gene x screen matrix (5,639 x 7,011) of harmonized but unnormalized phenotypic values</li>
-                            <li>A gene x screen matrix (5,639 x 7,011) of harmonized and normalized phenotypic values (NPVs)</li>
+                            <li>A gene x screen matrix (5,639 x 7,011) of harmonized but unnormalized phenotypic
+                                values
+                            </li>
+                            <li>A gene x screen matrix (5,639 x 7,011) of harmonized and normalized phenotypic values
+                                (NPVs)
+                            </li>
                         </ol>
-                    </p>
+                        </p>
 
-                    <a href="#"
-                       class="btn btn-primary disabled">Download (coming soon)</a>
+                        <a href="#"
+                           class="btn btn-primary disabled">Download (coming soon)</a>
+                    </div>
                 </div>
             </div>
         </div>
