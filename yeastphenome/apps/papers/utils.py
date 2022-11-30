@@ -1,6 +1,5 @@
 from yeastphenome.settings import ENTREZ_EMAIL
 from Bio import Entrez
-from yeastphenome.apps.papers.models import Paper
 
 
 def get_pubmed_paper(pmid):
