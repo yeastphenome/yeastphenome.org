@@ -48,7 +48,7 @@ def detail(request, paper_id):
         to_acknowledge.append("the data")
     if p.acknowledge_tested():
         to_acknowledge.append("the list of tested strains")
-    if names:
+    if names and to_acknowledge:
         thanks = (
             " and ".join(to_acknowledge)
             + " for this paper were kindly provided by "

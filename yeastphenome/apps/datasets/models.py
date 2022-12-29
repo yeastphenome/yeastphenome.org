@@ -227,21 +227,21 @@ class Dataset(models.Model):
         num_available_data = self.data.count()
         availability["type_data_available"] = self.data_available
 
+        availability["tested_available"] = "no"
         if self.tested_source:
-            availability["tested_available"] = mark_safe(
-                "%s (%s mutants)"
-                % (self.tested_source.html(), intcomma(num_available_data))
-            )
-        else:
-            availability["tested_available"] = "no"
+            if self.tested_source.release:
+                availability["tested_available"] = mark_safe(
+                    "%s (%s mutants)"
+                    % (self.tested_source.html(), intcomma(num_available_data))
+                )
 
+        availability["data_available"] = "%s mutants" % num_available_data
         if self.data_source:
-            availability["data_available"] = mark_safe(
-                "%s (%s mutants)"
-                % (self.data_source.html(), intcomma(num_available_data))
-            )
-        else:
-            availability["data_available"] = "%s mutants" % num_available_data
+            if self.data_source.release:
+                availability["data_available"] = mark_safe(
+                    "%s (%s mutants)"
+                    % (self.data_source.html(), intcomma(num_available_data))
+                )
 
         return availability
 

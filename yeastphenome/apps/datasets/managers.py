@@ -30,7 +30,7 @@ class SourceManager(models.Manager):
 
     def people_to_acknowledge(self):
         valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
-        sources = self.filter(sourcetype_id=5).filter(acknowledge=True)
+        sources = self.filter(sourcetype_id=5).filter(acknowledge=True).filter(release=True)
         sources = (
             sources.filter(
                 Q(data_source__in=valid_datasets) | Q(tested_source__in=valid_datasets)
