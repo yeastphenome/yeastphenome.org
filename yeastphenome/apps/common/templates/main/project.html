@@ -45,32 +45,34 @@
 
             <h2 class="mt-5 mb-4" id="datahandling">Data handling</h2>
             <p>For all data, we minimize manual handling to maximize record keeping and reproducibility. The only two operations performed manually are 1) data download and 2) conversion from PDF to a computer-readable format (text or Excel files), whenever required.</p>
-            <p>All other data manipulations (QC, clean-up, reformatting, database upload etc.) are done in Python via Jupyter notebooks. All code is version controlled and stored in a <a href="https://github.com/yeastphenome/yp-data" target="_blank">Github repository</a>.</p>
+            <p>All other data manipulations (QC, clean-up, reformatting, database upload etc.) are done in Python via Jupyter notebooks. All code is version controlled and stored in a <a class="external" href="https://github.com/yeastphenome/yp-data" target="_blank">Github repository</a>.</p>
 
             <h2 class="mt-5 mb-4" id="datanormalization">Data normalization</h2>
             <p>To facilitate both analysis and interpretation of diverse Yeast Phenome data, we implemented several conventions and normalizations. Phenotypes reported on qualitative (e.g., mild, intermediate, severe) or categorical (e.g., round, elongated, irregular) scales (2% of datasets) were converted into sets of discrete (1, 2, 3) or binary (0, 1) values. Quantitative and truncated quantitative phenotypes (i.e., those reported on a quantitative scale only for the set of mutants considered to be hits) were transformed so that the sign and magnitude of their values were consistent with how the phenotype and its corresponding experimental condition are defined in their respective controlled vocabularies (higher values correspond to higher expressions of the phenotype, and vice versa). Since different phenotypes followed dramatically different distributions but were consistently unimodal, we used the mode as a reference to normalize each dataset using a modified z-score transformation.</p>
-            <p>$$NPS_i = {P_i - P_{mode} \over \sqrt{\frac{1}{N} \sum_{i=1}^N (P_i - P_{mode})^2}}$$</p>
+            <p>$$NPV_i = {P_i - P_{mode} \over \sqrt{\frac{1}{N} \sum_{i=1}^N (P_i - P_{mode})^2}}$$</p>
             <p>Where:
-                <br><i>NPS<sub>i</sub></i> = normalized phenotypic score for knock-out mutant <i>i</i>
-                <br><i>P<sub>i</sub></i> = raw phenotypic score for knock0out mutant <i>i</i> (as reported by the original publication)
+                <br><i>NPV<sub>i</sub></i> = normalized phenotypic value for knock-out mutant <i>i</i>
+                <br><i>P<sub>i</sub></i> = raw phenotypic value for knock-out mutant <i>i</i> (as reported by the original publication)
                 <br><i>P<sub>mode</sub></i> = mode of the kernel density distribution of phenotypic values for all knock-out mutants in this screen
                 <br><i>N</i> = total number of knock-out mutants tested in this screen
             </p>
-            <p>As a result, all phenotypic values reported in Yeast Phenome can be universally interpreted as standardized deviations from the most typical mutant, which, assuming extreme phenotypes are rare, is also likely to represent wild-type. The transformed data, which we refer to as normalize phenotypic scores (NPS), are used throughout the website. The original data are available at the <a href="https://github.com/baryshnikova-lab/yp-data" target="_blank">Github repository</a> (to be made public soon).</p>
+            <p>As a result, all phenotypic values reported in Yeast Phenome can be universally interpreted as standardized deviations from the most typical mutant, which, assuming extreme phenotypes are rare, is also likely to represent wild-type. The transformed data, which we refer to as normalize phenotypic values (NPVs), are used throughout the website. The original data are available at the <a class="external" href="https://github.com/yeastphenome/yp-data" target="_blank">Github repository</a>.</p>
 
             <h2 class="mt-5 mb-4" id="correlations">Computing correlations</h2>
             <p>
                 To compute robust gene-gene phenotypic similarities in a computationally efficient and parallelizable manner, we adopted the following strategy.
                 <ol>
-                    <li>Given a data matrix, where rows correspond to genes, columns correspond to phenotypic screens and the values are normalized phenotypic scores (NPS), we created 100 submatrices by subsetting 10% of the columns using random sampling with replacement.</li>
-            <li>For each of the submatrices, we computed gene-gene cosine correlations using a parallelized implementation by <a href="https://deepgraph.readthedocs.io/en/latest/tutorials/pairwise_correlations.html" target="_blank">deepgraph</a>.</li>
+                    <li>Given a data matrix, where rows correspond to genes, columns correspond to phenotypic screens and the values are normalized phenotypic values (NPV), we created 100 submatrices by subsetting 10% of the columns using random sampling with replacement.</li>
+            <li>For each of the submatrices, we computed gene-gene cosine correlations using a parallelized implementation by <a class="external" href="https://deepgraph.readthedocs.io/en/latest/tutorials/pairwise_correlations.html" target="_blank">deepgraph</a>.</li>
                     <li>For each gene pair, we combined the 100 sampled cosine correlations by computing the mean and standard deviation. </li>
                 </ol>
             </p>
 
             <h2 class="mt-5 mb-4" id="citation">Data usage and citation policy</h2>
             <p>If you use data downloaded from YeastPhenome.org in a talk or a manuscript, please acknowledge the data source by citing the original publication from which the data is derived, as well as the YeastPhenome.org database. The database should be cited as follows:</p>
-            <p style="margin-top:30px"><code style="padding:20px;">The YeastPhenome.org Database, www.yeastphenome.org, accessed on XXXX-XX-XX.</code></p>
+            <p style="margin-top:30px">
+                <code>Turco G, Chang C, Wang RY, Kim G, Stoops E, Richardson B, Sochat V, Rust J, Oughtred R, Thayer N, Kang F, Livstone MS, Heinicke S, Schroeder M, Dolinski KJ, Botstein D, Baryshnikova A. 2022. Global analysis of the yeast knock-out phenome. bioRxiv <a class="external" href="https://www.biorxiv.org/content/10.1101/2022.12.22.521593v1">https://doi.org/10.1101/2022.12.22.521593</a></code>
+            </p>
         </div>
     </div>
 {% endblock %}
