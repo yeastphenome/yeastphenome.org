@@ -6,7 +6,7 @@ from django.utils.safestring import mark_safe
 
 from yeastphenome.apps.tags.models import Tag
 from yeastphenome.apps.papers.managers import PaperManager
-from yeastphenome.apps.common.utils_format import truncated_list_as_str
+from yeastphenome.apps.common.utils_format import truncated_list_as_str, join_and
 
 import itertools
 
@@ -264,7 +264,11 @@ class Paper(models.Model):
         people = list(set(list(itertools.chain.from_iterable(people))))
         people = [person for person in people if person]
 
-        return "; ".join(people)
+        people2 = [person.split(',') for person in people]
+        people2 = list(set(list(itertools.chain.from_iterable(people2))))
+        people2 = [person.strip() for person in people2]
+
+        return join_and(people2)
 
     def acknowledge_data(self):
         return self.datasets.filter(data_source__acknowledge=True).exists()

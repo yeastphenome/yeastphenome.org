@@ -21,6 +21,17 @@ def truncated_list_as_str(lst, num=10, sort=False):
     return lst_as_str
 
 
+def join_and(lst):
+
+    lst_str = ""
+    if len(lst) > 1:
+        lst_str = ", ".join(lst[:-1]) + " and " + lst[-1]
+    elif len(lst) == 1:
+        lst_str = lst[0]
+
+    return lst_str
+
+
 def update_values_with_percentile(qs_values, key):
 
     values_arr = np.array(qs_values.values_list(key, flat=True))

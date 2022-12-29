@@ -9,6 +9,7 @@ from yeastphenome.apps.papers.utils import (
     get_pubmed_paper_context,
     get_pubmed_paper,
 )
+from yeastphenome.apps.common.utils_format import join_and
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
     VIEW_RATE_LIMIT_BLOCK as rl_block,
@@ -41,13 +42,13 @@ def detail(request, paper_id):
 
     context = {"paper": p, "datasets": datasets, "num_datasets": num_datasets}
 
-    # Give credit if credit is due.
+    # Give credit when credit is due.
     names = p.acknowledgements_list_as_str()
     to_acknowledge = []
     if p.acknowledge_data():
         to_acknowledge.append("the data")
     if p.acknowledge_tested():
-        to_acknowledge.append("the list of tested strains")
+        to_acknowledge.append("tested strains")
     if names and to_acknowledge:
         thanks = (
             " and ".join(to_acknowledge)
