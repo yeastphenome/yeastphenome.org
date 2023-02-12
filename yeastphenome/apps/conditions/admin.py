@@ -110,6 +110,7 @@ class ConditionTypeAdmin(ImprovedModelAdmin):
     search_fields = (
         "name",
         "other_names",
+        "description",
         "chebi_id",
         "chebi_name",
         "pubchem_id",
