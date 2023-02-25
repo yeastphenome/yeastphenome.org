@@ -14,6 +14,21 @@
     </div>
     <div class="row">
         <div class="col-12">
+
+            <h2 class="mt-5 mb-4" id="toc">Table of contents</h2>
+            <ul>
+                <li><a href="#about">About</a></li>
+                <li><a href="#criteria">Criteria for inclusion</a></li>
+                <li><a href="#strategy">Strategy for identifying relevant data sources</a></li>
+                <li><a href="#metadata">Collecting and organizing screen meta-data</a></li>
+                <li><a href="#data">Collecting and organizing screen data</a></li>
+                <li><a href="#tested">Tested mutants</a></li>
+                <li><a href="#datahandling">Data handling</a></li>
+                <li><a href="#datanormalization">Data normalization</a></li>
+                <li><a href="#correlations">Computing correlations</a></li>
+                <li><a href="#citation">Data usage and citation policy</a></li>
+            </ul>
+
             <h2 class="mt-5 mb-4" id="about">About</h2>
             <p>YeastPhenome.org is a collaborative project that builds and maintains the compendium of systematic loss-of-function phenotypes for budding yeast <em>Saccharomyces cerevisiae</em>.</p>
             <p>As part of this project, we track, collect and annotate all published phenotypic screens that involve the yeast knock-out collection. We extract the data, standardize their format and structure and make them available for search, download and analysis. Our main goal is to enable ourselves and others to answer the following questions:
@@ -24,55 +39,93 @@
             </ul>
 
             <h2 class="mt-5 mb-4" id="criteria">Criteria for inclusion</h2>
-            <p>In order to be included in the compendium, a study must meet all of the following criteria:</p>
+            <p>In order to be included in Yeast Phenome, a phenotypic screen of the yeast knock-out (YKO) collection must meet all following criteria:</p>
             <ul>
-                <li>Measure a quantitative (continuous) or qualitative (binary, discrete, categorical) phenotype (or the lack thereof) for at least 1,000 knock-out mutants</li>
-                <li>Use any current or past version of the haploid (Mat-a or Mat-alpha), homozygous diploid or heterozygous diploid deletion collection (BY4741, BY4742 or BY4743)</li>
-                <li>Report data on all of the tested mutants or just the most extreme/significant hits</li>
-                <li>Be associated with a journal article indexed in Pubmed</li>
+                <li>Measure a quantitative (continuous) or qualitative (binary, discrete, categorical) phenotype (or the lack thereof) for at least 1,000 knock-out mutants. (Note: 1,000 is a cutoff defined empirically by examinin the distribution of tested mutants in an early version of Yeast Phenome).</li>
+                <li>Use any current or past version of the haploid Mat-a (BY4741), haploid Mat-alpha (BY4742) or homozygous diploid (BY4743) deletion collection.</li>
+                <li>Report data on all tested mutants or just the strongest hits (these may include mutants with the largest effect sizes, highest reproducibility or most confident deviations from wild-type).</li>
+                <li>Be associated with a journal article indexed in Pubmed.</li>
             </ul>
-            <h3 class="mt-4 mb-3">We do not include:</h3>
+            <p>Yeast Phenome does not include:</p>
             <ul>
-                <li>Large-scale screens of other yeast libraries (e.g., the library of DAmP strains, ts mutants or the prototrophic variant of the knock-out library).</li>
-                <li>Studies that report an arbitrary subset of hits chosen based on biological interest.</li>
-                <li>Genetic interaction screens, i.e. screens where knock-out mutants are examined under a secondary perturbation that is genetic, not chemical or physical.</li>
+                <li>Large-scale screens of other mutant collections (e.g., DAmP strains, temperature sensitive mutants or the prototrophic variant of the knock-out library).</li>
+                <li>Studies that report an arbitrary subset of screen results chosen based on biological interest, rathern than signal strength or confidence.</li>
+                <li>Genetic interaction screens, i.e. screens where knock-out mutants are examined under a secondary genetic perturbation.</li>
             </ul>
 
-            <h2 class="mt-5 mb-4" id="datasources">Data sources</h2>
-            <p>Our primary source of data is the main text and/or the supplementary material of a publication as provided by the journal’s website. When appropriate, we also download data from personal websites that accompany publications.</p>
-            <p>After downloading the data, we evaluate their completeness relative to the experiment described in the publication and reach out to the authors whenever we see that additional data may be available. For example, if the publication describes the measurement of a quantitative phenotype but only reports a binary list of hits, we ask whether the authors would be able to share the original quantitative dataset. Similarly, we often enquire about the availability of a list of tested strains for each experiment (despite the fact that everyone used the same yeast knock-out library, the actual "tested universe" in each experiment varies by as much as 20%). These datasets, which are effectively unpublished versions of published data, are explicitly flagged in the YeastPhenome.org database to emphasize their special status. The scientists who answered our emails and shared data are acknowledged as <a href="{% url 'common:data_contributors' %}">data contributors</a>.
+            <h2 class="mt-5 mb-4" id="strategy">Strategy for identifying relevant data sources</h2>
+            <p>To identify phenotypic screens that fit these criteria, we developed a comprehensive search strategy and applied it systematically over a 10-year period (2012–2022). As a starting point, we searched the <a href="https://yeastgenome.org/" class="external" target="_blank">Saccharomyces Genome Database (SGD)</a> for gene phenotypes associated with terms such as “systematic mutation set” and “competitive growth”, and compiled a preliminary list of publications that reported phenotypic screens of the YKO collection. By curating these publications and parsing their citations, we discovered many additional publications reporting YKO screens. Furthermore, we examined the publication records of research labs that have released numerous YKO screens and made sure that we captured all of their publications in this domain.</p>
+            <p>We incorporated relevant YKO screens from existing repositories such as the <a href="http://yfgdb.princeton.edu/" class="external" target="_blank">Yeast Functional Genomics Database (YFGdb)</a>, the <a class="external" target="_blank" href="https://pubmed.ncbi.nlm.nih.gov/29574976/">Database for High Throughput Screening hits (dHITS)</a>, <a class="external" target="_blank" href="https://pubmed.ncbi.nlm.nih.gov/22522342/">ScreenTroll</a> and <a class="external" target="_blank" href="https://pubmed.ncbi.nlm.nih.gov/23368702/">FitSearch</a>.</p>
+            <p>We received pointers to potentially relevant papers from BioGRID curators and set up automated PubMed queries for keywords such as “yeast knockout collection”, “yeast deletion collection” and “phenotypic screen”.</p>
+
+            <h2 class="mt-5 mb-4" id="metadata">Collecting and organizing screen meta-data</h2>
+            <p>During the curation process, each publication is associated with a list of screens. Each screen is then annotated with extensive meta-data that capture the type of collection (haploid Mat-a, haploid Mat-alpha or homozygous diploid), the phenotype, the experimental environment (including the growth media), the type of released data (quantitative or discrete) and the source from which the data were obtained (see below).</p>
+            <p>The phenotypes and the environments are recorded using a set of controlled vocabularies, i.e. unique terms chosen to avoid duplications and errors. For example, a chemogenomic screen for hydroxyurea was annotated with the phenotype “growth” and the environment “hydroxyurea”.</p>
+            <p>Whenever applicable, phenotypes are linked to reporters, i.e. specific readouts through which the phenotype was assessed (e.g., the phenotype “unfolded protein response” has the reporter “UPRE-GFP” since the activation of the response is measured via GFP expression driven by an UPRE promoter).</p>
+            <p>Environments, especially chemical and physical perturbations, are associated with a dose (e.g., environment “hydroxyurea” with dose “100 mM”) and alternative names used in the literature (e.g., “hydroxyurea” and “HU”). Whenever available, chemical compounds are also linked with external identifiers from <a href="https://www.ebi.ac.uk/chebi/" class="external" target="_blank">ChEBI</a> and <a href="https://pubchem.ncbi.nlm.nih.gov/" class="external" target="_blank">PubChem</a>. A set of 1,719 chemical compounds, screened in <a href="https://yeastphenome.org/papers/156/">Hoepfner D~Movva NR, 2014</a>, are proprietary and, as such, their name or chemical structure were not released as part of the publication.
             </p>
+
+            <h2 class="mt-5 mb-4" id="data">Collecting and organizing screen data</h2>
+            <p>
+                In addition to meta-data describing the parameters of the experiment, each screen is linked to its corresponding data, i.e. the list of tested mutants and their phenotypic values. The data are obtained from one of three main sources: </p>
+            <ul>
+            <li>the main text (e.g., list of hits reported in a table or figure)</li>
+            <li>the supplementary material (e.g., an Excel table or PDF file)</li>
+            <li>a website associated with the publication (typical for larger datasets)</li>
+            </ul>
+            <p>After retrieving the data, we evaluate their completeness relative to the experiment described in the publication and determine whether additional data might be available. An example of "incomplete" data is a case where the publication describes the measurement of a quantitative phenotype but only reports a binary list of hits. Similarly, if a publication reports only the list of hits but not the list of tested strains, the data is considered "incomplete".</p>
+            <p>In all cases of apparent data incompleteness, we contact the authors and ask them to share the missing data with Yeast Phenome. Since, in most cases, these data are unpublished, we ask the authors to give us explicit permission to upload the data onto Yeast Phenome. The authors who agreed to share data relevant to any given screen are acknowledged on the screen’s page, as well as on our <a href="{% url 'common:data_contributors' %}">Data contributors</a> page.</p>
+
+            <h2 class="mt-5 mb-4" id="tested">Tested mutants</h2>
+            <p>By definition, all screens in Yeast Phenome used the YKO collection and tested the vast majority of the ~5,000 non-essential gene knock-outs (the biggest exception is <a href="https://yeastphenome.org/papers/217/">Kemmeren P~Hostege FC, 2014</a> that only tested ~1,500 knock-out mutants). However, our preliminary analyses showed that the composition of the YKO collection varied over time and between labs. Furthermore, many screens had to exclude small subsets of the collection for technical or biological reasons (e.g., failure to transform the strain with a plasmid carrying a fluorescent reporter). As a result of such limitations, the set of mutants tested in one screen could differ from that of another screen by as much as 20%.</p>
+            <p>Variation in tested space can prevent an accurate interpretation of the screen results: it may be unclear whether a particular gene is absent from a screen’s hit list because it didn’t show a strong phenotype (or didn’t validate at re-testing), or because it was never tested in the first place.</p>
+            <p>To address this issue, we did our best at recovering a list of tested strains for as many screens as possible. Whenever the list was not released as part of the original publication, we contacted the authors via email (see above). If the authors were unable to provide the list, we estimated the screen’s tested space from the tested spaces of all other screens. The estimate was based on a consensus list, i.e. the list of strains that have been tested in at least 50% of all screens that did declare their tested space (<a href="https://yeastphenome.org/papers/217/">Kemmeren P~Hostege FC, 2014</a> and <a href="https://yeastphenome.org/papers/727/">Huseinovic A~Vos JC, 2017</a> were excluded from the estimate because their declared tested space was ~1,500 genes, which is considerably lower than other screens). If a screen reported values outside of the consensus tested space, those values were retained.</p>
 
             <h2 class="mt-5 mb-4" id="datahandling">Data handling</h2>
-            <p>For all data, we minimize manual handling to maximize record keeping and reproducibility. The only two operations performed manually are 1) data download and 2) conversion from PDF to a computer-readable format (text or Excel files), whenever required.</p>
-            <p>All other data manipulations (QC, clean-up, reformatting, database upload etc.) are done in Python via Jupyter notebooks. All code is version controlled and stored in a <a class="external" href="https://github.com/yeastphenome/yp-data" target="_blank">Github repository</a>.</p>
+            <p>
+                For all data, we minimize manual handling to maximize record keeping and reproducibility. The only two operations performed manually are:</p>
+            <ol>
+                <li>downloading the data from the source;</li>
+                <li>whenever required, converting PDF files to a computer-readable format (text or Excel files).</li>
+            </ol>
+            <p>All other data manipulations (quality control, clean up, reformatting, upload to database, etc.) are done programmatically. These typically include fixing typos in gene names, translating gene names into ORFs, excluding ORFs that are currently marked as merged or deleted in SGD, converting phenotype data into digital scores as per convention (see below). For each publication, data manipulations are encoded in a Python-based Jupyter notebook, which is version-controlled and stored in a <a class="external" href="https://github.com/yeastphenome/yp-data" target="_blank">Github repository</a>.
+            </p>
 
             <h2 class="mt-5 mb-4" id="datanormalization">Data normalization</h2>
-            <p>To facilitate both analysis and interpretation of diverse Yeast Phenome data, we implemented several conventions and normalizations. Phenotypes reported on qualitative (e.g., mild, intermediate, severe) or categorical (e.g., round, elongated, irregular) scales (2% of datasets) were converted into sets of discrete (1, 2, 3) or binary (0, 1) values. Quantitative and truncated quantitative phenotypes (i.e., those reported on a quantitative scale only for the set of mutants considered to be hits) were transformed so that the sign and magnitude of their values were consistent with how the phenotype and its corresponding experimental condition are defined in their respective controlled vocabularies (higher values correspond to higher expressions of the phenotype, and vice versa). Since different phenotypes followed dramatically different distributions but were consistently unimodal, we used the mode as a reference to normalize each dataset using a modified z-score transformation.</p>
+            <p>To facilitate both analysis and interpretation of diverse Yeast Phenome data, we implemented several conventions and normalizations.</p>
+            <ul>
+                <li>Phenotypes reported on qualitative (e.g., mild, intermediate, severe) or categorical (e.g., round, elongated, irregular) scales (2% of datasets) were converted into sets of discrete (1, 2, 3) or binary (0, 1) values.</li>
+                <li>Quantitative and truncated quantitative phenotypes (i.e., those reported on a quantitative scale only for the set of mutants considered to be hits) were transformed so that the sign and magnitude of their values were consistent with how the phenotype and its corresponding experimental condition are defined in their respective controlled vocabularies (higher values correspond to higher expressions of the phenotype, and vice versa).</li>
+            </ul>
+            <p>Since different phenotypes followed dramatically different distributions but were consistently unimodal, we used the mode as a reference to normalize each dataset using a modified z-score transformation.</p>
             <p>$$NPV_i = {P_i - P_{mode} \over \sqrt{\frac{1}{N} \sum_{i=1}^N (P_i - P_{mode})^2}}$$</p>
-            <p>Where:
-                <br><i>NPV<sub>i</sub></i> = normalized phenotypic value for knock-out mutant <i>i</i>
-                <br><i>P<sub>i</sub></i> = raw phenotypic value for knock-out mutant <i>i</i> (as reported by the original publication)
-                <br><i>P<sub>mode</sub></i> = mode of the kernel density distribution of phenotypic values for all knock-out mutants in this screen
-                <br><i>N</i> = total number of knock-out mutants tested in this screen
-            </p>
+            <p>Where:</p>
+            <ul>
+            <li><i>NPV<sub>i</sub></i> = normalized phenotypic value for knock-out mutant <i>i</i></li>
+            <li><i>P<sub>i</sub></i> = raw phenotypic value for knock-out mutant <i>i</i> (as reported by the original publication)</li>
+            <li><i>P<sub>mode</sub></i> = mode of the kernel density distribution of phenotypic values for all knock-out mutants in this screen (KDE was performed using Gaussian kernels, as implemented in the scipy.stats.gaussian_kde, with a scalar bandwidth of 0.25)</li>
+            <li><i>N</i> = total number of knock-out mutants tested in this screen</li>
+            </ul>
             <p>As a result, all phenotypic values reported in Yeast Phenome can be universally interpreted as standardized deviations from the most typical mutant, which, assuming extreme phenotypes are rare, is also likely to represent wild-type. The transformed data, which we refer to as normalize phenotypic values (NPVs), are used throughout the website. The original data are available at the <a class="external" href="https://github.com/yeastphenome/yp-data" target="_blank">Github repository</a>.</p>
 
             <h2 class="mt-5 mb-4" id="correlations">Computing correlations</h2>
             <p>
-                To compute robust gene-gene phenotypic similarities in a computationally efficient and parallelizable manner, we adopted the following strategy.
+                To obtain robust estimates of gene-gene (and screen-screen) phenotypic similarity in a computationally efficient and parallelizable manner, we adopted the following strategy.
                 <ol>
                     <li>Given a data matrix, where rows correspond to genes, columns correspond to phenotypic screens and the values are normalized phenotypic values (NPV), we created 100 submatrices by subsetting 10% of the columns using random sampling with replacement.</li>
-            <li>For each of the submatrices, we computed gene-gene cosine correlations using a parallelized implementation by <a class="external" href="https://deepgraph.readthedocs.io/en/latest/tutorials/pairwise_correlations.html" target="_blank">deepgraph</a>.</li>
-                    <li>For each gene pair, we combined the 100 sampled cosine correlations by computing the mean and standard deviation. </li>
+                    <li>For each of the submatrices, we computed gene-gene cosine correlations using a parallelized implementation by <a class="external" href="https://deepgraph.readthedocs.io/en/latest/tutorials/pairwise_correlations.html" target="_blank">deepgraph</a>.</li>
+                    <li>For each gene pair, we combined the 100 sampled cosine correlations by computing the mean and standard deviation.</li>
+                    <li>Values corresponding to gene pairs with less than 100 non-zero data points in common were masked.</li>
                 </ol>
             </p>
+            <p>The same approach was used to estimate screen-screen phenotypic similarity.</p>
 
             <h2 class="mt-5 mb-4" id="citation">Data usage and citation policy</h2>
             <p>If you use data downloaded from YeastPhenome.org in a talk or a manuscript, please acknowledge the data source by citing the original publication from which the data is derived, as well as the YeastPhenome.org database. The database should be cited as follows:</p>
             <p style="margin-top:30px">
-                <code>Turco G, Chang C, Wang RY, Kim G, Stoops E, Richardson B, Sochat V, Rust J, Oughtred R, Thayer N, Kang F, Livstone MS, Heinicke S, Schroeder M, Dolinski KJ, Botstein D, Baryshnikova A. 2022. Global analysis of the yeast knock-out phenome. bioRxiv <a class="external" href="https://www.biorxiv.org/content/10.1101/2022.12.22.521593v1">https://doi.org/10.1101/2022.12.22.521593</a></code>
+                <code>Turco G, Chang C, Wang RY, Kim G, Stoops EH, Richardson B, Sochat V, Rust J, Oughtred R, Thayer N, Kang F, Livstone MS, Heinicke S, Schroeder M, Dolinski KJ, Botstein D, Baryshnikova A. 2022. Global analysis of the yeast knock-out phenome. bioRxiv <a class="external" href="https://www.biorxiv.org/content/10.1101/2022.12.22.521593v1">https://doi.org/10.1101/2022.12.22.521593</a></code>
             </p>
+
         </div>
     </div>
 {% endblock %}
