@@ -10,6 +10,13 @@
 
     <div class="row mt-5 mb-3">
         <div class="col-md-12">
+            <h2 class="mt-5 mb-4" id="toc">Table of contents</h2>
+            <ul>
+                <li><a href="#notes">General notes</a></li>
+                <li><a href="#haphom">Haploid and homozygous diploid data</a></li>
+                <li><a href="#het">Heterozygous diploid data</a></li>
+            </ul>
+
             <h2 class="mt-5 mb-4" id="notes">General notes</h2>
             <ol>
                 <li class="mb-3">Relative to the data accessible online, the data available for bulk download have undergone additional filtering to make them compatible with global analyses.
@@ -27,57 +34,69 @@
     </div>
 
     <div class="row mt-5">
-        <div class="col-md-12">
-            <h2 class="mt-5 mb-4" id="haphom">Haploid/homozygous diploid data</h2>
+    <div class="col-md-12">
+        <h2 class="mt-5 mb-4" id="haphom">Haploid and homozygous diploid data</h2>
 
-            <div class="card mb-4">
-                <div class="card-header">
-                    <button class="btn btn-light dropdown-toggle"
-                            type="button"
-                            data-bs-toggle="collapse"
-                            data-bs-target="#yp_hom_20221025"
-                            aria-expanded="false"
-                            aria-controls="yp_hom_20221025">Version 2022-10-25 (latest)
-                    </button>
+        <div class="card">
+            <div class="card-header">
+                <button class="btn btn-light dropdown-toggle"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#yp_haphom_20221025"
+                        aria-expanded="true"
+                        aria-controls="yp_haphom_20221025">Version 2022-10-25 (latest)
+                </button>
+            </div>
+            <div class="collapse show" id="yp_haphom_20221025">
+                <div class="card-body">
 
-                </div>
-                <div class="collapse" id="yp_hom_20221025">
-                    <div class="card-body">
-                        <p>Format: tab-delimited</p>
-                        <p>Contents:
-                        <ol>
+                    <div class="container ml-5 mb-5">
+
+                        <h4 class="mt-5 mb-4">Screen meta-data and phenotypic values</h4>
+                        <ul>
                             <li>A README file</li>
-                            <li>A list of 14,495 haploid/homozygous diploid screens with relevant metadata</li>
-                            <li>A gene x screen matrix (4,554 x 14,495) of harmonized but not normalized phenotypic
+                            <li>A list of 14,484 haploid and homozygous diploid screens with relevant metadata</li>
+                            <li>A gene x screen matrix (4,554 x 14,484) of harmonized but not normalized phenotypic
                                 values
                             </li>
-                            <li>A gene x screen matrix (4,554 x 14,495) of harmonized and normalized phenotypic values
+                            <li>A gene x screen matrix (4,554 x 14,484) of harmonized and normalized phenotypic values
                                 (NPVs)
                             </li>
-                        </ol>
-                        </p>
+                        </ul>
                         <a href="https://storage.cloud.google.com/yeastphenome_downloads/yp_haphom_20221025.tar.gz"
-                           class="btn btn-primary">Download</a>
+                           class="btn btn-primary">Download (608 MB)</a>
+
+                        <h4 class="mt-5 mb-4">Gene-gene phenotypic similarities</h4>
+                        <ul>
+                            <li>A gene x gene matrix (4,554 x 4,554) of phenotypic similarity estimates (+ a matrix of their corresponding standard deviations) as described <a href="{% url 'common:project' %}#correlations">here</a></li>
+                        </ul>
+                        <a href="https://storage.cloud.google.com/yeastphenome_downloads/yp_haphom_20221025_genexgene.tar.gz"
+                           class="btn btn-primary">Download (316 MB)</a>
+
+                        <h4 class="mt-5 mb-4">Screen-screen phenotypic similarities</h4>
+                        <ul>
+                            <li>A screen x screen matrix (14,484 x 14,484) of phenotypic similarity estimates (+ a matrix of their corresponding standard deviations) as described <a href="{% url 'common:project' %}#correlations">here</a></li>
+                        </ul>
+                        <a href="https://storage.cloud.google.com/yeastphenome_downloads/yp_haphom_20221025_screenxscreen.tar.gz"
+                           class="btn btn-primary">Download (3.1 GB)</a>
                     </div>
                 </div>
             </div>
 
-            <div class="card mb-4">
+            <div class="card">
                 <div class="card-header">
                     <button class="btn btn-light dropdown-toggle"
                             type="button"
                             data-bs-toggle="collapse"
-                            data-bs-target="#yp_hom_20220208"
+                            data-bs-target="#yp_haphom_20220208"
                             aria-expanded="false"
-                            aria-controls="yp_hom_20220208">Version 2022-02-08
+                            aria-controls="yp_haphom_20220208">Version 2022-02-08
                     </button>
-
                 </div>
-                <div class="collapse" id="yp_hom_20220208">
+                <div class="collapse" id="yp_haphom_20220208">
                     <div class="card-body">
-                        <p>Format: tab-delimited</p>
-                        <p>Contents:
-                        <ol>
+                        <h4 class="mt-5 mb-4">Screen meta-data and phenotypic values</h4>
+                        <ul>
                             <li>A README file</li>
                             <li>A list of 14,372 haploid/homozygous diploid screens with relevant metadata</li>
                             <li>A gene x screen matrix (4,554 x 14,372) of harmonized but not normalized phenotypic
@@ -86,8 +105,8 @@
                             <li>A gene x screen matrix (4,554 x 14,372) of harmonized and normalized phenotypic values
                                 (NPVs)
                             </li>
-                        </ol>
-                        </p>
+                        </ul>
+
                         <a href="https://storage.cloud.google.com/yeastphenome_downloads/yp_haphom_20220208.tar.gz"
                            class="btn btn-primary">Download</a>
                     </div>
