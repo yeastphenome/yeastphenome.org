@@ -68,11 +68,12 @@ class DatasetManager(models.Manager):
 
     def all_valid_tags_list_as_df(self):
 
-        datasets = self.all_valid().values("id", "paper", "phenotype", "conditionset")
+        datasets = self.all_valid().values("id", "paper", "phenotype", "conditionset", "medium")
         datasets_df = pd.DataFrame(list(datasets))
         datasets_df.rename(columns={"paper": "paper_id",
                                     "phenotype": "phenotype_id",
-                                    "conditionset": "conditionset_id"}, inplace=True)
+                                    "conditionset": "conditionset_id",
+                                    "medium": "medium_id"}, inplace=True)
 
         dataset_tags = Tag.objects.all_mappings_as_df("datasets", "Dataset")
         dataset_tags.rename(columns={"tags_list": "dataset_tags_list"}, inplace=True)
@@ -82,6 +83,9 @@ class DatasetManager(models.Manager):
 
         conditionset_tags = apps.get_model("conditions", "ConditionSet").objects.all_valid_tags_list_as_df()
         conditionset_tags.rename(columns={"tags_list": "conditionset_tags_list"}, inplace=True)
+
+        medium_tags = apps.get_model("conditions", "Medium").objects.all_valid_tags_list_as_df()
+        medium_tags.rename(columns={"tags_list": "medium_tags_list"}, inplace=True)
 
         # Merge all tags into the main DataFrame
         datasets_df = datasets_df.merge(dataset_tags[["id", "dataset_tags_list"]], how="left", on="id")
@@ -100,7 +104,13 @@ class DatasetManager(models.Manager):
         datasets_df["conditionset_tags_list"] = \
             datasets_df["conditionset_tags_list"].apply(lambda x: x if isinstance(x, list) else [])
 
-        columns = ["dataset_tags_list", "phenotype_tags_list", "conditionset_tags_list"]
+        datasets_df = datasets_df.merge(medium_tags[["id", "medium_tags_list"]],
+                                        how="left", left_on="medium_id", right_on="id")
+        datasets_df.rename(columns={"id_x": "id"}, inplace=True)
+        datasets_df["medium_tags_list"] = \
+            datasets_df["medium_tags_list"].apply(lambda x: x if isinstance(x, list) else [])
+
+        columns = ["dataset_tags_list", "phenotype_tags_list", "conditionset_tags_list", "medium_tags_list"]
         datasets_df["tags_list"] = datasets_df[columns].apply(unique_clean_sorted, axis=1)
         datasets_df["tags_list_as_str"] = datasets_df["tags_list"].apply(lambda x: "; ".join(x))
 
