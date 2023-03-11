@@ -237,7 +237,8 @@ class MediumAdmin(ImprovedModelAdmin):
     list_display = (
         "id",
         "display_name",
-        "papers_edit_link_list",
+        "papers_edit_link_list_20",
+        "tags_list_str",
     )
     raw_id_fields = ("conditions", "tags")
     search_fields = (

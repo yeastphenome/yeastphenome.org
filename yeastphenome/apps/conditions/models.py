@@ -393,6 +393,13 @@ class Medium(models.Model):
     def papers_edit_link_list(self):
         return mark_safe(", ".join([p.link_edit() for p in self.papers_all()]))
 
+    def papers_edit_link_list_20(self):
+        lst = [p.link_edit() for p in self.papers_all()[:20]]
+        lst_str = ", ".join(lst)
+        if self.papers_all().count() > 20:
+            lst_str = lst_str + " + more"
+        return mark_safe(lst_str)
+
     def datasets(self, num=None):
         qs = (
             apps.get_model("datasets", "Dataset")
@@ -449,3 +456,6 @@ class Medium(models.Model):
         )
         tags_list = list(set(tags_list_self + tags_list_conditions))
         return tags_list
+
+    def tags_list_str(self):
+        return mark_safe("; ".join(self.tags_list()))
