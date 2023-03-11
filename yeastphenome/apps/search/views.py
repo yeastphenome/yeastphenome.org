@@ -286,7 +286,8 @@ def flatten_response(response, fields):
     for r in response:
         x = {}
         for f in fields:
-            x[f] = r[f]["raw"]
-            x[f] = int(x[f]) if f == "id" else x[f]
+            if f in r.keys():
+                x[f] = r[f]["raw"]
+                x[f] = int(x[f]) if f == "id" else x[f]
         flat_response.append(x)
     return flat_response
