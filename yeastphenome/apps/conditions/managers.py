@@ -282,30 +282,32 @@ class MediumManager(models.Manager):
 
         self_tags = Tag.objects.all_mappings_as_df("conditions", "Medium")
 
-        # Create a list of conditions
-        with connection.cursor() as cursor:
-            sql = "select distinct medium_id, condition_id from conditions_medium_conditions"
-            cursor.execute(sql)
-            records = cursor.fetchall()
-        t = pd.DataFrame(records, columns=["id", "condition_id"])
-
-        related_tags = apps.get_model("conditions", "Condition").objects.all_valid_tags_list_as_df()
-        related_tags.rename(columns={"tags_list": "related_tags_list"}, inplace=True)
-        t = t.merge(related_tags[["id", "related_tags_list"]], how="left", left_on="condition_id", right_on="id")
-        t.rename(columns={'id_x': 'id'}, inplace=True)
-        t["related_tags_list"] = t["related_tags_list"].apply(lambda x: x if isinstance(x, list) else [])
-
-        medium_conditions = t.groupby("id").agg({"related_tags_list": "sum"}).reset_index()
-
-        mediums_df = self_tags.merge(medium_conditions[["id", "related_tags_list"]],
-                                           how="outer", on="id")
+        # # Create a list of conditions
+        # with connection.cursor() as cursor:
+        #     sql = "select distinct medium_id, condition_id from conditions_medium_conditions"
+        #     cursor.execute(sql)
+        #     records = cursor.fetchall()
+        # t = pd.DataFrame(records, columns=["id", "condition_id"])
+        #
+        # related_tags = apps.get_model("conditions", "Condition").objects.all_valid_tags_list_as_df()
+        # related_tags.rename(columns={"tags_list": "related_tags_list"}, inplace=True)
+        # t = t.merge(related_tags[["id", "related_tags_list"]], how="left", left_on="condition_id", right_on="id")
+        # t.rename(columns={'id_x': 'id'}, inplace=True)
+        # t["related_tags_list"] = t["related_tags_list"].apply(lambda x: x if isinstance(x, list) else [])
+        #
+        # medium_conditions = t.groupby("id").agg({"related_tags_list": "sum"}).reset_index()
+        #
+        # mediums_df = self_tags.merge(medium_conditions[["id", "related_tags_list"]],
+        #                                    how="outer", on="id")
+        mediums_df = self_tags.copy()
         mediums_df.rename(columns={"tags_list": "self_tags_list"}, inplace=True)
         mediums_df["self_tags_list"] = mediums_df["self_tags_list"].apply(lambda x:
                                                                           x if isinstance(x, list) else [])
-        mediums_df["related_tags_list"] = mediums_df["related_tags_list"].apply(lambda x:
-                                                                                x if isinstance(x, list) else [])
+        # mediums_df["related_tags_list"] = mediums_df["related_tags_list"].apply(lambda x:
+        #                                                                         x if isinstance(x, list) else [])
 
-        columns = ["self_tags_list", "related_tags_list"]
+        # columns = ["self_tags_list", "related_tags_list"]
+        columns = ["self_tags_list"]
         mediums_df["tags_list"] = mediums_df[columns].apply(unique_clean_sorted, axis=1)
         mediums_df["tags_list_as_str"] = mediums_df["tags_list"].apply(lambda x: "; ".join(x))
 
