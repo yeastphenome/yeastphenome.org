@@ -39,6 +39,9 @@ class ConditionType(models.Model):
     def __str__(self):
         return u"%s" % self.name
 
+    def get_absolute_url(self):
+        return reverse("conditions:detail", args=(self.id,))
+
     def is_valid(self):
         valid_datasets = apps.get_model("datasets", "Dataset").objects.all_valid()
         valid_conditions = self.conditions.filter(

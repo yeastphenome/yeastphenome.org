@@ -4,6 +4,7 @@ from django.apps import apps
 from django.core.exceptions import FieldError
 from django.db import models
 from django.db.models import F
+from django.urls import reverse
 
 from yeastphenome.apps.genes.managers import GeneManager, GeneAliasManager
 
@@ -47,6 +48,9 @@ class Gene(models.Model):
 
     def __str__(self):
         return "%s / %s" % (self.common_name, self.systematic_name)
+
+    def get_absolute_url(self):
+        return reverse("genes:detail", args=(self.id,))
 
     def urlencode(self):
         # Remove all non-alphanumeric characters from the gene's common name

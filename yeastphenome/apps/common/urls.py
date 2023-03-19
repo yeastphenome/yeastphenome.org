@@ -18,12 +18,6 @@ urlpatterns = [
         name="data_contributors",
     ),
     path("_ah/warmup/", views.warmup, name="warmup"),
-    url(
-        r"^robots\.txt/$",
-        TemplateView.as_view(
-            template_name="base/robots.txt", content_type="text/plain"
-        ),
-    ),
 ]
 
 app_name = "common"

@@ -183,6 +183,9 @@ class Dataset(models.Model):
     def __str__(self):
         return "%s" % self.name
 
+    def get_absolute_url(self):
+        return reverse("datasets:detail", args=(self.id,))
+
     def is_valid(self):
         cond1 = (
             self.paper.latest_data_status.status.is_valid

@@ -99,6 +99,9 @@ class Paper(models.Model):
     def __str__(self):
         return self.systematic_name if self.systematic_name else ""
 
+    def get_absolute_url(self):
+        return reverse("papers:detail", args=(self.id,))
+
     def is_valid(self):
         cond1 = (
             False
