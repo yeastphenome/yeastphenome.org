@@ -7,7 +7,6 @@ def globals(request):
     correcty in the settings.py file."""
     return {
         "DOMAIN": settings.DOMAIN_NAME,
-        "DOWNLOAD_CART_LIMIT": settings.DOWNLOAD_CART_LIMIT,
         "DOWNLOAD_PREFIX": settings.DOWNLOAD_PREFIX,
         "TWITTER_USERNAME": settings.TWITTER_USERNAME,
         "GITHUB_REPOSITORY": settings.GITHUB_REPOSITORY,

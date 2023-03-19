@@ -5,12 +5,12 @@ from yeastphenome.apps.phenotypes.models import (
     Phenotype,
     Measurement,
 )
-from yeastphenome.apps.common.admin_util import ImprovedModelAdmin
+from yeastphenome.apps.common.utils_admin import ImprovedModelAdmin
 
 
 class ObservableAdmin(ImprovedModelAdmin):
     list_per_page = 50
-    list_display = ["name", "description", "tags_str_list", "papers_str_list"]
+    list_display = ["name", "description", "tags_list_as_str", "papers_list_as_str"]
     search_fields = ["name", "description", "tags__name"]
     fields = (
         "name",
@@ -41,6 +41,8 @@ class PhenotypeAdmin(ImprovedModelAdmin):
         "description",
         "reporter",
         "observable__name",
+        "observable__tags__name",
+        "tags__name",
     ]
     fields = (
         "name",
@@ -48,13 +50,11 @@ class PhenotypeAdmin(ImprovedModelAdmin):
         "observable",
         "reporter",
         "measurement",
+        "tags",
         "datasets_edit_link_list",
         "phenotype_siblings_edit_link_list",
     )
-    raw_id_fields = (
-        "measurement",
-        "observable",
-    )
+    raw_id_fields = ("measurement", "observable", "tags")
     readonly_fields = ("datasets_edit_link_list", "phenotype_siblings_edit_link_list")
 
 

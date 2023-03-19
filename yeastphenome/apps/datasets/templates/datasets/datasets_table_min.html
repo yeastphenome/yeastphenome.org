@@ -1,0 +1,32 @@
+<table class="table mt-4 mb-4">
+
+    <thead>
+    <th scope="col">ID</th>
+    <th scope="col">Paper</th>
+    <th scope="col">Phenotype</th>
+    <th scope="col">Condition</th>
+    <th scope="col">Medium</th>
+    <th scope="col">Collection</th>
+    <th scope="col">Data</th>
+    <th scope="col"><a class="info" data-bs-toggle="tooltip"
+                       title="{% include 'base/nps_explanation.html' %}">NPVs</a></th>
+    </thead>
+
+    <tbody>
+    {% for dataset in datasets %}
+        <tr>
+            <td class="align-middle col-md-1"><a href="{% url 'datasets:detail' dataset.dataset_id %}">{{ dataset.dataset_id }}</a></td>
+            <td class="align-middle col-md-2">{{ dataset.dataset_paper_name }}</td>
+            <td class="align-middle col-md-2">{{ dataset.dataset_phenotype_name}}</td>
+            <td class="align-middle col-md-2">{{ dataset.dataset_conditionset_name }}</td>
+            <td class="align-middle col-md-1">{{ dataset.dataset_medium_name|default:"" }}</td>
+            <td class="align-middle col-md-1">{{ dataset.dataset_collection_name }}</td>
+            <td class="align-middle col-md-1">{{ dataset.dataset_data_name }}</td>
+            <td class="align-middle col-md-1">
+                <a class="btn btn-primary" role="button" href="{% url 'datasets:download_scores' dataset.dataset_id %}">Download</a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+

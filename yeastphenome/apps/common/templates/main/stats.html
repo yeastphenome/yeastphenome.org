@@ -1,149 +1,171 @@
-{% extends "base/wide.html" %}
+{% extends "base/base_min.html" %}
 {% load humanize %}
+{% block title %}Stats | About | {{ SITE_NAME }}{% endblock %}
 {% block content %}
-<div class="row">
-    <div class="col-md-12">
-      <h1>Stats</h1>
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mt-5">Summary statistics</h1>
+        </div>
     </div>
-</div>
-<div class="row">
-    <div class="col-md-12">
-        <h3>Summary stats ({% now "M. d, Y" %})</h3>
-        <ul>
-            <li>Total publications: {{ papers_nr|intcomma }} (+ {{ papers_hopeless_nr|intcomma }} for which data could not be recovered)</li>
-            <li>Total labs who published papers: {{ labs_nr|intcomma }}</li>
-            <li>Data loaded for:</li>
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mt-5 mb-4">Overall summary</h2>
+            <div class="container">
                 <ul>
-                    <li>Publications: {{ papers_processed_nr|intcomma }} ({% widthratio papers_processed_nr papers_nr 100 %}%)</li>
-                    <li>Phenotypes: {{ phenotypes_nr|intcomma }}</li>
-                    <li>Environments: {{ conditions_nr|intcomma }}</li>
-                    <li>Datasets: {{ datasets_nr|intcomma }} </li>
+                    <li>Total publications: {{ papers_hopeful_nr|intcomma }} (+ {{ papers_hopeless_nr|intcomma }} for which data could not be recovered)</li>
+                    <li>Total labs who published papers: {{ labs_nr|intcomma }}</li>
+                    <li>Data loaded for:</li>
+                    <ul>
+                        <li>Publications: {{ papers_processed_nr|intcomma }} of {{ papers_hopeful_nr|intcomma }} ({% widthratio papers_processed_nr papers_hopeful_nr 100 %}%)</li>
+                        <li>Phenotypes: {{ phenotypes_nr|intcomma }}</li>
+                        <li>Environments: {{ conditions_nr|intcomma }}</li>
+                        <li>Screens: {{ datasets_nr|intcomma }} </li>
+                    </ul>
+                    <li>Recovered unpublished information for:
+                        <ul>
+                            <li>Screens: {{ datasets_nr_recovered_any|intcomma }} of {{ datasets_nr|intcomma }} ({% widthratio datasets_nr_recovered_any datasets_nr 100 %}%)</li>
+                            <li>More complete data: {{ datasets_nr_recovered_data|intcomma }} screens ({% widthratio datasets_nr_recovered_data datasets_nr_need_data 100 %}% of those that needed it)</li>
+                            <li>List of tested strains: {{ datasets_nr_recovered_tested|intcomma }} screens ({% widthratio datasets_nr_recovered_tested datasets_nr_need_tested 100 %}% of those that needed it)</li>
+                        </ul>
+                    </li>
                 </ul>
-            <li>Recovered unpublished information for:
-                <ul>
-                    <li>Datasets: {{ datasets_nr_recovered_all|intcomma }} ({% widthratio datasets_nr_recovered_all datasets_nr 100 %}% of all)</li>
-                    <li>More complete data: {{ datasets_nr_recovered_data|intcomma }} datasets ({% widthratio datasets_nr_recovered_data datasets_nr_need_data 100 %}% of those that needed it)</li>
-                    <li>List of tested strains: {{ datasets_nr_recovered_tested|intcomma }} datasets ({% widthratio datasets_nr_recovered_tested datasets_nr_need_tested 100 %}% of those that needed it)</li>
-                </ul>
-             </li>
-          </ul>
-<br>
-           <table class="table table-condensed">
-                <thead>
-                    <tr>
-                        <th scope="col" width="40%">Strain background</th>
-                        <th scope="col">Number of datasets</th>
-                    </tr>
-                </thead>
-                <tr>
-                    <td>Haploid Mat-a</td>
-                    <td>{{ datasets_nr_hap_a|intcomma }} ({{ datasets_prc_hap_a }}%)</td>
-                </tr>
-                <tr>
-                    <td>Haploid Mat-alpha</td>
-                    <td>{{ datasets_nr_hap_alpha|intcomma }} ({{ datasets_prc_hap_alpha }}%)</td>
-                </tr>
-                <tr>
-                    <td>Homozygous diploid</td>
-                    <td>{{ datasets_nr_hom|intcomma }} ({{ datasets_prc_hom }}%)</td>
-                </tr>
-                <tr>
-                    <td>Heterozygous diploid</td>
-                    <td>{{ datasets_nr_het|intcomma }} ({{ datasets_prc_het }}%)</td>
-                </tr>
-                <tr>
-                    <td>Mixed</td>
-                    <td>{{ datasets_nr_mix|intcomma }} ({{ datasets_prc_mix }}%)</td>
-                </tr>
-                <tr>
-                    <td>Total</td>
-                    <td>{{ datasets_nr_collections_total|intcomma }} ({% widthratio datasets_nr_collections_total datasets_nr 100 %}%)</td>
-                </tr>
-            </table>
+            </div>
 
-            <table class="table table-condensed">
-                <thead>
+            <h2 class="mt-5 mb-4">Number of screens per data class</h2>
+            <div class="container">
+                <table class="table">
+                    <thead>
                     <tr>
-                        <th scope="col" width="40%">Data type</th>
-                        <th scope="col">Number of datasets</th>
+                        <th scope="col" class="col-2"></th>
+                        <th scope="col">Haploid Mat&#8209;a</th>
+                        <th scope="col">Haploid Mat&#8209;alpha</th>
+                        <th scope="col">Homozygous diploid</th>
+                        <th scope="col">Mixed/unknown</th>
+                        <th scope="col" class="col-2">Total</th>
                     </tr>
-                </thead>
-                <tr>
-                    <td>Quantitative</td>
-                    <td>{{ datasets_nr_q|intcomma }} ({{ datasets_prc_q }}%)</td>
-                </tr>
-                <tr>
-                    <td>Quantitative only for hits</td>
-                    <td>{{ datasets_nr_qofh|intcomma }} ({{ datasets_prc_qofh }}%)</td>
-                </tr>
-                <tr>
-                    <td>Discrete</td>
-                    <td>{{ datasets_nr_d|intcomma }} ({{ datasets_prc_d }}%)</td>
-                </tr>
-                <tr>
-                    <td>Total</td>
-                    <td>{{ datasets_nr_data_available_total|intcomma }} ({% widthratio datasets_nr_data_available_total datasets_nr 100 %}%)</td>
-                </tr>
-            </table>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <th scope="row">Quantitative</th>
+                        <td>{{ collectiontype_datatype.c0d0|intcomma }}</td>
+                        <td>{{ collectiontype_datatype.c1d0|intcomma }}</td>
+                        <td>{{ collectiontype_datatype.c2d0|intcomma }}</td>
+                        <td>{{ collectiontype_datatype.c3d0|intcomma }}</td>
+                        <td>{{ collectiontype_datatype.d0|intcomma }} ({% widthratio collectiontype_datatype.d0 collectiontype_datatype.total 100 %}%)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Quantitative (only for hits)</th>
+                        <td>{{ collectiontype_datatype.c0d1|intcomma }}</td>
+                        <td>{{ collectiontype_datatype.c1d1|intcomma }}</td>
+                        <td>{{ collectiontype_datatype.c2d1|intcomma }}</td>
+                        <td>{{ collectiontype_datatype.c3d1|intcomma }}</td>
+                        <td>{{ collectiontype_datatype.d1|intcomma }} ({% widthratio collectiontype_datatype.d1 collectiontype_datatype.total 100 %}%)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Discrete</th>
+                        <td>{{ collectiontype_datatype.c0d2|intcomma }}</td>
+                        <td>{{ collectiontype_datatype.c1d2|intcomma }}</td>
+                        <td>{{ collectiontype_datatype.c2d2|intcomma }}</td>
+                        <td>{{ collectiontype_datatype.c3d2|intcomma }}</td>
+                        <td>{{ collectiontype_datatype.d2|intcomma }} ({% widthratio collectiontype_datatype.d2 collectiontype_datatype.total 100 %}%)</td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <th scope="row">Total</th>
+                        <td>{{ collectiontype_datatype.c0|intcomma }} ({% widthratio collectiontype_datatype.c0 collectiontype_datatype.total 100 %}%)</td>
+                        <td>{{ collectiontype_datatype.c1|intcomma }} ({% widthratio collectiontype_datatype.c1 collectiontype_datatype.total 100 %}%)</td>
+                        <td>{{ collectiontype_datatype.c2|intcomma }} ({% widthratio collectiontype_datatype.c2 collectiontype_datatype.total 100 %}%)</td>
+                        <td>{{ collectiontype_datatype.c3|intcomma }} ({% widthratio collectiontype_datatype.c3 collectiontype_datatype.total 100 %}%)</td>
+                        <td>{{ collectiontype_datatype.total|intcomma }} (100%)</td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
 
-            <table class="table table-condensed">
-                <thead>
-                    <tr>
-                        <th scope="col" width="40%">Condition type</th>
-                        <th scope="col">Number of papers</th>
-                        <th scope="col">Number of datasets</th>
-                    </tr>
-                </thead>
-                {% for c in top_conditiontypes %}
-                <tr>
-                    <td>{{ c.link_detail|safe }}</td>
-                    <td>{{ c.nr_papers|intcomma }}</td>
-                    <td>{{ c.nr_datasets|intcomma }} ({{ c.nr_datasets_q|intcomma }} q +
-                        {{c.nr_datasets_qofh|intcomma }} qofh + {{ c.nr_datasets_d|intcomma }} d)</td>
-                </tr>
-                {% endfor %}
-            </table>
 
-            <table class="table table-condensed">
-                <thead>
+            {##}
+            {#            <table class="table table-condensed">#}
+            {#                <thead>#}
+            {#                    <tr>#}
+            {#                        <th scope="col" width="40%">Condition type</th>#}
+            {#                        <th scope="col">Number of papers</th>#}
+            {#                        <th scope="col">Number of datasets</th>#}
+            {#                    </tr>#}
+            {#                </thead>#}
+            {#                {% for c in top_conditiontypes %}#}
+            {#                <tr>#}
+            {#                    <td>{{ c.link_detail|safe }}</td>#}
+            {#                    <td>{{ c.nr_papers|intcomma }}</td>#}
+            {#                    <td>{{ c.nr_datasets|intcomma }} ({{ c.nr_datasets_q|intcomma }} q +#}
+            {#                        {{c.nr_datasets_qofh|intcomma }} qofh + {{ c.nr_datasets_d|intcomma }} d)</td>#}
+            {#                </tr>#}
+            {#                {% endfor %}#}
+            {#            </table>#}
+            {##}
+
+            <h2 class="mt-5 mb-4">Number of screens per phenotype class</h2>
+            <div class="container">
+                <table class="table">
+                    <thead>
                     <tr>
-                        <th scope="col" width="20%">Phenotype class</th>
-                        <th scope="col">Number of datasets (hap/hom)</th>
-                        <th scope="col">Number of papers (hap/hom)</th>
-                        <th scope="col">Number of datasets (het)</th>
-                        <th scope="col">Number of papers (het)</th>
+                        <th scope="col" class="col-2"></th>
+                        <th scope="col">Haploid Mat-a</th>
+                        <th scope="col">Haploid Mat-alpha</th>
+                        <th scope="col">Homozygous diploid</th>
+                        <th scope="col">Mixed/unknown</th>
+                        <th scope="col" class="col-2">Total</th>
                     </tr>
-                </thead>
-                <tr>
-                    <td>Growth</td>
-                    <td>{{ datasets_nr_processed_homhap_growth|intcomma }} ({% widthratio datasets_nr_processed_homhap_growth datasets_nr_processed_homhap 100 %}%)</td>
-                    <td>{{ papers_nr_processed_homhap_growth }}</td>
-                    <td>{{ datasets_nr_processed_het_growth|intcomma }} ({% widthratio datasets_nr_processed_het_growth datasets_nr_processed_het 100 %}%)</td>
-                    <td>{{ papers_nr_processed_het_growth }}</td>
-                </tr>
-                <tr>
-                    <td>Expression</td>
-                    <td>{{ datasets_nr_processed_homhap_expression|intcomma }} ({% widthratio datasets_nr_processed_homhap_expression datasets_nr_processed_homhap 100 %}%)</td>
-                    <td>{{ papers_nr_processed_homhap_expression }}</td>
-                    <td>{{ datasets_nr_processed_het_expression|intcomma }} ({% widthratio datasets_nr_processed_het_expression datasets_nr_processed_het 100 %}%)</td>
-                    <td>{{ papers_nr_processed_het_expression }}</td>
-                </tr>
-                <tr>
-                    <td>Other</td>
-                    <td>{{ datasets_nr_processed_homhap_other|intcomma }} ({% widthratio datasets_nr_processed_homhap_other datasets_nr_processed_homhap 100 %}%)</td>
-                    <td>{{ papers_nr_processed_homhap_other }}</td>
-                    <td>{{ datasets_nr_processed_het_other|intcomma }} ({% widthratio datasets_nr_processed_het_other datasets_nr_processed_het 100 %}%)</td>
-                    <td>{{ papers_nr_processed_het_other }}</td>
-                </tr>
-            </table>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <th scope="row">Growth</th>
+                        <td>{{ collectiontype_phenotype.c0p0|intcomma }}</td>
+                        <td>{{ collectiontype_phenotype.c1p0|intcomma }}</td>
+                        <td>{{ collectiontype_phenotype.c2p0|intcomma }}</td>
+                        <td>{{ collectiontype_phenotype.c3p0|intcomma }}</td>
+                        <td>{{ collectiontype_phenotype.p0|intcomma }} ({% widthratio collectiontype_phenotype.p0 collectiontype_phenotype.total 100 %}%)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Gene expression</th>
+                        <td>{{ collectiontype_phenotype.c0p1|intcomma }}</td>
+                        <td>{{ collectiontype_phenotype.c1p1|intcomma }}</td>
+                        <td>{{ collectiontype_phenotype.c2p1|intcomma }}</td>
+                        <td>{{ collectiontype_phenotype.c3p1|intcomma }}</td>
+                        <td>{{ collectiontype_phenotype.p1|intcomma }} ({% widthratio collectiontype_phenotype.p1 collectiontype_phenotype.total 100 %}%)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Other</th>
+                        <td>{{ collectiontype_phenotype.c0p2|intcomma }}</td>
+                        <td>{{ collectiontype_phenotype.c1p2|intcomma }}</td>
+                        <td>{{ collectiontype_phenotype.c2p2|intcomma }}</td>
+                        <td>{{ collectiontype_phenotype.c3p2|intcomma }}</td>
+                        <td>{{ collectiontype_phenotype.p2|intcomma }} ({% widthratio collectiontype_phenotype.p2 collectiontype_phenotype.total 100 %}%)</td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <th scope="row">Total</th>
+                        <td>{{ collectiontype_phenotype.c0|intcomma }} ({% widthratio collectiontype_phenotype.c0 collectiontype_phenotype.total 100 %}%)</td>
+                        <td>{{ collectiontype_phenotype.c1|intcomma }} ({% widthratio collectiontype_phenotype.c1 collectiontype_phenotype.total 100 %}%)</td>
+                        <td>{{ collectiontype_phenotype.c2|intcomma }} ({% widthratio collectiontype_phenotype.c2 collectiontype_phenotype.total 100 %}%)</td>
+                        <td>{{ collectiontype_phenotype.c3|intcomma }} ({% widthratio collectiontype_phenotype.c3 collectiontype_phenotype.total 100 %}%)</td>
+                        <td>{{ collectiontype_phenotype.total|intcomma }} (100%)</td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+        </div>
     </div>
-</div>
 
 
-<div class="row">
-    <div class="col-md-6">
-        <h3 id="faq" style="margin-bottom:20px">Publications</h3>
-            {% include "graphs/papers-by-year.html" %}
+    <div class="row">
+        <div class="col-md-6">
+            <h2 class="mt-5 mb-4">Number of papers per year</h2>
+            <div class="container">
+                {% include "graphs/papers-by-year.html" %}
+            </div>
+        </div>
     </div>
-</div>
 {% endblock %}

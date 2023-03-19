@@ -1,6 +1,6 @@
 from django.contrib import admin
 from yeastphenome.apps.tags.models import Tag
-from yeastphenome.apps.common.admin_util import ImprovedModelAdmin
+from yeastphenome.apps.common.utils_admin import ImprovedModelAdmin
 
 
 class TagAdmin(ImprovedModelAdmin):

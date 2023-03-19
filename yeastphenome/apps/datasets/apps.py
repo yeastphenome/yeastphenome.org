@@ -4,4 +4,6 @@ from django.apps import AppConfig
 
 
 class DatasetsConfig(AppConfig):
-    name = "datasets"
+    name = "yeastphenome.apps.datasets"
+    default = True
+

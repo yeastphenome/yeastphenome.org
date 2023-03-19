@@ -1,266 +1,199 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+from django.shortcuts import render, redirect
 from django.shortcuts import get_object_or_404, reverse
-from django.conf import settings
-from django.db.models import Q
-import pandas
+from django.http import HttpResponse
 
 from yeastphenome.apps.datasets.models import Data, Dataset
-from yeastphenome.apps.genes.models import Gene, GeneSimilarity
-from yeastphenome.apps.genes.search import get_search_tags
+from yeastphenome.apps.genes.models import Gene
+from yeastphenome.apps.common.utils_format import update_values_with_percentile
+
 from ratelimit.decorators import ratelimit
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
     VIEW_RATE_LIMIT_BLOCK as rl_block,
+    DOWNLOAD_PREFIX
 )
 
-
-# Explore by genes
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def gene_explorer(request):
-
-    taglist = request.GET.get("query", "").split("|")
-
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("genes:index"), "name": "Genes"},
-    ]
-    context = {
-        "links": links,
-        "active": "explorer",
-        "tags": get_search_tags(),
-        "taglist": taglist,
-    }
-    return render(request, "genes/index.html", context)
+import pandas as pd
+import numpy as np
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def gene_detail(request, gene_id):
+def index(request):
+    return redirect("search:search")
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def detail(request, gene_id):
 
     gene = get_object_or_404(Gene, pk=gene_id)
 
-    # Assemble links assuming on root of page
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("genes:index"), "name": "Genes"},
-        {"url": reverse("genes:detail", args=[gene.id]), "name": "%s" % gene},
+    scores = gene.get_scores()
+    num_scores = scores.count()
+    scores_lowest = update_values_with_percentile(scores.order_by("valuez"), "valuez")[
+        :10
     ]
+    scores_highest = update_values_with_percentile(
+        scores.order_by("-valuez"), "valuez"
+    )[:10]
 
-    context = {"links": links, "active": "explorer", "gene": gene}
+    similarities = gene.get_similarities()
+    num_similarities = similarities.count()
+    similarities_lowest = update_values_with_percentile(
+        similarities.order_by("score"), "score"
+    )[:10]
+    similarities_highest = update_values_with_percentile(
+        similarities.order_by("-score"), "score"
+    )[:10]
 
-    # Get the top and bottom phenotypic scores
-    context["datasets_top"] = gene.get_data(reverse=False)[:10]
-    context["datasets_bottom"] = gene.get_data(reverse=True)[:10]
-
-    # Get the top and bottom correlations
-    context["sims_top"] = gene.get_ranked_similar(reverse=False)[:10]
-    context["sims_bottom"] = gene.get_ranked_similar(reverse=True)[:10]
-
-    context["links"] = links
-    return render(request, "genes/detail.html", context)
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def similar_genes(request, gene_id):
-
-    gene = get_object_or_404(Gene, pk=gene_id)
-
-    sims = gene.get_ranked_similar(reverse=False).select_related("gene2")
-
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("genes:index"), "name": "Genes"},
-        {
-            "url": reverse("genes:detail", args=[gene.id]),
-            "name": "%s" % gene,
-        },
-        {
-            "url": reverse("genes:similar_genes", args=[gene.id]),
-            "name": "Similar Genes",
-        },
-    ]
-
-    total_sims = sims.count()
-    ranks = [(1 - (idx / total_sims)) * 100 for idx, sim in enumerate(sims)]
     context = {
         "gene": gene,
-        "sims": sims,
-        "ranks": ranks,
-        "links": links,
-        "active": "explorer",
+        "num_scores": num_scores,
+        "scores_lowest": scores_lowest,
+        "scores_highest": scores_highest,
+        "num_similarities": num_similarities,
+        "similarities_lowest": similarities_lowest,
+        "similarities_highest": similarities_highest,
     }
-    return render(request, "genes/similar_genes.html", context)
+
+    return render(request, "genes/detail_min.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def similar_scatterplot(request, gene1_id, gene2_id):
-    """Generate a scatterplot to compare two genes across datasets. You can
-    interchange gene1 and gene2 and they will produce the same plot (but switched
-    axes). This makes the view flexible to any combination of genes.
-    """
-    gene1 = get_object_or_404(Gene, pk=gene1_id)
-    gene2 = get_object_or_404(Gene, pk=gene2_id)
+def scores(request, gene_id):
 
-    # Get the correlation to add
-    sim = GeneSimilarity.objects.filter(
-        Q(gene1=gene1, gene2=gene2) | Q(gene1=gene2, gene2=gene1)
-    )
-
-    # Get data for gene1 and gene2 as pandas dataframes
-    data1 = pandas.DataFrame(list(Data.objects.filter(gene_id=gene1.id).values()))
-    data2 = pandas.DataFrame(list(Data.objects.filter(gene_id=gene2.id).values()))
-
-    # Join the 2 dataframes using dataset_id as the key
-    data = data1.merge(data2, on="dataset_id")
-
-    # Only keep rows where both genes have values (are not null)
-    data = data.loc[data["valuez_x"].notnull() & data["valuez_y"].notnull()]
-
-    # Get datasets names
-    datasets = pandas.DataFrame(
-        list(Dataset.objects.filter(id__in=data["dataset_id"].values).values())
-    )
-
-    # Add them to the data dataframe
-    data = data.merge(datasets[["id", "name"]], left_on="dataset_id", right_on="id")
-    data = data.rename(columns={"dataset_id": "entry_id"})
-
-    # Convert to scores dictionary for view
-    scores = data[["entry_id", "valuez_x", "valuez_y", "name"]].to_dict(orient="index")
-
-    # Explore data > Genes > YHR045 / YHR045W > Similar genes > DAP1 / YPL170W
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("genes:index"), "name": "Genes"},
-        {
-            "url": reverse("genes:detail", args=[gene1.id]),
-            "name": "%s" % gene1,
-        },
-        {
-            "url": reverse("genes:similar_genes", args=[gene1.id]),
-            "name": "Similar Genes",
-        },
-        {
-            "url": reverse("genes:similar_scatterplot", args=[gene1.id, gene2.id]),
-            "name": "%s" % gene2,
-        },
-    ]
+    gene = get_object_or_404(Gene, pk=gene_id)
+    scores = gene.get_scores().order_by("valuez")
+    scores = update_values_with_percentile(scores, "valuez")
 
     context = {
-        "title1": gene1,
-        "title2": gene2,
-        "entry_type": "datasets",
+        "gene": gene,
         "scores": scores,
-        "sim": sim.first(),
-        "links": links,
-        "active": "explorer",
     }
-    return render(request, "genes/similar_scatterplot.html", context)
+
+    return render(request, "genes/scores_min.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def gene_datasets(request, gene_id):
-    import numpy as np
+def download_scores(request, gene1_id, gene2_id=None):
 
-    gene = get_object_or_404(Gene, pk=gene_id)
+    gene1 = get_object_or_404(Gene, pk=gene1_id)
+    scores1 = gene1.get_scores().order_by("valuez")
+    scores1_df = pd.DataFrame(list(scores1))
 
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("genes:index"), "name": "Genes"},
-        {
-            "url": reverse("genes:detail", args=[gene.id]),
-            "name": "%s" % gene,
-        },
-        {
-            "url": reverse("genes:datasets", args=[gene.id]),
-            "name": "Phenotypic Scores",
-        },
-    ]
+    if gene2_id:
+        gene2 = get_object_or_404(Gene, pk=gene2_id)
+        scores2 = gene2.get_scores().order_by("valuez")
+        scores2_df = pd.DataFrame(list(scores2))
 
-    # Derive datasets bins here
-    datapoints = gene.get_data().values_list("valuez")
-
-    count, division = np.histogram([float(x[0]) for x in datapoints])
-    counts = []
-    for i, number in enumerate(count):
-        counts.append({"count": number, "value": division[i + 1]})
-
-    context = {
-        "gene": gene,
-        "links": links,
-        "active": "explorer",
-        "counts": counts,
-        "division": division,
-    }
-
-    return render(request, "genes/gene_datasets.html", context)
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def download_gene_similarities(request, gene_id):
-    """Download all GeneSimilarity values for a given gene"""
-
-    import pandas as pd
-
-    gene = get_object_or_404(Gene, pk=gene_id)
-
-    sims = (
-        gene.get_ranked_similar()
-        .select_related("gene1__systematic_name", "gene2__systematic_name")
-        .values_list(
-            "gene1__systematic_name", "gene2__systematic_name", "score", "pvalue"
-        )
-    )
-
-    df = pd.DataFrame(sims)
-    df.columns = ["Gene1", "Gene2", "Correlation mean", "Correlation std. dev."]
-
-    filename = "%s_gene_similarities_%s.txt" % (
-        settings.DOWNLOAD_PREFIX,
-        gene.systematic_name,
-    )
+        scores_df = scores1_df.merge(scores2_df, how="outer", on="dataset_id", suffixes=('_gene1', '_gene2'))
+        scores_df = scores_df[['dataset_id', 'dataset_name_gene1', 'valuez_gene1', 'valuez_gene2']]
+        scores_df.columns = ['Screen ID', 'Screen name', 'NPV ' + str(gene1), 'NPV ' + str(gene2)]
+        filename = "%s_%s_%s_NPVs.txt" % (DOWNLOAD_PREFIX, gene1.urlencode(), gene2.urlencode())
+    else:
+        scores_df = scores1_df
+        scores_df = scores_df[['dataset_id', 'dataset_name', 'valuez']]
+        scores_df.columns = ['Screen ID', 'Screen name', 'NPV ' + str(gene1)]
+        filename = "%s_%s_NPVs.txt" % (DOWNLOAD_PREFIX, gene1.urlencode())
 
     # Prepare the HttpResponse
     response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = "attachment; filename=%s" % filename
+    response["Content-Disposition"] = 'attachment; filename="%s"' % filename
 
-    # Print data matrix to response buffer
-    df.to_csv(path_or_buf=response, sep="\t", index=False)
-
-    return response
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def download_gene_scores(request, gene_id=None):
-    """Download all datasets. If a gene name is provided, filter to those"""
-
-    import pandas as pd
-
-    gene = get_object_or_404(Gene, pk=gene_id)
-
-    scores = (
-        gene.get_data()
-        .select_related("dataset__name")
-        .values_list("dataset__name", "valuez")
-    )
-    scores_df = pd.DataFrame(
-        scores, columns=["Dataset name", "Normalized Phenotypic Score"]
-    )
-    scores_df["Gene"] = gene.systematic_name
-    scores_df = scores_df.reindex(
-        columns=["Gene", "Dataset name", "Normalized Phenotypic Score"]
-    )
-
-    # Prepare the HttpResponse
-    response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = 'attachment; filename="%s_%s_scores.txt"' % (
-        settings.DOWNLOAD_PREFIX,
-        gene.systematic_name,
-    )
-
-    # Print data matrix to response buffer
     scores_df.to_csv(path_or_buf=response, sep="\t", index=False)
 
     return response
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def similarities(request, gene_id):
+
+    gene = get_object_or_404(Gene, pk=gene_id)
+    similarities = gene.get_similarities().order_by("-score")
+    similarities = update_values_with_percentile(similarities, "score")
+
+    context = {
+        "gene": gene,
+        "similarities": similarities,
+    }
+
+    return render(request, "genes/similarities_min.html", context)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def download_similarities(request, gene_id):
+
+    gene = get_object_or_404(Gene, pk=gene_id)
+    similarities = gene.get_similarities().order_by("-score")
+    similarities_df = pd.DataFrame(list(similarities))
+    similarities_df.columns = ['Correlation mean', 'Correlation std. dev.',
+                               'Gene ID', 'Gene systematic name', 'Gene common name']
+
+    # Prepare the HttpResponse
+    filename = "%s_%s_similarities.txt" % (DOWNLOAD_PREFIX, gene.urlencode())
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="%s"' % filename
+
+    similarities_df.to_csv(path_or_buf=response, sep="\t", index=False)
+
+    return response
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def scatterplot_gc(request, gene1_id, gene2_id):
+
+    gene1 = get_object_or_404(Gene, pk=gene1_id)
+    gene2 = get_object_or_404(Gene, pk=gene2_id)
+
+    gene1_link = reverse("genes:detail", args=[gene1_id])
+    gene2_link = reverse("genes:detail", args=[gene2_id])
+
+    similarity = gene1.get_similarity_to(gene2)
+
+    data = Data.objects.all_valid().filter(gene_id__in=[gene1_id, gene2_id])
+    data = data.values("gene_id", "dataset_id", "valuez")
+
+    df = pd.DataFrame(list(data))
+    df = df.loc[df["valuez"].notnull()]
+    df["valuez"] = pd.to_numeric(df["valuez"])
+
+    df_matrix = pd.pivot_table(
+        df, index="dataset_id", columns="gene_id", values="valuez"
+    )
+    df_matrix = df_matrix.loc[df_matrix.isnull().sum(axis=1) == 0, ]
+
+    # Get dataset names
+    datasets = Dataset.objects.all_valid().values("id", "name")
+    datasets_df = pd.DataFrame(list(datasets))
+    datasets_df.set_index("id", inplace=True)
+
+    df_matrix["dataset_name"] = datasets_df["name"]
+    df_matrix["dataset_link"] = df_matrix.apply(
+        lambda row: reverse("datasets:detail", args=[row.name]), axis=1
+    )
+    df_matrix["tooltip"] = df_matrix.apply(
+        lambda row: '<div class="alert alert-light" role="alert">'
+                    + '<p><strong>Screen:</strong> '
+                    + '<a href="' + row["dataset_link"] + '">' + row["dataset_name"] + '</a></p>'
+                    + '<p><strong>Normalized phenotypic values (NPVs):</strong>'
+                    + '<br><a href="' + gene1_link + '">' + str(gene1) + '</a>: '
+                    + '{:.2f}'.format(row[gene1_id])
+                    + '<br><a href="' + gene2_link + '">' + str(gene2) + '</a>: '
+                    + '{:.2f}'.format(row[gene2_id]) + '</p>'
+                    + "</div>", axis=1
+    )
+
+    df_matrix.set_index("dataset_name", inplace=True, drop=False)
+
+    min_axis = np.floor(np.nanmin(df_matrix[[gene1_id, gene2_id]].min(axis=0)))
+    max_axis = np.ceil(np.nanmax(df_matrix[[gene2_id, gene2_id]].max(axis=0)))
+
+    values = df_matrix[[gene1_id, gene2_id, "tooltip"]].values.tolist()
+
+    context = {
+        "gene1": gene1,
+        "gene2": gene2,
+        "values": values,
+        "min_axis": min_axis,
+        "max_axis": max_axis,
+        "similarity": similarity
+    }
+    return render(request, "genes/scatterplot_gc.html", context)

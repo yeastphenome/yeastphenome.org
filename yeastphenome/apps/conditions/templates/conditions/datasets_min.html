@@ -1,0 +1,29 @@
+{% extends "base/base_min.html" %}
+{% load static %}
+{% load my_filters %}
+{% load humanize %}
+{% block title %}Screens | {{ conditiontype }} | Conditions | {{ SITE_NAME }}{% endblock %}
+{% block css %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+{% endblock %}
+{% block content %}
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <span class="badge rounded-pill bg-secondary">Conditions</span>
+            <a href="{% url 'conditions:detail' conditiontype.id %}"><span class="badge rounded-pill bg-primary">{{ conditiontype }}</span></a>
+        </div>
+    </div>
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <h1>Screens for {{ conditiontype }}</h1>
+        </div>
+    </div>
+    <div class="row mt-3 mb-3">
+        <div class="col-md-12">
+            <div class="mt-5">
+                Showing 1-{{ num_datasets|intcomma }} of {{ num_datasets|intcomma }} screens
+                {% include "datasets/datasets_table_min.html" with datasets=datasets %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

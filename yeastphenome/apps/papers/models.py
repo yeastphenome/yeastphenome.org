@@ -1,26 +1,20 @@
-from django.db import models
-from django.db.models.functions import Lower
-from django.urls import reverse
-from django.db.models import Q
-from django.conf import settings
 from django.contrib.auth.models import User
+from django.db import models
+from django.db.models import Q
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 
-from yeastphenome.apps.phenotypes.models import Observable
-from yeastphenome.apps.conditions.models import ConditionType
-from yeastphenome.apps.datasets.models import Collection, Source
+from yeastphenome.apps.tags.models import Tag
+from yeastphenome.apps.papers.managers import PaperManager
+from yeastphenome.apps.common.utils_format import truncated_list_as_str, join_and
 
-import os
+import itertools
 
 
 class Status(models.Model):
     name = models.CharField(max_length=200, default="undefined", blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     is_valid = models.BooleanField()
-
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.all()
 
     def __str__(self):
         return u"%s" % self.name
@@ -30,15 +24,24 @@ class Status(models.Model):
 
 
 class Paper(models.Model):
+
+    pmid = models.IntegerField(default=0)
+
     first_author = models.CharField(max_length=200)
     last_author = models.CharField(max_length=200, blank=True, null=True)
     pub_date = models.IntegerField(default=0)
-    pmid = models.IntegerField(default=0)
-    notes = models.TextField(blank=True)
+    systematic_name = models.CharField(max_length=200, blank=False, null=False)
+
+    notes = models.TextField(blank=True, null=True)
     private_notes = models.TextField(blank=True)
     data_abstract = models.TextField(blank=True, null=True)
-    modified_on = models.DateField(auto_now=True)
+    observables_summary = models.TextField(blank=True, null=True)
+    conditiontypes_summary = models.TextField(blank=True, null=True)
+
+    tags = models.ManyToManyField(Tag, blank=True)
+
     user = models.ForeignKey(User, blank=True, null=True, on_delete=models.DO_NOTHING)
+    modified_on = models.DateField(auto_now=True)
 
     data_statuses = models.ManyToManyField(
         Status, through="Statusdata", related_name="data_statuses"
@@ -62,142 +65,219 @@ class Paper(models.Model):
         on_delete=models.SET_NULL,
     )
 
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.exclude(
-            Q(latest_data_status__status__name__exact="not relevant")
-        )
+    objects = PaperManager()
 
     class Meta:
         get_latest_by = "modified_on"
-        ordering = ["pmid", "first_author", "last_author"]
+        ordering = ["pmid", "systematic_name"]
+
+    def save(self, *args, **kwargs):
+        if self.last_author:
+            systematic_name = "%s~%s, %s" % (
+                self.first_author,
+                self.last_author,
+                self.pub_date,
+            )
+        else:
+            systematic_name = "%s, %s" % (self.first_author, self.pub_date)
+        self.systematic_name = systematic_name
+
+        observables_list = list(
+            self.datasets.values_list("phenotype__observable__name", flat=True)
+            .order_by()
+            .distinct()
+        )
+        self.observables_summary = truncated_list_as_str(observables_list)
+        conditiontypes_list = list(
+            self.datasets.values_list("conditionset__conditions__type__name", flat=True)
+            .order_by()
+            .distinct()
+        )
+        self.conditiontypes_summary = truncated_list_as_str(conditiontypes_list)
+        super(Paper, self).save(*args, **kwargs)
 
     def __str__(self):
-        if self.last_author:
-            txt = u"%s~%s, %s" % (self.first_author, self.last_author, self.pub_date)
-        else:
-            txt = u"%s, %s" % (self.first_author, self.pub_date)
-        return txt
+        return self.systematic_name if self.systematic_name else ""
 
-    def collections(self):
-        return Collection.objects.filter(dataset__paper=self).distinct()
+    def get_absolute_url(self):
+        return reverse("papers:detail", args=(self.id,))
 
-    def collections_str_list(self):
-        return ", ".join([(u"%s" % i) for i in self.collections()])
+    def is_valid(self):
+        cond1 = (
+            False
+            if not self.latest_data_status
+            else self.latest_data_status.status.is_valid
+        )
+        cond2 = self.datasets.all_valid().exists()
+        return cond1 & cond2
 
-    def phenotypes(self):
-        return (
-            Observable.objects.filter(phenotype__dataset__paper=self)
+    def collections_list_as_str(self):
+        collections = (
+            self.datasets.values_list("collection__shortname", flat=True)
+            .order_by()
             .distinct()
-            .order_by(Lower("name"))
+        )
+        collections = [c for c in collections if c]
+        return "; ".join(collections)
+
+    def observables_list(self):
+        observables = (
+            self.datasets.all_valid()
+            .values_list("phenotype__observable__name", flat=True)
+            .order_by()
+            .distinct()
+        )
+        observables = [o for o in observables if o]
+        return observables
+
+    def observables_list_as_str(self):
+        return "; ".join(self.observables_list())
+
+    def phenotypes_aliases_list(self):
+
+        datasets = self.datasets.all_valid()
+
+        fields = [
+            "phenotype__name",
+            "phenotype__observable__name",
+            "phenotype__reporter",
+        ]
+
+        all_names = list(datasets.values(*fields))
+
+        aliases = []
+        for f in fields:
+            names = [d[f] for d in all_names]
+            aliases += names
+
+        aliases = list(set(aliases))
+        aliases = [alias for alias in aliases if alias]
+        return aliases
+
+    def phenotypes_aliases_list_as_str(self):
+        return "; ".join(self.phenotypes_aliases_list())
+
+    def conditiontypes_list(self):
+        conditiontypes = (
+            self.datasets.values_list("conditionset__conditions__type__name", flat=True)
+            .order_by()
+            .distinct()
+        )
+        conditiontypes = [c for c in conditiontypes if c]
+        return conditiontypes
+
+    def conditiontypes_list_as_str(self):
+        return "; ".join(self.conditiontypes_list())
+
+    def conditions_aliases_list(self):
+
+        datasets = self.datasets.all_valid()
+
+        fields = [
+            "conditionset__display_name",
+            "conditionset__systematic_name",
+            "conditionset__conditions__type__name",
+            "conditionset__conditions__type__chebi_name",
+            "conditionset__conditions__type__pubchem_name",
+            "medium__display_name",
+        ]
+
+        all_names = list(datasets.values(*fields))
+
+        aliases = []
+        for f in fields:
+            names = [d[f] for d in all_names]
+            aliases += names
+
+        aliases = list(set(aliases))
+        aliases = [alias for alias in aliases if alias]
+        return aliases
+
+    def conditions_aliases_list_as_str(self):
+        return "; ".join(self.conditions_aliases_list())
+
+    def tags_list(self):
+
+        tags = Tag.objects.all_valid()
+
+        tags_list_self = Q(paper=self)
+        tags_list_datasets = Q(dataset__paper=self) & Q(
+            dataset__collection__is_valid=True
+        )
+        tags_list_conditionset = Q(conditionset__dataset__paper=self) & Q(
+            conditionset__dataset__collection__is_valid=True
+        )
+        tags_list_condition = Q(condition__conditionset__dataset__paper=self) & Q(
+            condition__conditionset__dataset__collection__is_valid=True
+        )
+        tags_list_conditiontype = Q(
+            conditiontype__conditions__conditionset__dataset__paper=self
+        ) & Q(
+            conditiontype__conditions__conditionset__dataset__collection__is_valid=True
+        )
+        tags_list_medium = Q(medium__dataset__paper=self) & Q(
+            medium__dataset__collection__is_valid=True
+        )
+        tags_list_phenotype = Q(phenotypes__dataset__paper=self) & Q(
+            phenotypes__dataset__collection__is_valid=True
+        )
+        tags_list_observable = Q(observables__phenotype__dataset__paper=self) & Q(
+            observables__phenotype__dataset__collection__is_valid=True
         )
 
-    def phenotypes_str_list(self):
-        num = len(self.phenotypes())
-        if num == 0:
-            return ""
-        elif num <= 20:
-            return ", ".join([(u"%s" % i) for i in self.phenotypes()])
-        else:
-            num_remaining = num - 20
-            return (
-                ", ".join([(u"%s" % i) for i in self.phenotypes()[:20]])
-                + "... and "
-                + str(num_remaining)
-                + " more"
-            )
+        tags = tags.filter(
+            tags_list_self
+            | tags_list_datasets
+            | tags_list_conditionset
+            | tags_list_condition
+            | tags_list_conditiontype
+            | tags_list_medium
+            | tags_list_phenotype
+            | tags_list_observable
+        )
+        tags_list = list(tags.values_list("name", flat=True).order_by().distinct())
+        return tags_list
 
-    def conditiontypes(self):
-        return ConditionType.objects.filter(
-            condition__conditionset__dataset__paper=self
-        ).distinct()
+    def tags_list_as_str(self):
+        return "; ".join(self.tags_list())
 
-    def conditiontypes_str_list(self):
-        num = len(self.conditiontypes())
-        if num == 0:
-            return ""
-        elif num <= 20:
-            return ", ".join([(u"%s" % i) for i in self.conditiontypes()])
-        else:
-            num_remaining = num - 20
-            return (
-                ", ".join([(u"%s" % i) for i in self.conditiontypes()[:20]])
-                + "... and "
-                + str(num_remaining)
-                + " more"
-            )
+    def tags_list_as_links(self):
+        return mark_safe("; ".join([t.link_detail() for t in self.tags.all()]))
 
     def datasets_summary(self):
-        return mark_safe(
-            self.collections_str_list()
-            + "<br>"
-            + self.phenotypes_str_list()
-            + "<br>"
-            + self.conditiontypes_str_list()
-        )
+        str_list = [
+            self.collections_list_as_str(),
+            self.observables_summary,
+            self.conditiontypes_summary,
+        ]
+        str_list = [s for s in str_list if s]
+        return mark_safe("<br>".join(str_list))
 
     @property
     def datasets_number(self):
-        return self.dataset_set.count()
+        return self.datasets.count()
 
-    @property
-    def data_published(self):
-        return list(
-            map(
-                str,
-                self.dataset_set.values_list("data_published", flat=True).distinct(),
-            )
-        )
-
-    @property
-    def data_available(self):
-        return list(
-            map(
-                str,
-                self.dataset_set.values_list("data_available", flat=True).distinct(),
-            )
-        )
-
-    def should_have_data(self):
-        # Returns True if data has been loaded from data files
-        return self.latest_data_status and "loaded" == str(
-            self.latest_data_status.status.name
-        )
-
-    def raw_available_data(self):
-        # Returns True if it should have data, and has access to raw data
-        return self.should_have_data() and self.download_path_exists
-
-    def download_path(self):
-        # Returns a path of where datafiles should be, regardless if it has data files or not
-        return os.path.join(settings.DATA_DIR, str(self.pmid))
-
-    @property
-    def download_path_exists(self):
-        # Regardless if the paper should have data, returns True or False if there is a data directory for this paper
-        return os.path.isdir(self.download_path())
-
-    def static_dir_name(self):
-        return "%s_%s~%s" % (
-            self.pub_date,
-            self.first_author.split(" ")[0],
-            self.last_author.split(" ")[0],
-        )
-
-    def acknowledgements_str_list(self):
-        return ", ".join(
-            Source.objects.filter(acknowledge=True)
-            .filter(Q(data_source__paper=self) | Q(tested_source__paper=self))
-            .exclude(Q(person=None))
-            .values_list("person", flat=True)
+    def acknowledgements_list_as_str(self):
+        people = (
+            self.datasets.values("data_source__label", "tested_source__label")
+            .order_by()
             .distinct()
         )
+        people = [list(person.values()) for person in people]
+        people = list(set(list(itertools.chain.from_iterable(people))))
+        people = [person for person in people if person]
+
+        people2 = [person.split(',') for person in people]
+        people2 = list(set(list(itertools.chain.from_iterable(people2))))
+        people2 = [person.strip() for person in people2]
+
+        return join_and(people2)
 
     def acknowledge_data(self):
-        return self.dataset_set.filter(data_source__acknowledge=True).exists()
+        return self.datasets.filter(data_source__acknowledge=True).exists()
 
     def acknowledge_tested(self):
-        return self.dataset_set.filter(tested_source__acknowledge=True).exists()
+        return self.datasets.filter(tested_source__acknowledge=True).exists()
 
     def latest_data_status_name(self):
         if self.latest_data_status:
@@ -230,10 +310,9 @@ class Paper(models.Model):
         return {"data": queryset_data, "tested strains": queryset_tested}
 
     def link_detail(self):
-        return mark_safe('<a href="%s">%s</a>' % (self.get_absolute_url(), self))
-
-    def get_absolute_url(self):
-        return reverse("papers:detail", args=(self.id,))
+        return mark_safe(
+            '<a href="%s">%s</a>' % (reverse("papers:detail", args=(self.id,)), self)
+        )
 
     def link_edit(self):
         html = '<a href="%s">%s</a>' % (
@@ -255,10 +334,6 @@ class Statusdata(models.Model):
     status = models.ForeignKey(Status, on_delete=models.DO_NOTHING)
     status_date = models.DateField()
 
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.all()
-
     class Meta:
         get_latest_by = "id"
 
@@ -270,10 +345,6 @@ class Statustested(models.Model):
     paper = models.ForeignKey(Paper, on_delete=models.DO_NOTHING)
     status = models.ForeignKey(Status, on_delete=models.DO_NOTHING)
     status_date = models.DateField()
-
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.all()
 
     class Meta:
         get_latest_by = "id"

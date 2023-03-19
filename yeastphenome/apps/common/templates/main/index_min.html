@@ -1,0 +1,81 @@
+{% extends "base/base_min.html" %}
+{% load humanize %}
+{% load static %}
+
+{% block content %}
+
+    <div class="row mt-5 mb-5">
+        <div class="col-md-12">
+            <h1 class="display-1 text-center">Yeast Phenome</h1>
+            <h3 class="display-8 text-center">A data library of systematic phenotypic screens of the yeast knock-out collection</h3>
+        </div>
+    </div>
+
+    <div class="row mt-5 mb-5">
+        <div class="col-md-12">
+            <form action="/search/" method="get" id="searchform">
+                <input type="text" style="text-align: center;" name="q"
+                       class="form-control form-control-lg border border-2 rounded-pill"
+                       placeholder="Search for a paper, a phenotype or a gene..."
+                       required="" id="id_q" value="{{ request.GET.q }}">
+                <div id="q_help" class="form-text text-center">
+                    Examples: <a href="/search/?q=rim101&tab=genes">Rim101</a>,
+                    <a href="/search/?q=mms&tab=conditions">MMS</a>,
+                    <a href="/search/?q=aging">aging</a>,
+                    <a href="/search/?q=barseq&tab=phenotypes">barseq</a>,
+                    <a href="/search/?q=vulpe&tab=papers">Vulpe</a>,
+                    <a href="/search/?q=mitochondria">mitochondria</a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+
+    <div class="row mt-5 mb-5 row-cols-1 row-cols-md-3 g-4">
+        <div class="col">
+            <div class="card h-100 border-0">
+                <div class="card-body d-md-flex flex-column">
+                    <h5 class="card-title">About</h5>
+                    <p class="card-text">We collect, organize and share in a common annotated format all genome-scale screens of the knock-out collection in <em>Saccharomyces cerevisiae</em>.</p>
+                    <div class="d-md-flex justify-content-md-end mt-auto align-self-end">
+                        <a href="{% url 'common:project' %}" class="btn btn-primary">Learn more</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card h-100 border-0">
+                <div class="card-body">
+                    <h5 class="card-title">What's in the database?</h5>
+                    <p class="card-text">
+                    <ul>
+                        <li>{{ papers_nr }} papers</li>
+                        <li>{{ datasets_nr|intcomma }} screens</li>
+                        <li>{{ phenotypes_nr|intcomma }} phenotypes</li>
+                        <li>{{ conditions_nr|intcomma }} experimental conditions</li>
+                        <li>{{ genes_nr|intcomma }} genes</li>
+                    </ul>
+                    <div class="d-md-flex justify-content-md-end">
+                        <a href="{% url 'common:stats' %}" class="btn btn-primary">Learn more</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card h-100 border-0">
+                <div class="card-body">
+                    <h5 class="card-title">News & updates</h5>
+                    <p class="card-text">
+                        A preprint describing the Yeast Phenome dataset and the discoveries it enables is now available:
+                        <a class="external" href="https://www.biorxiv.org/content/10.1101/2022.12.22.521593v1" target="_blank">https://www.biorxiv.org/content/10.1101/2022.12.22.521593v1</a>.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+{% endblock %}

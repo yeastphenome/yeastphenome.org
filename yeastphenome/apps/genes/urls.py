@@ -2,25 +2,14 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path("", views.gene_explorer, name="index"),
-    path("<int:gene_id>/", views.gene_detail, name="detail"),
-    path("<int:gene_id>/similar/", views.similar_genes, name="similar_genes"),
-    path(
-        "<int:gene1_id>/similar/<int:gene2_id>/",
-        views.similar_scatterplot,
-        name="similar_scatterplot",
-    ),
-    path(
-        "<int:gene_id>/similar/download/",
-        views.download_gene_similarities,
-        name="download_gene_similarities",
-    ),
-    path("<int:gene_id>/scores/", views.gene_datasets, name="datasets"),
-    path(
-        "<int:gene_id>/scores/download/",
-        views.download_gene_scores,
-        name="download_gene_scores",
-    ),
+    path("", views.index, name="index"),
+    path("<int:gene_id>/", views.detail, name="detail"),
+    path("<int:gene_id>/scores/", views.scores, name="scores"),
+    path("<int:gene1_id>/scores/download/", views.download_scores, name="download_scores"),
+    path("<int:gene_id>/similarities/", views.similarities, name="similarities"),
+    path("<int:gene_id>/similarities/download/", views.download_similarities, name="download_similarities"),
+    path("<int:gene1_id>/similarities/<int:gene2_id>/", views.scatterplot_gc, name="scatterplot_gc"),
+    path("<int:gene1_id>/similarities/<int:gene2_id>/download/", views.download_scores, name="download_scores_for_pair"),
 ]
 
 app_name = "genes"

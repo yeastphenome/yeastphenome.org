@@ -1,0 +1,57 @@
+a.search::after {
+  content: "S";
+  white-space: nowrap;
+  margin-left: .7ex;
+  padding-left: .7ex;
+  padding-right: .7ex;
+  text-decoration: none;
+  display: inline-block;
+  color: #000000;
+  background-color: #ffcc00;
+  vertical-align: super;
+  font-size: 50%;
+  font-weight: bold;
+}
+
+a.external::after {
+  content: "E";
+  white-space: nowrap;
+  margin-left: .7ex;
+  padding-left: .7ex;
+  padding-right: .7ex;
+  text-decoration: none;
+  display: inline-block;
+  color: #000000;
+  background-color: #99ccff;
+  vertical-align: super;
+  font-size: 50%;
+  font-weight: bold;
+}
+
+a.info {
+  text-decoration: none;
+  color: #000000;
+}
+
+a.info::after {
+  content: "I";
+  white-space: nowrap;
+  margin-left: .7ex;
+  padding-left: .7ex;
+  padding-right: .7ex;
+  text-decoration: none;
+  display: inline-block;
+  color: #000000;
+  background-color: #AFE1AF;
+  vertical-align: super;
+  font-size: 50%;
+  font-weight: bold;
+}
+
+a.download_button {
+    width: 120px !important;;
+}
+
+span.tooltip2 {
+  text-decoration: underline #000000 dotted;
+}

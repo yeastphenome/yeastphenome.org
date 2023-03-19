@@ -1,0 +1,33 @@
+<div class="row">
+    <div class="col-md-12">
+        <nav class="navbar fixed-top navbar-light" style="background-color: #EAF2F8;">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/">YeastPhenome.org</a>
+                <ul class="nav nav-pills justify-content-end">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="{% url 'common:about' %}" role="button" aria-expanded="false">About</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'common:project' %}">Project</a></li>
+                            <li><a class="dropdown-item" href="{% url 'common:contributors' %}">Authors</a></li>
+                            <li><a class="dropdown-item" href="{% url 'common:data_contributors' %}">Data contributors</a></li>
+                            <li><a class="dropdown-item" href="{% url 'common:stats' %}">Summary statistics</a></li>
+                            <li><a class="dropdown-item" href="{% url 'common:faq' %}">FAQs</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'common:support' %}" role="button" aria-expanded="false">Support</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'downloads:download_bundles' %}" role="button" aria-expanded="false">Downloads</a>
+                    </li>
+                </ul>
+                {% if not request.path == '/' %}
+                <form action="/search/" method="get" id="searchform" class="d-flex">
+                    <input class="form-control me-2" type="search" name="q"
+                           placeholder="Search" aria-label="Search" id="id_q" value="{{ request.GET.q }}">
+                </form>
+                {% endif %}
+            </div>
+        </nav>
+    </div>
+</div>

@@ -1,0 +1,151 @@
+{% extends "base/base_min.html" %}
+{% load static %}
+{% load my_filters %}
+{% load humanize %}
+{% block title %}{{ gene }} | Genes | {{ SITE_NAME }}{% endblock %}
+{% block content %}
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <span class="badge rounded-pill bg-secondary">Genes</span>
+        </div>
+    </div>
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <h1>{{ gene }}</h1>
+        </div>
+    </div>
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <table class="table">
+                <tr>
+                    <th width="20%" scope="row">Standard name:</th>
+                    <td>{{ gene.common_name }}</td>
+                </tr>
+                <tr>
+                    <th width="20%" scope="row">Systematic name:</th>
+                    <td>{{ gene.systematic_name }}</td>
+                </tr>
+                <tr>
+                    <th width="20%" scope="row">SGD ID:</th>
+                    <td>
+                        <a class="external" target="_blank"
+                           href="https://yeastgenome.org/locus/{{ gene.primary_sgdid }}">{{ gene.primary_sgdid }}</a>
+                    </td>
+                </tr>
+                <tr>
+                    <th width="20%" scope="row">Orthology & other info:</th>
+                    <td>
+                        <a class="external" target="_blank"
+                           href="https://www.alliancegenome.org/gene/SGD:{{ gene.primary_sgdid }}">Alliance of Genome Resources</a>
+                    </td>
+                </tr>
+                <tr>
+                    <th width="20%" scope="row">Aliases:</th>
+                    <td>{{ gene.aliases_list_as_str }}</td>
+                </tr>
+                <tr>
+                    <th width="20%" scope="row">Description:</th>
+                    <td>{{ gene.description }}</td>
+                </tr>
+                {% if gene.common_name_explanation %}
+                    <tr>
+                        <th width="20%" scope="row">Name description:</th>
+                        <td>{{ gene.common_name_explanation }}</td>
+                    </tr>
+                {% endif %}
+                {% if gene.puddu %}
+                    <tr>
+                        <th width="20%" scope="row">Knock-out genome sequence:</th>
+                        <td><a class="external" target="_blank" href="https://www.sgv.gurdon.cam.ac.uk/gene_page.php?gene={{ gene.puddu }}"><em>Saccharomyces</em> Genome Variation DB</a></td>
+                    </tr>
+                {% endif %}
+                {% if gene.qc_comments %}
+                    <tr>
+                        <th width="20%" scope="row">QC comments:</th>
+                        <td>{{ gene.qc_comments }}</td>
+                    </tr>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+
+    {% if scores_highest or scores_lowest %}
+
+        <div class="row mt-5 mb-3">
+            <div class="col-md-12">
+
+                <h2 class="mb-4">Phenotypic scores</h2>
+
+                <ul class="nav nav-tabs" id="phenotypic_scores" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="scores-lowest-tab"
+                                data-bs-toggle="tab" data-bs-target="#scores-lowest"
+                                type="button" role="tab"
+                                aria-controls="lowest" aria-selected="true">Lowest 10</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="scores-highest-tab"
+                                data-bs-toggle="tab" data-bs-target="#scores-highest"
+                                type="button" role="tab"
+                                aria-controls="highest" aria-selected="false">Highest 10</button>
+                    </li>
+                </ul>
+
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div class="tab-pane active" id="scores-lowest" role="tabpanel" aria-labelledby="lowest-tab">
+                        {% include "genes/scores_table_min.html" with scores=scores_lowest table_id="scores_lowest_table" %}
+                    </div>
+                    <div class="tab-pane" id="scores-highest" role="tabpanel" aria-labelledby="highest-tab">
+                        {% include "genes/scores_table_min.html" with scores=scores_highest table_id="scores_highest_table" %}
+                    </div>
+                </div>
+
+                <a class="btn btn-success" role="button" href="{% url 'genes:scores' gene.id %}">View all</a>
+                <a class="btn btn-primary" role="button" href="{% url 'genes:download_scores' gene.id %}">Download all</a>
+                <span> &nbsp; ({{ num_scores|intcomma }} NPVs)</span>
+
+            </div>
+        </div>
+    {% endif %}
+
+    {% if similarities_lowest or similarities_highest %}
+        <div class="row mt-5 mb-3">
+            <div class="col-md-12">
+
+                <h2 class="mb-4">Phenotypic similarities</h2>
+
+                <ul class="nav nav-tabs" id="phenotypic_similarities" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="similarities-lowest-tab"
+                                data-bs-toggle="tab" data-bs-target="#similarities-lowest"
+                                type="button" role="tab"
+                                aria-controls="lowest" aria-selected="false">Lowest 10</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="similarities-highest-tab"
+                                data-bs-toggle="tab" data-bs-target="#similarities-highest"
+                                type="button" role="tab"
+                                aria-controls="highest" aria-selected="true">Highest 10</button>
+                    </li>
+                </ul>
+
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div class="tab-pane" id="similarities-lowest" role="tabpanel" aria-labelledby="lowest-tab">
+                        {% include "genes/similarities_table_min.html" with similarities=similarities_lowest table_id="similarities_lowest_table" %}
+                    </div>
+                    <div class="tab-pane active" id="similarities-highest" role="tabpanel" aria-labelledby="highest-tab">
+                        {% include "genes/similarities_table_min.html" with similarities=similarities_highest table_id="similarities_highest_table" %}
+                    </div>
+                </div>
+
+                <a class="btn btn-success" role="button" href="{% url 'genes:similarities' gene.id %}">View all</a>
+                <a class="btn btn-primary" role="button" href="{% url 'genes:download_similarities' gene.id %}">Download all</a>
+                <span> &nbsp; ({{ num_similarities|intcomma }} similarities)</span>
+
+            </div>
+        </div>
+    {% endif %}
+
+{% endblock %}

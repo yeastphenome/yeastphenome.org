@@ -1,0 +1,26 @@
+{% extends "base/base_min.html" %}
+{% load static %}
+{% load my_filters %}
+{% load humanize %}
+{% block title %}Phenotypic values | {{ gene }} | Genes | {{ SITE_NAME }}{% endblock %}
+{% block content %}
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <span class="badge rounded-pill bg-secondary">Genes</span>
+            <a href="{% url 'genes:detail' gene.id %}"><span class="badge rounded-pill bg-primary">{{ gene }}</span></a>
+        </div>
+    </div>
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <h1>Normalized phenotypic values (NPVs) for {{ gene }}</h1>
+        </div>
+    </div>
+    <div class="row mt-3 mb-3">
+        <div class="col-md-12">
+            <div class="d-md-flex justify-content-md-start mt-auto align-self-start">
+                <a class="btn btn-primary" role="button" href="{% url 'genes:download_scores' gene.id %}">Download all</a>
+            </div>
+            {% include "genes/scores_table_min.html" with scores=scores %}
+        </div>
+    </div>
+{% endblock %}

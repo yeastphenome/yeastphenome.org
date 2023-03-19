@@ -1,338 +1,228 @@
-from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, reverse
 from django.conf import settings
-
 from django.views.decorators.cache import never_cache
+
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.datasets.models import (
-    DatasetSimilarity,
     Dataset,
     Data,
-    Tag,
 )
-from yeastphenome.apps.genes.models import Gene, GeneAlias
-from yeastphenome.apps.datasets.search import get_search_tags
+from yeastphenome.apps.genes.models import Gene
 from yeastphenome.apps.datasets.utils import send_file
 from yeastphenome.apps.conditions.models import ConditionType, Medium
 from yeastphenome.apps.phenotypes.models import Observable
+from yeastphenome.apps.common.utils_format import update_values_with_percentile
 
 from libchebipy import ChebiEntity
 import os
-import pandas
+import pandas as pd
+import numpy as np
 import tempfile
 
 from ratelimit.decorators import ratelimit
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
     VIEW_RATE_LIMIT_BLOCK as rl_block,
+    DOWNLOAD_PREFIX
 )
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def dataset_detail(request, dataset_id):
-
-    dataset = get_object_or_404(Dataset, pk=dataset_id)
-
-    # Links should include the dataset detail page
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("datasets:index"), "name": "Datasets"},
-        {
-            "url": reverse("datasets:dataset_detail", args=[dataset.id]),
-            "name": dataset.name,
-        },
-    ]
-
-    context = {"links": links, "active": "explorer", "dataset": dataset}
-
-    # Get the top and bottom phenotypic scores
-    context["datasets_top"] = dataset.get_data(reverse=False)[:10]
-    context["datasets_bottom"] = dataset.get_data(reverse=True)[:10]
-
-    # Get the top and bottom correlations
-    context["sims_top"] = dataset.get_ranked_similar(reverse=False)[:10]
-    context["sims_bottom"] = dataset.get_ranked_similar(reverse=True)[:10]
-
-    return render(request, "datasets/detail.html", context)
+def index(request):
+    return redirect("search:search")
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def similar_scatterplot(request, dataset1_id, dataset2_id):
-    """Generate a scatterplot to compare two datasets based on phenotypic scores."""
+def detail(request, dataset_id):
+
+    dataset = get_object_or_404(Dataset, pk=dataset_id)
+
+    data_availability = dataset.get_data_availability()
+
+    scores = dataset.get_scores()
+    num_scores = scores.count()
+    scores_lowest = update_values_with_percentile(scores.order_by("valuez"), "valuez")[
+        :10
+    ]
+    scores_highest = update_values_with_percentile(
+        scores.order_by("-valuez"), "valuez"
+    )[:10]
+
+    similarities = dataset.get_similarities()
+    num_similarities = similarities.count()
+    similarities_lowest = update_values_with_percentile(
+        similarities.order_by("score"), "score"
+    )[:10]
+    similarities_highest = update_values_with_percentile(
+        similarities.order_by("-score"), "score"
+    )[:10]
+
+    context = {
+        "dataset": dataset,
+        "data_availability": data_availability,
+        "num_scores": num_scores,
+        "scores_lowest": scores_lowest,
+        "scores_highest": scores_highest,
+        "num_similarities": num_similarities,
+        "similarities_lowest": similarities_lowest,
+        "similarities_highest": similarities_highest,
+    }
+
+    return render(request, "datasets/detail_min.html", context)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def scatterplot_gc(request, dataset1_id, dataset2_id):
+
     dataset1 = get_object_or_404(Dataset, pk=dataset1_id)
     dataset2 = get_object_or_404(Dataset, pk=dataset2_id)
 
-    # Get the correlation to add
-    sim = DatasetSimilarity.objects.filter(
-        Q(dataset1=dataset1, dataset2=dataset2)
-        | Q(dataset1=dataset2, dataset2=dataset1)
+    dataset1_link = reverse("datasets:detail", args=[dataset1_id])
+    dataset2_link = reverse("datasets:detail", args=[dataset2_id])
+
+    similarity = dataset1.get_similarity_to(dataset2)
+
+    data = Data.objects.filter(dataset_id__in=[dataset1_id, dataset2_id])
+    data = data.values("gene_id", "dataset_id", "valuez")
+
+    df = pd.DataFrame(list(data))
+    df = df.loc[df["valuez"].notnull()]
+    df["valuez"] = pd.to_numeric(df["valuez"])
+
+    df_matrix = pd.pivot_table(
+        df, index="gene_id", columns="dataset_id", values="valuez"
     )
-
-    # Get gene values across datasets 1 and 2
-    data1 = pandas.DataFrame(list(dataset1.data_set.values()))
-    data2 = pandas.DataFrame(list(dataset2.data_set.values()))
-
-    # Join the 2 dataframes using gene_id as the key
-    data = data1.merge(data2, on="gene_id")
-
-    # Only keep rows where both genes have values (are not null)
-    data = data.loc[data["valuez_x"].notnull() & data["valuez_y"].notnull()]
+    df_matrix = df_matrix.loc[df_matrix.isnull().sum(axis=1) == 0, ]
 
     # Get gene names
-    names = pandas.DataFrame(
-        list(Gene.objects.filter(id__in=data["gene_id"].values).values())
+    genes = Gene.objects.all_valid().values("id", "systematic_name", "common_name", "description")
+    genes_df = pd.DataFrame(list(genes))
+    genes_df["name"] = genes_df["common_name"] + " / " + genes_df["systematic_name"]
+    genes_df.set_index("id", inplace=True)
+
+    df_matrix["gene_name"] = genes_df["name"]
+    df_matrix["gene_description"] = genes_df["description"]
+    df_matrix["gene_link"] = df_matrix.apply(
+        lambda row: reverse("genes:detail", args=[row.name]), axis=1
     )
-
-    # Add them to the data dataframe
-    data = data.merge(
-        names[["id", "systematic_name", "common_name"]],
-        left_on="gene_id",
-        right_on="id",
+    df_matrix["tooltip"] = df_matrix.apply(
+        lambda row: '<div class="alert alert-light" role="alert">'
+                    + '<p><strong>Gene:</strong> '
+                    + '<a href="' + row["gene_link"] + '">' + row["gene_name"] + '</a></p>'
+                    + '<p>' + row["gene_description"] + '</p>'
+                    + '<p><strong>Normalized phenotypic values (NPVs):</strong>'
+                    + '<ul><li><a href="' + dataset1_link + '">' + str(dataset1) + '</a>: '
+                    + '{:.2f}'.format(row[dataset1_id]) + '</li>'
+                    + '<li><a href="' + dataset2_link + '">' + str(dataset2) + '</a>: '
+                    + '{:.2f}'.format(row[dataset2_id]) + '</li></ul></p>'
+                    + '</div>', axis=1
     )
+    df_matrix.set_index("gene_name", inplace=True, drop=False)
 
-    # Convert to scores dictionary for view
-    scores = data[["gene_id", "valuez_x", "valuez_y", "systematic_name", "common_name"]]
+    min_axis = np.floor(np.nanmin(df_matrix[[dataset1_id, dataset2_id]].min(axis=0)))
+    max_axis = np.ceil(np.nanmax(df_matrix[[dataset1_id, dataset2_id]].max(axis=0)))
 
-    # This creates a warning that doesn't seem to be fixable
-    scores["name"] = scores["common_name"] + "/" + scores["systematic_name"]
-    scores = scores.rename(columns={"gene_id": "entry_id"})
-    scores = scores.to_dict(orient="index")
+    values = df_matrix[[dataset1_id, dataset2_id, "tooltip"]].values.tolist()
 
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("datasets:index"), "name": "Datasets"},
-        {
-            "url": reverse("datasets:dataset_detail", args=[dataset1.id]),
-            "name": dataset1.short_name,
-        },
-        {
-            "url": reverse("datasets:similar_dataset_table", args=[dataset1.id]),
-            "name": "Similar Datasets",
-        },
-        {
-            "url": reverse("datasets:dataset_detail", args=[dataset2.id]),
-            "name": dataset2.short_name,
-        },
-    ]
     context = {
-        "title1": dataset1.short_name,
-        "title2": dataset2.short_name,
-        "scores": scores,
-        "entry_type": "genes",
-        "sim": sim.first(),
-        "links": links,
-        "active": "explorer",
+        "dataset1": dataset1,
+        "dataset2": dataset2,
+        "values": values,
+        "min_axis": min_axis,
+        "max_axis": max_axis,
+        "similarity": similarity
     }
-    return render(request, "datasets/similar_scatterplot.html", context)
+    return render(request, "datasets/scatterplot_gc.html", context)
 
 
 @never_cache
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def dataset_plot(request, dataset_id):
-    """The dataset plot shows an interactive graph of the dataset, on which
-    the user can click bars to see genes (and values) within a particular
-    range
-    """
+def scores(request, dataset_id):
 
     dataset = get_object_or_404(Dataset, pk=dataset_id)
+    scores = dataset.get_scores().order_by("valuez")
+    scores = update_values_with_percentile(scores, "valuez")
 
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("datasets:index"), "name": "Datasets"},
-        {
-            "url": reverse("datasets:dataset_detail", args=[dataset.id]),
-            "name": dataset.name,
-        },
-        {
-            "url": reverse("datasets:dataset_plot", args=[dataset.id]),
-            "name": "Phenotypic Scores",
-        },
-    ]
+    context = {"dataset": dataset, "scores": scores}
 
-    # prepare list of genes, plus genes and aliases
-    context = get_dataset_gene_table_context(dataset)
-    context.update({"dataset": dataset, "links": links, "active": "explorer"})
-    return render(request, "datasets/plot.html", context)
-
-
-def get_dataset_gene_table_context(dataset):
-    """this context is needed for the graph."""
-    context = {}
-    genes = (
-        dataset.data_set.exclude(valuez__isnull=True)
-        .order_by("-valuez")
-        .values_list("gene__systematic_name", "valuez", "gene__id", "gene__common_name")
-        .distinct()
-    )
-
-    # Calculate ranking
-    total_genes = genes.count()
-    ranks = [(1 - (idx / total_genes)) * 100 for idx, _ in enumerate(genes)]
-
-    gene_ids = [gene[2] for gene in genes]
-    genes = [
-        {
-            "label": x[0],
-            "gene_id": x[2],
-            "value": float(x[1]),
-            "name": x[3],
-            "rank": round(ranks[i], 3),
-        }
-        for i, x in enumerate(genes)
-        if x[3]
-    ]
-    context["aliases"] = (
-        GeneAlias.objects.filter(gene__id__in=gene_ids)
-        .values_list("gene__systematic_name", "name")
-        .distinct()
-    )
-    context["common_names"] = (
-        Gene.objects.filter(id__in=gene_ids)
-        .exclude(common_name=None)
-        .values_list("systematic_name", "common_name")
-        .distinct()
-    )
-    context["dataset_genes"] = sorted(genes, key=lambda i: i["value"])
-    context["active"] = "explorer"
-    return context
+    return render(request, "datasets/scores_min.html", context)
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def similar_dataset_table(request, dataset_id):
+def download_scores(request, dataset1_id, dataset2_id=None):
 
-    dataset = get_object_or_404(Dataset, pk=dataset_id)
+    dataset1 = get_object_or_404(Dataset, pk=dataset1_id)
+    scores1 = dataset1.get_scores().order_by("valuez")
 
-    sims = (
-        dataset.get_ranked_similar()
-        .select_related("dataset2__name")
-        .values_list("dataset2_id", "dataset2__name", "score", "pvalue")
-    )
+    expected_columns = ['gene_id', 'gene_systematic_name', 'gene_common_name', 'valuez']
 
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("datasets:index"), "name": "Datasets"},
-        {
-            "url": reverse("datasets:dataset_detail", args=[dataset.id]),
-            "name": dataset.name,
-        },
-        {
-            "url": reverse("datasets:similar_dataset_table", args=[dataset.id]),
-            "name": "Similar Datasets",
-        },
-    ]
-    total = sims.count()
-    ranks = [(1 - (idx / total)) * 100 for idx, sim in enumerate(sims)]
-    context = {
-        "dataset": dataset,
-        "datasets": sims,
-        "ranks": ranks,
-        "links": links,
-        "active": "explorer",
-    }
-    return render(request, "datasets/dataset_similarity_explorer.html", context)
+    # If no scores retrieved, create an empty dataframe with the relevant fields
+    if scores1.count() == 0:
+        scores1_df = pd.DataFrame(columns=expected_columns)
+    else:
+        scores1_df = pd.DataFrame(list(scores1))
 
+    if dataset2_id:
+        dataset2 = get_object_or_404(Dataset, pk=dataset2_id)
+        scores2 = dataset2.get_scores().order_by("valuez")
+        if scores2.count() == 0:
+            scores2_df = pd.DataFrame(columns=expected_columns)
+        else:
+            scores2_df = pd.DataFrame(list(scores2))
 
-# Datasets Explorer (also the datasets index)
-@never_cache
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def data_explorer_redirect(request, query):
-    return redirect("%s?query=%s" % (reverse("datasets:index"), query))
-
-
-@never_cache
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def data_explorer(request, collection_id=None):
-    """Dataset search is equivalent to the API version, but instead takes GET
-    parameters to derive tags and a query. This will enable users to copy
-    a particular search and share it with colleagues.
-    """
-    # Table will be rendered server side, and we pass query parameters
-    taglist = []
-    for tag in request.GET.get("query", "").split("|"):
-        if not tag:
-            continue
-        taglist.append({"value": tag, "code": "query"})
-
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("datasets:index"), "name": "Datasets"},
-    ]
-    context = {
-        "taglist": taglist,
-        "collection_id": collection_id,
-        "links": links,
-        "active": "explorer",
-        "tags": get_search_tags(),
-        "cart": request.session.get("cart", []),
-        "DOWNLOAD_PREFIX": settings.DOWNLOAD_PREFIX,
-    }
-    return render(request, "datasets/explorer.html", context)
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def tag(request, id):
-
-    t = get_object_or_404(Tag, pk=id)
-
-    datasets = (
-        Dataset.objects.filter(tags=id)
-        .exclude(paper__latest_data_status__status__name="not relevant")
-        .distinct()
-    )
-
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("datasets:index"), "name": "Datasets"},
-        {
-            "url": "%s?query=%s" % (reverse("datasets:index"), t.name),
-            "name": "Tag %s" % t.name,
-        },
-    ]
-
-    return render(
-        request,
-        "datasets/tag.html",
-        {
-            "links": links,
-            "active": "explorer",
-            "tag": t,
-            "datasets": datasets,
-            "DOWNLOAD_PREFIX": settings.DOWNLOAD_PREFIX,
-            "USER_AUTH": request.user.is_authenticated,
-        },
-    )
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def download_dataset_similarities(request, dataset_id):
-    """Download all DatasetSimilarity values for a given dataset"""
-
-    import pandas as pd
-
-    dataset = get_object_or_404(Dataset, pk=dataset_id)
-
-    sims = (
-        dataset.get_ranked_similar()
-        .select_related("dataset1__name", "dataset2__name")
-        .values_list("dataset1__name", "dataset2__name", "score", "pvalue")
-    )
-
-    df = pd.DataFrame(sims)
-    df.columns = ["Dataset1", "Dataset2", "Correlation", "P-value"]
-
-    filename = "%s_dataset%d_similarities.txt" % (
-        settings.DOWNLOAD_PREFIX,
-        dataset.id,
-    )
+        scores_df = scores1_df.merge(scores2_df, how="outer", on="gene_id", suffixes=('_dataset1', '_dataset2'))
+        scores_df = scores_df[['gene_id', 'gene_systematic_name_dataset1',
+                               'gene_common_name_dataset1', 'valuez_dataset1', 'valuez_dataset2']]
+        scores_df.columns = ['Gene ID', 'Gene systematic name', 'Gene common name',
+                             'NPV ' + str(dataset1), 'NPV ' + str(dataset2)]
+        filename = "%s_screen%d_screen%d_NPVs.txt" % (DOWNLOAD_PREFIX, dataset1_id, dataset2_id)
+    else:
+        scores_df = scores1_df
+        scores_df = scores_df[['gene_id', 'gene_systematic_name', 'gene_common_name', 'valuez']]
+        scores_df.columns = ['Gene ID', 'Gene systematic name', 'Gene common name', 'NPV ' + str(dataset1)]
+        filename = "%s_screen%d_NPVs.txt" % (DOWNLOAD_PREFIX, dataset1_id)
 
     # Prepare the HttpResponse
     response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = "attachment; filename=%s" % filename
+    response["Content-Disposition"] = 'attachment; filename="%s"' % filename
 
-    # Print data matrix to response buffer
-    df.to_csv(path_or_buf=response, sep="\t", index=False)
+    scores_df.to_csv(path_or_buf=response, sep="\t", index=False)
+
+    return response
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def similarities(request, dataset_id):
+
+    dataset = get_object_or_404(Dataset, pk=dataset_id)
+    similarities = dataset.get_similarities().order_by("-score")
+    similarities = update_values_with_percentile(similarities, "score")
+
+    context = {
+        "dataset": dataset,
+        "similarities": similarities,
+    }
+
+    return render(request, "datasets/similarities_min.html", context)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def download_similarities(request, dataset_id):
+
+    dataset = get_object_or_404(Dataset, pk=dataset_id)
+    similarities = dataset.get_similarities().order_by("-score")
+    similarities_df = pd.DataFrame(list(similarities))
+    similarities_df.columns = ['Correlation mean', 'Correlation std. dev.',
+                               'Screen ID', 'Screen name']
+
+    # Prepare the HttpResponse
+    filename = "%s_screen%d_similarities.txt" % (DOWNLOAD_PREFIX, dataset_id)
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="%s"' % filename
+
+    similarities_df.to_csv(path_or_buf=response, sep="\t", index=False)
 
     return response
 
@@ -362,20 +252,6 @@ def download_observable_datasets_list(request, observable_id):
     if not os.path.exists(exported_file):
         df.to_csv(exported_file, sep="\t", index=None)
     return send_file(exported_file)
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def download_dataset_cart(request):
-    """download all the dataset objects in the user's cart"""
-    # Get dataset ids from cart
-    datasets = request.session.get("cart", [])
-    response = download_dataset_scores(request, datasets)
-
-    # Clear the cart on download
-    if "cart" in request.session:
-        del request.session["cart"]
-
-    return response
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)

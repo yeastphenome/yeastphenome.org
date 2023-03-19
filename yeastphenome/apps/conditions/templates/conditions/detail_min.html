@@ -1,0 +1,84 @@
+{% extends "base/base_min.html" %}
+{% load humanize %}
+{% block title %}{{ conditiontype }} | Conditions | {{ SITE_NAME }}{% endblock %}
+{% block content %}
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <span class="badge rounded-pill bg-secondary">Conditions</span>
+        </div>
+    </div>
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <h1>{{ conditiontype }}</h1>
+            <table class="table">
+                {% if conditiontype.chebi_name %}
+                    <tr>
+                        <th scope="row">ChEBI</th>
+                        <td class="first">{{ conditiontype.chebi_name }}
+                            {% if conditiontype.chebi_id %}
+                                (<a class="external" href="https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:{{ conditiontype.chebi_id }}">CHEBI:{{ conditiontype.chebi_id }}</a>)
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endif %}
+
+                {% if conditiontype.pubchem_name %}
+                    <tr>
+                        <th scope="row">PubChem</th>
+                        <td>{{ conditiontype.pubchem_name }}
+                            {% if conditiontype.pubchem_id %}
+                                (<a class="external" href="https://pubchem.ncbi.nlm.nih.gov/compound/{{ conditiontype.pubchem_id }}">PCID:{{ conditiontype.pubchem_id }}</a>)
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endif %}
+
+                {% if conditiontype.other_names %}
+                    <tr>
+                        <th scope="row">Other names</th>
+                        <td>{{ conditiontype.other_names }}</td>
+                    </tr>
+                {% endif %}
+
+                {% if conditiontype.description %}
+                    <tr>
+                        <th scope="row">Description</th>
+                        <td>{{ conditiontype.description }}</td>
+                    </tr>
+                {% endif %}
+
+                {% if conditiontype.tags.count > 0 %}
+                    <tr>
+                        <th scope="row">Tags</th>
+                        <td>
+                            {% for tag in conditiontype.tags.all %}
+                                <a class="search" href="/search/?q={{ tag.name|urlencode }}&field=tags&tab=conditions">{{ tag.name }}</a>{% if forloop.last %}{% else %}; {% endif %}
+                            {% endfor %}
+                            {% if conditiontype.tags.count > 1 %}
+                                <span style="padding-left:10px; padding-right:10px">|</span>
+                                <a class="search" href="/search/?q={{ conditiontype.tags_list_as_str|urlencode }}&tab=conditions&field=tags">all</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <h2>Screens</h2>
+            <div class="mt-5">
+                Showing 1-{{ num_datasets_showing }} of {{ num_datasets|intcomma }} screens
+                {% include "datasets/datasets_table_min.html" with datasets=datasets %}
+                {% if num_datasets > 10 %}
+                    <a class="btn btn-success"
+                       role="button"
+                       href="{% url 'conditions:datasets' conditiontype.id %}">View all</a> &nbsp; ({{ num_datasets|intcomma }} screens)</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+

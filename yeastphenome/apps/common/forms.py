@@ -28,3 +28,18 @@ class SearchForm(forms.Form):
         data = " ".join(data.split())
 
         return data
+
+
+class GlobalSearchForm(forms.Form):
+
+    q = forms.CharField(
+        label="",
+        widget=forms.TextInput(
+            attrs={"class": "form-control", "placeholder": "Search"}
+        ),
+    )
+
+    def clean_q(self):
+        data = self.cleaned_data["q"].strip()
+        data = " ".join([d.strip() for d in data.split()])
+        return data

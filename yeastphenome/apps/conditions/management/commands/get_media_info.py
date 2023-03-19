@@ -13,8 +13,8 @@ class Command(BaseCommand):
             output_vals = (
                 medium.id,
                 medium,
-                medium.conditions_str_list(),
-                medium.paper_str_list(),
+                medium.conditions_list_str(),
+                medium.papers_list_str(),
             )
             self.stdout.write(output_str % output_vals)
 

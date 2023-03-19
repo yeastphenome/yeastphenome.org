@@ -14,7 +14,7 @@ from yeastphenome.apps.conditions.models import (
     ConditionType,
     Medium,
 )
-from yeastphenome.apps.common.admin_util import (
+from yeastphenome.apps.common.utils_admin import (
     ImprovedTabularInline,
     ImprovedModelAdmin,
 )
@@ -110,10 +110,12 @@ class ConditionTypeAdmin(ImprovedModelAdmin):
     search_fields = (
         "name",
         "other_names",
+        "description",
         "chebi_id",
         "chebi_name",
         "pubchem_id",
         "pubchem_name",
+        "tags__name",
     )
     fields = (
         "name",
@@ -133,6 +135,12 @@ class ConditionTypeAdmin(ImprovedModelAdmin):
     inlines = (ConditionInline,)
 
     def save_model(self, request, obj, form, change):
+
+        # To update ES indexing immediately: save related fields (e.g., tags)
+        if not obj.id:
+            super().save_model(request, obj, form, change)
+        form.save_m2m()
+
         # Moved from global import, causes multiple warnings / errors per worker
         from pubchempy import Compound
 
@@ -158,7 +166,8 @@ class ConditionTypeAdmin(ImprovedModelAdmin):
                 obj.pubchem_name = comp.iupac_name
         else:
             obj.pubchem_name = None
-        obj.save()
+
+        super().save_model(request, obj, form, change)
 
 
 class ConditionSetAdmin(ImprovedModelAdmin):
@@ -167,7 +176,7 @@ class ConditionSetAdmin(ImprovedModelAdmin):
         "display_name",
         "papers_edit_link_list",
     )
-    raw_id_fields = ("conditions",)
+    raw_id_fields = ("conditions", "tags")
     search_fields = (
         "systematic_name",
         "common_name",
@@ -175,6 +184,7 @@ class ConditionSetAdmin(ImprovedModelAdmin):
         "conditions__type__other_names",
         "conditions__type__pubchem_name",
         "conditions__type__chebi_name",
+        "tags__name",
     )
     ordering = (
         "id",
@@ -187,6 +197,7 @@ class ConditionSetAdmin(ImprovedModelAdmin):
         "display_name",
         "conditions",
         "description",
+        "tags",
         "datasets_edit_list",
     )
     readonly_fields = (
@@ -226,9 +237,10 @@ class MediumAdmin(ImprovedModelAdmin):
     list_display = (
         "id",
         "display_name",
-        "papers_edit_link_list",
+        "papers_edit_link_list_20",
+        "tags_list_str",
     )
-    raw_id_fields = ("conditions",)
+    raw_id_fields = ("conditions", "tags")
     search_fields = (
         "systematic_name",
         "common_name",
@@ -236,6 +248,7 @@ class MediumAdmin(ImprovedModelAdmin):
         "conditions__type__other_names",
         "conditions__type__pubchem_name",
         "conditions__type__chebi_name",
+        "tags__name",
     )
     ordering = (
         "id",
@@ -248,6 +261,7 @@ class MediumAdmin(ImprovedModelAdmin):
         "display_name",
         "conditions",
         "description",
+        "tags",
         "datasets_edit_link_list_top50",
     )
     readonly_fields = (

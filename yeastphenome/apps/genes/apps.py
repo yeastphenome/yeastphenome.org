@@ -4,4 +4,6 @@ from django.apps import AppConfig
 
 
 class GenesConfig(AppConfig):
-    name = "genes"
+    name = "yeastphenome.apps.genes"
+    default = True
+

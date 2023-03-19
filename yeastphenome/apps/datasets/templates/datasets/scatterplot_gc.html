@@ -1,0 +1,106 @@
+{% extends "base/base_min.html" %}
+{% load static %}
+{% load my_filters %}
+{% block title %}{{ SITE_NAME }}{% endblock %}
+{% block css %}
+    <style>
+      div.google-visualization-tooltip {
+          position:relative !important;
+          top: -550px !important;
+          left: 95% !important;
+          z-index:+1;
+          font-size: 100%;
+          width: 400px;
+          margin-top: 20px;
+      }
+    </style>
+{% endblock %}
+{% block scripts %}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+          var data = new google.visualization.DataTable();
+          data.addColumn('number','Dataset 1');
+          data.addColumn('number','Dataset 2');
+          data.addColumn({'type': 'string', 'role': 'tooltip', 'p': {'html': true}});
+          data.addRows({{ values|safe }});
+
+          var options = {
+              title: '',
+              hAxis: {  title: '{{ dataset1 }}',
+                        viewWindowMode: 'explicit',
+                        viewWindow: {
+                            max: {{ max_axis }},
+                            min: {{ min_axis }}
+                        },
+                        gridlines: {
+                            count: 10,
+                        }
+                    },
+              vAxis: {  title: '{{ dataset2 }}',
+                        viewWindowMode: 'explicit',
+                        viewWindow: {
+                            max: {{ max_axis }},
+                            min: {{ min_axis }}
+                        },
+                        gridlines: {
+                            count: 10,
+                        }
+                    },
+              width: 600,
+              height: 600,
+              'chartArea': {'width': '80%', 'height': '80%'},
+              legend: 'none',
+              tooltip: { isHtml: true, trigger: 'both' },
+              pointSize: 15,
+              dataOpacity: 0.4,
+          };
+
+          var chart = new google.visualization.ScatterChart(document.getElementById('chart_div'));
+
+          chart.draw(data, options);
+      }
+    </script>
+{% endblock %}
+{% block content %}
+
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <span class="badge rounded-pill bg-secondary">Screens</span>
+            <a href="{% url 'datasets:detail' dataset1.id %}"><span class="badge rounded-pill bg-primary">{{ dataset1 }}</span></a>
+        </div>
+    </div>
+
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <h1>Screen-screen phenotypic similarity</h1>
+        </div>
+    </div>
+{#    <div class="row">#}
+{#        <div class="col-md-12">#}
+{#            (Hover to see. Click to pin.)#}
+{#        </div>#}
+{#    </div>#}
+{#    <div class="row">#}
+{#        <div class="col-md-12 d-flex justify-content-left">#}
+{#            <div id="chart_div"></div>#}
+{#        </div>#}
+{#    </div>#}
+
+    <div class="row mt-2 mb-1">
+        <div class="col-md-4 pt-5">
+            <p>(Hover to see. Click to pin.)</p>
+            <p><strong>Correlation:</strong> {{ similarity.score|floatformat:2 }} &#177; {{ similarity.pvalue|floatformat:2 }}</p>
+            <p><a class="btn btn-primary" role="button"
+                   href="{% url 'datasets:download_scores_for_pair' dataset1.id dataset2.id %}">Download NPVs</a>
+            </p>
+        </div>
+        <div class="col-md-8 d-flex">
+            <div id="chart_div"></div>
+        </div>
+    </div>
+
+{% endblock %}

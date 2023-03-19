@@ -1,0 +1,77 @@
+{% extends "base/base_min.html" %}
+{% load humanize %}
+{% block title %}Search {{ request.GET.q }} | Yeastphenome.org{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mt-5">Search</h1>
+        </div>
+    </div>
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <form action="/search/" method="get" id="searchform">
+                <input type="text" name="q" class="form-control" placeholder="Examples: Rim101, MMS, aging, barseq, Vulpe, 16738548"
+                       required="" id="id_q" value="{{ request.GET.q }}">
+                <input type="hidden" name="tab" value="{{ request.GET.tab }}">
+            </form>
+
+        </div>
+    </div>
+
+    {% if request.GET.q or request.GET.q_exact %}
+        <div class="row mt-5">
+            <div class="col-md-12">
+                <ul class="nav nav-pills nav-fill">
+                    <li class="nav-item" {% if tab == 'papers' %}class="active"{% endif %}>
+                        <a class="nav-link {% if tab == 'papers' %}active{% endif %} {% if num_papers == 0 %}disabled{% endif %}"
+                           aria-current="page"
+                           href="/search/?q={{ request.GET.q|urlencode }}&field={{ request.GET.field|urlencode }}&tab=papers">
+                            Papers &nbsp; <span class="badge rounded-pill {% if num_papers > 0 %}bg-danger{% else %}bg-secondary{% endif %}">{{ num_papers }}</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" {% if tab == 'screens' %}class="active"{% endif %}>
+                        <a class="nav-link {% if tab == 'screens' %}active{% endif %} {% if num_datasets == 0 %}disabled{% endif %}"
+                           aria-current="page"
+                           href="/search/?q={{ request.GET.q|urlencode }}&field={{ request.GET.field|urlencode }}&tab=screens">
+                            Screens &nbsp; <span class="badge rounded-pill {% if num_datasets > 0 %}bg-danger{% else %}bg-secondary{% endif %}">{{ num_datasets }}</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" {% if tab == 'conditions' %}class="active"{% endif %}>
+                        <a class="nav-link {% if tab == 'conditions' %}active{% endif %} {% if num_conditions == 0 %}disabled{% endif %}"
+                           aria-current="page"
+                           href="/search/?q={{ request.GET.q|urlencode }}&field={{ request.GET.field|urlencode }}&tab=conditions">
+                            Conditions &nbsp; <span class="badge rounded-pill {% if num_conditions > 0 %}bg-danger{% else %}bg-secondary{% endif %}">{{ num_conditions }}</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" {% if tab == 'phenotypes' %}class="active"{% endif %}>
+                        <a class="nav-link {% if tab == 'phenotypes' %}active{% endif %} {% if num_phenotypes == 0 %}disabled{% endif %}"
+                           aria-current="page"
+                           href="/search/?q={{ request.GET.q|urlencode }}&field={{ request.GET.field|urlencode }}&tab=phenotypes">
+                            Phenotypes &nbsp; <span class="badge rounded-pill {% if num_phenotypes > 0 %}bg-danger{% else %}bg-secondary{% endif %}">{{ num_phenotypes }}</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" {% if tab == 'genes' %}class="active"{% endif %}>
+                        <a class="nav-link {% if tab == 'genes' %}active{% endif %} {% if num_genes == 0 %}disabled{% endif %}"
+                           aria-current="page"
+                           href="/search/?q={{ request.GET.q|urlencode }}&field={{ request.GET.field|urlencode }}&tab=genes">
+                            Genes &nbsp; <span class="badge rounded-pill {% if num_genes > 0 %}bg-danger{% else %}bg-secondary{% endif %}">{{ num_genes }}</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        {% if tab == 'genes' %}
+            {% include "search/genes.html" %}
+        {% elif tab == 'conditions' %}
+            {% include "search/conditions.html" %}
+        {% elif tab == 'phenotypes' %}
+            {% include "search/phenotypes.html" %}
+        {% elif tab == 'screens' %}
+            {% include "search/datasets.html" %}
+        {% elif tab == 'papers' %}
+            {% include "search/papers.html" %}
+        {% endif %}
+    {% endif %}
+
+{% endblock %}

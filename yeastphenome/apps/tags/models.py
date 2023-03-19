@@ -1,7 +1,8 @@
 from django.db import models
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from django.db.models import Q
+
+from yeastphenome.apps.tags.managers import TagManager
 
 
 class Tag(models.Model):
@@ -9,21 +10,17 @@ class Tag(models.Model):
     description = models.TextField(max_length=1000, null=True, blank=True)
     order = models.IntegerField(null=True, blank=True)
 
+    objects = TagManager()
+
     def __str__(self):
         return self.name
 
-    @classmethod
-    def all_valid(cls, type=""):
-        if type == "conditions":
-            return cls.objects.filter(
-                Q(condition__isnull=False) | Q(conditiontype__isnull=False)
-            ).distinct()
-        elif type == "datasets":
-            return cls.objects.filter(dataset__isnull=False)
-        elif type == "phenotypes":
-            return cls.objects.filter(observable__isnull=False)
-        else:
-            return cls.objects.all()
+    class Meta:
+        ordering = ["name"]
+
+    def link_detail(self):
+        html = '<a href="/search/?q=%s">%s</a>' % (self.name, self.name)
+        return mark_safe(html)
 
     def link_edit(self):
         html = '<a href="%s">%s</a>' % (

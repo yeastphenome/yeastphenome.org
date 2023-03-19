@@ -1,0 +1,43 @@
+{% extends "base/base_min.html" %}
+{% load static %}
+{% load humanize %}
+{% block title %}{{ observable }} | Phenotypes | {{ SITE_NAME }}{% endblock %}
+{% block content %}
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <span class="badge rounded-pill bg-secondary">Phenotypes</span>
+        </div>
+    </div>
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <h1>{{ observable }}</h1>
+        </div>
+    </div>
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <table class="table">
+
+                <tr>
+                    <th scope="row">Tags</th>
+                    <td>{{ observable.tags_list_as_links|safe }}</td>
+                </tr>
+
+                {% if similar.count > 0 %}<tr>
+                    <th width="20%" scope="row" class="first">Similar Phenotypes (sharing >2 tags)</th>
+                    <td>{% for p in similar.all %}{% if p.id != object.id %}<a href="{% url 'phenotypes:detail' p.id %}">{{ p.name }}</a>{% if forloop.last %}{% else %}, {% endif %}{% endif %}{% endfor %}</td>
+                </tr>{% endif %}
+
+            </table>
+        </div>
+    </div>
+
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <h2>Screens</h2>
+            {% include "datasets/datasets_table_min.html" with datasets=datasets %}
+            {% if num_datasets > 10 %}
+                <a href="{% url 'phenotypes:datasets' observable.id %}" class="btn btn-success" role="button">View all</a> &nbsp; ({{ num_datasets|intcomma }} screens)
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

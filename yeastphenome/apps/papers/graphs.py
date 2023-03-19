@@ -1,24 +1,13 @@
-from django.db.models import Count
-from .models import Paper
-import collections
+from yeastphenome.apps.papers.models import Paper
+
+import numpy as np
 
 
-def get_papers_by_year(add_padding=True):
-    """Generate a dictionary of papers by year. If add_padding is True,
-    add an empty year to the left and right (default)
-    """
-    counts = (
-        Paper.objects.values("pub_date")
-        .exclude(latest_data_status__status__name="not relevant")
-        .order_by("pub_date")
-        .annotate(the_count=Count("pub_date"))
-    )
-    counts = {x["pub_date"]: x["the_count"] for x in counts if x["pub_date"] != 0}
+def get_papers_by_year():
+    """Generate a dictionary of number of papers by year."""
+    pub_dates = Paper.objects.all_valid().values_list("pub_date", flat=True)
+    [years, years_counts] = np.unique(np.array(pub_dates), return_counts=True)
 
-    # Add padding on left and right for one year
-    if add_padding:
-        min_year = min(counts.keys())
-        max_year = max(counts.keys())
-        counts[min_year - 1] = 0
-        counts[max_year + 1] = 0
-    return collections.OrderedDict(sorted(counts.items()))
+    counts = {years[ix]: years_counts[ix] for ix in np.arange(years.shape[0])}
+
+    return counts

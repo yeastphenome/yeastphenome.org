@@ -1,130 +1,103 @@
-from django.views import generic
-from django.shortcuts import render, reverse
-
-from django.views.decorators.cache import never_cache
-
-from .graphs import get_papers_by_year
-from .models import Paper
-from .utils import (
-    get_pubmed_paper_context,
-    get_pubmed_paper,
-    get_paper_references_context,
-)
-
+from django.shortcuts import render, redirect
+from django.db.models import F
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 
-from ratelimit.mixins import RatelimitMixin
-from ratelimit.decorators import ratelimit
-from yeastphenome.apps.papers.search import get_search_tags
-
+from yeastphenome.apps.papers.models import Paper
+from yeastphenome.apps.papers.utils import (
+    get_pubmed_paper_context,
+    get_pubmed_paper,
+)
+from yeastphenome.apps.common.utils_format import join_and
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
     VIEW_RATE_LIMIT_BLOCK as rl_block,
 )
 
-
-@never_cache
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def paper_explorer(request, year=None):
-    """Return a paginated list of papers with the data explorer."""
-    taglist = []
-    links = [
-        {"url": reverse("common:explorer"), "name": "Explore data"},
-        {"url": reverse("papers:all"), "name": "Papers"},
-    ]
-    for tag in request.GET.get("query", "").split("|"):
-        if not tag:
-            continue
-        taglist.append({"value": tag, "code": "query"})
-
-    return render(
-        request,
-        "papers/explorer.html",
-        {
-            "year": year,
-            "taglist": taglist,
-            "tags": get_search_tags(),
-            "links": links,
-            "active": "explorer",
-        },
-    )
-
-
-class PaperDetailView(generic.DetailView, RatelimitMixin):
-    model = Paper
-    template_name = "papers/detail.html"
-    ratelimit_key = "ip"
-    ratelimit_rate = rl_rate
-    ratelimit_block = rl_block
-
-    def get_context_data(self, **kwargs):
-        context = super(PaperDetailView, self).get_context_data(**kwargs)
-        paper = context["object"]
-
-        context["links"] = [
-            {"url": reverse("common:explorer"), "name": "Explore data"},
-            {"url": reverse("papers:all"), "name": "Papers"},
-            {
-                "url": reverse("papers:detail", args=[paper.id]),
-                "name": str(paper),
-            },
-        ]
-
-        context["DOWNLOAD_PREFIX"] = settings.DOWNLOAD_PREFIX
-        context["USER_AUTH"] = self.request.user.is_authenticated
-        context["module"] = "papers"
-        context["id"] = paper.id
-        context["active"] = "explorer"
-
-        # Give credit if credit is due.
-        names = paper.acknowledgements_str_list()
-        to_acknowledge = []
-        if paper.acknowledge_data():
-            to_acknowledge.append("the data")
-        if paper.acknowledge_tested():
-            to_acknowledge.append("the list of tested strains")
-
-        if names:
-            thanks = (
-                " and ".join(to_acknowledge)
-                + " for this paper were kindly provided by "
-                + names
-                + "."
-            )
-            context["thanks"] = thanks
-
-        # Fetch article info from Pubmed, share data from one call
-        if paper.pmid != 0:
-            xml_data = get_pubmed_paper(paper.pmid)
-            context.update(get_pubmed_paper_context(paper.pmid, xml_data))
-            context.update(get_paper_references_context(paper, xml_data))
-        return context
+from ratelimit.decorators import ratelimit
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def paper_datasets(request, paper_id, pmid):
+def index(request):
+    return redirect("search:search")
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def detail(request, paper_id):
     p = get_object_or_404(Paper, pk=paper_id)
 
-    txt = "\n".join([(u"%s\t%s" % (d.id, d.name)) for d in p.dataset_set.all()])
+    datasets = p.datasets.all_valid()
+    num_datasets = datasets.count()
+
+    datasets = datasets[:10].values(
+        dataset_id=F("id"),
+        dataset_paper_name=F("paper__systematic_name"),
+        dataset_phenotype_name=F("phenotype__name"),
+        dataset_conditionset_name=F("conditionset__display_name"),
+        dataset_medium_name=F("medium__display_name"),
+        dataset_collection_name=F("collection__shortname"),
+        dataset_data_name=F("data_available__name"),
+    )
+
+    context = {"paper": p, "datasets": datasets, "num_datasets": num_datasets}
+
+    # Give credit when credit is due.
+    names = p.acknowledgements_list_as_str()
+    to_acknowledge = []
+    if p.acknowledge_data():
+        to_acknowledge.append("the data")
+    if p.acknowledge_tested():
+        to_acknowledge.append("tested strains")
+    if names and to_acknowledge:
+        thanks = (
+            " and ".join(to_acknowledge)
+            + " for this paper were kindly provided by "
+            + names
+            + "."
+        )
+        context["thanks"] = thanks
+
+    # Fetch article info from Pubmed, share data from one call
+    if p.pmid != 0:
+        xml_data = get_pubmed_paper(p.pmid)
+        context.update(get_pubmed_paper_context(p.pmid, xml_data))
+
+    return render(request, "papers/detail_min.html", context)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def datasets(request, paper_id):
+    p = get_object_or_404(Paper, pk=paper_id)
+    datasets_values = p.datasets.all_valid().values(
+        dataset_id=F("id"),
+        dataset_paper_name=F("paper__systematic_name"),
+        dataset_phenotype_name=F("phenotype__name"),
+        dataset_conditionset_name=F("conditionset__display_name"),
+        dataset_medium_name=F("medium__display_name"),
+        dataset_collection_name=F("collection__shortname"),
+        dataset_data_name=F("data_available__name"),
+    )
+    context = {
+        "paper_id": paper_id,
+        "paper_systematic_name": p.systematic_name,
+        "paper_datasets": datasets_values,
+    }
+    return render(request, "papers/datasets_min.html", context)
+
+
+@ratelimit(key="ip", rate=rl_rate, block=rl_block)
+def datasets_list(request, paper_id, pmid):
+    p = get_object_or_404(Paper, pk=paper_id)
+
+    txt = "\n".join([(u"%s\t%s" % (d.id, d.name)) for d in p.datasets.all()])
 
     response = HttpResponse(txt, content_type="text/plain")
     response[
         "Content-Disposition"
     ] = 'attachment; filename="%s_%d_datasets_list.txt"' % (
         settings.DOWNLOAD_PREFIX,
-        p.pmid,
+        pmid,
     )
 
     return response
-
-
-# Graphs
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
-def papers_by_year(request):
-    """Render a chart.js visualization for papers by year. Color by year"""
-    context = {"paper_counts": get_papers_by_year()}
-    return render(request, "graphs/papers-by-year-wrapper.html", context)

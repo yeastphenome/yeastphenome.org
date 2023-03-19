@@ -6,7 +6,7 @@ from django.utils.http import urlencode
 from django.utils.safestring import mark_safe
 
 from yeastphenome.apps.datasets.models import Dataset, Collection, Source
-from yeastphenome.apps.common.admin_util import (
+from yeastphenome.apps.common.utils_admin import (
     ImprovedModelAdmin,
     ImprovedTabularInline,
     LimitedInlineFormSet,
@@ -98,6 +98,15 @@ class DatasetAdmin(ImprovedModelAdmin):
             )
         return initial
 
+    def save_model(self, request, obj, form, change):
+
+        # To update ES indexing immediately: save related fields (e.g., tags)
+        if not obj.id:
+            super().save_model(request, obj, form, change)
+        form.save_m2m()
+
+        super(DatasetAdmin, self).save_model(request, obj, form, change)
+
 
 class DatasetInline(ImprovedTabularInline):
     model = Dataset
@@ -179,8 +188,8 @@ class DatasetInlineData(DatasetInline):
 
 class SourceAdmin(ImprovedModelAdmin):
     model = Source
-    list_display = ("id", "sourcetype", "link_or_person")
-    fields = ("sourcetype", "link", "person", "date", "release", "acknowledge")
+    list_display = ("id", "sourcetype", "label", "url")
+    fields = ("sourcetype", "label", "url", "date", "release", "acknowledge")
     inlines = [DatasetInlineTested, DatasetInlineData]
 
 
@@ -195,7 +204,7 @@ class CollectionForm(forms.ModelForm):
 
 class CollectionAdmin(ImprovedModelAdmin):
     form = CollectionForm
-    list_display = ("__str__",)
+    list_display = ("__str__", "is_valid")
 
 
 class StatusAdmin(ImprovedModelAdmin):

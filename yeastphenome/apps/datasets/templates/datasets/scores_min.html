@@ -1,0 +1,33 @@
+{% extends "base/base_min.html" %}
+{% load static %}
+{% load humanize %}
+{% block title %}Scores | {{ dataset }} | Screens | {{ SITE_NAME }}{% endblock %}
+{% block content %}
+
+    {%  if dataset.data_source.release == True %}
+
+        <div class="row mt-5 mb-3">
+            <div class="col-md-12">
+                <span class="badge rounded-pill bg-secondary">Screens</span>
+                <a href="{% url 'datasets:detail' dataset.id %}"><span class="badge rounded-pill bg-primary">{{ dataset.name }}</span></a>
+            </div>
+        </div>
+
+        <div class="row mt-5 mb-3">
+            <div class="col-md-12">
+                <h1>Phenotypic scores for {{ dataset.name }}</h1>
+            </div>
+        </div>
+        <div class="row mt-5 mb-3">
+            <div class="col-md-12">
+                <div class="d-md-flex justify-content-md-start mt-auto align-self-start">
+                    <a class="btn btn-primary" role="button" href="{% url 'datasets:download_scores' dataset.id %}">Download all</a>
+                </div>
+                {% include "datasets/scores_table_min.html" with scores=scores %}
+            </div>
+        </div>
+
+    {%  endif %}
+{% endblock %}
+
+

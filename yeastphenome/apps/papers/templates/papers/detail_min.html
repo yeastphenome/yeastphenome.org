@@ -1,0 +1,112 @@
+{% extends "base/base_min.html" %}
+{% load humanize %}
+{% block title %}{{ paper }} | Papers | {{ SITE_NAME }}{% endblock %}
+{% block content %}
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <span class="badge rounded-pill bg-secondary">Papers</span>
+        </div>
+    </div>
+
+    <div class="row mt-5 mb-4">
+        <div class="col-md-12">
+            <h1>{{ paper }}</h1>
+        </div>
+    </div>
+
+    {% if paper.pmid != 0 %}
+        <div class="row mt-5 mb-3">
+            <div class="col-md-12">
+                <table class="table">
+                    <tr>
+                        <th width="20%" scope="row">Pubmed ID</th>
+                        <td class="first">
+                            <a target="_blank" class="external" href="https://www.ncbi.nlm.nih.gov/pubmed/{{ paper.pmid }}/">{{ paper.pmid }}</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Title</th>
+                        <td>{{ title }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Authors</th>
+                        <td>{% for author in authors %}
+                            {% spaceless %}
+                                {% if forloop.first %}
+                                    <a class="search" href="/search/?q={{ paper.first_author|urlencode }}&tab=papers&field=author">{{ author }}</a>
+                                {% elif forloop.last %}
+                                    <a class="search" href="/search/?q={{ paper.last_author|urlencode }}&tab=papers&field=author">{{ author }}</a>
+                                {% else %}
+                                    {{ author }}
+                                {% endif %}
+                                {% if not forloop.last %} &#8901; {% endif %}
+                            {% endspaceless %}
+                        {% endfor %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Abstract</th>
+                        <td>{{ abstract }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Citation</th>
+                        <td>{{ citation }}</td>
+                    </tr>
+                    {% if paper.data_abstract %}
+                        <tr>
+                            <th scope="row">Data abstract</th>
+                            <td>{{ paper.data_abstract }}</td>
+                        </tr>
+                    {% endif %}
+                    {% if paper.notes %}
+                        <tr>
+                            <th scope="row">Notes</th>
+                            <td>{{ paper.notes }}</td>
+                        </tr>
+                    {% endif %}
+                    <tr>
+                        <th scope="row">Raw data & curation code</th>
+                        <td><a class="external"
+                               target="_blank"
+                               title="This repository is private and will soon be made public."
+                               href="https://github.com/yeastphenome/yp-data/tree/master/Datasets/{{ paper.pmid }}">Dataset on GitHub</a></td>
+                    </tr>
+                    {% if thanks %}
+                        <tr>
+                            <th scope="row">Acknowledgements</th>
+                            <td>{{ thanks|capfirst }}</td>
+                        </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <h2>Screens</h2>
+            {% include "datasets/datasets_table_min.html" with datasets=datasets %}
+            {% if num_datasets > 10 %}
+                <a href="{% url 'papers:datasets' paper.id %}" class="btn btn-success" role="button">View all</a> &nbsp; ({{ num_datasets|intcomma }} screens)</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <h2>Curation History</h2>
+            <div class="row mt-3">
+                {% for k, v in paper.history.items %}
+                    <div class="col-4">
+                        <h4>{{ k|capfirst }}</h4>
+                        <ul>
+                            {% for x in v %}
+                                <li>{{ x.status_date }} - {{ x.status.name|capfirst }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

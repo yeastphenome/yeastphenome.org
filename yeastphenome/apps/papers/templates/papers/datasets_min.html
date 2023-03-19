@@ -1,0 +1,22 @@
+{% extends "base/base_min.html" %}
+{% block title %}Screens | {{ paper_systematic_name }} | Papers | {{ SITE_NAME }}{% endblock %}
+{% block content %}
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <span class="badge rounded-pill bg-secondary">Papers</span>
+            <a href="{% url 'papers:detail' paper_id %}"><span class="badge rounded-pill bg-primary">{{ paper_systematic_name }}</span></a>
+        </div>
+    </div>
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            <h1>Screens from {{ paper_systematic_name }}</h1>
+        </div>
+    </div>
+
+    <div class="row mt-5 mb-3">
+        <div class="col-md-12">
+            {% include "datasets/datasets_table_min.html" with datasets=paper_datasets %}
+        </div>
+    </div>
+
+{% endblock %}

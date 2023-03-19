@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 from django.core.exceptions import FieldError
-from django.db.models import Q
+from django.db.models import F, Q
 from django.db import models
 from django.apps import apps
 from django.contrib.humanize.templatetags.humanize import intcomma
@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from yeastphenome.apps.tags.models import Tag
+from yeastphenome.apps.datasets.managers import CollectionManager, SourceManager, DatasetManager, DataManager
 
 
 class Collection(models.Model):
@@ -17,12 +18,9 @@ class Collection(models.Model):
     matingtype = models.CharField(max_length=200, null=True, blank=True)
     ploidy = models.IntegerField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
+    is_valid = models.BooleanField()
 
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.exclude(
-            dataset__paper__latest_data_status__status__name="not relevant"
-        )
+    objects = CollectionManager()
 
     def __str__(self):
         return "%s" % self.shortname
@@ -31,10 +29,6 @@ class Collection(models.Model):
 class Sourcetype(models.Model):
     name = models.CharField(max_length=200, null=True, blank=True)
     shortname = models.CharField(max_length=200, null=True, blank=True)
-
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.all()
 
     def __str__(self):
         return "%s" % self.name
@@ -48,46 +42,40 @@ class Source(models.Model):
         related_name="sourcetype",
         on_delete=models.DO_NOTHING,
     )
-    link = models.TextField(max_length=200, null=True, blank=True)
-    person = models.CharField(max_length=200, null=True, blank=True)
+    # link = models.TextField(max_length=200, null=True, blank=True)
+    # person = models.CharField(max_length=200, null=True, blank=True)
+    label = models.CharField(max_length=200, null=True, blank=True)
+    url = models.TextField(null=True, blank=True)
     date = models.DateField(null=True)
     acknowledge = models.NullBooleanField()
     release = models.NullBooleanField()
 
+    objects = SourceManager()
+
     def __str__(self):
-        if self.person:
-            return "%s" % self.person
+        if self.label:
+            return "%s" % self.label
         else:
             return "%s" % self.sourcetype
 
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.filter(data_source__isnull=False).exclude(
-            data_source__paper__latest_data_status__status__name="not relevant"
-        )
-
     def html(self):
-        source_str = ""
-        if self.person:
-            source_str = "%s" % self.person
-        else:
-            if self.link:
+        if self.url:
+            if self.label:
                 source_str = '<a class="external" href="%s">%s</a>' % (
-                    self.link,
-                    self.sourcetype,
+                    self.url,
+                    self.label,
                 )
             else:
-                source_str = "%s" % self.sourcetype
-        return mark_safe(source_str)
-
-    def link_or_person(self):
-        if self.person:
-            return "%s" % self.person
+                source_str = '<a class="external" href="%s">%s</a>' % (
+                    self.url,
+                    self.sourcetype,
+                )
         else:
-            if self.link:
-                return "%s..." % self.link[: min(60, len(self.link))]
+            if self.label:
+                source_str = self.label
             else:
-                return "unknown"
+                source_str = self.sourcetype
+        return mark_safe(source_str)
 
     def papers(self):
         return (
@@ -105,10 +93,6 @@ class Datatype(models.Model):
     shortname = models.CharField(max_length=20, null=True, blank=True)
     rank = models.PositiveIntegerField(blank=True, null=True)
 
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.all()
-
     def __str__(self):
         return "%s" % self.name
 
@@ -116,7 +100,9 @@ class Datatype(models.Model):
 class Dataset(models.Model):
 
     name = models.CharField(max_length=500, null=True, blank=True, unique=True)
-    paper = models.ForeignKey("papers.Paper", on_delete=models.DO_NOTHING)
+    paper = models.ForeignKey(
+        "papers.Paper", related_name="datasets", on_delete=models.DO_NOTHING
+    )
 
     conditionset = models.ForeignKey(
         "conditions.ConditionSet", null=True, blank=True, on_delete=models.DO_NOTHING
@@ -192,28 +178,24 @@ class Dataset(models.Model):
     tags = models.ManyToManyField(Tag, blank=True)
     data_modified_on = models.DateField(null=True, blank=True)
 
-    @property
-    def short_name(self):
-        """Break the dataset name into words, and return the first 16. If the
-        dataset name is longer than that, return those first 8 plus ... then
-        the last 8.
-        """
-        words = self.name.split(" ")
-        if len(words) <= 16:
-            return " ".join(words)
-        return " ".join(words[0:8]) + " ... " + " ".join(words[-8:])
+    objects = DatasetManager()
 
     def __str__(self):
         return "%s" % self.name
 
     def get_absolute_url(self):
-        return reverse("datasets:detail", args=[self.id])
+        return reverse("datasets:detail", args=(self.id,))
 
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.exclude(
-            Q(paper__latest_data_status__status__name__exact="not relevant")
-        ).distinct()
+    def is_valid(self):
+        cond1 = (
+            self.paper.latest_data_status.status.is_valid
+            if self.paper.latest_data_status.status.is_valid
+            else False
+        )
+        cond2 = False
+        if self.collection:
+            cond2 = self.collection.is_valid if self.collection.is_valid else False
+        return cond1 & cond2
 
     # Necessary to run database-wide updates of dataset names
     def save(self, *args, **kwargs):
@@ -243,6 +225,29 @@ class Dataset(models.Model):
     class Meta:
         ordering = ["id"]
 
+    def get_data_availability(self):
+        availability = {}
+        num_available_data = self.data.count()
+        availability["type_data_available"] = self.data_available
+
+        availability["tested_available"] = "no"
+        if self.tested_source:
+            if self.tested_source.release:
+                availability["tested_available"] = mark_safe(
+                    "%s (%s mutants)"
+                    % (self.tested_source.html(), intcomma(num_available_data))
+                )
+
+        availability["data_available"] = "%s mutants" % num_available_data
+        if self.data_source:
+            if self.data_source.release:
+                availability["data_available"] = mark_safe(
+                    "%s (%s mutants)"
+                    % (self.data_source.html(), intcomma(num_available_data))
+                )
+
+        return availability
+
     def tested_genes_published(self):
         return self.tested_list_published
 
@@ -254,8 +259,8 @@ class Dataset(models.Model):
     tested_genes_available.boolean = True
 
     def tested_space(self):
-        if self.tested_source and self.data_set.exists():
-            tested_space = intcomma(self.data_set.count())
+        if self.tested_source and self.data.exists():
+            tested_space = intcomma(self.data.count())
         elif self.tested_num and self.tested_num > 0:
             tested_space = (
                 '<abbr title="The list of tested mutants is not available. '
@@ -266,14 +271,44 @@ class Dataset(models.Model):
             tested_space = "N/A"
         return mark_safe(tested_space)
 
-    def phenotypes(self):
-        return self.observable.name
+    def phenotype_aliases_list(self):
+        aliases = self.phenotype.aliases_list() if self.phenotype else []
+        return aliases
 
-    def tags_link_list(self):
-        return mark_safe(", ".join([t.link_detail() for t in self.tags.all()]))
+    def phenotype_aliases_list_as_str(self):
+        return "; ".join(self.phenotype_aliases_list())
+
+    def conditions_aliases_list(self):
+        conditionset_aliases = (
+            self.conditionset.aliases_list() if self.conditionset else []
+        )
+        medium_aliases = [str(self.medium)] if self.medium else []
+        aliases = list(set(conditionset_aliases + medium_aliases))
+        return aliases
+
+    def conditions_aliases_list_as_str(self):
+        return "; ".join(self.conditions_aliases_list())
+
+    def tags_list(self):
+        tags_list_self = list(self.tags.values_list("name", flat=True))
+        tags_list_phenotype = self.phenotype.tags_list() if self.phenotype else []
+        tags_list_conditionset = (
+            self.conditionset.tags_list() if self.conditionset else []
+        )
+        tags_list_medium = (self.medium.tags_list() if self.medium else [])
+        tags_list = list(
+            set(tags_list_self + tags_list_phenotype + tags_list_conditionset + tags_list_medium)
+        )
+        return tags_list
+
+    def tags_list_as_str(self):
+        return "; ".join(self.tags_list())
+
+    def tags_list_as_links(self):
+        return mark_safe("; ".join([t.link_detail() for t in self.tags.all()]))
 
     def has_data_in_db(self):
-        return self.data_set.exists()
+        return self.data.exists()
 
     has_data_in_db.boolean = True
 
@@ -290,33 +325,26 @@ class Dataset(models.Model):
         )
         return mark_safe(html)
 
-    def get_data(self, reverse=False):
-        """Given a dataset, get a sorted list of scores."""
-        queryset = (
-            Data.objects.filter(dataset=self)
-            .filter(valuez__isnull=False)
-            .order_by("-valuez")
+    def get_scores(self):
+        data = self.data.filter(valuez__isnull=False).values(
+            "valuez",
+            "gene_id",
+            gene_systematic_name=F("gene__systematic_name"),
+            gene_common_name=F("gene__common_name"),
         )
+        return data
 
-        if reverse:
-            queryset = queryset.reverse()
-
-        return queryset
-
-    def get_ranked_similar(self, reverse=False):
-        """Given a dataset, get a sorted listed of similar datasets.
-        Assume each pair of datasets is represented twice (A-B and B-A).
-        """
-        queryset = (
-            DatasetSimilarity.objects.filter(dataset1=self)
-            .filter(dataset2__data_source__release=True)
-            .order_by("-score")
+    def get_similarities(self):
+        data = self.similarities.filter(dataset2__data_source__release=True)
+        data = data.filter(~Q(dataset2__collection__shortname="het"))
+        data = data.values(
+            "score", "pvalue", "dataset2_id", dataset2_name=F("dataset2__name")
         )
+        return data
 
-        if reverse:
-            queryset = queryset.reverse()
-
-        return queryset
+    def get_similarity_to(self, dataset2):
+        data = self.similarities.filter(dataset2=dataset2).first()
+        return data
 
 
 class DatasetSimilarity(models.Model):
@@ -325,7 +353,7 @@ class DatasetSimilarity(models.Model):
     """
 
     dataset1 = models.ForeignKey(
-        Dataset, on_delete=models.CASCADE, related_name="dataset_similarity1"
+        Dataset, on_delete=models.CASCADE, related_name="similarities"
     )
     dataset2 = models.ForeignKey(
         Dataset, on_delete=models.CASCADE, related_name="dataset_similarity2"
@@ -334,10 +362,6 @@ class DatasetSimilarity(models.Model):
 
     # IMPORTANT: this is actually a standard deviation
     pvalue = models.DecimalField(max_digits=10, decimal_places=6)
-
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.exclude(score__isnull=True)
 
     def save(self, *args, **kwargs):
         """Override the save function to ensure that only one similarity score
@@ -364,9 +388,15 @@ class DatasetSimilarity(models.Model):
 class Data(models.Model):
 
     gene = models.ForeignKey(
-        "genes.Gene", null=True, blank=True, on_delete=models.DO_NOTHING
+        "genes.Gene",
+        null=True,
+        blank=True,
+        related_name="data",
+        on_delete=models.DO_NOTHING,
     )
-    dataset = models.ForeignKey(Dataset, on_delete=models.DO_NOTHING)
+    dataset = models.ForeignKey(
+        Dataset, related_name="data", on_delete=models.DO_NOTHING
+    )
 
     # Raw phenotypic score
     value = models.DecimalField(max_digits=20, decimal_places=10)
@@ -374,9 +404,7 @@ class Data(models.Model):
     # Normalized phenotypic score
     valuez = models.DecimalField(max_digits=10, decimal_places=5)
 
-    @classmethod
-    def all_valid(cls):
-        return cls.objects.exclude(valuez__isnull=True)
+    objects = DataManager()
 
     def __str__(self):
         return "%s - %d" % (self.gene.systematic_name, self.dataset.id)
