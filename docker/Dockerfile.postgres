@@ -1,2 +1,0 @@
-FROM postgres
-ADD ./yeastphenome_db.P.sql /
