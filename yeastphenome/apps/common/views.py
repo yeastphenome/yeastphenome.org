@@ -102,8 +102,14 @@ def data_contributors(request):
     )
 
     def merge_people(paper_dict):
-        people1 = paper_dict["people1"].split(", ")
-        people2 = paper_dict["people2"].split(", ")
+        if paper_dict["people1"]:
+            people1 = paper_dict["people1"].split(", ")
+        else:
+            people1 = []
+        if paper_dict["people2"]:
+            people2 = paper_dict["people2"].split(", ")
+        else:
+            people2 = []
         people = list(itertools.chain.from_iterable([people1, people2]))
         people = [
             person for person in people if not person == "" and person is not None
