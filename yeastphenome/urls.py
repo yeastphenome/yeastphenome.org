@@ -1,4 +1,4 @@
-from django.conf.urls import include, url
+from django.urls import include, re_path
 from django.contrib import admin
 from django.views.generic.base import TemplateView
 from django.contrib.sitemaps import views
@@ -33,16 +33,16 @@ handler404 = "yeastphenome.apps.common.views.handler404"
 admin.autodiscover()
 
 urlpatterns = [
-    url(r"^admin/", admin.site.urls),
-    url(r"^", include(common_urls, namespace="common")),
-    url(r"^search/", include(search_urls, namespace="search")),
-    url(r"^downloads/", include(downloads_urls, namespace="downloads")),
-    url(r"^papers/", include(papers_urls, namespace="papers")),
-    url(r"^phenotypes/", include(phenotypes_urls, namespace="phenotypes")),
-    url(r"^conditions/", include(conditions_urls, namespace="conditions")),
-    url(r"^screens/", include(datasets_urls, namespace="datasets")),
-    url(r"^genes/", include(gene_urls, namespace="genes")),
-    url(
+    re_path(r"^admin/", admin.site.urls),
+    re_path(r"^", include(common_urls, namespace="common")),
+    re_path(r"^search/", include(search_urls, namespace="search")),
+    re_path(r"^downloads/", include(downloads_urls, namespace="downloads")),
+    re_path(r"^papers/", include(papers_urls, namespace="papers")),
+    re_path(r"^phenotypes/", include(phenotypes_urls, namespace="phenotypes")),
+    re_path(r"^conditions/", include(conditions_urls, namespace="conditions")),
+    re_path(r"^screens/", include(datasets_urls, namespace="datasets")),
+    re_path(r"^genes/", include(gene_urls, namespace="genes")),
+    re_path(
         r"^robots\.txt?/$",
         TemplateView.as_view(
             template_name="base/robots.txt", content_type="text/plain"
