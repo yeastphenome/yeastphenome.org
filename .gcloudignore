@@ -13,16 +13,10 @@
 .env
 .git
 .gitignore
-Makefile
-docs
-backup
-db.sqlite3
-env
-docker
-/data
-yp_rows_store.h5
+.DS_Store
 
-# Python pycache:
+env/
 __pycache__/
+
 # Ignored by the build system
 /setup.cfg
