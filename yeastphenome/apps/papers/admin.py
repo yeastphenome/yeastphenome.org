@@ -5,6 +5,7 @@ from yeastphenome.apps.papers.forms import PaperModelForm
 from yeastphenome.apps.datasets.admin import DatasetInline
 
 from yeastphenome.apps.common.utils_admin import ImprovedModelAdmin
+from yeastphenome.apps.common.utils_format import truncated_list_as_str, join_and
 
 
 class StatusdataInline(admin.TabularInline):
@@ -90,6 +91,30 @@ class PaperAdmin(ImprovedModelAdmin):
             paper.latest_tested_status = paper.statustested_set.latest()
         else:
             paper.latest_tested_status = None
+        
+        observables_list = list(
+            paper.datasets.values_list("phenotype__observable__name", flat=True)
+            .order_by()
+            .distinct()
+        )
+        paper.observables_summary = truncated_list_as_str(observables_list)
+
+        conditiontypes_list = list(
+            paper.datasets.values_list("conditionset__conditions__type__name", flat=True)
+            .order_by()
+            .distinct()
+        )
+        paper.conditiontypes_summary = truncated_list_as_str(conditiontypes_list)
+
+        if paper.last_author:
+            systematic_name = "%s~%s, %s" % (
+                paper.first_author,
+                paper.last_author,
+                paper.pub_date,
+            )
+        else:
+            systematic_name = "%s, %s" % (paper.first_author, paper.pub_date)
+        paper.systematic_name = systematic_name
 
         super(PaperAdmin, self).save_model(request, paper, form, change)
 

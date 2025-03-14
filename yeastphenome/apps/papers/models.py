@@ -25,7 +25,7 @@ class Status(models.Model):
 
 class Paper(models.Model):
 
-    pmid = models.IntegerField(default=0)
+    pmid = models.IntegerField(default=0, unique=True)
 
     first_author = models.CharField(max_length=200)
     last_author = models.CharField(max_length=200, blank=True, null=True)
@@ -70,31 +70,6 @@ class Paper(models.Model):
     class Meta:
         get_latest_by = "modified_on"
         ordering = ["pmid", "systematic_name"]
-
-    def save(self, *args, **kwargs):
-        if self.last_author:
-            systematic_name = "%s~%s, %s" % (
-                self.first_author,
-                self.last_author,
-                self.pub_date,
-            )
-        else:
-            systematic_name = "%s, %s" % (self.first_author, self.pub_date)
-        self.systematic_name = systematic_name
-
-        observables_list = list(
-            self.datasets.values_list("phenotype__observable__name", flat=True)
-            .order_by()
-            .distinct()
-        )
-        self.observables_summary = truncated_list_as_str(observables_list)
-        conditiontypes_list = list(
-            self.datasets.values_list("conditionset__conditions__type__name", flat=True)
-            .order_by()
-            .distinct()
-        )
-        self.conditiontypes_summary = truncated_list_as_str(conditiontypes_list)
-        super(Paper, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.systematic_name if self.systematic_name else ""
