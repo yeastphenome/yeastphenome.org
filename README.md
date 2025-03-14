@@ -1,20 +1,7 @@
 # YeastPhenome.org
 
-Welcome to YeastPhenome.org! This is a Django web application intended to be deployed
-to Google Cloud. To get started, you can read our [documentation](https://yeastphenome.github.io/yeastphenome.org).
-We don't have a logo or branding for now, so in the meantime we present you with
-this punny bread:
+This repository contains the codebase for the Yeast Phenome Database website (www.yeastphenome.org). It provides the frontend code necessary to generate and maintain the site's user interface. Backend script for data processing and database population are provided in the [yp-data](https://github.com/yeastphenome/yp-data) repository.
 
-![docs/assets/img/logo-temporary.png](docs/assets/img/logo-temporary.png)
+You are encouraged to use this repo's issues to submit bug reports or feature requests for the YeastPhenome.org website.
 
-## TODO
-
- - update urls to to use path, it's easier to read and likely some day the url function could be deprecated
- - "add to cart" of course will be sprinkled around the site
- - we should decide on download metrics for the view cart page
- - add social media links (e.g., Twitter) for site metadata
- - start working on tutorials
-
-## Thanks
-
- - [twemoji](https://twemoji.twitter.com/): for a few of our lovely graphics!
+For additional questions, feel free to contact Anastasia Baryshnikova (<abaryshk@gmail.com>).
