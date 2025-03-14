@@ -47,8 +47,8 @@ class Source(models.Model):
     label = models.CharField(max_length=200, null=True, blank=True)
     url = models.TextField(null=True, blank=True)
     date = models.DateField(null=True)
-    acknowledge = models.NullBooleanField()
-    release = models.NullBooleanField()
+    acknowledge = models.BooleanField(null=True, blank=True)
+    release = models.BooleanField(null=True, blank=True)
 
     objects = SourceManager()
 
@@ -136,7 +136,7 @@ class Dataset(models.Model):
     notes = models.TextField(null=True, blank=True)
 
     tested_num = models.IntegerField(default=0, null=True)
-    tested_list_published = models.NullBooleanField()
+    tested_list_published = models.BooleanField(null=True, blank=True)
     tested_source = models.ForeignKey(
         Source,
         null=True,

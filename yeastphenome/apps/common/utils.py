@@ -6,16 +6,6 @@ from yeastphenome.apps.genes.models import Gene
 import numpy as np
 
 
-def escape_regex(value):
-    """To use iregex in a search, if regular expression characters are included,
-    we need to search for them verbatim. This function should replace them with
-    an escape character.
-    """
-    for char in ["(", ")", "[", "]", "?"]:
-        value = value.replace(char, "\%s" % char)
-    return value
-
-
 def unique_clean_sorted(xs):
     remove_items = [None, np.nan, "nan", "NaN", ""]
     lst = sorted(list(set(xi for x in xs for xi in x if xi not in remove_items)))

@@ -42,7 +42,7 @@
                     {% for fieldset in inline_admin_form %}
                     {% for line in fieldset %}
                     {% for field in line %}
-                    {% if field.field.is_hidden %} {{ field.field }} {% endif %}
+                    <!-- {% if field.field.is_hidden %} {{ field.field }} {% endif %} -->
                     {% endfor %}
                     {% endfor %}
                     {% endfor %}
