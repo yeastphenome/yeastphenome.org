@@ -8,8 +8,6 @@ def globals(request):
     return {
         "DOMAIN": settings.DOMAIN_NAME,
         "DOWNLOAD_PREFIX": settings.DOWNLOAD_PREFIX,
-        "TWITTER_USERNAME": settings.TWITTER_USERNAME,
-        "GITHUB_REPOSITORY": settings.GITHUB_REPOSITORY,
         "HELP_CONTACT_EMAIL": settings.HELP_CONTACT_EMAIL,
         "SITE_NAME": get_current_site(request).name,
         "GOOGLE_ANALYTICS_ID": settings.GOOGLE_ANALYTICS_ID,
