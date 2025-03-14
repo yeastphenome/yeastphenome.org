@@ -15,7 +15,7 @@ from yeastphenome.settings import (
     VIEW_RATE_LIMIT_BLOCK as rl_block,
 )
 
-from ratelimit.decorators import ratelimit
+from django_ratelimit.decorators import ratelimit
 
 
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)

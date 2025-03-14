@@ -6,7 +6,7 @@ from yeastphenome.apps.datasets.models import Data, Dataset
 from yeastphenome.apps.genes.models import Gene
 from yeastphenome.apps.common.utils_format import update_values_with_percentile
 
-from ratelimit.decorators import ratelimit
+from django_ratelimit.decorators import ratelimit
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
     VIEW_RATE_LIMIT_BLOCK as rl_block,

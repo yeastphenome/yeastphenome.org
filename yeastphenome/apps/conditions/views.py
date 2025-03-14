@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 
 from yeastphenome.apps.conditions.models import ConditionType
 
-from ratelimit.decorators import ratelimit
+from django_ratelimit.decorators import ratelimit
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
     VIEW_RATE_LIMIT_BLOCK as rl_block,

@@ -21,7 +21,7 @@ import pandas as pd
 import numpy as np
 import tempfile
 
-from ratelimit.decorators import ratelimit
+from django_ratelimit.decorators import ratelimit
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
     VIEW_RATE_LIMIT_BLOCK as rl_block,

@@ -4,7 +4,7 @@ from django.db.models import F
 from yeastphenome.apps.phenotypes.models import Observable
 from yeastphenome.apps.datasets.models import Dataset
 
-from ratelimit.decorators import ratelimit
+from django_ratelimit.decorators import ratelimit
 
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,

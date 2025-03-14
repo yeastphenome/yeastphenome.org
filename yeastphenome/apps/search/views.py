@@ -11,7 +11,7 @@ from yeastphenome.settings import (
     ELASTICSEARCH_AUTH,
 )
 
-from ratelimit.decorators import ratelimit
+from django_ratelimit.decorators import ratelimit
 
 import numpy as np
 import re

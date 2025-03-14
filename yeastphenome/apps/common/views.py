@@ -12,7 +12,7 @@ from yeastphenome.apps.datasets.models import Source
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.papers.graphs import get_papers_by_year
 
-from ratelimit.decorators import ratelimit
+from django_ratelimit.decorators import ratelimit
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
     VIEW_RATE_LIMIT_BLOCK as rl_block,
