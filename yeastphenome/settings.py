@@ -1,14 +1,13 @@
 import os
+import re
 import tempfile
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Configuration environment
-GOOGLE_ANALYTICS_SITE = os.environ.get("GOOGLE_ANALYTICS_SITE")
-GOOGLE_ANALYTICS_ID = os.environ.get("GOOGLE_ANALYTICS_ID")
-TWITTER_USERNAME = os.environ.get("TWITTER_USERNAME")
-GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY")
+GOOGLE_ANALYTICS_SITE = os.environ.get("GOOGLE_ANALYTICS_SITE", "")
+GOOGLE_ANALYTICS_ID = os.environ.get("GOOGLE_ANALYTICS_ID", "")
 
 # Email Addresses
 HELP_CONTACT_EMAIL = os.environ.get("HELP_CONTACT_EMAIL")
@@ -26,8 +25,8 @@ DOMAIN_NAME = os.environ.get("DOMAIN_NAME", "http://127.0.0.1:8000")
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-DISABLE_CACHE = True
+DEBUG = os.environ.get("DEBUG", "False")
+DISABLE_CACHE = os.environ.get("DISABLE_CACHE", "False")
 
 # SECURITY WARNING: App Engine's security features ensure that it is safe to
 # have ALLOWED_HOSTS = ['*'] when the app is deployed. If you deploy a Django
@@ -56,9 +55,6 @@ INSTALLED_APPS = [
     "django.contrib.sitemaps",
     "django.contrib.sites",
     "django.contrib.staticfiles",
-    "django_extensions",
-    "rest_framework",
-    "drf_yasg",
 ]
 
 MIDDLEWARE = [
@@ -70,6 +66,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Do we want to enable the cache?
 
@@ -197,8 +195,8 @@ SITE_ID = 1
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
-STATIC_ROOT = "static"
-STATIC_URL = "/static/"
+STATIC_ROOT = os.environ.get("STATIC_ROOT", "yeastphenome-static/")
+STATIC_URL = os.environ.get("STATIC_URL", "/static/")
 
 MEDIA_ROOT = "data"
 MEDIA_URL = "/data/"
@@ -222,3 +220,7 @@ ELASTICSEARCH_AUTH = os.environ.get("ELASTICSEARCH_AUTH")
 
 CSRF_USE_SESSIONS = True
 CSRF_COOKIE_HTTPONLY = True
+
+DISALLOWED_USER_AGENTS = [
+    re.compile(r'^Bytespider'),
+]
