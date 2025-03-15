@@ -1,66 +1,22 @@
-<!DOCTYPE html>
-<html lang="en" >
-<head>
-  <meta charset="UTF-8">
-  <title>404 Page Not Found</title>
-  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.css" type="text/css">
-  <link href="https://fonts.googleapis.com/css?family=Courgette&display=swap" rel="stylesheet">
-  <style>
-
-.title {
-  font-family: 'Courgette', cursive;
-  font-size: 32px; 
-  font-weight:600; 
-}
-
-a:hover, a:focus {
- color: rgb(36, 113, 163) !important;
-}
-
-body {
- margin: 0px;
- background-color: #7fb3d5;
-}
-
-a {
-  text-decoration: underline !important;
-}
-
-.message {
-  color: rgb(36, 113, 163);
-  margin-top: 100px;
-  padding: 10px;
-  background-color: white;
-  border-radius: 10px;
-}
-</style>
-</head>
-<body>
-
-<div class="container">
-  <div class="row message">
-      <div class="col-md-6 card">
-         <img src="{{ DOMAIN }}/static/images/404.png" style="max-width:100%"/>
-      </div>
-      <div class="col-md-6 card" style="margin-top: 100px;">
-         <span class="title">404 Page Not Found</span>
-         <h3>YeastPhenome.org</h3>
-         <p>Sorry, the page you're looking for cannot be found.</p>
-         <ul style="padding-left:100px">
-           <li><a href="{% url 'common:index' %}">Home Page</a></li>
-           <li><a href="{% url 'common:about' %}">About YeastPhenome</a></li>
-           <li><a href="{% url 'common:explorer' %}">Explore Data</a>
-              <ul>
-                <li><a href="{% url 'papers:all' %}">Papers</a></li>
-                <li><a href="{% url 'datasets:index' %}">Datasets</a></li>
-                <li><a href="{% url 'phenotypes:index' %}">Phenotypes</a></li>
-                <li><a href="{% url 'conditions:index' %}">Conditions</a></li>
-                <li><a href="{% url 'genes:index' %}">Genes</a></li>
-              </ul>
-           </li>
-         </ul>
-      </div>
+{% extends "base/base_min.html" %}
+{% load humanize %}
+{% block title %}Page not found | {{ SITE_NAME }}{% endblock %}
+{% block content %}
+{% load static %}
+<div class="row">
+    <div class="col-md">
+      <h1 class="mt-5 mb-4">Oops! Page not found &mdash; 404.</h1>
     </div>
 </div>
-</body>
-</html>
+<div class="row">
+    <div class="col-md-4">
+      <img src="{% static 'images/404_trim.png' %}">
+    </div>
+    <div class="col-md-8 d-flex align-items-center">
+        <div class="alert alert-warning" role="alert">
+          <p>Sorry, we cannot find the page you're looking for.</p>
+          <p>Please consider going back to the <a href="/">Homepage</a> or visiting our <a href="{% url 'common:support' %}">Support</a> section</a>.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

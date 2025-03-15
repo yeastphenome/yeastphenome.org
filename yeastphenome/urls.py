@@ -1,8 +1,7 @@
-from django.urls import include, re_path
+from django.urls import include, re_path, path
 from django.contrib import admin
 from django.views.generic.base import TemplateView
-from django.contrib.sitemaps import views
-from django.urls import path
+from django.contrib.sitemaps import views as sitemaps_views
 
 from yeastphenome.apps.papers import urls as papers_urls
 from yeastphenome.apps.common import urls as common_urls
@@ -20,15 +19,14 @@ from yeastphenome.apps.genes.sitemap import GeneSitemap
 from yeastphenome.apps.phenotypes.sitemap import ObservableSitemap
 from yeastphenome.apps.common.sitemap import CommonSitemap
 
+from yeastphenome.apps.common import views
+
 sitemaps = {'papers': PaperSitemap,
             'conditions': ConditionTypeSitemap,
             'datasets': DatasetSitemap,
             'genes': GeneSitemap,
             'phenotypes': ObservableSitemap,
             'common': CommonSitemap}
-
-# Custom 404 page
-handler404 = "yeastphenome.apps.common.views.handler404"
 
 admin.autodiscover()
 
@@ -48,6 +46,7 @@ urlpatterns = [
             template_name="base/robots.txt", content_type="text/plain"
         ),
     ),
-    path("sitemap.xml", views.index, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.index'),
-    path("sitemap-<section>.xml", views.sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
+    path("sitemap.xml", sitemaps_views.index, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.index'),
+    path("sitemap-<section>.xml", sitemaps_views.sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
+    path('<path:url>', views.handler404, name='handler404'),
 ]

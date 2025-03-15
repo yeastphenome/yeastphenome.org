@@ -21,8 +21,9 @@ from yeastphenome.settings import (
 import itertools
 
 
-def handler404(request, exception):
-    response = render(request, "base/404.html", {})
+def handler404(request, url):
+    context = {'url': url}
+    response = render(request, "base/404.html", context)
     response.status_code = 404
     return response
 
