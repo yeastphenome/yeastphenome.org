@@ -3,7 +3,7 @@ from django.urls import reverse
 
 
 class CommonSitemap(Sitemap):
-    priority = 0.5
+    priority = 1.0
     changefreq = 'never'
 
     def items(self):

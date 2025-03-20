@@ -4,7 +4,7 @@ from yeastphenome.apps.papers.models import Paper
 
 class PaperSitemap(Sitemap):
     changefreq = "never"
-    priority = 0.5
+    priority = 1.0
 
     def items(self):
         return Paper.objects.all_valid()

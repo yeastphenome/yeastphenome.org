@@ -3,8 +3,8 @@ from yeastphenome.apps.conditions.models import ConditionType
 
 
 class ConditionTypeSitemap(Sitemap):
-    changefreq = "never"
-    priority = 0.5
+    changefreq = "yearly"
+    priority = 1.0
 
     def items(self):
         return ConditionType.objects.all_valid()

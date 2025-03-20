@@ -3,8 +3,8 @@ from yeastphenome.apps.phenotypes.models import Observable
 
 
 class ObservableSitemap(Sitemap):
-    changefreq = "never"
-    priority = 0.5
+    changefreq = "yearly"
+    priority = 1.0
 
     def items(self):
         return Observable.objects.all_valid()

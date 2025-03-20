@@ -3,8 +3,8 @@ from yeastphenome.apps.genes.models import Gene
 
 
 class GeneSitemap(Sitemap):
-    changefreq = "never"
-    priority = 0.5
+    changefreq = "yearly"
+    priority = 1.0
 
     def items(self):
         return Gene.objects.all_valid()
