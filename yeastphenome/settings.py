@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     "django.contrib.staticfiles",
     "django_extensions",
+    "robots",
 ]
 
 MIDDLEWARE = [
@@ -210,7 +211,7 @@ DOWNLOAD_PREFIX = os.environ.get("YEASTPHENOME_DOWNLOAD_PREFIX", "YeastPhenome")
 # The rate limit for each view, django-ratelimit, "50 per day per ipaddress)
 VIEW_RATE_LIMIT = "5000/1d" if DEBUG else "50/1d"
 VIEW_RATE_LIMIT_BLOCK = (
-    True  # Given that someone goes over, are they blocked for the period?
+    False  # Given that someone goes over, are they blocked for the period?
 )
 
 # On any admin or plugin login redirect to standard social-auth entry point for agreement to terms
@@ -224,4 +225,8 @@ CSRF_COOKIE_HTTPONLY = True
 
 DISALLOWED_USER_AGENTS = [
     re.compile(r'^Bytespider'),
+]
+
+ROBOTS_SITEMAP_URLS = [
+    'https://yeastphenome.org/sitemap.xml',
 ]

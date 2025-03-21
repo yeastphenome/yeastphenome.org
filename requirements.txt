@@ -10,3 +10,5 @@ PubChemPy==1.0.4
 scipy==1.13.1
 tqdm
 django_ratelimit==4.1
+django_extensions==3.2.3
+django-robots==6.1

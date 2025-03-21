@@ -40,12 +40,7 @@ urlpatterns = [
     re_path(r"^conditions/", include(conditions_urls, namespace="conditions")),
     re_path(r"^screens/", include(datasets_urls, namespace="datasets")),
     re_path(r"^genes/", include(gene_urls, namespace="genes")),
-    re_path(
-        r"^robots\.txt?/$",
-        TemplateView.as_view(
-            template_name="base/robots.txt", content_type="text/plain"
-        ),
-    ),
+    re_path(r'^robots\.txt', include('robots.urls')),
     path("sitemap.xml", sitemaps_views.index, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.index'),
     path("sitemap-<section>.xml", sitemaps_views.sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('<path:url>', views.handler404, name='handler404'),
