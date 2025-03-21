@@ -18,19 +18,22 @@
         <div class="col-md-12">
             <table class="table">
                 <tr>
-                    <th width="20%" scope="row">Standard name:</th>
-                    <td>{{ gene.common_name }}</td>
+                    <th width="20%" scope="row">Names:</th>
+                    <td>{{ gene.common_name }} | {{ gene.systematic_name }} | <a class="external" target="_blank" href="https://yeastgenome.org/locus/{{ gene.primary_sgdid }}">{{ gene.primary_sgdid }}</a></td>
                 </tr>
                 <tr>
-                    <th width="20%" scope="row">Systematic name:</th>
-                    <td>{{ gene.systematic_name }}</td>
+                    <th width="20%" scope="row">Aliases:</th>
+                    <td>{{ gene.aliases_list_as_str }}</td>
                 </tr>
+                {% if gene.common_name_explanation %}
                 <tr>
-                    <th width="20%" scope="row">SGD ID:</th>
-                    <td>
-                        <a class="external" target="_blank"
-                           href="https://yeastgenome.org/locus/{{ gene.primary_sgdid }}">{{ gene.primary_sgdid }}</a>
-                    </td>
+                    <th width="20%" scope="row">Name description:</th>
+                    <td>{{ gene.common_name_explanation }}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <th width="20%" scope="row">Description:</th>
+                    <td>{{ gene.description }} [<a class="external" target="_blank" href="https://yeastgenome.org/locus/{{ gene.primary_sgdid }}">SGD</a>]</td>
                 </tr>
                 <tr>
                     <th width="20%" scope="row">Orthology & other info:</th>
@@ -39,20 +42,6 @@
                            href="https://www.alliancegenome.org/gene/SGD:{{ gene.primary_sgdid }}">Alliance of Genome Resources</a>
                     </td>
                 </tr>
-                <tr>
-                    <th width="20%" scope="row">Aliases:</th>
-                    <td>{{ gene.aliases_list_as_str }}</td>
-                </tr>
-                <tr>
-                    <th width="20%" scope="row">Description:</th>
-                    <td>{{ gene.description }}</td>
-                </tr>
-                {% if gene.common_name_explanation %}
-                    <tr>
-                        <th width="20%" scope="row">Name description:</th>
-                        <td>{{ gene.common_name_explanation }}</td>
-                    </tr>
-                {% endif %}
                 {% if gene.puddu %}
                     <tr>
                         <th width="20%" scope="row">Knock-out genome sequence:</th>
