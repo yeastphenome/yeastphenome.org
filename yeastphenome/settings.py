@@ -67,6 +67,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "yeastphenome.middleware.BlockUserAgentMiddleware",
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -222,10 +223,6 @@ ELASTICSEARCH_AUTH = os.environ.get("ELASTICSEARCH_AUTH")
 
 CSRF_USE_SESSIONS = True
 CSRF_COOKIE_HTTPONLY = True
-
-DISALLOWED_USER_AGENTS = [
-    re.compile(r'^Bytespider'),
-]
 
 ROBOTS_SITEMAP_URLS = [
     'https://yeastphenome.org/sitemap.xml',
