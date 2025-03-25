@@ -8,6 +8,7 @@ class BlockUserAgentMiddleware:
         self.blocked_user_agents = [
             "bytespider",
             "bytedance",
+            "tiktok",
             # Add more user agents to block as needed
         ]
 
