@@ -3,6 +3,7 @@
 {% load my_filters %}
 {% load humanize %}
 {% block title %}{{ gene }} | Genes | {{ SITE_NAME }}{% endblock %}
+{% block description %}Knock-out phenotypes for {{ gene.common_name }} / {{ gene.systematic_name }} / {{ gene.aliases_list_as_str }}. {{ gene.description }}{% endblock %}
 {% block content %}
     <div class="row mt-5 mb-3">
         <div class="col-md-12">

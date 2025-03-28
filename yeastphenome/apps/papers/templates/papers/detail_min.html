@@ -1,6 +1,7 @@
 {% extends "base/base_min.html" %}
 {% load humanize %}
 {% block title %}{{ paper }} | Papers | {{ SITE_NAME }}{% endblock %}
+{% block description %}{{ paper.data_abstract }}{% endblock %}
 {% block content %}
     <div class="row mt-5 mb-3">
         <div class="col-md-12">
@@ -68,8 +69,7 @@
                         <th scope="row">Raw data & curation code</th>
                         <td><a class="external"
                                target="_blank"
-                               title="This repository is private and will soon be made public."
-                               href="https://github.com/yeastphenome/yp-data/tree/master/Datasets/{{ paper.pmid }}">Dataset on GitHub</a></td>
+                               href="https://github.com/yeastphenome/yp-data/tree/master/Datasets/{{ paper.pmid }}">https://github.com/yeastphenome/yp-data</a></td>
                     </tr>
                     {% if thanks %}
                         <tr>
