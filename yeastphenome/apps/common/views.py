@@ -8,6 +8,7 @@ from yeastphenome.apps.common.utils import (
     get_latest_stats_basic,
     get_latest_stats,
 )
+from yeastphenome.apps.updates.views import get_last_updates
 from yeastphenome.apps.datasets.models import Source
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.papers.graphs import get_papers_by_year
@@ -32,6 +33,8 @@ def handler404(request, url):
 @ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def index(request):
     context = get_latest_stats_basic()
+    last_updates = get_last_updates(n=2)
+    context['last_updates'] = last_updates
     return render(request, "main/index_min.html", context)
 
 

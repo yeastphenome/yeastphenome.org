@@ -11,6 +11,7 @@ from yeastphenome.apps.datasets import urls as datasets_urls
 from yeastphenome.apps.genes import urls as gene_urls
 from yeastphenome.apps.search import urls as search_urls
 from yeastphenome.apps.downloads import urls as downloads_urls
+from yeastphenome.apps.updates import urls as updates_urls
 
 from yeastphenome.apps.papers.sitemap import PaperSitemap
 from yeastphenome.apps.conditions.sitemap import ConditionTypeSitemap
@@ -40,6 +41,7 @@ urlpatterns = [
     re_path(r"^conditions/", include(conditions_urls, namespace="conditions")),
     re_path(r"^screens/", include(datasets_urls, namespace="datasets")),
     re_path(r"^genes/", include(gene_urls, namespace="genes")),
+    re_path(r"^updates/", include(updates_urls, namespace="updates")),
     re_path(r'^robots\.txt', include('robots.urls')),
     path("sitemap.xml", sitemaps_views.index, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.index'),
     path("sitemap-<section>.xml", sitemaps_views.sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),

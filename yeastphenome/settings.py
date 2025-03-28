@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "yeastphenome.apps.tags",
     "yeastphenome.apps.search",
     "yeastphenome.apps.downloads",
+    "yeastphenome.apps.updates",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
