@@ -220,3 +220,7 @@ CSRF_COOKIE_HTTPONLY = True
 ROBOTS_SITEMAP_URLS = [
     'https://yeastphenome.org/sitemap.xml',
 ]
+
+PATH_TO_SAFE = os.environ.get("PATH_TO_SAFE")
+PATH_TO_SAFE_DATA = os.environ.get("PATH_TO_SAFE_DATA")
+PATH_TO_SAFE_OUTPUT = os.environ.get("PATH_TO_SAFE_OUTPUT")
