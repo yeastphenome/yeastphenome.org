@@ -18,5 +18,7 @@
 env/
 __pycache__/
 
+requirements_extra_local.txt
+
 # Ignored by the build system
 /setup.cfg

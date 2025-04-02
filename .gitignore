@@ -1,5 +1,4 @@
 env/
-yeastphenome-static/*
 __pycache__/
 
 app.yaml
@@ -11,3 +10,5 @@ app-dev.yaml
 
 *.pyc
 *~
+
+requirements_extra_local.txt
