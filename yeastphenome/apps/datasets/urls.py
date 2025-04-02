@@ -11,11 +11,11 @@ urlpatterns = [
     path("<int:dataset1_id>/similarities/<int:dataset2_id>/", views.scatterplot_gc, name="scatterplot_gc"),
     path("<int:dataset1_id>/similarities/<int:dataset2_id>/download/", views.download_scores, name="download_scores_for_pair"),
 
-    re_path(r"^(?P<domain>papers)/(?P<id>\d+)/", views.data, name="data"),
-    re_path(r"^(?P<domain>datasets)/(?P<id>\d+)/", views.data, name="data"),
-    re_path(r"^(?P<domain>conditions)/(?P<id>\d+)/", views.data, name="data"),
-    re_path(r"^conditions/(?P<domain>chebi)/(?P<id>\d+)/", views.data, name="data"),
-    re_path(r"^(?P<domain>phenotypes)/(?P<id>\d+)/", views.data, name="data"),
+    # re_path(r"^(?P<domain>papers)/(?P<id>\d+)/", views.data, name="data"),
+    # re_path(r"^(?P<domain>datasets)/(?P<id>\d+)/", views.data, name="data"),
+    # re_path(r"^(?P<domain>conditions)/(?P<id>\d+)/", views.data, name="data"),
+    # re_path(r"^conditions/(?P<domain>chebi)/(?P<id>\d+)/", views.data, name="data"),
+    # re_path(r"^(?P<domain>phenotypes)/(?P<id>\d+)/", views.data, name="data"),
 ]
 
 app_name = "datasets"
