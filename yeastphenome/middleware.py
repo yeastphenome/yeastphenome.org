@@ -1,7 +1,5 @@
 from django.http import HttpResponseForbidden
 
-import re
-
 class BlockUserAgentMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
@@ -9,7 +7,10 @@ class BlockUserAgentMiddleware:
             "bytespider",
             "bytedance",
             "tiktok",
-            # Add more user agents to block as needed
+            "dataforseo",
+            "amazon",
+            "google",
+            "bing",
         ]
 
     def __call__(self, request):
