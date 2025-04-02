@@ -21,20 +21,13 @@ import pandas as pd
 import numpy as np
 import tempfile
 
-from django_ratelimit.decorators import ratelimit
-from yeastphenome.settings import (
-    VIEW_RATE_LIMIT as rl_rate,
-    VIEW_RATE_LIMIT_BLOCK as rl_block,
-    DOWNLOAD_PREFIX
-)
+from yeastphenome.settings import DOWNLOAD_PREFIX
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def index(request):
     return redirect("search:search")
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def detail(request, dataset_id):
 
     dataset = get_object_or_404(Dataset, pk=dataset_id)
@@ -73,7 +66,6 @@ def detail(request, dataset_id):
     return render(request, "datasets/detail_min.html", context)
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def scatterplot_gc(request, dataset1_id, dataset2_id):
 
     dataset1 = get_object_or_404(Dataset, pk=dataset1_id)
@@ -138,7 +130,6 @@ def scatterplot_gc(request, dataset1_id, dataset2_id):
 
 
 @never_cache
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def scores(request, dataset_id):
 
     dataset = get_object_or_404(Dataset, pk=dataset_id)
@@ -150,7 +141,6 @@ def scores(request, dataset_id):
     return render(request, "datasets/scores_min.html", context)
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download_scores(request, dataset1_id, dataset2_id=None):
 
     dataset1 = get_object_or_404(Dataset, pk=dataset1_id)
@@ -193,7 +183,6 @@ def download_scores(request, dataset1_id, dataset2_id=None):
     return response
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def similarities(request, dataset_id):
 
     dataset = get_object_or_404(Dataset, pk=dataset_id)
@@ -208,7 +197,6 @@ def similarities(request, dataset_id):
     return render(request, "datasets/similarities_min.html", context)
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download_similarities(request, dataset_id):
 
     dataset = get_object_or_404(Dataset, pk=dataset_id)
@@ -227,7 +215,6 @@ def download_similarities(request, dataset_id):
     return response
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download_observable_datasets_list(request, observable_id):
     """Download all datasets associated with an observable"""
     import pandas
@@ -254,7 +241,6 @@ def download_observable_datasets_list(request, observable_id):
     return send_file(exported_file)
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download_dataset_scores(request, datasets=None, filename=None):
     """Downloads scores for one dataset or a list of datasets. Produces a gene x dataset matrix."""
 
@@ -330,7 +316,6 @@ def download_dataset_scores(request, datasets=None, filename=None):
     return response
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download_observable_datasets(request, observable_id):
     """Download all datasets associated with an observable"""
 
@@ -344,7 +329,6 @@ def download_observable_datasets(request, observable_id):
     )
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download_paper_datasets(request, paper_id):
     """Download all datasets associated with a paper"""
 
@@ -355,7 +339,6 @@ def download_paper_datasets(request, paper_id):
     )
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download_condition_datasets(request, condition_id):
     """Download all datasets associated with a condition type"""
 
@@ -366,7 +349,6 @@ def download_condition_datasets(request, condition_id):
     )
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download_medium_datasets(request, medium_id):
     """Download all datasets associated with a medium"""
 
@@ -381,7 +363,6 @@ def download_medium_datasets(request, medium_id):
     )
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def data(request, domain, id):
 
     file_header = ""

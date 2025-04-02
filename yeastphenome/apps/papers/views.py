@@ -10,20 +10,12 @@ from yeastphenome.apps.papers.utils import (
     get_pubmed_paper,
 )
 from yeastphenome.apps.common.utils_format import join_and
-from yeastphenome.settings import (
-    VIEW_RATE_LIMIT as rl_rate,
-    VIEW_RATE_LIMIT_BLOCK as rl_block,
-)
-
-from django_ratelimit.decorators import ratelimit
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def index(request):
     return redirect("search:search")
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def detail(request, paper_id):
     p = get_object_or_404(Paper, pk=paper_id)
 
@@ -66,7 +58,6 @@ def detail(request, paper_id):
     return render(request, "papers/detail_min.html", context)
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def datasets(request, paper_id):
     p = get_object_or_404(Paper, pk=paper_id)
     datasets_values = p.datasets.all_valid().values(
@@ -86,7 +77,6 @@ def datasets(request, paper_id):
     return render(request, "papers/datasets_min.html", context)
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def datasets_list(request, paper_id, pmid):
     p = get_object_or_404(Paper, pk=paper_id)
 

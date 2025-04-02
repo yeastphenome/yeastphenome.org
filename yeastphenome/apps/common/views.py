@@ -13,12 +13,6 @@ from yeastphenome.apps.datasets.models import Source
 from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.papers.graphs import get_papers_by_year
 
-from django_ratelimit.decorators import ratelimit
-from yeastphenome.settings import (
-    VIEW_RATE_LIMIT as rl_rate,
-    VIEW_RATE_LIMIT_BLOCK as rl_block,
-)
-
 import itertools
 
 
@@ -30,7 +24,6 @@ def handler404(request, url):
 
 
 @never_cache
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def index(request):
     context = get_latest_stats_basic()
     last_updates = get_last_updates(n=2)
@@ -38,43 +31,36 @@ def index(request):
     return render(request, "main/index_min.html", context)
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def support(request):
     context = {}
     return render(request, "main/support.html", context)
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def about(request):
     return redirect("common:project")
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def project(request):
     context = {}
     return render(request, "main/project.html", context)
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def faq(request):
     context = {}
     return render(request, "main/faq.html", context)
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def stats(request):
     context = get_latest_stats()
     context["paper_counts"] = get_papers_by_year()
     return render(request, "main/stats.html", context)
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def authors(request):
     context = {}
     return render(request, "main/authors.html", context)
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def data_contributors(request):
     papers = (
         Paper.objects.all_valid()

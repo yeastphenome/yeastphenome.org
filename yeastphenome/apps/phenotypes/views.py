@@ -4,25 +4,15 @@ from django.db.models import F
 from yeastphenome.apps.phenotypes.models import Observable
 from yeastphenome.apps.datasets.models import Dataset
 
-from django_ratelimit.decorators import ratelimit
 
-from yeastphenome.settings import (
-    VIEW_RATE_LIMIT as rl_rate,
-    VIEW_RATE_LIMIT_BLOCK as rl_block,
-)
-
-
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def redirect_index(request):
     return redirect("phenotypes:index")
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def index(request):
     return redirect("search:search")
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def phenotype_detail(request, phenotype_id):
     observable = get_object_or_404(Observable, pk=phenotype_id)
     datasets = get_datasets(observable)
@@ -37,7 +27,6 @@ def phenotype_detail(request, phenotype_id):
     return render(request, "phenotypes/detail_min.html", context)
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def phenotype_datasets(request, phenotype_id):
     observable = get_object_or_404(Observable, pk=phenotype_id)
     datasets = get_datasets(observable)

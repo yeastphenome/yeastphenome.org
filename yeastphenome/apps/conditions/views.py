@@ -3,21 +3,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 
 from yeastphenome.apps.conditions.models import ConditionType
 
-from django_ratelimit.decorators import ratelimit
-from yeastphenome.settings import (
-    VIEW_RATE_LIMIT as rl_rate,
-    VIEW_RATE_LIMIT_BLOCK as rl_block,
-)
-
 import numpy as np
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def index(request):
     return redirect("search:search")
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def detail(request, conditiontype_id):
 
     conditiontype = get_object_or_404(ConditionType, pk=conditiontype_id)
@@ -44,7 +36,6 @@ def detail(request, conditiontype_id):
     return render(request, "conditions/detail_min.html", context)
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def datasets(request, conditiontype_id):
 
     conditiontype = get_object_or_404(ConditionType, pk=conditiontype_id)

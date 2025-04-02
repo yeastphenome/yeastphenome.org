@@ -6,23 +6,16 @@ from yeastphenome.apps.datasets.models import Data, Dataset
 from yeastphenome.apps.genes.models import Gene
 from yeastphenome.apps.common.utils_format import update_values_with_percentile
 
-from django_ratelimit.decorators import ratelimit
-from yeastphenome.settings import (
-    VIEW_RATE_LIMIT as rl_rate,
-    VIEW_RATE_LIMIT_BLOCK as rl_block,
-    DOWNLOAD_PREFIX
-)
+from yeastphenome.settings import DOWNLOAD_PREFIX
 
 import pandas as pd
 import numpy as np
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def index(request):
     return redirect("search:search")
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def detail(request, gene_id):
 
     gene = get_object_or_404(Gene, pk=gene_id)
@@ -58,7 +51,6 @@ def detail(request, gene_id):
     return render(request, "genes/detail_min.html", context)
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def scores(request, gene_id):
 
     gene = get_object_or_404(Gene, pk=gene_id)
@@ -73,7 +65,6 @@ def scores(request, gene_id):
     return render(request, "genes/scores_min.html", context)
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download_scores(request, gene1_id, gene2_id=None):
 
     gene1 = get_object_or_404(Gene, pk=gene1_id)
@@ -103,7 +94,6 @@ def download_scores(request, gene1_id, gene2_id=None):
 
     return response
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def similarities(request, gene_id):
 
     gene = get_object_or_404(Gene, pk=gene_id)
@@ -118,7 +108,6 @@ def similarities(request, gene_id):
     return render(request, "genes/similarities_min.html", context)
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def download_similarities(request, gene_id):
 
     gene = get_object_or_404(Gene, pk=gene_id)
@@ -137,7 +126,6 @@ def download_similarities(request, gene_id):
     return response
 
 
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def scatterplot_gc(request, gene1_id, gene2_id):
 
     gene1 = get_object_or_404(Gene, pk=gene1_id)
