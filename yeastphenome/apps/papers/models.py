@@ -6,7 +6,7 @@ from django.utils.safestring import mark_safe
 
 from yeastphenome.apps.tags.models import Tag
 from yeastphenome.apps.papers.managers import PaperManager
-from yeastphenome.apps.common.utils_format import truncated_list_as_str, join_and
+from yeastphenome.apps.common.utils_format import join_and
 
 import itertools
 
@@ -25,11 +25,16 @@ class Status(models.Model):
 
 class Paper(models.Model):
 
+    # PubMed Info
     pmid = models.IntegerField(default=0, unique=True)
-
     first_author = models.CharField(max_length=200)
     last_author = models.CharField(max_length=200, blank=True, null=True)
     pub_date = models.IntegerField(default=0)
+    authors = models.TextField(blank=True, null=True)
+    title = models.TextField(blank=True, null=True)
+    abstract = models.TextField(blank=True, null=True)
+    citation = models.CharField(max_length=200, blank=True, null=True)
+
     systematic_name = models.CharField(max_length=200, blank=False, null=False)
 
     notes = models.TextField(blank=True, null=True)

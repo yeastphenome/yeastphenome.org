@@ -1,7 +1,7 @@
 {% extends "base/base_min.html" %}
 {% load humanize %}
 {% block title %}{{ paper }} | Papers | {{ SITE_NAME }}{% endblock %}
-{% block description %}{{ paper.data_abstract }}{% endblock %}
+{% block description %}{{ paper.title }} | {{ paper.systematic_name }} | {{ paper.citation }} | {{ paper.data_abstract }}{% endblock %}
 {% block content %}
     <div class="row mt-5 mb-3">
         <div class="col-md-12">
@@ -27,7 +27,7 @@
                     </tr>
                     <tr>
                         <th scope="row">Title</th>
-                        <td>{{ title }}</td>
+                        <td>{{ paper.title }}</td>
                     </tr>
                     <tr>
                         <th scope="row">Authors</th>
@@ -47,11 +47,11 @@
                     </tr>
                     <tr>
                         <th scope="row">Abstract</th>
-                        <td>{{ abstract }}</td>
+                        <td>{{ paper.abstract }}</td>
                     </tr>
                     <tr>
                         <th scope="row">Citation</th>
-                        <td>{{ citation }}</td>
+                        <td>{{ paper.citation }}</td>
                     </tr>
                     {% if paper.data_abstract %}
                         <tr>

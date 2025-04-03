@@ -2,6 +2,11 @@ from django.core.management.base import BaseCommand
 
 from yeastphenome.apps.papers.models import Paper
 
+from yeastphenome.apps.papers.utils import (
+    get_pubmed_paper_context,
+    get_pubmed_paper,
+)
+
 from tqdm import tqdm
 
 
@@ -14,7 +19,14 @@ class Command(BaseCommand):
 
         for paper in tqdm(papers_queryset):
             try:
-                paper.save()
+                if paper.pmid != 0:
+                    xml_data = get_pubmed_paper(paper.pmid)
+                    context = get_pubmed_paper_context(paper.pmid, xml_data)
+                    paper.title = context['title']
+                    paper.authors = '|'.join(context['authors'])
+                    paper.abstract = context['abstract']
+                    paper.citation = context['citation']
+                    paper.save()
             except:
                 self.stdout.write("Paper %d couldn't be saved." % paper.id)
                 pass

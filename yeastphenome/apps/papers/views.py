@@ -5,11 +5,6 @@ from django.shortcuts import get_object_or_404
 from django.conf import settings
 
 from yeastphenome.apps.papers.models import Paper
-from yeastphenome.apps.papers.utils import (
-    get_pubmed_paper_context,
-    get_pubmed_paper,
-)
-from yeastphenome.apps.common.utils_format import join_and
 
 
 def index(request):
@@ -50,10 +45,7 @@ def detail(request, paper_id):
         )
         context["thanks"] = thanks
 
-    # Fetch article info from Pubmed, share data from one call
-    if p.pmid != 0:
-        xml_data = get_pubmed_paper(p.pmid)
-        context.update(get_pubmed_paper_context(p.pmid, xml_data))
+    context['authors'] = p.authors.split('|')
 
     return render(request, "papers/detail_min.html", context)
 

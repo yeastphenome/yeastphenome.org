@@ -27,7 +27,7 @@ def get_pubmed_paper_context(pmid, xml_data=None):
     elif "MedlineDate" in article["Journal"]["JournalIssue"]["PubDate"]:
         pubdate = article["Journal"]["JournalIssue"]["PubDate"]["MedlineDate"]
 
-    pgn = "."
+    pgn = ""
     if "Pagination" in article.keys():
         pgn = article["Pagination"]["MedlinePgn"]
 
@@ -39,9 +39,17 @@ def get_pubmed_paper_context(pmid, xml_data=None):
     if "ISOAbbreviation" in article["Journal"].keys():
         jrn = article["Journal"]["ISOAbbreviation"]
 
+    citation = u"%s %s; %s" % (jrn, pubdate, vol)
+    if pgn:
+        citation += u":%s" % pgn
+
+    abstract = ""
+    if "Abstract" in article:
+        abstract = article["Abstract"]["AbstractText"][0]
+
     return {
         "title": article["ArticleTitle"],
         "authors": authors_list,
-        "abstract": article["Abstract"]["AbstractText"][0],
-        "citation": u"%s %s; %s:%s" % (jrn, pubdate, vol, pgn),
+        "abstract": abstract,
+        "citation": citation,
     }

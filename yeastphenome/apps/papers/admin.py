@@ -5,7 +5,12 @@ from yeastphenome.apps.papers.forms import PaperModelForm
 from yeastphenome.apps.datasets.admin import DatasetInline
 
 from yeastphenome.apps.common.utils_admin import ImprovedModelAdmin
-from yeastphenome.apps.common.utils_format import truncated_list_as_str, join_and
+from yeastphenome.apps.common.utils_format import truncated_list_as_str
+
+from yeastphenome.apps.papers.utils import (
+    get_pubmed_paper_context,
+    get_pubmed_paper,
+)
 
 
 class StatusdataInline(admin.TabularInline):
@@ -28,7 +33,7 @@ class PaperAdmin(ImprovedModelAdmin):
         "latest_data_status_name_date",
         "latest_tested_status_name",
     )
-    list_filter = ["latest_data_status__status__name", "pub_date", "last_author"]
+    list_filter = ["latest_data_status__status__name", "pub_date"]
     ordering = (
         "pub_date",
         "systematic_name",
@@ -37,6 +42,7 @@ class PaperAdmin(ImprovedModelAdmin):
         ("user",),
         ("systematic_name",),
         ("first_author", "last_author", "pub_date", "pmid"),
+        ("title","authors","abstract","citation"),
         ("data_abstract",),
         ("notes", "private_notes"),
         "observables_summary",
@@ -46,6 +52,10 @@ class PaperAdmin(ImprovedModelAdmin):
     raw_id_fields = ("tags",)
     readonly_fields = (
         "systematic_name",
+        "title",
+        "authors",
+        "abstract",
+        "citation",
         "observables_summary",
         "conditiontypes_summary",
     )
@@ -115,6 +125,15 @@ class PaperAdmin(ImprovedModelAdmin):
         else:
             systematic_name = "%s, %s" % (paper.first_author, paper.pub_date)
         paper.systematic_name = systematic_name
+
+        # Get PubMed Info
+        if paper.pmid != 0:
+            xml_data = get_pubmed_paper(paper.pmid)
+            context = get_pubmed_paper_context(paper.pmid, xml_data)
+            paper.authors = '|'.join(context['authors'])
+            paper.title = context['title']
+            paper.citation = context['citation']
+            paper.abstract = context['abstract']
 
         super(PaperAdmin, self).save_model(request, paper, form, change)
 
