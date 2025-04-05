@@ -310,7 +310,7 @@ class Paper(models.Model):
 
 
 class Statusdata(models.Model):
-    paper = models.ForeignKey(Paper, on_delete=models.DO_NOTHING)
+    paper = models.ForeignKey(Paper, on_delete=models.CASCADE)
     status = models.ForeignKey(Status, on_delete=models.DO_NOTHING)
     status_date = models.DateField()
 
@@ -322,7 +322,7 @@ class Statusdata(models.Model):
 
 
 class Statustested(models.Model):
-    paper = models.ForeignKey(Paper, on_delete=models.DO_NOTHING)
+    paper = models.ForeignKey(Paper, on_delete=models.CASCADE)
     status = models.ForeignKey(Status, on_delete=models.DO_NOTHING)
     status_date = models.DateField()
 
