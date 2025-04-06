@@ -9,7 +9,6 @@ class BlockUserAgentMiddleware:
             "tiktok",
             "dataforseo",
             "amazon",
-            "google",
             "bing",
         ]
 

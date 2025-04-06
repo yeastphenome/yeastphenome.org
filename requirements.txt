@@ -3,9 +3,10 @@ numpy==1.26.4
 pandas==2.2.2
 scipy==1.13.1
 psycopg2-binary==2.9.9
-elastic-enterprise-search==8.11.0
+elasticsearch==8.17.0
 biopython==1.85
 django_extensions==3.2.3
 django-robots==6.1
 libChEBIpy==1.0.10
 pubchempy==1.0.4
+tqdm
