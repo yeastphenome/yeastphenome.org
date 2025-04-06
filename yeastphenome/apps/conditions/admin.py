@@ -32,12 +32,13 @@ class ConditionAdminForm(forms.ModelForm):
 
 class ConditionAdmin(ImprovedModelAdmin):
     form = ConditionAdminForm
+    list_per_page = 25
     list_display = (
         "id",
         "type",
         "dose",
-        "conditionsets_edit_list",
-        "media_edit_list",
+        # "conditionsets_edit_list",
+        # "media_edit_list",
         "tags_edit_list",
     )
     ordering = ("type__name", "dose")
@@ -100,6 +101,7 @@ class ConditionTypeAdminForm(forms.ModelForm):
 
 class ConditionTypeAdmin(ImprovedModelAdmin):
     form = ConditionTypeAdminForm
+    list_per_page = 25
     list_display = (
         "name",
         "chebi_name",
@@ -173,6 +175,7 @@ class ConditionTypeAdmin(ImprovedModelAdmin):
 
 
 class ConditionSetAdmin(ImprovedModelAdmin):
+    list_per_page = 25
     list_display = (
         "id",
         "display_name",
@@ -236,11 +239,12 @@ class ConditionSetAdmin(ImprovedModelAdmin):
 
 
 class MediumAdmin(ImprovedModelAdmin):
+    list_per_page = 25
     list_display = (
         "id",
         "display_name",
-        "papers_edit_link_list_20",
-        "tags_list_str",
+        # "papers_edit_link_list_20",
+        # "tags_list_str",
     )
     raw_id_fields = ("conditions", "tags")
     search_fields = (
