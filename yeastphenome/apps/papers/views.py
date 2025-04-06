@@ -45,7 +45,7 @@ def detail(request, paper_id):
         )
         context["thanks"] = thanks
 
-    context['authors'] = p.authors.split('|')
+    context['authors'] = p.authors.split(', ')
 
     return render(request, "papers/detail_min.html", context)
 

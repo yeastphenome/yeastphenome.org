@@ -23,7 +23,7 @@ class Command(BaseCommand):
                     xml_data = get_pubmed_paper(paper.pmid)
                     context = get_pubmed_paper_context(paper.pmid, xml_data)
                     paper.title = context['title']
-                    paper.authors = '|'.join(context['authors'])
+                    paper.authors = ', '.join(context['authors'])
                     paper.abstract = context['abstract']
                     paper.citation = context['citation']
                     paper.save()

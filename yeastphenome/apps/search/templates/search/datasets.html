@@ -2,7 +2,7 @@
     <div class="col-md-12">
         <h2>Screens</h2>
 
-        {% include "search/pagination.html" with page_obj=datasets_page_obj %}
+        {% include "search/pagination.html" %}
 
         <table class="table my-4">
             <thead>
@@ -19,7 +19,7 @@
                        title="{% include 'base/nps_explanation.html' %}">NPVs</a>
                 </th>
             </thead>
-            {% for dataset in datasets_page_obj %}
+            {% for dataset in datasets_results %}
                 <tr>
                     <td class="align-middle"><a href="{% url 'datasets:detail' dataset.id  %}">{{ dataset.id }}</a></td>
                     <td class="align-middle">{{ dataset.collection }}</td>
@@ -40,7 +40,7 @@
             {% endfor %}
         </table>
 
-        {% include "search/pagination.html" with page_obj=datasets_page_obj %}
+        {% include "search/pagination.html" %}
 
     </div>
 </div>

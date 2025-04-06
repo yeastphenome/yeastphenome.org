@@ -130,7 +130,7 @@ class PaperAdmin(ImprovedModelAdmin):
         if paper.pmid != 0:
             xml_data = get_pubmed_paper(paper.pmid)
             context = get_pubmed_paper_context(paper.pmid, xml_data)
-            paper.authors = '|'.join(context['authors'])
+            paper.authors = ', '.join(context['authors'])
             paper.title = context['title']
             paper.citation = context['citation']
             paper.abstract = context['abstract']

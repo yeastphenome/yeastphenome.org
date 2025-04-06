@@ -1,19 +1,25 @@
+{% load custom_filters %}
+
 <div class="row">
     <div class="col-md-12">
         <h2 class="mt-5 mb-4">Papers</h2>
 
-        {% include "search/pagination.html" with page_obj=papers_page_obj %}
+        {% include "search/pagination.html" %}
 
         <table class="table my-4">
             <tr>
-                <th width="25%">First Author~Last Author, Year</th>
-                <th width="25%">Phenotypes</th>
-                <th width="25%">Conditions</th>
-                <th>Tags</th>
+                <th width="64%">Paper</th>
+                <th width="12%">Phenotypes</th>
+                <th width="12%">Conditions</th>
+                <th width="12%">Tags</th>
             </tr>
-            {% for paper in papers_page_obj %}
+            {% for paper in papers_results %}
                 <tr>
-                    <td><a href="{% url 'papers:detail' paper.id  %}">{{ paper.systematic_name }}</a></td>
+                    <td>
+                        <a href="{% url 'papers:detail' paper.id  %}">{{ paper.title }}</a><br>
+                        {{ paper.authors|truncate_middle_words:30 }}<br>
+                        {{ paper.citation }}
+                    </td>
                     <td>{{ paper.observables_summary }}</td>
                     <td>{{ paper.conditiontypes_summary }}</td>
                     <td>{{ paper.tags_list_as_str|truncatewords:10 }}</td>
@@ -25,7 +31,7 @@
             {% endfor %}
         </table>
 
-        {% include "search/pagination.html" with page_obj=papers_page_obj %}
+        {% include "search/pagination.html" %}
 
     </div>
 </div>

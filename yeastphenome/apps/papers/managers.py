@@ -35,6 +35,10 @@ class PaperManager(models.Manager):
 
         papers = self.all_valid().values("id",
                                          "systematic_name",
+                                         "authors",
+                                         "title",
+                                         "abstract",
+                                         "citation",
                                          "pmid",
                                          "pub_date",
                                          "data_abstract",
@@ -63,6 +67,10 @@ class PaperManager(models.Manager):
 
         columns = ["id",
                    "systematic_name",
+                   "authors",
+                   "title",
+                   "abstract",
+                   "citation",
                    "pmid",
                    "pub_date",
                    "data_abstract",

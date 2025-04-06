@@ -17,7 +17,7 @@ def get_pubmed_paper_context(pmid, xml_data=None):
         xml_data = get_pubmed_paper(pmid)
     article = xml_data.get("PubmedArticle")[0].get("MedlineCitation").get("Article")
     authors_list = [
-        (u"%s %s" % (author["ForeName"], author["LastName"]))
+        (u"%s %s" % (author["LastName"], author["Initials"]))
         for author in article["AuthorList"]
     ]
 

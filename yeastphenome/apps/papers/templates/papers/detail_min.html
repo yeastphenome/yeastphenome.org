@@ -33,16 +33,10 @@
                         <th scope="row">Authors</th>
                         <td>{% for author in authors %}
                             {% spaceless %}
-                                {% if forloop.first %}
-                                    <a class="search" href="/search/?q={{ paper.first_author|urlencode }}&tab=papers&field=author">{{ author }}</a>
-                                {% elif forloop.last %}
-                                    <a class="search" href="/search/?q={{ paper.last_author|urlencode }}&tab=papers&field=author">{{ author }}</a>
-                                {% else %}
-                                    {{ author }}
-                                {% endif %}
+                                <a class="search" href='/search/?q=authors:"{{ author|urlencode }}"&tab=papers'>{{ author }}</a>
                                 {% if not forloop.last %} &#8901; {% endif %}
                             {% endspaceless %}
-                        {% endfor %}
+                            {% endfor %}
                         </td>
                     </tr>
                     <tr>

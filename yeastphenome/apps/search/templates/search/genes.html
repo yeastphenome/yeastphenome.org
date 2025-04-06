@@ -10,7 +10,7 @@
             <th style="width: 20%">Aliases</th>
             <th>Description</th>
             </tr>
-            {% for gene in genes_page_obj %}
+            {% for gene in genes_results %}
                 <tr>
                     <td><a href="{% url 'genes:detail' gene.id  %}">{{ gene.common_name }} / {{ gene.systematic_name }}</a></td>
                     <td>{{ gene.aliases_list_as_str }}</td>
