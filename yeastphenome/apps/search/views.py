@@ -127,6 +127,7 @@ def search_index_view(request):
                     "simple_query_string": {
                         "query": cleaned_query,
                         "fields": search_fields,
+                        "default_operator": "AND",
                         }
                     },
                 "from": start_index,
