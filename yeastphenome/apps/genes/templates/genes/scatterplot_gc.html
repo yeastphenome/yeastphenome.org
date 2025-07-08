@@ -86,7 +86,8 @@
             <p>{{ gene1.description }}</p>
             <p><strong>{{ gene2 }}</strong></p>
             <p>{{ gene2.description }}</p>
-            <p><strong>Correlation:</strong> {{ similarity.score|floatformat:2 }} &#177; {{ similarity.pvalue|floatformat:2 }}</p>
+            <p><strong><a class="info" data-bs-toggle="tooltip"
+                               title="{% include 'base/correlation_explanation_genes.html' %}">Correlation</a>:</strong> {{ similarity.score|floatformat:2 }}</p>
             <p><a class="btn btn-primary" role="button"
                    href="{% url 'genes:download_scores_for_pair' gene1.id gene2.id %}">Download NPVs</a>
             </p>

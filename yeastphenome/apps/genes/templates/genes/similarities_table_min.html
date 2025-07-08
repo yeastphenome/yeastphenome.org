@@ -4,7 +4,7 @@
         <tr>
             <th scope="col" class="col-md-6">Gene name</th>
             <th scope="col" class="col-md-2"><a class="info" data-bs-toggle="tooltip"
-                               title="{% include 'base/correlation_explanation.html' %}">Correlation<br>(mean &#177; std. dev.)</a></th>
+                               title="{% include 'base/correlation_explanation_genes.html' %}">Correlation</a></th>
             <th scope="col" class="col-md-2">Percentile</th>
             <th scope="col" class="col-md-2">Scatter plot</th>
         </tr>
@@ -13,7 +13,7 @@
         {% for similarity in similarities %}
             <tr>
                 <td><a href="{% url 'genes:detail' similarity.gene2_id %}">{{ similarity.gene2__common_name }} / {{ similarity.gene2__systematic_name }}</a></td>
-                <td>{{ similarity.score|floatformat:2 }} &#177; {{ similarity.pvalue|floatformat:2 }}</td>
+                <td>{{ similarity.score|floatformat:2 }}</td>
                 <td>{{ similarity.percentile|floatformat:2 }}%</td>
                 <td><a href="{% url 'genes:scatterplot_gc' gene.id similarity.gene2_id %}">Show</a></td>
             </tr>

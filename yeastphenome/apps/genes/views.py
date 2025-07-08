@@ -29,14 +29,18 @@ def detail(request, gene_id):
         scores.order_by("-valuez"), "valuez"
     )[:10]
 
-    similarities = gene.get_similarities()
-    num_similarities = similarities.count()
-    similarities_lowest = update_values_with_percentile(
-        similarities.order_by("score"), "score"
-    )[:10]
-    similarities_highest = update_values_with_percentile(
-        similarities.order_by("-score"), "score"
-    )[:10]
+    # similarities = gene.get_similarities()
+    # num_similarities = similarities.count()
+    # similarities_lowest = update_values_with_percentile(
+    #     similarities.order_by("score"), "score"
+    # )[:10]
+    # similarities_highest = update_values_with_percentile(
+    #     similarities.order_by("-score"), "score"
+    # )[:10]
+
+    similarities_lowest = gene.get_similarities_faiss(n=10, ascending=True)
+    similarities_highest = gene.get_similarities_faiss(n=10, ascending=False)
+    num_similarities = 4554
 
     context = {
         "gene": gene,
@@ -97,8 +101,10 @@ def download_scores(request, gene1_id, gene2_id=None):
 def similarities(request, gene_id):
 
     gene = get_object_or_404(Gene, pk=gene_id)
-    similarities = gene.get_similarities().order_by("-score")
-    similarities = update_values_with_percentile(similarities, "score")
+    # similarities = gene.get_similarities().order_by("-score")
+    # similarities = update_values_with_percentile(similarities, "score")
+
+    similarities = gene.get_similarities_faiss(ascending=False)
 
     context = {
         "gene": gene,
@@ -111,9 +117,12 @@ def similarities(request, gene_id):
 def download_similarities(request, gene_id):
 
     gene = get_object_or_404(Gene, pk=gene_id)
-    similarities = gene.get_similarities().order_by("-score")
+    # similarities = gene.get_similarities().order_by("-score")
+    similarities = gene.get_similarities_faiss(ascending=False)
+
+
     similarities_df = pd.DataFrame(list(similarities))
-    similarities_df.columns = ['Correlation mean', 'Correlation std. dev.',
+    similarities_df.columns = ['Correlation', 'Percentile',
                                'Gene ID', 'Gene systematic name', 'Gene common name']
 
     # Prepare the HttpResponse
@@ -134,7 +143,7 @@ def scatterplot_gc(request, gene1_id, gene2_id):
     gene1_link = reverse("genes:detail", args=[gene1_id])
     gene2_link = reverse("genes:detail", args=[gene2_id])
 
-    similarity = gene1.get_similarity_to(gene2)
+    similarity = gene1.get_similarity_to_faiss(gene2)
 
     data = Data.objects.all_valid().filter(gene_id__in=[gene1_id, gene2_id])
     data = data.values("gene_id", "dataset_id", "valuez")

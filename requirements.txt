@@ -9,4 +9,5 @@ django_extensions==3.2.3
 django-robots==6.1
 libChEBIpy==1.0.10
 pubchempy==1.0.4
+faiss-cpu==1.9.0
 tqdm
