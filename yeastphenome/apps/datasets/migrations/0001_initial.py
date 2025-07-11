@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('conditions', '0001_initial'),
-        ('genes', '__first__'),
+        ('genes', '0001_initial'),
         ('papers', '0001_initial'),
         ('phenotypes', '0001_initial'),
         ('tags', '0001_initial'),
