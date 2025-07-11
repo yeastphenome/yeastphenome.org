@@ -97,33 +97,37 @@ class Gene(models.Model):
         faiss.normalize_L2(embeddings)
         index.add(embeddings.astype(np.float32))
 
-        query_id = np.argwhere(object_ids == self.id)[0][0]
-        query_embedding = embeddings[query_id]
+        query_id = np.argwhere(object_ids == self.id)
+        if query_id:
+            query_id = query_id[0][0]
+            query_embedding = embeddings[query_id]
 
-        if ascending:
-            distances, indices = index.search(-query_embedding.reshape(1, -1).astype(np.float32), k=n)
-            distances = -distances
-            ranks = rankdata(distances[0]) - 1
-        else:
-            distances, indices = index.search(query_embedding.reshape(1, -1).astype(np.float32), k=n)
-            ranks = num_genes - (n - (rankdata(distances[0])-1))
+            if ascending:
+                distances, indices = index.search(-query_embedding.reshape(1, -1).astype(np.float32), k=n)
+                distances = -distances
+                ranks = rankdata(distances[0]) - 1
+            else:
+                distances, indices = index.search(query_embedding.reshape(1, -1).astype(np.float32), k=n)
+                ranks = num_genes - (n - (rankdata(distances[0])-1))
+                
+            percentiles = 100 * ranks / (num_genes-1)
             
-        percentiles = 100 * ranks / (num_genes-1)
-         
-        scores = distances[0]
-        gene2_ids = object_ids[indices[0]]
-        gene2_common_names = common_names[indices[0]]
-        gene2_systematic_names = systematic_names[indices[0]]
+            scores = distances[0]
+            gene2_ids = object_ids[indices[0]]
+            gene2_common_names = common_names[indices[0]]
+            gene2_systematic_names = systematic_names[indices[0]]
 
-        data = []
-        for i, gene2_id in enumerate(gene2_ids):
-            data.append({
-                'score': scores[i],
-                'percentile': percentiles[i],
-                'gene2_id': gene2_id,
-                'gene2__systematic_name': gene2_systematic_names[i],
-                'gene2__common_name': gene2_common_names[i]
-            })
+            data = []
+            for i, gene2_id in enumerate(gene2_ids):
+                data.append({
+                    'score': scores[i],
+                    'percentile': percentiles[i],
+                    'gene2_id': gene2_id,
+                    'gene2__systematic_name': gene2_systematic_names[i],
+                    'gene2__common_name': gene2_common_names[i]
+                })
+        else:
+            data = []
 
         return data
     
