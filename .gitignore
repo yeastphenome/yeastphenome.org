@@ -1,5 +1,6 @@
 env/
 __pycache__/
+yeastphenome-static/
 
 app.yaml
 app-dev.yaml

@@ -29,15 +29,6 @@ def detail(request, gene_id):
         scores.order_by("-valuez"), "valuez"
     )[:10]
 
-    # similarities = gene.get_similarities()
-    # num_similarities = similarities.count()
-    # similarities_lowest = update_values_with_percentile(
-    #     similarities.order_by("score"), "score"
-    # )[:10]
-    # similarities_highest = update_values_with_percentile(
-    #     similarities.order_by("-score"), "score"
-    # )[:10]
-
     similarities_lowest = gene.get_similarities_faiss(n=10, ascending=True)
     similarities_highest = gene.get_similarities_faiss(n=10, ascending=False)
     num_similarities = 4554
@@ -101,9 +92,6 @@ def download_scores(request, gene1_id, gene2_id=None):
 def similarities(request, gene_id):
 
     gene = get_object_or_404(Gene, pk=gene_id)
-    # similarities = gene.get_similarities().order_by("-score")
-    # similarities = update_values_with_percentile(similarities, "score")
-
     similarities = gene.get_similarities_faiss(ascending=False)
 
     context = {
@@ -117,7 +105,6 @@ def similarities(request, gene_id):
 def download_similarities(request, gene_id):
 
     gene = get_object_or_404(Gene, pk=gene_id)
-    # similarities = gene.get_similarities().order_by("-score")
     similarities = gene.get_similarities_faiss(ascending=False)
 
 

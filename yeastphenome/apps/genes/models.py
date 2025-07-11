@@ -1,25 +1,20 @@
 from __future__ import unicode_literals
 
 from django.apps import apps
-from django.core.exceptions import FieldError
 from django.db import models
 from django.db.models import F
 from django.urls import reverse
-from django.templatetags.static import static
 from django.contrib.staticfiles.finders import find
-from django.conf import settings
-from django.shortcuts import get_object_or_404
 
+import re
 import faiss
 import pandas as pd
 import numpy as np
+
 from scipy.stats import rankdata
 from scipy.spatial.distance import cosine
 
 from yeastphenome.apps.genes.managers import GeneManager, GeneAliasManager
-
-import re
-import os
 
 
 class GeneAlias(models.Model):
@@ -80,16 +75,6 @@ class Gene(models.Model):
         data = data.filter(valuez__isnull=False)
         data = data.values("valuez", "dataset_id", dataset_name=F("dataset__name"))
         return data
-
-    # def get_similarities(self):
-    #     data = self.similarities.values(
-    #         "score",
-    #         "pvalue",
-    #         "gene2_id",
-    #         "gene2__systematic_name",
-    #         "gene2__common_name",
-    #     )
-    #     return data
     
     def get_similarities_faiss(self, n=None, ascending=False):
         
@@ -141,10 +126,6 @@ class Gene(models.Model):
             })
 
         return data
-
-    # def get_similarity_to(self, gene2):
-    #     data = self.similarities.filter(gene2=gene2).first()
-    #     return data
     
     def get_similarity_to_faiss(self, gene2):
 
@@ -159,41 +140,3 @@ class Gene(models.Model):
         cosine_sim = {'score': 1 - cosine(embedding1, embedding2)}
 
         return cosine_sim
-        
-
-
-class GeneSimilarity(models.Model):
-
-    gene1 = models.ForeignKey(
-        Gene, on_delete=models.CASCADE, related_name="similarities"
-    )
-    gene2 = models.ForeignKey(
-        Gene, on_delete=models.CASCADE, related_name="gene_similarity2"
-    )
-    score = models.DecimalField(max_digits=10, decimal_places=3)
-    # IMPORTANT: this is actually a standard deviation
-    pvalue = models.DecimalField(max_digits=10, decimal_places=6)
-
-    def __str__(self):
-        return "%s &#177; %s" % (self.score, self.pvalue)
-
-    def save(self, *args, **kwargs):
-        """Override the save function to ensure that only one similarity score
-        for any pair of genes can be created. If a different ordering is
-        presented, it is fixed and we get an integrity error.
-        """
-        # Only update order if not in databsase yet, ensure genes ordered by name
-        if not self.pk:
-
-            if self.score in [None, "", "nan"]:
-                raise FieldError(
-                    "score for a gene similarity cannot be a null or empty value."
-                )
-
-        super(GeneSimilarity, self).save(*args, **kwargs)
-
-    class Meta:
-        unique_together = (
-            "gene1",
-            "gene2",
-        )
