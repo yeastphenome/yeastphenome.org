@@ -115,15 +115,26 @@
 
             <h2 class="mt-5 mb-4" id="correlations">Computing correlations</h2>
             <p>
-                To obtain robust estimates of gene-gene (and screen-screen) phenotypic similarity in a computationally efficient and parallelizable manner, we adopted the following strategy.
+                To obtain robust estimates of screen-screen phenotypic similarity in a computationally efficient and parallelizable manner, we adopted the following strategy.
                 <ol>
-                    <li>Given a data matrix, where rows correspond to genes, columns correspond to phenotypic screens and the values are normalized phenotypic values (NPV), we created 100 submatrices by subsetting 10% of the columns using random sampling with replacement.</li>
+                    <li>Given a data matrix, where rows correspond to genes, columns correspond to phenotypic screens and the values are normalized phenotypic values (NPV), we created 100 submatrices by subsetting 10% of the rows using random sampling with replacement.</li>
                     <li>For each of the submatrices, we computed gene-gene cosine correlations using a parallelized implementation by <a class="external" href="https://deepgraph.readthedocs.io/en/latest/tutorials/pairwise_correlations.html" target="_blank">deepgraph</a>.</li>
-                    <li>For each gene pair, we combined the 100 sampled cosine correlations by computing the mean and standard deviation.</li>
-                    <li>Values corresponding to gene pairs with less than 100 non-zero data points in common were masked.</li>
+                    <li>For each screen pair, we combined the 100 sampled cosine correlations by computing the mean and standard deviation.</li>
+                    <li>Values corresponding to screen pairs with less than 100 non-zero data points in common were masked.</li>
                 </ol>
             </p>
-            <p>The same approach was used to estimate screen-screen phenotypic similarity.</p>
+
+            <p>
+                The same approach was used to compute gene-gene phenotypic similarities available for <a href="{% url 'downloads:download_bundles' %}">bulk download</a>.
+            </p>
+
+            <p>
+                In contrast, to compute gene-gene phenotypic similarity values displayed online, we used a different approach. We trained a Supervised Contrastive (SupCon) maching learning model on the same data matrix. The model was trained to maximize the cosine similarity between pairs of genes co-annotated to the same GO Slim Biological Process term, while also avoiding over-fitting and ground truth memorization. The model enabled us to reduce the dimensionality of the data matrix to a 128-dimensional vector space, where each gene is represented by a vector of 128 values. The cosine similarity between these vectors was then used to estimate gene-gene phenotypic similarity.
+            </p>
+
+            <p>
+                For a more detailed method explanation and evaluation, please read our <a class="external" target="_blank" href="https://medium.com/@abaryshk/improved-gene-function-predictions-with-contrastive-learning-and-facebook-ai-similarity-search-693857b68457">full blog post</a>.
+            </p>
 
             <h2 class="mt-5 mb-4" id="citation">Data usage and citation policy</h2>
             <p>If you use data downloaded from YeastPhenome.org in a talk or a manuscript, please acknowledge the data source by citing the original publication from which the data is derived, as well as the YeastPhenome.org database. The database should be cited as follows:</p>
