@@ -13,7 +13,6 @@ from yeastphenome.apps.phenotypes.models import Observable
 from yeastphenome.apps.common.forms import GlobalSearchForm
 from yeastphenome.apps.common.utils_format import truncated_list_as_str
 
-from ratelimit.decorators import ratelimit
 from yeastphenome.settings import (
     VIEW_RATE_LIMIT as rl_rate,
     VIEW_RATE_LIMIT_BLOCK as rl_block,
@@ -23,7 +22,6 @@ import itertools
 
 
 @never_cache
-@ratelimit(key="ip", rate=rl_rate, block=rl_block)
 def index(request):
 
     context = dict()

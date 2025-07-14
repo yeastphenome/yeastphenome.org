@@ -3,14 +3,15 @@ from django.shortcuts import render, redirect, get_object_or_404
 
 from yeastphenome.apps.conditions.models import ConditionType
 
-import numpy as np
-
 
 def index(request):
     return redirect("search:search")
 
 
 def detail(request, conditiontype_id):
+
+    # Placed here to enable maintenance mode and avoid installing unused packages
+    import numpy as np
 
     conditiontype = get_object_or_404(ConditionType, pk=conditiontype_id)
 

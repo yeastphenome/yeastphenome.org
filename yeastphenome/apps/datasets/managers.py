@@ -6,7 +6,6 @@ from yeastphenome.apps.common.utils import unique_clean_sorted
 from yeastphenome.apps.tags.models import Tag
 
 import itertools
-import pandas as pd
 
 
 class CollectionManager(models.Manager):
@@ -68,6 +67,8 @@ class DatasetManager(models.Manager):
 
     def all_valid_tags_list_as_df(self):
 
+        import pandas as pd
+
         datasets = self.all_valid().values("id", "paper", "phenotype", "conditionset", "medium")
         datasets_df = pd.DataFrame(list(datasets))
         datasets_df.rename(columns={"paper": "paper_id",
@@ -118,6 +119,8 @@ class DatasetManager(models.Manager):
         return datasets_df[columns]
 
     def all_valid_as_df(self):
+
+        import pandas as pd
 
         # Prepare the following fields to be used by Elastic Search:
         # id, paper, collection, data_available,

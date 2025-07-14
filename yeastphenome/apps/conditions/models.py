@@ -11,7 +11,6 @@ from yeastphenome.apps.conditions.managers import (
     ConditionTypeManager, ConditionManager, ConditionSetManager, MediumManager
 )
 
-from libchebipy import ChebiEntity
 import re
 import itertools
 from urllib.parse import quote_plus
@@ -72,6 +71,9 @@ class ConditionType(models.Model):
         return "; ".join(self.aliases_list())
 
     def definition(self):
+
+        from libchebipy import ChebiEntity
+
         if self.chebi_id:
             entity = ChebiEntity("CHEBI:" + str(self.chebi_id))
             return entity.get_definition()
@@ -79,6 +81,9 @@ class ConditionType(models.Model):
             return ""
 
     def has_roles(self):
+
+        from libchebipy import ChebiEntity
+        
         if self.chebi_id:
             entity = ChebiEntity("CHEBI:" + str(self.chebi_id))
             outdict = dict()

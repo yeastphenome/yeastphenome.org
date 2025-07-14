@@ -15,10 +15,7 @@ from yeastphenome.apps.conditions.models import ConditionType, Medium
 from yeastphenome.apps.phenotypes.models import Observable
 from yeastphenome.apps.common.utils_format import update_values_with_percentile
 
-from libchebipy import ChebiEntity
 import os
-import pandas as pd
-import numpy as np
 import tempfile
 
 from yeastphenome.settings import DOWNLOAD_PREFIX
@@ -67,6 +64,9 @@ def detail(request, dataset_id):
 
 
 def scatterplot_gc(request, dataset1_id, dataset2_id):
+
+    import pandas as pd
+    import numpy as np
 
     dataset1 = get_object_or_404(Dataset, pk=dataset1_id)
     dataset2 = get_object_or_404(Dataset, pk=dataset2_id)
@@ -143,6 +143,8 @@ def scores(request, dataset_id):
 
 def download_scores(request, dataset1_id, dataset2_id=None):
 
+    import pandas as pd
+
     dataset1 = get_object_or_404(Dataset, pk=dataset1_id)
     scores1 = dataset1.get_scores().order_by("valuez")
 
@@ -199,6 +201,8 @@ def similarities(request, dataset_id):
 
 def download_similarities(request, dataset_id):
 
+    import pandas as pd
+
     dataset = get_object_or_404(Dataset, pk=dataset_id)
     similarities = dataset.get_similarities().order_by("-score")
     similarities_df = pd.DataFrame(list(similarities))
@@ -217,7 +221,7 @@ def download_similarities(request, dataset_id):
 
 def download_observable_datasets_list(request, observable_id):
     """Download all datasets associated with an observable"""
-    import pandas
+    import pandas as pd
 
     observable = get_object_or_404(Observable, pk=observable_id)
 
@@ -233,7 +237,7 @@ def download_observable_datasets_list(request, observable_id):
         .values_list("id", "name", "paper__pmid", "paper__latest_tested_status")
         .distinct()
     )
-    df = pandas.DataFrame(datasets)
+    df = pd.DataFrame(datasets)
     df.columns = ["id", "name", "pmid", "latest_tested_status"]
     exported_file = os.path.join(tempfile.gettempdir(), filename)
     if not os.path.exists(exported_file):
@@ -364,6 +368,8 @@ def download_medium_datasets(request, medium_id):
 
 
 def data(request, domain, id):
+
+    from libchebipy import ChebiEntity
 
     file_header = ""
 

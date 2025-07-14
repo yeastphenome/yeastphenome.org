@@ -1,8 +1,6 @@
 from django.views.decorators.cache import never_cache
 from django.shortcuts import render
 
-from elasticsearch import Elasticsearch
-
 from yeastphenome.apps.common.forms import GlobalSearchForm
 from yeastphenome.settings import (
     ELASTICSEARCH_CLOUD_ID,
@@ -11,7 +9,6 @@ from yeastphenome.settings import (
 )
 
 import re
-import numpy as np
 import unicodedata
 from typing import Tuple, List, Set
 
@@ -50,6 +47,9 @@ from yeastphenome.apps.datasets.search import (
 
 @never_cache
 def search_index_view(request):
+
+    import numpy as np
+    from elasticsearch import Elasticsearch
 
     context = dict()
 
@@ -263,6 +263,8 @@ def extract_result_fields(results, result_fields):
 
 
 def get_pagination_info(search_response, current_page, results_per_page):
+
+    import numpy as np
     
     total_results = search_response["hits"]["total"]["value"]
     total_results_on_current_page = len(search_response["hits"]["hits"])

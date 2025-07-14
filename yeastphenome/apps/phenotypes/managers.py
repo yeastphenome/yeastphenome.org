@@ -4,9 +4,6 @@ from django.db.models import Q
 
 from yeastphenome.apps.tags.models import Tag
 
-import pandas as pd
-import numpy as np
-
 
 class ObservableManager(models.Manager):
 
@@ -16,6 +13,9 @@ class ObservableManager(models.Manager):
         return self.filter(f).distinct()
 
     def all_valid_as_df(self):
+
+        import pandas as pd
+        import numpy as np
 
         # Prepare the following fields to be used by Elastic Search:
         # name, description, phenotypes_list_as_str, reporters_list_as_str,
@@ -110,6 +110,9 @@ class PhenotypeManager(models.Manager):
         return self.filter(pk__in=valid_phenotypes)
 
     def all_valid_aliases_list_as_df(self):
+
+        import pandas as pd
+
         phenotypes = self.all_valid().values("id", "name", "observable__name", "reporter")
         phenotypes_df = pd.DataFrame(list(phenotypes))
 
@@ -130,6 +133,9 @@ class PhenotypeManager(models.Manager):
         return phenotypes_df
 
     def all_valid_tags_list_as_df(self):
+
+        import pandas as pd
+
         phenotypes = self.all_valid().values("id", "observable")
         phenotypes_df = pd.DataFrame(list(phenotypes))
 

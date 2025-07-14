@@ -5,9 +5,6 @@ from django.db.models import Q
 from yeastphenome.apps.common.utils import unique_clean_sorted
 from yeastphenome.apps.tags.models import Tag
 
-import pandas as pd
-import numpy as np
-
 
 class ConditionTypeManager(models.Manager):
 
@@ -19,6 +16,9 @@ class ConditionTypeManager(models.Manager):
         return self.filter(f1).distinct()
 
     def all_valid_aliases_list_as_df(self):
+
+        import pandas as pd
+        import numpy as np
 
         conditiontypes = self.all_valid().values("id",
                                                  "name",
@@ -56,6 +56,8 @@ class ConditionTypeManager(models.Manager):
         return conditiontype_tags
 
     def all_valid_as_df(self):
+
+        import pandas as pd
 
         # Prepare the following fields to be used by Elastic Search:
         # name, aliases_list_as_str, doses_list_as_str, observables_list_as_str
@@ -149,6 +151,9 @@ class ConditionManager(models.Manager):
         return self.filter(f).distinct()
 
     def all_valid_aliases_list_as_df(self):
+
+        import pandas as pd
+
         conditions = self.all_valid().values("id",
                                              "type",
                                              "dose")
@@ -179,6 +184,8 @@ class ConditionManager(models.Manager):
         return conditions_df
 
     def all_valid_tags_list_as_df(self):
+
+        import pandas as pd
 
         conditions = self.all_valid().values("id", "type")
         conditions_df = pd.DataFrame(list(conditions))
@@ -212,6 +219,9 @@ class ConditionSetManager(models.Manager):
         return self.filter(dataset__in=valid_datasets).distinct()
 
     def all_valid_aliases_list_as_df(self):
+
+        import pandas as pd
+
         conditionsets = self.all_valid().values("id", "systematic_name", "common_name", "display_name")
         conditionsets_df = pd.DataFrame(list(conditionsets))
         conditionsets_df["self_aliases_list"] = \
@@ -241,6 +251,8 @@ class ConditionSetManager(models.Manager):
         return conditionsets_df
 
     def all_valid_tags_list_as_df(self):
+        
+        import pandas as pd
 
         self_tags = Tag.objects.all_mappings_as_df("conditions", "conditionset")
 

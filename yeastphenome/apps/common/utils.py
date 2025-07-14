@@ -3,10 +3,11 @@ from django.db.models import Q, F
 
 from yeastphenome.apps.genes.models import Gene
 
-import numpy as np
-
 
 def unique_clean_sorted(xs):
+
+    import numpy as np
+
     remove_items = [None, np.nan, "nan", "NaN", ""]
     lst = sorted(list(set(xi for x in xs for xi in x if xi not in remove_items)))
     return lst

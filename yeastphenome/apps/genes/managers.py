@@ -1,8 +1,6 @@
 from django.apps import apps
 from django.db import models, connection
 
-import pandas as pd
-
 
 class GeneManager(models.Manager):
 
@@ -10,6 +8,8 @@ class GeneManager(models.Manager):
         return self.all()
 
     def all_valid_as_df(self):
+
+        import pandas as pd
 
         # Prepare the following fields to be used by Elastic Search:
         # systematic_name, common_name, aliases_list_as_str, description
@@ -54,6 +54,8 @@ class GeneAliasManager(models.Manager):
         return self.all()
 
     def all_valid_as_df(self):
+
+        import pandas as pd
 
         genealiases = self.all_valid().values("id", "name")
         genealiases_df = pd.DataFrame(list(genealiases))

@@ -2,7 +2,6 @@ from django.shortcuts import render, reverse, redirect
 from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 from django.db.models import Q
-from django.contrib.postgres.aggregates.general import StringAgg, BoolOr
 
 from yeastphenome.apps.common.utils import (
     get_latest_stats_basic,
@@ -14,6 +13,14 @@ from yeastphenome.apps.papers.models import Paper
 from yeastphenome.apps.papers.graphs import get_papers_by_year
 
 import itertools
+
+
+def maintenance(request):    
+    """
+    Maintenance mode view.
+    This will render a maintenance page when the site is in maintenance mode.
+    """
+    return render(request, "main/maintenance.html")
 
 
 def handler404(request, url):
@@ -62,6 +69,9 @@ def authors(request):
 
 
 def data_contributors(request):
+    
+    from django.contrib.postgres.aggregates.general import StringAgg, BoolOr
+
     papers = (
         Paper.objects.all_valid()
         .filter(

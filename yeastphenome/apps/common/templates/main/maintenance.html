@@ -1,0 +1,54 @@
+{% extends "base/base_min.html" %}
+{% load humanize %}
+{% load static %}
+
+{% block content %}
+
+    <div class="row mt-5 mb-5">
+        <div class="col-md-12">
+            <h1 class="display-1 text-center">Yeast Phenome</h1>
+            <h3 class="display-8 text-center">A data library of systematic phenotypic screens of the yeast knock-out collection</h3>
+        </div>
+    </div>
+
+    <div class="row mt-5 mb-5">
+        <div class="col-md-12">
+            <form action="/search/" method="get" id="searchform">
+                <input disabled type="text" style="text-align: center;" name="q"
+                       class="form-control form-control-lg border border-2 rounded-pill"
+                       placeholder="Search for a paper, a phenotype or a gene..."
+                       required="" id="id_q" value="{{ request.GET.q }}">
+
+                <div id="q_help" class="form-text text-center">
+                    Examples: <a href="/search/?q=rim101&tab=genes">Rim101</a>,
+                    <a href="/search/?q=mms&tab=conditions">MMS</a>,
+                    <a href="/search/?q=aging">aging</a>,
+                    <a href="/search/?q=barseq&tab=phenotypes">barseq</a>,
+                    <a href="/search/?q=vulpe&tab=papers">Vulpe</a>,
+                    <a href="/search/?q=mitochondria">mitochondria</a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-4">
+            <img src="{% static 'images/maintenance.png' %}">
+        </div>
+
+        <div class="col-8">
+            <div class="card border-0 alert alert-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Temporarily Out of Service</h5>
+                        <p class="card-text">
+                            Due to a temporary disruption in funding, we are currently unable to maintain the database-related functionalities of the Yeast Phenome website. While our team works to resolve this, you can still access and download the latest data release directly from our <a href="{% url 'downloads:download_bundles' %}">Downloads</a> page. We sincerely apologize for any inconvenience this may cause to your work and appreciate your understanding.
+                        </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+{% endblock %}

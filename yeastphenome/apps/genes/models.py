@@ -7,12 +7,6 @@ from django.urls import reverse
 from django.contrib.staticfiles.finders import find
 
 import re
-import faiss
-import pandas as pd
-import numpy as np
-
-from scipy.stats import rankdata
-from scipy.spatial.distance import cosine
 
 from yeastphenome.apps.genes.managers import GeneManager, GeneAliasManager
 
@@ -77,6 +71,13 @@ class Gene(models.Model):
         return data
     
     def get_similarities_faiss(self, n=None, ascending=False):
+
+        import pandas as pd
+        import numpy as np
+        import faiss
+
+        from scipy.stats import rankdata
+
         
         file_path = find('genes/supcon_all_embeddings_geneid.txt')
         embeddings = pd.read_csv(file_path, sep='\t')
@@ -132,6 +133,9 @@ class Gene(models.Model):
         return data
     
     def get_similarity_to_faiss(self, gene2):
+
+        import pandas as pd
+        from scipy.spatial.distance import cosine
 
         file_path = find('genes/supcon_all_embeddings_geneid.txt')
         embeddings = pd.read_csv(file_path, sep='\t', index_col=0)

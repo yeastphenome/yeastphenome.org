@@ -21,7 +21,7 @@
                         <a class="nav-link" href="{% url 'downloads:download_bundles' %}" role="button" aria-expanded="false">Downloads</a>
                     </li>
                 </ul>
-                {% if not request.path == '/' %}
+                {% if request.path != '/' and request.path != '/maintenance/' %}
                 <form action="/search/" method="get" id="searchform" class="d-flex">
                     <input class="form-control me-2" type="search" name="q"
                            placeholder="Search" aria-label="Search" id="id_q" value="{{ request.GET.q }}">

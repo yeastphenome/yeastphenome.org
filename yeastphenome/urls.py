@@ -1,7 +1,7 @@
 from django.urls import include, re_path, path
 from django.contrib import admin
-from django.views.generic.base import TemplateView
 from django.contrib.sitemaps import views as sitemaps_views
+from django.conf import settings
 
 from yeastphenome.apps.papers import urls as papers_urls
 from yeastphenome.apps.common import urls as common_urls
@@ -35,15 +35,19 @@ urlpatterns = [
     re_path(r"^admin/", admin.site.urls),
     re_path(r"^", include(common_urls, namespace="common")),
     re_path(r"^search/", include(search_urls, namespace="search")),
-    re_path(r"^downloads/", include(downloads_urls, namespace="downloads")),
     re_path(r"^papers/", include(papers_urls, namespace="papers")),
     re_path(r"^phenotypes/", include(phenotypes_urls, namespace="phenotypes")),
     re_path(r"^conditions/", include(conditions_urls, namespace="conditions")),
     re_path(r"^screens/", include(datasets_urls, namespace="datasets")),
     re_path(r"^genes/", include(gene_urls, namespace="genes")),
+    re_path(r"^downloads/", include(downloads_urls, namespace="downloads")),
     re_path(r"^updates/", include(updates_urls, namespace="updates")),
-    re_path(r'^robots\.txt', include('robots.urls')),
     path("sitemap.xml", sitemaps_views.index, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.index'),
     path("sitemap-<section>.xml", sitemaps_views.sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('<path:url>', views.handler404, name='handler404'),
 ]
+
+if 'robots' in settings.INSTALLED_APPS:
+    urlpatterns += [
+        re_path(r'^robots\.txt', include('robots.urls')),
+    ]

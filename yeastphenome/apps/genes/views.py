@@ -8,9 +8,6 @@ from yeastphenome.apps.common.utils_format import update_values_with_percentile
 
 from yeastphenome.settings import DOWNLOAD_PREFIX
 
-import pandas as pd
-import numpy as np
-
 
 def index(request):
     return redirect("search:search")
@@ -62,6 +59,8 @@ def scores(request, gene_id):
 
 def download_scores(request, gene1_id, gene2_id=None):
 
+    import pandas as pd
+
     gene1 = get_object_or_404(Gene, pk=gene1_id)
     scores1 = gene1.get_scores().order_by("valuez")
     scores1_df = pd.DataFrame(list(scores1))
@@ -104,6 +103,8 @@ def similarities(request, gene_id):
 
 def download_similarities(request, gene_id):
 
+    import pandas as pd
+
     gene = get_object_or_404(Gene, pk=gene_id)
     similarities = gene.get_similarities_faiss(ascending=False)
 
@@ -123,6 +124,9 @@ def download_similarities(request, gene_id):
 
 
 def scatterplot_gc(request, gene1_id, gene2_id):
+
+    import pandas as pd
+    import numpy as np
 
     gene1 = get_object_or_404(Gene, pk=gene1_id)
     gene2 = get_object_or_404(Gene, pk=gene2_id)

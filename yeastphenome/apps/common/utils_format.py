@@ -1,7 +1,3 @@
-import numpy as np
-from scipy.stats import rankdata
-
-
 def truncated_list_as_str(lst, num=10, sort=False):
 
     lst = [el for el in lst if not el == "" and el is not None]
@@ -33,6 +29,9 @@ def join_and(lst):
 
 
 def update_values_with_percentile(qs_values, key):
+
+    import numpy as np
+    from scipy.stats import rankdata
 
     values_arr = np.array(qs_values.values_list(key, flat=True))
     values_percentiles = 100 * rankdata(values_arr) / values_arr.shape[0]

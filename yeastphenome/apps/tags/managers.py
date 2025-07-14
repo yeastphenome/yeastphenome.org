@@ -2,8 +2,6 @@ from django.apps import apps
 from django.db import models, connection
 from django.db.models import Q
 
-import pandas as pd
-
 
 class TagManager(models.Manager):
 
@@ -34,11 +32,17 @@ class TagManager(models.Manager):
         return obj
 
     def all_as_df(self):
+        
+        import pandas as pd
+
         tags = self.all().values("id", "name")
         tags_df = pd.DataFrame(list(tags))
         return tags_df
 
     def all_mappings_as_df(self, app, model):
+
+        import pandas as pd
+
         tags_df = self.all_as_df()
 
         table = "_".join([app, model, "tags"])

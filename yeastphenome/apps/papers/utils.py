@@ -1,8 +1,11 @@
 from yeastphenome.settings import ENTREZ_EMAIL
-from Bio import Entrez
+
 
 
 def get_pubmed_paper(pmid):
+    
+    from Bio import Entrez
+
     """A shared function to retrieve the Paper in xml"""
     Entrez.email = ENTREZ_EMAIL
     handle = Entrez.efetch(db="pubmed", id=[str(pmid)], retmode="xml")

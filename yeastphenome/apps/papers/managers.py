@@ -5,8 +5,6 @@ from django.db.models import Q
 from yeastphenome.apps.tags.models import Tag
 from yeastphenome.apps.common.utils import unique_clean_sorted
 
-import pandas as pd
-
 
 class PaperManager(models.Manager):
     def all_valid(self):
@@ -27,6 +25,8 @@ class PaperManager(models.Manager):
         return papers
 
     def all_valid_as_df(self):
+
+        import pandas as pd
 
         # Prepare the following fields to be used by Elastic Search:
         # systematic_name, pmid, pub_date, data_abstract,

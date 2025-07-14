@@ -27,6 +27,7 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False")
 DISABLE_CACHE = os.environ.get("DISABLE_CACHE", "False")
+MAINTENANCE_MODE = os.environ.get("MAINTENANCE_MODE", "False")
 
 # SECURITY WARNING: App Engine's security features ensure that it is safe to
 # have ALLOWED_HOSTS = ['*'] when the app is deployed. If you deploy a Django
@@ -56,8 +57,6 @@ INSTALLED_APPS = [
     "django.contrib.sitemaps",
     "django.contrib.sites",
     "django.contrib.staticfiles",
-    "django_extensions",
-    "robots",
 ]
 
 MIDDLEWARE = [
@@ -68,8 +67,19 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "yeastphenome.middleware.BlockUserAgentMiddleware",
+    "yeastphenome.middleware.MaintenanceModeMiddleware",
 ]
+
+if not MAINTENANCE_MODE:
+
+    INSTALLED_APPS.extend([
+        "django_extensions",
+        "robots",
+    ])
+
+    MIDDLEWARE.extend([
+            "yeastphenome.middleware.BlockUserAgentMiddleware",
+    ])
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -88,24 +98,30 @@ if not DISABLE_CACHE:
 
 ROOT_URLCONF = "yeastphenome.urls"
 
+BASE_CONTEXT_PROCESSORS = [
+    "django.template.context_processors.debug",
+    "django.template.context_processors.request",
+    "django.contrib.auth.context_processors.auth",
+    "django.contrib.messages.context_processors.messages",
+]
+
+if not MAINTENANCE_MODE:
+    BASE_CONTEXT_PROCESSORS.extend([
+        "yeastphenome.context_processors.globals",
+    ])
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [],
         "APP_DIRS": True,
         "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-                "yeastphenome.context_processors.globals",
-            ],
+            "context_processors": BASE_CONTEXT_PROCESSORS,
+            "debug": DEBUG,
         },
     },
 ]
 
-TEMPLATES[0]["OPTIONS"]["debug"] = DEBUG
 WSGI_APPLICATION = "yeastphenome.wsgi.application"
 
 # Cache to tmp
@@ -124,46 +140,58 @@ if not os.path.exists(CACHE_LOCATION):
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
 
-# Case 1: we are running locally but want to do migration, etc. (set False to True)
-if True and os.getenv("APP_ENGINE_HOST") != None:
-    print("Warning: connecting to production database.")
+if MAINTENANCE_MODE:
 
-    # Running in development, but want to access the Google Cloud SQL instance in production.
+    # In maintenance mode, use a lightweight in-memory database.
+    # This requires no external packages like psycopg2.
     DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "USER": os.getenv("APP_ENGINE_USERNAME"),
-            "PASSWORD": os.getenv("APP_ENGINE_PASSWORD"),
-            "NAME": os.getenv("APP_ENGINE_DATABASE"),
-            "HOST": os.getenv("APP_ENGINE_HOST"),  # Set to IP address
-            "PORT": "",  # empty string for default.
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',
         }
     }
+else:
 
-# Case 2: we are running on app engine
-elif os.getenv("APP_ENGINE_CONNECTION_NAME") != None:
+    # Running locally but connecting to production database
+    if os.getenv("APP_ENGINE_HOST") != None:
 
-    # Ensure debug is absolutely off
-    TEMPLATES[0]["OPTIONS"]["debug"] = False
-    DEBUG = False
+        print("Warning: connecting to production database.")
 
-    # Running on production App Engine, so connect to Google Cloud SQL using
-    # the unix socket at /cloudsql/<your-cloudsql-connection string>
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "HOST": "/cloudsql/%s" % os.getenv("APP_ENGINE_CONNECTION_NAME"),
-            "USER": os.getenv("APP_ENGINE_USERNAME"),
-            "PASSWORD": os.getenv("APP_ENGINE_PASSWORD"),
-            "NAME": os.getenv("APP_ENGINE_DATABASE"),
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.postgresql",
+                "USER": os.getenv("APP_ENGINE_USERNAME"),
+                "PASSWORD": os.getenv("APP_ENGINE_PASSWORD"),
+                "NAME": os.getenv("APP_ENGINE_DATABASE"),
+                "HOST": os.getenv("APP_ENGINE_HOST"), 
+                "PORT": "",  # empty string for default.
+            }
         }
-    }
 
-    # If we are on app engine, ensure https only
-    SECURE_SSL_REDIRECT = False
-    # But on the staging service, allow http (needed for Google Cloud Scheduler to run)
-    if os.getenv("APP_ENGINE_SERVICE") != "staging":
-        SECURE_SSL_REDIRECT = True
+    # Running on app engine
+    elif os.getenv("APP_ENGINE_CONNECTION_NAME") != None:
+
+        # Ensure debug is absolutely off
+        TEMPLATES[0]["OPTIONS"]["debug"] = False
+        DEBUG = False
+
+        # Running on production App Engine, so connect to Google Cloud SQL using
+        # the unix socket at /cloudsql/<your-cloudsql-connection string>
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.postgresql",
+                "HOST": "/cloudsql/%s" % os.getenv("APP_ENGINE_CONNECTION_NAME"),
+                "USER": os.getenv("APP_ENGINE_USERNAME"),
+                "PASSWORD": os.getenv("APP_ENGINE_PASSWORD"),
+                "NAME": os.getenv("APP_ENGINE_DATABASE"),
+            }
+        }
+
+        # If we are on app engine, ensure https only
+        SECURE_SSL_REDIRECT = False
+        # But on the staging service, allow http (needed for Google Cloud Scheduler to run)
+        if os.getenv("APP_ENGINE_SERVICE") != "staging":
+            SECURE_SSL_REDIRECT = True
 
 
 # Password validation
@@ -228,3 +256,11 @@ ROBOTS_SITEMAP_URLS = [
 PATH_TO_SAFE = os.environ.get("PATH_TO_SAFE")
 PATH_TO_SAFE_DATA = os.environ.get("PATH_TO_SAFE_DATA")
 PATH_TO_SAFE_OUTPUT = os.environ.get("PATH_TO_SAFE_OUTPUT")
+
+# Conditionally configure the session storage engine
+if MAINTENANCE_MODE:
+    # Use cookies to store session data. This requires no database.
+    SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
+else:
+    # Use the default database-backed sessions in production
+    SESSION_ENGINE = "django.contrib.sessions.backends.db"

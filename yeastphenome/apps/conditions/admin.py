@@ -6,9 +6,6 @@ from django.utils.safestring import mark_safe
 
 import re
 
-from libchebipy import ChebiEntity
-from pubchempy import Compound
-
 from yeastphenome.apps.conditions.models import (
     ConditionSet,
     Condition,
@@ -138,6 +135,9 @@ class ConditionTypeAdmin(ImprovedModelAdmin):
     inlines = (ConditionInline,)
 
     def save_model(self, request, obj, form, change):
+
+        from libchebipy import ChebiEntity
+        from pubchempy import Compound
 
         # To update ES indexing immediately: save related fields (e.g., tags)
         if not obj.id:
